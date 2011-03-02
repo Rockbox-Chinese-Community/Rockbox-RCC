@@ -808,7 +808,11 @@ static void shrink_handle(struct memory_handle *h)
         }
     } else {
         /* only move the handle struct */
-        delta = ringbuf_sub(h->ridx, h->data);
+        size_t rd = ringbuf_sub(h->ridx, h->data);
+        size_t wr = ringbuf_sub(h->widx, h->data);
+
+        /* ridx could be ahead of widx on a mini rebuffer */
+        delta = MIN(rd, wr);
         if (!move_handle(&h, &delta, 0, true))
             return;
 
