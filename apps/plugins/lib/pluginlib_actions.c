@@ -82,7 +82,8 @@ const struct button_mapping pla_main_ctx[] =
 {
     /* Touchscreens */
 #ifdef HAVE_TOUCHSCREEN
-    { PLA_CANCEL,           BUTTON_BOTTOMRIGHT,                 BUTTON_NONE},
+    { PLA_EXIT,           BUTTON_BOTTOMRIGHT,                 BUTTON_NONE},
+    { PLA_CANCEL,           BUTTON_TOPLEFT,                 BUTTON_NONE},
     { PLA_SELECT,           BUTTON_CENTER,                      BUTTON_NONE},
     { PLA_SELECT_REL,       BUTTON_CENTER|BUTTON_REL,           BUTTON_NONE},
     { PLA_SELECT_REPEAT,    BUTTON_CENTER|BUTTON_REPEAT,        BUTTON_NONE},
@@ -322,8 +323,8 @@ const struct button_mapping pla_main_ctx[] =
     {PLA_SELECT_REL,        BUTTON_RC_HEART|BUTTON_REL,         BUTTON_RC_HEART},
     {PLA_SELECT_REPEAT,     BUTTON_RC_HEART|BUTTON_REPEAT,      BUTTON_NONE},
 #elif (CONFIG_KEYPAD == COWON_D2_PAD)
-    {PLA_CANCEL,            BUTTON_POWER|BUTTON_REL,            BUTTON_POWER},
-    {PLA_EXIT,              BUTTON_POWER|BUTTON_REPEAT,         BUTTON_NONE},
+    {PLA_CANCEL,            BUTTON_MENU,            BUTTON_NONE},
+    {PLA_EXIT,              BUTTON_POWER,         BUTTON_NONE},
     {PLA_SELECT,            BUTTON_MINUS,                       BUTTON_NONE},
     {PLA_SELECT_REL,        BUTTON_MINUS|BUTTON_REL,            BUTTON_MINUS},
     {PLA_SELECT_REPEAT,     BUTTON_MINUS|BUTTON_MINUS,          BUTTON_NONE},

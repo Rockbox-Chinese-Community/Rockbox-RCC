@@ -332,7 +332,8 @@ int ft_load(struct tree_context* c, const char* tempdir)
             ((*c->dirfilter == SHOW_MUSIC &&
              (dptr->attr & FILE_ATTR_MASK) != FILE_ATTR_AUDIO) &&
              (dptr->attr & FILE_ATTR_MASK) != FILE_ATTR_M3U) ||
-            (*c->dirfilter == SHOW_SUPPORTED && !filetype_supported(dptr->attr)))) ||
+            ((*c->dirfilter == SHOW_SUPPORTED || *c->dirfilter == SHOW_DICTS)&& 
+			!filetype_supported(dptr->attr)))) ||
             (*c->dirfilter == SHOW_WPS && (dptr->attr & FILE_ATTR_MASK) != FILE_ATTR_WPS) ||
 #ifdef HAVE_LCD_BITMAP
             (*c->dirfilter == SHOW_FONT && (dptr->attr & FILE_ATTR_MASK) != FILE_ATTR_FONT) ||
@@ -696,6 +697,7 @@ int ft_enter(struct tree_context* c)
             if (*c->dirfilter > NUM_FILTER_MODES &&
                 *c->dirfilter != SHOW_CFG &&
                 *c->dirfilter != SHOW_FONT &&
+                *c->dirfilter != SHOW_DICTS &&
                 *c->dirfilter != SHOW_PLUGINS)
             {
                 rc = GO_TO_ROOT;

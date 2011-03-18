@@ -10055,6 +10055,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_DICTIONARIES
+  desc: in the main menu
+  user: core
+  <source>
+    *: "Dictionaries"
+  </source>
+  <dest>
+    *: "Dictionaries"
+  </dest>
+  <voice>
+    *: "Dictionaries"
+  </voice>
+</phrase>
+<phrase>
   id: VOICE_OF
   desc: spoken only, as in 3/8 => 3 of 8
   user: core

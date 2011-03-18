@@ -8,6 +8,7 @@ fixedpoint.c
 playback_control.c
 rgb_hsv.c
 buflib.c
+viewer.c
 highscore.c
 simple_viewer.c
 display_text.c

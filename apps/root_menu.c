@@ -248,6 +248,10 @@ static int browser(void* param)
             tc->selected_item = last_db_selection;
         break;
 #endif
+        case GO_TO_BROWSEDICTS:
+            filter = SHOW_DICTS;
+            snprintf(folder, MAX_PATH, "%s/", DICTS_DIR);
+        break;
     }
 
     browse_context_init(&browse, filter, 0, NULL, NOICON, folder, NULL);
@@ -386,6 +390,7 @@ static const struct root_items items[] = {
 #endif
     
     [GO_TO_RECENTBMARKS] =  { load_bmarks, NULL, &bookmark_settings_menu }, 
+    [GO_TO_BROWSEDICTS] = { browser, (void*)GO_TO_BROWSEDICTS, NULL }, 
     [GO_TO_BROWSEPLUGINS] = { miscscrn, &plugin_menu, NULL },
     [GO_TO_PLAYLISTS_SCREEN] = { miscscrn, &playlist_options,
                                                         &playlist_settings },
@@ -403,6 +408,8 @@ MENUITEM_RETURNVALUE(file_browser, ID2P(LANG_DIR_BROWSER), GO_TO_FILEBROWSER,
 MENUITEM_RETURNVALUE(db_browser, ID2P(LANG_TAGCACHE), GO_TO_DBBROWSER, 
                         NULL, Icon_Audio);
 #endif
+MENUITEM_RETURNVALUE(dicts_browser, ID2P(LANG_DICTIONARIES), GO_TO_BROWSEDICTS, 
+                        NULL, Icon_NOICON);
 MENUITEM_RETURNVALUE(rocks_browser, ID2P(LANG_PLUGINS), GO_TO_BROWSEPLUGINS, 
                         NULL, Icon_Plugin);
 static char *get_wps_item_name(int selected_item, void * data, char *buffer)
@@ -459,7 +466,7 @@ MAKE_MENU(root_menu_, ID2P(LANG_ROCKBOX_TITLE),
 #if CONFIG_TUNER
             &fm,
 #endif
-            &playlists, &rocks_browser,  &system_menu_
+            &playlists, &dicts_browser, &rocks_browser,  &system_menu_
 
 #if CONFIG_KEYPAD == PLAYER_PAD
             ,&do_shutdown_item

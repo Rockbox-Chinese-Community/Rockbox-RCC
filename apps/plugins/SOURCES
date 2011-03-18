@@ -3,6 +3,7 @@ chessclock.c
 credits.c
 cube.c
 dict.c
+dict2.c
 jackpot.c
 keybox.c
 logo.c

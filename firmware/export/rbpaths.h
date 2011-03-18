@@ -55,6 +55,7 @@
 
 #define REC_BASE_DIR        "/"
 #define PLAYLIST_CATALOG_DEFAULT_DIR "/Playlists"
+#define DICTS_DIR  "/dicts"
 
 #define paths_init()
 #else /* application */
