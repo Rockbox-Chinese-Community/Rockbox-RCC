@@ -5,9 +5,6 @@
  *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
  *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
  *                     \/            \/     \/    \/            \/
- * $Id$
- *
- * Copyright (C) 2002 Bj?rn Stenberg
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,36 +15,13 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef _ONPLAY_H_
-#define _ONPLAY_H_
 
-int onplay(char* file, int attr, int from_screen, bool hotkey);
+#ifndef __UTF8_AUX_H_
+#define __UTF8_AUX_H_
 
-enum {
-    ONPLAY_MAINMENU = -1,
-    ONPLAY_OK = 0,
-    ONPLAY_RELOAD_DIR,
-    ONPLAY_START_PLAY,
-    ONPLAY_PLAYLIST,
-    ONPLAY_PICTUREFLOW,
-    ONPLAY_LYRICS,
-};
+#include <stdint.h>
 
-#ifdef HAVE_HOTKEY
-int get_hotkey_lang_id(int action);
+const unsigned char* utf8decode(const unsigned char *utf8, unsigned short *ucs);
+char utf8strcnmp(const unsigned char *s1, const unsigned char *s2, uint16_t n1, uint16_t n2);
 
-enum hotkey_action {
-    HOTKEY_OFF = 0,
-    HOTKEY_VIEW_PLAYLIST,
-    HOTKEY_SHOW_TRACK_INFO,
-    HOTKEY_PITCHSCREEN,
-    HOTKEY_OPEN_WITH,
-    HOTKEY_DELETE,
-    HOTKEY_INSERT,
-    HOTKEY_INSERT_SHUFFLED,
-    HOTKEY_PICTUREFLOW,
-    HOTKEY_LYRICS,
-};
-#endif
-
-#endif
+#endif /* __UTF8_AUX_H_ */

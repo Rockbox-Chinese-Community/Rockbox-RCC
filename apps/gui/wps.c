@@ -765,6 +765,8 @@ long gui_wps_show(void)
                 else if (retval == ONPLAY_PICTUREFLOW)
                     return GO_TO_PICTUREFLOW;                 
 #endif
+                else if (retval == ONPLAY_LYRICS)
+                    return GO_TO_LYRICS;  
                 restore = true;
             }
             break;

@@ -12431,6 +12431,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_ONPLAY_LYRICS
+  desc: Onplay snclrc/lycplayer
+  user: core
+  <source>
+    *: "Lyric"
+  </source>
+  <dest>
+    *: "歌词"
+  </dest>
+  <voice>
+    *: "查看当前曲目的歌词"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_HOTKEY
   desc: hotkey menu
   user: core

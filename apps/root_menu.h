@@ -53,6 +53,7 @@ enum {
     /* Do Not add any items above here unless you want it to be able to 
        be the "start screen" after a boot up. The setting in settings_list.c
        will need editing if this is the case. */
+    GO_TO_LYRICS,
 	GO_TO_BROWSEDICTS,
     GO_TO_BROWSEPLUGINS,
     GO_TO_TIMESCREEN,
