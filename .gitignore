@@ -1,0 +1,12 @@
+*.patch
+*.diff
+
+#自动编译工具，试编译文件
+tools/bmp2rb
+tools/codepages
+tools/convbdf
+tools/convttf
+tools/mkboot
+tools/rdf2binary
+tools/scramble
+tools/uclpack
