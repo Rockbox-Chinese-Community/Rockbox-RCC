@@ -625,8 +625,8 @@ pandoracc () {
  prefixtools "$PNDSDK/bin/arm-angstrom-linux-gnueabi-"
 
  # Detect SDL
- GCCOPTS="$GCCOPTS `$PKG_CONFIG --cflags sdl`"
- LDOPTS="$LDOPTS `$PKG_CONFIG --libs sdl`"
+ GCCOPTS="$GCCOPTS `$PNDSDK/bin/sdl-config --cflags`"
+ LDOPTS="$LDOPTS `$PNDSDK/bin/sdl-config --libs`"
 
  # Compiler options
  GCCOPTS="$GCCOPTS -O2 -fno-strict-aliasing"
@@ -2992,7 +2992,7 @@ fi
     bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
     output="librockbox.so"
     bootoutput="librockbox.so"
-    appextra="recorder:gui:radio:hosted"
+    appextra="recorder:gui:radio:hosted/android"
     plugins="yes"
     swcodec="yes"
     # architecture, manufacturer and model for the target-tree build

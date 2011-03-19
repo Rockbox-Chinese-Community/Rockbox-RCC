@@ -509,7 +509,7 @@ void queue_wait(struct event_queue *q, struct queue_event *ev)
 
 #ifdef HAVE_PRIORITY_SCHEDULING
     KERNEL_ASSERT(QUEUE_GET_THREAD(q) == NULL ||
-                  QUEUE_GET_THREAD(q) == thread_id_entry(THREAD_ID_CURRENT),
+                  QUEUE_GET_THREAD(q) == thread_self_entry(),
                   "queue_wait->wrong thread\n");
 #endif
 
@@ -527,7 +527,7 @@ void queue_wait(struct event_queue *q, struct queue_event *ev)
         if (rd != q->write) /* A waking message could disappear */
             break;
 
-        current = thread_id_entry(THREAD_ID_CURRENT);
+        current = thread_self_entry();
 
         IF_COP( current->obj_cl = &q->cl; )
         current->bqp = &q->queue;
@@ -537,7 +537,7 @@ void queue_wait(struct event_queue *q, struct queue_event *ev)
         corelock_unlock(&q->cl);
         switch_thread();
 
-        oldlevel = disable_irq_save();
+        disable_irq();
         corelock_lock(&q->cl);
     } 
 
@@ -559,7 +559,7 @@ void queue_wait_w_tmo(struct event_queue *q, struct queue_event *ev, int ticks)
 
 #ifdef HAVE_EXTENDED_MESSAGING_AND_NAME
     KERNEL_ASSERT(QUEUE_GET_THREAD(q) == NULL ||
-                  QUEUE_GET_THREAD(q) == thread_id_entry(THREAD_ID_CURRENT),
+                  QUEUE_GET_THREAD(q) == thread_self_entry(),
                   "queue_wait_w_tmo->wrong thread\n");
 #endif
 
@@ -573,7 +573,7 @@ void queue_wait_w_tmo(struct event_queue *q, struct queue_event *ev, int ticks)
     wr = q->write;
     if (rd == wr && ticks > 0)
     {
-        struct thread_entry *current = thread_id_entry(THREAD_ID_CURRENT);
+        struct thread_entry *current = thread_self_entry();
 
         IF_COP( current->obj_cl = &q->cl; )
         current->bqp = &q->queue;
@@ -583,7 +583,7 @@ void queue_wait_w_tmo(struct event_queue *q, struct queue_event *ev, int ticks)
 
         switch_thread();
 
-        oldlevel = disable_irq_save();
+        disable_irq();
         corelock_lock(&q->cl);
 
         rd = q->read;
@@ -658,7 +658,7 @@ intptr_t queue_send(struct event_queue *q, long id, intptr_t data)
     {
         struct queue_sender_list *send = q->send;
         struct thread_entry **spp = &send->senders[wr];
-        struct thread_entry *current = thread_id_entry(THREAD_ID_CURRENT);
+        struct thread_entry *current = thread_self_entry();
 
         if(UNLIKELY(*spp))
         {
@@ -893,7 +893,7 @@ void mutex_init(struct mutex *m)
 /* Gain ownership of a mutex object or block until it becomes free */
 void mutex_lock(struct mutex *m)
 {
-    struct thread_entry *current = thread_id_entry(THREAD_ID_CURRENT);
+    struct thread_entry *current = thread_self_entry();
 
     if(current == mutex_get_thread(m))
     {
@@ -932,10 +932,10 @@ void mutex_lock(struct mutex *m)
 void mutex_unlock(struct mutex *m)
 {
     /* unlocker not being the owner is an unlocking violation */
-    KERNEL_ASSERT(mutex_get_thread(m) == thread_id_entry(THREAD_ID_CURRENT),
+    KERNEL_ASSERT(mutex_get_thread(m) == thread_self_entry(),
                   "mutex_unlock->wrong thread (%s != %s)\n",
                   mutex_get_thread(m)->name,
-                  thread_id_entry(THREAD_ID_CURRENT)->name);
+                  thread_self_entry()->name);
 
     if(m->recursion > 0)
     {
@@ -978,6 +978,9 @@ void mutex_unlock(struct mutex *m)
  * Simple semaphore functions ;)
  ****************************************************************************/
 #ifdef HAVE_SEMAPHORE_OBJECTS
+/* Initialize the semaphore object.
+ * max = maximum up count the semaphore may assume (max >= 1)
+ * start = initial count of semaphore (0 <= count <= max) */
 void semaphore_init(struct semaphore *s, int max, int start)
 {
     KERNEL_ASSERT(max > 0 && start >= 0 && start <= max,
@@ -988,132 +991,97 @@ void semaphore_init(struct semaphore *s, int max, int start)
     corelock_init(&s->cl);
 }
 
-void semaphore_wait(struct semaphore *s)
+/* Down the semaphore's count or wait for 'timeout' ticks for it to go up if
+ * it is already 0. 'timeout' as TIMEOUT_NOBLOCK (0) will not block and may
+ * safely be used in an ISR. */
+int semaphore_wait(struct semaphore *s, int timeout)
 {
-    struct thread_entry *current;
+    int ret;
+    int oldlevel;
+    int count;
 
+    oldlevel = disable_irq_save();
     corelock_lock(&s->cl);
 
-    if(LIKELY(--s->count >= 0))
+    count = s->count;
+
+    if(LIKELY(count > 0))
     {
-        /* wait satisfied */
+        /* count is not zero; down it */
+        s->count = count - 1;
+        ret = OBJ_WAIT_SUCCEEDED;
+    }
+    else if(timeout == 0)
+    {
+        /* just polling it */
+        ret = OBJ_WAIT_TIMEDOUT;
+    }
+    else
+    {
+        /* too many waits - block until count is upped... */
+        struct thread_entry * current = thread_self_entry();
+        IF_COP( current->obj_cl = &s->cl; )
+        current->bqp = &s->queue;
+        /* return value will be OBJ_WAIT_SUCCEEDED after wait if wake was
+         * explicit in semaphore_release */
+        current->retval = OBJ_WAIT_TIMEDOUT;
+
+        if(timeout > 0)
+            block_thread_w_tmo(current, timeout); /* ...or timed out... */
+        else
+            block_thread(current);                /* -timeout = infinite */
+
         corelock_unlock(&s->cl);
-        return;
+
+        /* ...and turn control over to next thread */
+        switch_thread();
+
+        return current->retval;
     }
 
-    /* too many waits - block until dequeued... */
-    current = thread_id_entry(THREAD_ID_CURRENT);
-
-    IF_COP( current->obj_cl = &s->cl; )
-    current->bqp = &s->queue;
-
-    disable_irq();
-    block_thread(current);
-
     corelock_unlock(&s->cl);
+    restore_irq(oldlevel);
 
-    /* ...and turn control over to next thread */
-    switch_thread();
+    return ret;
 }
 
+/* Up the semaphore's count and release any thread waiting at the head of the
+ * queue. The count is saturated to the value of the 'max' parameter specified
+ * in 'semaphore_init'. */
 void semaphore_release(struct semaphore *s)
 {
     IF_PRIO( unsigned int result = THREAD_NONE; )
+    int oldlevel;
 
+    oldlevel = disable_irq_save();
     corelock_lock(&s->cl);
 
-    if(s->count < s->max && ++s->count <= 0)
+    if(LIKELY(s->queue != NULL))
     {
-        /* there should be threads in this queue */
-        KERNEL_ASSERT(s->queue != NULL, "semaphore->wakeup\n");
-        /* a thread was queued - wake it up */
-        int oldlevel = disable_irq_save();
+        /* a thread was queued - wake it up and keep count at 0 */
+        KERNEL_ASSERT(s->count == 0,
+            "semaphore_release->threads queued but count=%d!\n", s->count);
+        s->queue->retval = OBJ_WAIT_SUCCEEDED; /* indicate explicit wake */
         IF_PRIO( result = ) wakeup_thread(&s->queue);
-        restore_irq(oldlevel);
+    }
+    else
+    {
+        int count = s->count;
+        if(count < s->max)
+        {
+            /* nothing waiting - up it */
+            s->count = count + 1;
+        }
     }
 
     corelock_unlock(&s->cl);
+    restore_irq(oldlevel);
 
-#ifdef HAVE_PRIORITY_SCHEDULING
-    if(result & THREAD_SWITCH)
+#if defined(HAVE_PRIORITY_SCHEDULING) && defined(irq_enabled_checkval)
+    /* No thread switch if IRQ disabled - it's probably called via ISR.
+     * switch_thread would as well enable them anyway. */
+    if((result & THREAD_SWITCH) && irq_enabled_checkval(oldlevel))
         switch_thread();
 #endif
 }
 #endif /* HAVE_SEMAPHORE_OBJECTS */
-
-#ifdef HAVE_WAKEUP_OBJECTS
-/****************************************************************************
- * Lightweight IRQ-compatible wakeup object
- */
-
-/* Initialize the wakeup object */
-void wakeup_init(struct wakeup *w)
-{
-    w->queue = NULL;
-    w->signalled = false;
-    IF_COP( corelock_init(&w->cl); )
-}
-
-/* Wait for a signal blocking indefinitely or for a specified period */
-int wakeup_wait(struct wakeup *w, int timeout)
-{
-    int ret = OBJ_WAIT_SUCCEEDED; /* Presume success */
-    int oldlevel = disable_irq_save();
-
-    corelock_lock(&w->cl);
-
-    if(LIKELY(!w->signalled && timeout != TIMEOUT_NOBLOCK))
-    {
-        struct thread_entry * current = thread_id_entry(THREAD_ID_CURRENT);
-
-        IF_COP( current->obj_cl = &w->cl; )
-        current->bqp = &w->queue;
-        
-        if (timeout != TIMEOUT_BLOCK)
-            block_thread_w_tmo(current, timeout);
-        else
-            block_thread(current);
-
-        corelock_unlock(&w->cl);
-        switch_thread();
-
-        oldlevel = disable_irq_save();
-        corelock_lock(&w->cl);
-    }
-
-    if(UNLIKELY(!w->signalled))
-    {
-        /* Timed-out or failed */
-        ret = (timeout != TIMEOUT_BLOCK) ?
-            OBJ_WAIT_TIMEDOUT : OBJ_WAIT_FAILED;
-    }
-
-    w->signalled = false;  /* Reset */
-
-    corelock_unlock(&w->cl);
-    restore_irq(oldlevel);
-
-    return ret;
-}
-
-/* Signal the thread waiting or leave the signal if the thread hasn't 
- * waited yet.
- *
- * returns THREAD_NONE or THREAD_OK
- */
-int wakeup_signal(struct wakeup *w)
-{
-    int oldlevel = disable_irq_save();
-    int ret;
-
-    corelock_lock(&w->cl);
-
-    w->signalled = true;
-    ret = wakeup_thread(&w->queue);
-
-    corelock_unlock(&w->cl);
-    restore_irq(oldlevel);
-
-    return ret;
-}
-#endif /* HAVE_WAKEUP_OBJECTS */

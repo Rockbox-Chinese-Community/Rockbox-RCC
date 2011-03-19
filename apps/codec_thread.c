@@ -193,10 +193,15 @@ void codec_thread_do_callback(void (*fn)(void), unsigned int *id)
 
 static void* codec_get_buffer(size_t *size)
 {
-    if (codec_size >= CODEC_SIZE)
+    ssize_t s = CODEC_SIZE - codec_size;
+    void *buf = &codecbuf[codec_size];
+    ALIGN_BUFFER(buf, s, CACHEALIGN_SIZE);
+
+    if (s <= 0)
         return NULL;
-    *size = CODEC_SIZE - codec_size;
-    return &codecbuf[codec_size];
+
+    *size = s;
+    return buf;
 }
 
 static void codec_pcmbuf_insert_callback(
@@ -332,12 +337,6 @@ static void codec_advance_buffer_callback(size_t amount)
     codec_set_offset_callback(ci.curpos);
 }
 
-static void codec_advance_buffer_loc_callback(void *ptr)
-{
-    size_t amount = buf_get_offset(get_audio_hid(), ptr);
-    codec_advance_buffer_callback(amount);
-}
-
 static bool codec_seek_buffer_callback(size_t newpos)
 {
     logf("codec_seek_buffer_callback");
@@ -438,7 +437,6 @@ void codec_init_codec_api(void)
     ci.read_filebuf        = codec_filebuf_callback;
     ci.request_buffer      = codec_request_buffer_callback;
     ci.advance_buffer      = codec_advance_buffer_callback;
-    ci.advance_buffer_loc  = codec_advance_buffer_loc_callback;
     ci.seek_buffer         = codec_seek_buffer_callback;
     ci.seek_complete       = codec_seek_complete_callback;
     ci.request_next_track  = codec_request_next_track_callback;
@@ -567,7 +565,7 @@ void codec_thread_resume(void)
 
 bool is_codec_thread(void)
 {
-    return thread_get_current() == codec_thread_id;
+    return thread_self() == codec_thread_id;
 }
 
 #ifdef HAVE_PRIORITY_SCHEDULING

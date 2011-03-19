@@ -57,6 +57,9 @@
 /* define this if you have RTC RAM available for settings */
 //#define HAVE_RTC_RAM
 
+/* define this if you have a real-time clock */
+#define CONFIG_RTC APPLICATION
+
 /* The number of bytes reserved for loadable codecs */
 #define CODEC_SIZE 0x100000
 
@@ -96,6 +99,6 @@
 #define CONFIG_LCD LCD_COWOND2
 
 /* Define this if a programmable hotkey is mapped */
-//#define HAVE_HOTKEY
+#define HAVE_HOTKEY
 
 #define BOOTDIR "/.rockbox"

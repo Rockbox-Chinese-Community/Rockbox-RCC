@@ -59,6 +59,9 @@
 /* define this if you have RTC RAM available for settings */
 //#define HAVE_RTC_RAM
 
+/* define this if you have a real-time clock */
+#define CONFIG_RTC APPLICATION
+
 /* The number of bytes reserved for loadable codecs */
 #define CODEC_SIZE 0x100000
 
@@ -72,6 +75,12 @@
 
 #define HAVE_MULTIMEDIA_KEYS
 #define CONFIG_KEYPAD ANDROID_PAD
+
+/* define this if the target has volume keys which can be used in the lists */
+#define HAVE_VOLUME_IN_LIST
+
+/* define this if the host platform can change volume outside of rockbox */
+#define PLATFORM_HAS_VOLUME_CHANGE
 
 #define HAVE_SW_TONE_CONTROLS 
 
@@ -94,6 +103,6 @@
 #define CONFIG_LCD LCD_COWOND2
 
 /* Define this if a programmable hotkey is mapped */
-//#define HAVE_HOTKEY
+#define HAVE_HOTKEY
 
 #define BOOTDIR "/.rockbox"

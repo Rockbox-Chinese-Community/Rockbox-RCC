@@ -284,7 +284,9 @@ struct thread_entry
                                   and priority disinheritance */
     /* Only enabled when using queue_send for now */
 #endif
-#if defined(HAVE_EXTENDED_MESSAGING_AND_NAME) || NUM_CORES > 1
+#if defined(HAVE_SEMAPHORE_OBJECTS) || \
+    defined(HAVE_EXTENDED_MESSAGING_AND_NAME) || \
+    NUM_CORES > 1
     volatile intptr_t retval;  /* Return value from a blocked operation/
                                   misc. use */
 #endif
@@ -320,9 +322,6 @@ struct thread_entry
 #define THREAD_ID_VERSION_MASK  0xff00
 #define THREAD_ID_SLOT_MASK     0x00ff
 #define THREAD_ID_INIT(n)       ((1u << THREAD_ID_VERSION_SHIFT) | (n))
-
-/* Specify current thread in a function taking an ID. */
-#define THREAD_ID_CURRENT ((unsigned int)-1)
 
 #ifdef HAVE_CORELOCK_OBJECT
 /* Operations to be performed just before stopping a thread and starting
@@ -443,7 +442,13 @@ int thread_get_io_priority(unsigned int thread_id);
 #if NUM_CORES > 1
 unsigned int switch_core(unsigned int new_core);
 #endif
-unsigned int thread_get_current(void);
+
+/* Return the id of the calling thread. */
+unsigned int thread_self(void);
+
+/* Return the thread_entry for the calling thread.
+ * INTERNAL: Intended for use by kernel and not for programs. */
+struct thread_entry* thread_self_entry(void);
 
 /* Debugging info - only! */
 int thread_stack_usage(const struct thread_entry *thread);

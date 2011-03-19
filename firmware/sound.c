@@ -245,7 +245,7 @@ static void set_prescaled_volume(void)
    || defined(HAVE_CS42L55)
     audiohw_set_master_vol(tenthdb2master(l), tenthdb2master(r));
 #if defined(HAVE_WM8975) || defined(HAVE_WM8758) \
-    || defined(HAVE_WM8750) || (defined(HAVE_WM8751) && !defined(MROBE_100)) \
+    || (defined(HAVE_WM8751) && defined(TOSHIBA_GIGABEAT_F)) \
     || defined(HAVE_WM8985) || defined(HAVE_CS42L55)
     audiohw_set_lineout_vol(tenthdb2master(0), tenthdb2master(0));
 #endif
@@ -669,6 +669,7 @@ void sound_set(int setting, int value)
   && !defined(HAVE_WM8758) && !defined(HAVE_TSC2100) \
   && !defined (HAVE_WM8711) && !defined (HAVE_WM8721) \
   && !defined (HAVE_WM8731) && !defined (HAVE_WM8978) \
+  && !defined (HAVE_WM8750) && !defined (HAVE_WM8751) \
   && !defined(HAVE_AK4537)) || (CONFIG_PLATFORM & PLATFORM_HOSTED)
 int sound_val2phys(int setting, int value)
 {
@@ -748,7 +749,7 @@ int sound_val2phys(int setting, int value)
     }
 
     return result;
-#elif defined(HAVE_WM8978)
+#elif defined(HAVE_WM8978) || defined(HAVE_WM8750) || defined(HAVE_WM8751)
     int result;
 
     switch (setting)
@@ -760,11 +761,11 @@ int sound_val2phys(int setting, int value)
         result = value * 5;
         break;
 #endif
-
+#ifdef AUDIOHW_HAVE_DEPTH_3D
     case SOUND_DEPTH_3D:
         result = (100 * value + 8) / 15;
         break;
-
+#endif
     default:
         result = value;
     }

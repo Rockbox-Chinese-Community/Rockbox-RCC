@@ -123,7 +123,7 @@ void fade(bool fade_in, bool updatewps)
 {
     int fp_global_vol = global_settings.volume << 8;
     int fp_min_vol = sound_min(SOUND_VOLUME) << 8;
-    int fp_step = (fp_global_vol - fp_min_vol) / 30;
+    int fp_step = (fp_global_vol - fp_min_vol) / 10;
     int i;
     skin_get_global_state()->is_fading = !fade_in;
     if (fade_in) {
@@ -136,14 +136,14 @@ void fade(bool fade_in, bool updatewps)
         sleep(HZ/10); /* let audio thread run */
         audio_resume();
         
+        if (updatewps) {
+            FOR_NB_SCREENS(i)
+                skin_update(WPS, i, SKIN_REFRESH_NON_STATIC);
+        }
+
         while (fp_volume < fp_global_vol - fp_step) {
             fp_volume += fp_step;
             sound_set_volume(fp_volume >> 8);
-            if (updatewps)
-            {
-                FOR_NB_SCREENS(i)
-                    skin_update(WPS, i, SKIN_REFRESH_NON_STATIC);
-            }
             sleep(1);
         }
         sound_set_volume(global_settings.volume);
@@ -152,17 +152,18 @@ void fade(bool fade_in, bool updatewps)
         /* fade out */
         int fp_volume = fp_global_vol;
 
+        if (updatewps) {
+            FOR_NB_SCREENS(i)
+                skin_update(WPS, i, SKIN_REFRESH_NON_STATIC);
+        }
+
         while (fp_volume > fp_min_vol + fp_step) {
             fp_volume -= fp_step;
             sound_set_volume(fp_volume >> 8);
-            if (updatewps)
-            {
-                FOR_NB_SCREENS(i)
-                    skin_update(WPS, i, SKIN_REFRESH_NON_STATIC);
-            }
             sleep(1);
         }
         audio_pause();
+
         skin_get_global_state()->is_fading = false;
 #if CONFIG_CODEC != SWCODEC
 #ifndef SIMULATOR
@@ -628,8 +629,8 @@ static void gwps_enter_wps(void)
 #if LCD_DEPTH > 1
         if (display->depth > 1)
         {
-            struct skin_viewport *svp = find_viewport(VP_DEFAULT_LABEL, 
-                                                      false, gwps->data);
+            struct skin_viewport *svp = skin_find_item(VP_DEFAULT_LABEL, 
+                                                       SKIN_FIND_VP, gwps->data);
             if (svp)
             {
                 struct viewport *vp = &svp->vp;

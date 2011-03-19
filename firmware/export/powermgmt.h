@@ -75,6 +75,9 @@ extern unsigned int power_thread_inputs;
 #include "powermgmt-target.h"
 #endif
 
+/* Start up power management thread */
+void powermgmt_init(void) INIT_ATTR;
+
 #if (CONFIG_PLATFORM & PLATFORM_NATIVE)
 
 /* Generic current values that are intentionally meaningless - config header
@@ -127,9 +130,6 @@ extern const unsigned short percent_to_volt_discharge[BATTERY_TYPES_COUNT][11];
 extern const unsigned short percent_to_volt_charge[11];
 #endif
 
-/* Start up power management thread */
-void powermgmt_init(void) INIT_ATTR;
-
 #endif /* PLATFORM_NATIVE */
 
 /* Returns battery statust */
@@ -164,7 +164,7 @@ void set_battery_type(int type); /* set local battery type */
 
 void set_sleep_timer(int seconds);
 int get_sleep_timer(void);
-void handle_sleep_timer(void);
+void handle_auto_poweroff(void);
 void set_car_adapter_mode(bool setting);
 void reset_poweroff_timer(void);
 void cancel_shutdown(void);

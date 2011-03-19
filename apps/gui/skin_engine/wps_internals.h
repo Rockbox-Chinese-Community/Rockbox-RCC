@@ -364,10 +364,18 @@ const char *get_radio_token(struct wps_token *token, int preset_offset,
                             char *buf, int buf_size, int limit, int *intval);
 #endif
 
-struct gui_img* find_image(const char *label, struct wps_data *data);
-struct skin_viewport* find_viewport(const char *label, bool uivp, struct wps_data *data);
-
-
+enum skin_find_what {
+	SKIN_FIND_VP = 0,
+	SKIN_FIND_UIVP,
+#ifdef HAVE_LCD_BITMAP
+	SKIN_FIND_IMAGE,
+#endif
+#ifdef HAVE_TOUCHSCREEN
+	SKIN_FIND_TOUCHREGION,
+#endif
+};
+void *skin_find_item(const char *label, enum skin_find_what what,
+					 struct wps_data *data);
 #ifdef SIMULATOR
 #define DEBUG_SKIN_ENGINE
 extern bool debug_wps;

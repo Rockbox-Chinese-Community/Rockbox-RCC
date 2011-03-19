@@ -145,12 +145,12 @@ void* plugin_get_buffer(size_t *buffer_size);
 #define PLUGIN_MAGIC 0x526F634B /* RocK */
 
 /* increase this every time the api struct changes */
-#define PLUGIN_API_VERSION 199
+#define PLUGIN_API_VERSION 202
 
 /* update this to latest version if a change to the api struct breaks
    backwards compatibility (and please take the opportunity to sort in any
    new function which are "waiting" at the end of the function table) */
-#define PLUGIN_MIN_API_VERSION 199
+#define PLUGIN_MIN_API_VERSION 202
 
 /* plugin return codes */
 /* internal returns start at 0x100 to make exit(1..255) work */
@@ -479,6 +479,7 @@ struct plugin_api {
                                   const char *name
                                   IF_PRIO(, int priority)
                                   IF_COP(, unsigned int core));
+    unsigned int (*thread_self)(void);
     void (*thread_exit)(void);
     void (*thread_wait)(unsigned int thread_id);
 #if CONFIG_CODEC == SWCODEC
@@ -818,7 +819,7 @@ struct plugin_api {
             unsigned long rec_time, unsigned long header_template,
             void (*progressfunc)(int), bool generate_toc);
     unsigned long (*find_next_frame)(int fd, long *offset,
-            long max_offset, unsigned long last_header);
+            long max_offset, unsigned long reference_header);
 
 #if (CONFIG_CODEC == MAS3587F) || (CONFIG_CODEC == MAS3539F)
     unsigned short (*peak_meter_scale_value)(unsigned short val,
@@ -871,7 +872,6 @@ struct plugin_api {
     ssize_t (*bufgettail)(int handle_id, size_t size, void **data);
     ssize_t (*bufcuttail)(int handle_id, size_t size);
 
-    ssize_t (*buf_get_offset)(int handle_id, void *ptr);
     ssize_t (*buf_handle_offset)(int handle_id);
     void (*buf_request_buffer_handle)(int handle_id);
     void (*buf_set_base_handle)(int handle_id);
@@ -901,7 +901,7 @@ struct plugin_api {
 
 #ifdef HAVE_SEMAPHORE_OBJECTS
     void (*semaphore_init)(struct semaphore *s, int max, int start);
-    void (*semaphore_wait)(struct semaphore *s);
+    int  (*semaphore_wait)(struct semaphore *s, int timeout);
     void (*semaphore_release)(struct semaphore *s);
 #endif
 

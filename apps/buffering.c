@@ -560,6 +560,17 @@ fill_buffer     : Call buffer_handle for all handles that have data to buffer
 
 These functions are used by the buffering thread to manage buffer space.
 */
+static size_t handle_size_available(const struct memory_handle *h)
+{
+    /* Obtain proper distances from data start */
+    size_t rd = ringbuf_sub(h->ridx, h->data);
+    size_t wr = ringbuf_sub(h->widx, h->data);
+
+    if (LIKELY(wr > rd))
+        return wr - rd;
+
+    return 0; /* ridx is ahead of or equal to widx at this time */
+}
 
 static void update_data_counters(struct data_counters *dc)
 {
@@ -582,6 +593,8 @@ static void update_data_counters(struct data_counters *dc)
     m = first_handle;
     while (m) {
         buffered += m->available;
+        /* wasted could come out larger than the buffer size if ridx's are
+           overlapping data ahead of their handles' buffered data */
         wasted += ringbuf_sub(m->ridx, m->data);
         remaining += m->filerem;
 
@@ -589,7 +602,7 @@ static void update_data_counters(struct data_counters *dc)
             is_useful = true;
 
         if (is_useful)
-            useful += ringbuf_sub(m->widx, m->ridx);
+            useful += handle_size_available(m);
 
         m = m->next;
     }
@@ -937,8 +950,8 @@ int bufopen(const char *file, size_t offset, enum data_type type,
             h->type = type;
             strlcpy(h->path, file, MAX_PATH);
 
-            buf_widx += sizeof(struct mp3entry);  /* safe because the handle
-                                                     can't wrap */
+            buf_widx = ringbuf_add(buf_widx, sizeof(struct mp3entry));
+
             h->filerem = sizeof(struct mp3entry);
 
             /* Inform the buffering thread that we added a handle */
@@ -1024,8 +1037,8 @@ int bufopen(const char *file, size_t offset, enum data_type type,
         } else {
             h->filesize = rc;
             h->available = rc;
-            h->widx = buf_widx + rc; /* safe because the data doesn't wrap */
-            buf_widx += rc;  /* safe too */
+            buf_widx = ringbuf_add(buf_widx, rc);
+            h->widx = buf_widx;
         }
     }
     else
@@ -1094,12 +1107,11 @@ int bufalloc(const void *src, size_t size, enum data_type type)
         h->filesize = size;
         h->offset = 0;
         h->ridx = buf_widx;
-        h->widx = buf_widx + size; /* safe because the data doesn't wrap */
         h->data = buf_widx;
+        buf_widx = ringbuf_add(buf_widx, size);
+        h->widx = buf_widx;
         h->available = size;
         h->type = type;
-
-        buf_widx += size;  /* safe too */
     }
 
     mutex_unlock(&llist_mutex);
@@ -1137,11 +1149,19 @@ static void rebuffer_handle(int handle_id, size_t newpos)
         h->ridx = ringbuf_add(h->data, amount);
 
         if (buffer_handle(handle_id, amount + 1)) {
-            queue_reply(&buffering_queue, 0);
-            buffer_handle(handle_id, 0); /* Ok, try the rest */
-            return;
+            size_t rd = ringbuf_sub(h->ridx, h->data); 
+            size_t wr = ringbuf_sub(h->widx, h->data);
+            if (wr >= rd) {
+                /* It really did succeed */
+                queue_reply(&buffering_queue, 0);
+                buffer_handle(handle_id, 0); /* Ok, try the rest */
+                return;
+            }
         }
-        /* Data collision - must reset */
+        /* Data collision or other file error - must reset */
+
+        if (newpos > h->filesize)
+            newpos = h->filesize; /* file truncation happened above */
     }
 
     /* Reset the handle to its new position */
@@ -1245,18 +1265,6 @@ int bufadvance(int handle_id, off_t offset)
  * actual amount of data available for reading.  This function explicitly
  * does not check the validity of the input handle.  It does do range checks
  * on size and returns a valid (and explicit) amount of data for reading */
-static size_t handle_size_available(const struct memory_handle *h)
-{
-    /* Obtain proper distances from data start */
-    size_t rd = ringbuf_sub(h->ridx, h->data);
-    size_t wr = ringbuf_sub(h->widx, h->data);
-
-    if (LIKELY(wr > rd))
-        return wr - rd;
-
-    return 0; /* ridx is ahead of or equal to widx at this time */
-}
-
 static struct memory_handle *prep_bufdata(int handle_id, size_t *size,
                                           bool guardbuf_limit)
 {
@@ -1436,7 +1444,6 @@ ssize_t bufcuttail(int handle_id, size_t size)
 SECONDARY EXPORTED FUNCTIONS
 ============================
 
-buf_get_offset
 buf_handle_offset
 buf_request_buffer_handle
 buf_set_base_handle
@@ -1448,16 +1455,6 @@ These functions are exported, to allow interaction with the buffer.
 They take care of the content of the structs, and rely on the linked list
 management functions for all the actual handle management work.
 */
-
-/* Get a handle offset from a pointer */
-ssize_t buf_get_offset(int handle_id, void *ptr)
-{
-    const struct memory_handle *h = find_handle(handle_id);
-    if (!h)
-        return ERR_HANDLE_NOT_FOUND;
-
-    return (size_t)ptr - (size_t)&buffer[h->ridx];
-}
 
 ssize_t buf_handle_offset(int handle_id)
 {

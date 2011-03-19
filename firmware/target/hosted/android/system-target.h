@@ -30,6 +30,16 @@ void power_off(void);
 void wait_for_interrupt(void);
 void interrupt(void);
 
+ /* don't pull in jni.h for every user of this file, it should be only needed
+  * within the target tree (if at all)
+  * define this before #including system.h or system-target.h */
+#ifdef _SYSTEM_WITH_JNI
+#include <jni.h>
+/*
+ * discover the JNIEnv for this the calling thread in case it's not known */
+extern JNIEnv* getJavaEnvironment(void);
+#endif /* _SYSTEM_WITH_JNI */
+
 #endif /* __SYSTEM_TARGET_H__ */
 
 #define NEED_GENERIC_BYTESWAPS

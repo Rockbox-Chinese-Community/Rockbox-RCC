@@ -21,6 +21,7 @@
 
 #include <jni.h>
 #include <stdbool.h>
+#define _SYSTEM_WITH_JNI /* for getJavaEnvironment */
 #include <system.h>
 #include "debug.h"
 #include "pcm.h"
@@ -118,9 +119,13 @@ void pcm_play_dma_start(const void *addr, size_t size)
 
 void pcm_play_dma_stop(void)
 {
-    (*env_ptr)->CallVoidMethod(env_ptr,
-                               RockboxPCM_instance,
-                               stop_method);
+    /* NOTE: due to how pcm_play_get_more_callback() works, this is
+     * possibly called from pcmSamplesToByteArray(), i.e. another thread.
+     * => We need to discover the env_ptr */
+    JNIEnv* env = getJavaEnvironment();
+    (*env)->CallVoidMethod(env,
+                           RockboxPCM_instance,
+                           stop_method);
 }
 
 void pcm_play_dma_pause(bool pause)
@@ -174,4 +179,38 @@ void pcm_postinit(void)
 void pcm_set_mixer_volume(int volume)
 {
     (*env_ptr)->CallVoidMethod(env_ptr, RockboxPCM_instance, set_volume_method, volume);
+}
+
+/*
+ * release audio resources */
+void pcm_shutdown(void)
+{
+    JNIEnv e = *env_ptr;
+    jmethodID release = e->GetMethodID(env_ptr, RockboxPCM_class, "release", "()V");
+    e->CallVoidMethod(env_ptr, RockboxPCM_instance, release);
+}
+    
+/* Due to limitations of default_event_handler(), parameters gets swallowed when
+ * being posted with queue_broadcast(), so workaround this by caching the last
+ * value.
+ */
+static int lastPostedVolume = -1;
+int hosted_get_volume(void)
+{
+    return lastPostedVolume;
+}
+
+JNIEXPORT void JNICALL
+Java_org_rockbox_RockboxPCM_postVolumeChangedEvent(JNIEnv *env,
+                                                   jobject this,
+                                                   jint volume)
+{
+    (void) env;
+    (void) this;
+
+    if (volume != lastPostedVolume)
+    {
+        lastPostedVolume = volume;
+        queue_broadcast(SYS_VOLUME_CHANGED, 0);
+    }
 }

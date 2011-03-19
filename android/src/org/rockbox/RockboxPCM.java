@@ -23,11 +23,13 @@ package org.rockbox;
 
 import java.util.Arrays;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
@@ -39,6 +41,7 @@ public class RockboxPCM extends AudioTrack
     private PCMListener l;
     private HandlerThread ht;
     private Handler h = null;
+    private static final int streamtype = AudioManager.STREAM_MUSIC;
     private static final int samplerate = 44100;
     /* should be CHANNEL_OUT_STEREO in 2.0 and above */
     private static final int channels = 
@@ -49,6 +52,13 @@ public class RockboxPCM extends AudioTrack
     private static final int buf_len  = 
             Math.max(24<<10, getMinBufferSize(samplerate, channels, encoding));
 
+    private AudioManager audiomanager;
+    private int maxstreamvolume;
+    private int setstreamvolume = -1;
+    private float minpcmvolume;
+    private float pcmrange;
+    private RockboxService rbservice;
+
     private void LOG(CharSequence text)
     {
         Log.d("Rockbox", (String) text);
@@ -56,7 +66,7 @@ public class RockboxPCM extends AudioTrack
 
     public RockboxPCM()
     {
-        super(AudioManager.STREAM_MUSIC, samplerate,  channels, encoding,
+        super(streamtype, samplerate,  channels, encoding,
                 buf_len, AudioTrack.MODE_STREAM);
         ht = new HandlerThread("audio thread", 
                 Process.THREAD_PRIORITY_URGENT_AUDIO);
@@ -64,7 +74,56 @@ public class RockboxPCM extends AudioTrack
         raw_data = new byte[buf_len]; /* in shorts */
         Arrays.fill(raw_data, (byte) 0);
         l = new PCMListener(buf_len);
+
+        /* find cleaner way to get context? */
+        rbservice = RockboxService.get_instance();
+        audiomanager =
+            (AudioManager) rbservice.getSystemService(Context.AUDIO_SERVICE);
+        maxstreamvolume = audiomanager.getStreamMaxVolume(streamtype);
+
+        minpcmvolume = getMinVolume();
+        pcmrange = getMaxVolume() - minpcmvolume;
+
+        setupVolumeHandler();
     }    
+
+    private native void postVolumeChangedEvent(int volume);
+    private void setupVolumeHandler()
+    {
+        BroadcastReceiver broadcastReceiver = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                int streamType = intent.getIntExtra(
+                    "android.media.EXTRA_VOLUME_STREAM_TYPE", -1);
+                int volume = intent.getIntExtra(
+                    "android.media.EXTRA_VOLUME_STREAM_VALUE", -1);
+
+                if (streamType == RockboxPCM.streamtype &&
+                    volume != -1 &&
+                    volume != setstreamvolume &&
+                    rbservice.isRockboxRunning())
+                {
+                    int rbvolume = ((maxstreamvolume - volume) * -99) /
+                        maxstreamvolume;
+                    postVolumeChangedEvent(rbvolume);
+                }
+            }
+        };
+
+        /* at startup, change the internal rockbox volume to what the global
+           android music stream volume is */
+        int volume = audiomanager.getStreamVolume(streamtype);
+        int rbvolume = ((maxstreamvolume - volume) * -99) / maxstreamvolume;
+        postVolumeChangedEvent(rbvolume);
+
+        /* We're relying on internal API's here,
+           this can break in the future! */
+        rbservice.registerReceiver(
+            broadcastReceiver,
+            new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
+    }
 
     private int bytes2frames(int bytes) 
     {
@@ -78,7 +137,6 @@ public class RockboxPCM extends AudioTrack
         return (frames*4);
     }
 
-    @SuppressWarnings("unused")
     private void play_pause(boolean pause) 
     {
         RockboxService service = RockboxService.get_instance();
@@ -130,22 +188,30 @@ public class RockboxPCM extends AudioTrack
         RockboxService.get_instance().stopForeground();
     }
 
-    @SuppressWarnings("unused")
     private void set_volume(int volume)
     {
-        /* volume comes from 0..-990 from Rockbox */
-        /* TODO:
-         * volume is in dB, but this code acts as if it were in %,  convert? */
-        float fvolume;
-        /* special case min and max volume to not suffer from 
-         * floating point accuracy */
-        if (volume == 0)
-            fvolume = 1.0f;
-        else if (volume == -990)
-            fvolume = 0.0f;
-        else
-            fvolume = (volume + 990)/990.0f;
-        setStereoVolume(fvolume, fvolume);
+        /* Rockbox 'volume' is 0..-990 deci-dB attenuation.
+           Android streams have rather low resolution volume control,
+           typically 8 or 15 steps.
+           Therefore we use the pcm volume to add finer steps between
+           every android stream volume step.
+           It's not "real" dB, but it gives us 100 volume steps.
+        */
+
+        float fraction = 1 - (volume / -990.0f);
+        int streamvolume = (int)Math.ceil(maxstreamvolume * fraction);
+        if (streamvolume > 0) {
+            float streamfraction = (float)streamvolume / maxstreamvolume;
+            float pcmvolume =
+                (fraction / streamfraction) * pcmrange + minpcmvolume;
+            setStereoVolume(pcmvolume, pcmvolume);
+        }
+
+        int oldstreamvolume = audiomanager.getStreamVolume(streamtype);
+        if (streamvolume != oldstreamvolume) {
+            setstreamvolume = streamvolume;
+            audiomanager.setStreamVolume(streamtype, streamvolume, 0);
+        }
     }
 
     public native void pcmSamplesToByteArray(byte[] dest);

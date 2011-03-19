@@ -257,12 +257,6 @@ static void system_restore(void)
 
 static bool clean_shutdown(void (*callback)(void *), void *parameter)
 {
-#if (CONFIG_PLATFORM & PLATFORM_ANDROID)
-    (void)callback;
-    (void)parameter;
-    bookmark_autobookmark(false);
-    call_storage_idle_notifys(true);
-#else
     long msg_id = -1;
     int i;
 
@@ -373,7 +367,6 @@ static bool clean_shutdown(void (*callback)(void *), void *parameter)
 
         shutdown_hw();
     }
-#endif
     return false;
 }
 
@@ -635,6 +628,15 @@ long default_event_handler_ex(long event, void (*callback)(void *), void *parame
             }
             resume = false;
             return SYS_CALL_HUNG_UP;
+#endif
+#if (CONFIG_PLATFORM & PLATFORM_HOSTED) && defined(PLATFORM_HAS_VOLUME_CHANGE)
+        case SYS_VOLUME_CHANGED:
+        {
+            int volume = hosted_get_volume();
+            if (global_settings.volume != volume)
+                global_settings.volume = volume;
+            return 0;
+        }
 #endif
 #ifdef HAVE_MULTIMEDIA_KEYS
         /* multimedia keys on keyboards, headsets */

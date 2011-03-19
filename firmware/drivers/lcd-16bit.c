@@ -8,6 +8,8 @@
  * $Id$
  *
  * Copyright (C) 2005 by Dave Chapman
+ * 
+ * Copyright (C) 2009 by Karl Kurbjun
  *
  * Rockbox driver for 16-bit colour LCDs
  *
@@ -20,6 +22,7 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+
 #include "config.h"
 
 #include "cpu.h"
@@ -705,202 +708,6 @@ void lcd_fillrect(int x, int y, int width, int height)
     while (dst < dst_end);
 }
 
-/* About Rockbox' internal monochrome bitmap format:
- *
- * A bitmap contains one bit for every pixel that defines if that pixel is
- * black (1) or white (0). Bits within a byte are arranged vertically, LSB
- * at top.
- * The bytes are stored in row-major order, with byte 0 being top left,
- * byte 1 2nd from left etc. The first row of bytes defines pixel rows
- * 0..7, the second row defines pixel row 8..15 etc.
- *
- * This is the mono bitmap format used on all other targets so far; the
- * pixel packing doesn't really matter on a 8bit+ target. */
-
-/* Draw a partial monochrome bitmap */
-
-void ICODE_ATTR lcd_mono_bitmap_part(const unsigned char *src, int src_x,
-                                     int src_y, int stride, int x, int y,
-                                     int width, int height)
-{
-    const unsigned char *src_end;
-    fb_data *dst, *dst_end;
-    unsigned dmask = 0x100; /* bit 8 == sentinel */
-    int drmode = current_vp->drawmode;
-
-    /******************** Image in viewport clipping **********************/
-    /* nothing to draw? */
-    if ((width <= 0) || (height <= 0) || (x >= current_vp->width) || 
-        (y >= current_vp->height) || (x + width <= 0) || (y + height <= 0))
-        return;
-
-    if (x < 0)
-    {
-        width += x;
-        src_x -= x;
-        x = 0;
-    }
-    if (y < 0)
-    {
-        height += y;
-        src_y -= y;
-        y = 0;
-    }
-    if (x + width > current_vp->width)
-        width = current_vp->width - x;
-    if (y + height > current_vp->height)
-        height = current_vp->height - y;
-        
-    /* adjust for viewport */
-    x += current_vp->x;
-    y += current_vp->y;
-        
-#if defined(HAVE_VIEWPORT_CLIP)
-    /********************* Viewport on screen clipping ********************/
-    /* nothing to draw? */
-    if ((x >= LCD_WIDTH) || (y >= LCD_HEIGHT) 
-        || (x + width <= 0) || (y + height <= 0))
-        return;
-    
-    /* clip image in viewport in screen */
-    if (x < 0)
-    {
-        width += x;
-        src_x -= x;
-        x = 0;
-    }
-    if (y < 0)
-    {
-        height += y;
-        src_y -= y;
-        y = 0;
-    }
-    if (x + width > LCD_WIDTH)
-        width = LCD_WIDTH - x;
-    if (y + height > LCD_HEIGHT)
-        height = LCD_HEIGHT - y;
-#endif
-
-    src += stride * (src_y >> 3) + src_x; /* move starting point */
-    src_y  &= 7;
-    src_end = src + width;
-    dst = LCDADDR(x, y);
-    dst_end = dst + height * LCD_WIDTH;
-
-    if (drmode & DRMODE_INVERSEVID)
-    {
-        dmask = 0x1ff;          /* bit 8 == sentinel */
-        drmode &= DRMODE_SOLID; /* mask out inversevid */
-    }
-
-    do
-    {
-        const unsigned char *src_col = src++;
-        unsigned data = (*src_col ^ dmask) >> src_y;
-        fb_data *dst_col = dst++;
-        int fg, bg;
-        long bo;
-
-#define UPDATE_SRC  do {                  \
-            data >>= 1;                   \
-            if (data == 0x001) {          \
-                src_col += stride;        \
-                data = *src_col ^ dmask;  \
-            }                             \
-        } while (0)
-
-        switch (drmode)
-        {
-          case DRMODE_COMPLEMENT:
-            do
-            {
-                if (data & 0x01)
-                    *dst_col = ~(*dst_col);
-
-                dst_col += LCD_WIDTH;
-                UPDATE_SRC;
-            }
-            while (dst_col < dst_end);
-            break;
-
-          case DRMODE_BG:
-            if (lcd_backdrop)
-            {
-                bo = lcd_backdrop_offset;
-                do
-                {
-                    if (!(data & 0x01))
-                        *dst_col = *(fb_data *)((long)dst_col + bo);
-
-                    dst_col += LCD_WIDTH;
-                    UPDATE_SRC;
-                }
-                while (dst_col < dst_end);
-            }
-            else
-            {
-                bg = current_vp->bg_pattern;
-                do
-                {
-                    if (!(data & 0x01))
-                        *dst_col = bg;
-
-                    dst_col += LCD_WIDTH;
-                    UPDATE_SRC;
-                }
-                while (dst_col < dst_end);
-            }
-            break;
-
-          case DRMODE_FG:
-            fg = current_vp->fg_pattern;
-            do
-            {
-                if (data & 0x01)
-                    *dst_col = fg;
-
-                dst_col += LCD_WIDTH;
-                UPDATE_SRC;
-            }
-            while (dst_col < dst_end);
-            break;
-
-          case DRMODE_SOLID:
-            fg = current_vp->fg_pattern;
-            if (lcd_backdrop)
-            {
-                bo = lcd_backdrop_offset;
-                do
-                {
-                    *dst_col = (data & 0x01) ? fg 
-                               : *(fb_data *)((long)dst_col + bo);
-                    dst_col += LCD_WIDTH;
-                    UPDATE_SRC;
-                }
-                while (dst_col < dst_end);
-            }
-            else
-            {
-                bg = current_vp->bg_pattern;
-                do
-                {
-                    *dst_col = (data & 0x01) ? fg : bg;
-                    dst_col += LCD_WIDTH;
-                    UPDATE_SRC;
-                }
-                while (dst_col < dst_end);
-            }
-            break;
-        }
-    }
-    while (src < src_end);
-}
-/* Draw a full monochrome bitmap */
-void lcd_mono_bitmap(const unsigned char *src, int x, int y, int width, int height)
-{
-    lcd_mono_bitmap_part(src, 0, 0, width, x, y, width, height);
-}
-
 /* Draw a partial native bitmap */
 void ICODE_ATTR lcd_bitmap_part(const fb_data *src, int src_x, int src_y,
                                 int stride, int x, int y, int width,
@@ -1106,4 +913,10 @@ void lcd_bitmap_transparent(const fb_data *src, int x, int y,
     lcd_bitmap_transparent_part(src, 0, 0, width, x, y, width, height);
 }
 
+#define ROW_INC LCD_WIDTH
+#define COL_INC 1
+
+#include "lcd-16bit-common.c"
+
 #include "lcd-bitmap-common.c"
+

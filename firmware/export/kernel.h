@@ -83,6 +83,7 @@
 #define SYS_IAP_HANDLEPKT         MAKE_SYS_EVENT(SYS_EVENT_CLS_MISC, 2)
 #define SYS_CALL_INCOMING         MAKE_SYS_EVENT(SYS_EVENT_CLS_MISC, 3)
 #define SYS_CALL_HUNG_UP          MAKE_SYS_EVENT(SYS_EVENT_CLS_MISC, 4)
+#define SYS_VOLUME_CHANGED        MAKE_SYS_EVENT(SYS_EVENT_CLS_MISC, 5)
 
 #define IS_SYSEVENT(ev)           ((ev & SYS_EVENT) == SYS_EVENT)
 
@@ -160,21 +161,11 @@ struct mutex
 struct semaphore
 {
     struct thread_entry *queue;         /* Waiter list */
-    int count;                          /* # of waits remaining before unsignaled */
+    int volatile count;                 /* # of waits remaining before unsignaled */
     int max;                            /* maximum # of waits to remain signaled */
     IF_COP( struct corelock cl; )       /* multiprocessor sync */
 };
 #endif
-
-#ifdef HAVE_WAKEUP_OBJECTS
-struct wakeup
-{
-    struct thread_entry *queue;         /* waiter list */
-    bool volatile signalled;            /* signalled status */
-    IF_COP( struct corelock cl; )       /* multiprocessor sync */
-};
-#endif
-
 
 /* global tick variable */
 #if defined(CPU_PP) && defined(BOOTLOADER) && \
@@ -280,14 +271,8 @@ static inline bool mutex_test(const struct mutex *m)
 
 #ifdef HAVE_SEMAPHORE_OBJECTS
 extern void semaphore_init(struct semaphore *s, int max, int start);
-extern void semaphore_wait(struct semaphore *s);
+extern int  semaphore_wait(struct semaphore *s, int timeout);
 extern void semaphore_release(struct semaphore *s);
 #endif /* HAVE_SEMAPHORE_OBJECTS */
-
-#ifdef HAVE_WAKEUP_OBJECTS
-extern void wakeup_init(struct wakeup *w);
-extern int wakeup_wait(struct wakeup *w, int timeout);
-extern int wakeup_signal(struct wakeup *w);
-#endif /* HAVE_WAKEUP_OBJECTS */
 
 #endif /* _KERNEL_H_ */
