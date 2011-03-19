@@ -2,7 +2,6 @@
 #include "plugin.h"
 #include "lib/read_image.h"
 
-PLUGIN_HEADER
 //BEGIN SNC_LANG
 #define STR_(x) snc_lang_strings[x]
 #define MAX_LANGUAGE_SIZE 2048
