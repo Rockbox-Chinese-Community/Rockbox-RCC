@@ -21,12 +21,12 @@ svnversion_safe() {
     # LANG=C forces svnversion to not localize "exported".
     if OUTPUT=`LANG=C svnversion "$@"`; then
         if [ "$OUTPUT" = "exported" ]; then
-            echo "PMP-Firmware's Rockbox X r29488"
+            echo "PMP-Firmware's Rockbox X r29613"
         else
             echo "r$OUTPUT"
         fi
     else
-        echo "PMP-Firmware's Rockbox X r29488"
+        echo "PMP-Firmware's Rockbox X r29613"
     fi
 }
 
@@ -111,7 +111,7 @@ if [ -z $VERSION ]; then
         fi
     fi
 #VERSION=$VER-`date -u +%y%m%d`
-VERSION="PMP-Firmware's Rockbox X r29488"
+VERSION="PMP-Firmware's Rockbox X r29613"
 fi
 echo $VERSION
 
