@@ -914,4 +914,26 @@ resistor.128x128x16.bmp
 resistor.68x20x16.bmp
 #endif
 
+#if defined(COWON_D2) || defined(IPOD_VIDEO) || defined(CREATIVE_ZVM60GB) || defined(CREATIVE_ZVM30GB)
+bomberman_player.16x24x16.bmp
+bomberman_box.96x16x16.bmp
+bomberman_block.16x16x16.bmp
+bomberman_bomb.48x16x16.bmp
+bomberman_explode.64x144x16.bmp
+bomberman_player_move.64x96x16.bmp
+bomberman_ai1_move.64x96x16.bmp
+bomberman_ai2_move.64x96x16.bmp
+bomberman_ai3_move.64x96x16.bmp
+bomberman_ai4_move.64x96x16.bmp
+bomberman_player_death.64x24x16.bmp
+bomberman_player_win.32x24x16.bmp
+bomberman_ai1_win.32x24x16.bmp
+bomberman_ai2_win.32x24x16.bmp
+bomberman_ai3_win.32x24x16.bmp
+bomberman_ai4_win.32x24x16.bmp
+bomberman_bonus.16x64x16.bmp
+bomberman_gameover.320x240x16.bmp
+bomberman_youwon.320x240x16.bmp
+#endif
+
 #endif /* HAVE_LCD_BITMAP */
