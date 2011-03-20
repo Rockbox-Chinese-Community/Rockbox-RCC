@@ -89,4 +89,8 @@ mpegplayer
 lua
 #endif
 
+#if defined(COWON_D2) || defined(IPOD_VIDEO) || defined(CREATIVE_ZVM60GB) || defined(CREATIVE_ZVM30GB)
+bomberman
+#endif
+
 wikiviewer
