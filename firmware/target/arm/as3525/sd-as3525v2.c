@@ -394,7 +394,7 @@ static bool send_cmd(const int drive, const int cmd, const int arg, const int fl
         unsigned long *response)
 {
     int card_no;
-
+    
     if ((flags & MCI_ACMD) && /* send SD_APP_CMD first */
         !send_cmd(drive, SD_APP_CMD, card_info[drive].rca, MCI_RESP, response))
         return false;
@@ -423,9 +423,9 @@ static bool send_cmd(const int drive, const int cmd, const int arg, const int fl
       /*b10 */  | ((cmd == SD_WRITE_MULTIPLE_BLOCK)  ? CMD_RW_BIT:            0)
       /*b11     | CMD_TRANSMODE_BIT       unused  */
       /*b12     | CMD_SENT_AUTO_STOP_BIT  unused  */
-      /*b13 */  | ((cmd != SD_STOP_TRANSMISSION)     ? CMD_WAIT_PRV_DAT_BIT:  0)
+      /*b13 */  | (TRANSFER_CMD                      ? CMD_WAIT_PRV_DAT_BIT:  0)
       /*b14     | CMD_ABRT_CMD_BIT        unused  */
-      /*b15 */  | ((cmd == SD_GO_IDLE_STATE)         ? CMD_SEND_INIT_BIT:     0)
+      /*b15     | CMD_SEND_INIT_BIT       unused  */
    /*b20:16 */  |                                      card_no
       /*b21     | CMD_SEND_CLK_ONLY       unused  */
       /*b22     | CMD_READ_CEATA          unused  */
@@ -550,21 +550,16 @@ static int sd_init_card(const int drive)
     {
         /* Attempt to switch cards to HS timings, non HS cards just ignore this */
         /*  CMD7 w/rca: Select card to put it in TRAN state */
-        if(!send_cmd(drive, SD_SELECT_CARD, card_info[drive].rca, MCI_RESP, &response))
+        if(!send_cmd(drive, SD_SELECT_CARD, card_info[drive].rca, MCI_NO_RESP, NULL))
             return -7;
 
         if(sd_wait_for_tran_state(drive))
             return -8;
 
         /* CMD6 */
-        if(!send_cmd(drive, SD_SWITCH_FUNC, 0x80fffff1, MCI_RESP, &response))
+        if(!send_cmd(drive, SD_SWITCH_FUNC, 0x80fffff1, MCI_NO_RESP, NULL))
             return -9;
-
-        /* This delay is a bit of a hack, but seems to fix card detection
-           problems with some SD cards (particularly 16 GB and bigger cards).
-           Preferably we should handle this properly instead of using a delay,
-           see also FS#11870. */
-        sleep(HZ/10);
+        mci_delay();
 
         /*  We need to go back to STBY state now so we can read csd */
         /*  CMD7 w/rca=0:  Deselect card to put it in STBY state */
@@ -577,7 +572,6 @@ static int sd_init_card(const int drive)
                  MCI_RESP|MCI_LONG_RESP, card_info[drive].csd))
         return -11;
 
-    /* Another delay hack, see FS#11798 */
     mci_delay();
 
     sd_parse_csd(&card_info[drive]);
@@ -589,7 +583,7 @@ static int sd_init_card(const int drive)
     MCI_CLKDIV &= ~(0xFF);    /* CLK_DIV_0 : bits 7:0 = 0x00 */
 
     /*  CMD7 w/rca: Select card to put it in TRAN state */
-    if(!send_cmd(drive, SD_SELECT_CARD, card_info[drive].rca, MCI_RESP, &response))
+    if(!send_cmd(drive, SD_SELECT_CARD, card_info[drive].rca, MCI_NO_RESP, NULL))
         return -12;
 
 #ifndef BOOTLOADER
@@ -597,10 +591,11 @@ static int sd_init_card(const int drive)
     if(sd_wait_for_tran_state(drive) < 0)
         return -13;
     /* ACMD6  */
-    if(!send_cmd(drive, SD_SET_BUS_WIDTH, 2, MCI_ACMD|MCI_RESP, &response))
+    if(!send_cmd(drive, SD_SET_BUS_WIDTH, 2, MCI_ACMD|MCI_NO_RESP, NULL))
         return -15;
+    mci_delay();
     /* ACMD42  */
-    if(!send_cmd(drive, SD_SET_CLR_CARD_DETECT, 0, MCI_ACMD|MCI_RESP, &response))
+    if(!send_cmd(drive, SD_SET_CLR_CARD_DETECT, 0, MCI_ACMD|MCI_NO_RESP, NULL))
         return -17;
 
     /* Now that card is widebus make controller aware */
@@ -831,7 +826,6 @@ static int sd_transfer_sectors(IF_MD2(int drive,) unsigned long start,
     int retry_all = 0;
     int const retry_data_max = 100; /* Generous, methinks */
     int retry_data;
-    unsigned int real_numblocks;
 
     mutex_lock(&sd_mtx);
 #ifndef BOOTLOADER
@@ -861,13 +855,7 @@ sd_transfer_retry_with_reinit:
             goto sd_transfer_error_no_dma;
     }
 
-    /* Check the real block size after the card has been initialized */
-    real_numblocks = card_info[drive].numblocks;
-    /* 'start' represents the real (physical) starting sector
-     *  so we must compare it to the real (physical) number of sectors */
-    if (drive == INTERNAL_AS3525)
-        real_numblocks += AMS_OF_SIZE;
-    if ((start+count) > real_numblocks)
+    if((start+count) > card_info[drive].numblocks)
     {
         ret = -19;
         goto sd_transfer_error_no_dma;
@@ -1011,7 +999,10 @@ sd_transfer_error_no_dma:
         /* .initialized might have been >= 0 but now stale if the ata sd thread
          * isn't handling an insert because of USB */
         if (--retry_all >= 0)
+        {
+            ret = 0;
             goto sd_transfer_retry_with_reinit;
+        }
     }
 }
 
