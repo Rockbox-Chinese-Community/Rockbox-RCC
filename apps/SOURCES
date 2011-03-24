@@ -224,6 +224,7 @@ metadata/smaf.c
 metadata/au.c
 metadata/vox.c
 metadata/tta.c
+metadata/vgm.c
 #endif
 #ifdef HAVE_TAGCACHE
 tagcache.c

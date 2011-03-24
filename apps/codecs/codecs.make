@@ -43,6 +43,7 @@ include $(APPSDIR)/codecs/librm/librm.make
 include $(APPSDIR)/codecs/libatrac/libatrac.make
 include $(APPSDIR)/codecs/libpcm/libpcm.make
 include $(APPSDIR)/codecs/libtta/libtta.make
+include $(APPSDIR)/codecs/libvgm/libvgm.make
 
 # compile flags for codecs
 CODECFLAGS = $(CFLAGS) -fstrict-aliasing -I$(APPSDIR)/codecs \
@@ -93,6 +94,7 @@ $(CODECDIR)/au.codec : $(CODECDIR)/libpcm.a
 $(CODECDIR)/vox.codec : $(CODECDIR)/libpcm.a
 $(CODECDIR)/wav64.codec : $(CODECDIR)/libpcm.a
 $(CODECDIR)/tta.codec : $(CODECDIR)/libtta.a
+$(CODECDIR)/vgm.codec : $(CODECDIR)/libvgm.a
 
 $(CODECS): $(CODECLIB) # this must be last in codec dependency list
 

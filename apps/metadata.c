@@ -210,6 +210,9 @@ const struct afmt_entry audio_formats[AFMT_NUM_CODECS] =
     /* Advanced Audio Coding High Efficiency in M4A container */
     [AFMT_MP4_AAC_HE] =
         AFMT_ENTRY("AAC-HE","aac",  NULL,       get_mp4_metadata,   "mp4\0"),
+    /* VGM (Video Game Music Format) */
+    [AFMT_VGM] =
+        AFMT_ENTRY("VGM", "vgm", NULL, get_vgm_metadata,   "vgm\0vgz\0"),
 #endif
 };
 

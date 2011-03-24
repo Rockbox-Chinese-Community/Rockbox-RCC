@@ -1424,6 +1424,7 @@ static void audio_finish_load_track(void)
     case AFMT_NSF:
     case AFMT_SPC:
     case AFMT_SID:
+    case AFMT_VGM:
         logf("Loading atomic %d",track_id3->codectype);
         type = TYPE_ATOMIC_AUDIO;
         break;
