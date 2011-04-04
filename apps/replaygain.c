@@ -35,6 +35,8 @@
 
 #define FP_BITS         (12)
 #define FP_ONE          (1 << FP_BITS)
+#define FP_MIN          (-48 * FP_ONE)
+#define FP_MAX          ( 17 * FP_ONE)
 
 void replaygain_itoa(char* buffer, int length, long int_gain)
 {
@@ -119,10 +121,9 @@ static long fp_atof(const char* s, int precision)
 long convert_gain(long gain)
 {
     /* Don't allow unreasonably low or high gain changes.
-     * Our math code can't handle it properly anyway. :)
-     */
-    gain = MAX(gain,-48 * FP_ONE);
-    gain = MIN(gain, 17 * FP_ONE);
+     * Our math code can't handle it properly anyway. :) */
+    gain = MAX(gain, FP_MIN);
+    gain = MIN(gain, FP_MAX);
 
     return fp_factor(gain, FP_BITS) << (24 - FP_BITS);
 }
