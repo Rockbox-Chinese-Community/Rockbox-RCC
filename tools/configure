@@ -10,6 +10,8 @@
 
 # global CC options for all platforms
 CCOPTS="-W -Wall -Wundef -O -nostdlib -ffreestanding -Wstrict-prototypes -pipe -std=gnu99"
+# defined a specified CC options for a platform
+extccopts=""
 
 # global LD options for all platforms
 GLOBAL_LDOPTS=""
@@ -1308,6 +1310,7 @@ fi
   #            config-*.h file get included etc
   # tool:      the tool that takes a plain binary and converts that into a
   #            working "firmware" file for your target
+  # extccopts: add a extra parameter here if you want to pass it to CC
   # output:    the final output file name
   # boottool:  the tool that takes a plain binary and generates a bootloader
   #            file for your target (or blank to use $tool)
@@ -2658,6 +2661,7 @@ fi
     target="-DONDA_VX747"
     memory=16
     mipselcc
+    extccopts="-mno-flush-func"
     tool="$rootdir/tools/scramble -add=x747"
     bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
     bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
@@ -2702,6 +2706,7 @@ fi
     target="-DONDA_VX747P"
     memory=16
     mipselcc
+    extccopts="-mno-flush-func"
     tool="$rootdir/tools/scramble -add=747p"
     bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
     bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
@@ -2724,6 +2729,7 @@ fi
     target="-DONDA_VX777"
     memory=16
     mipselcc
+    extccopts="-mno-flush-func"
     tool="$rootdir/tools/scramble -add=x777"
     bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
     bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
@@ -3630,7 +3636,7 @@ sed > Makefile \
  -e "s<@CODECS@<${swcodec}<g" \
  -e "s<@PROFILE_OPTS@<${PROFILE_OPTS}<g" \
  -e "s<@SHARED_FLAG@<${SHARED_FLAG}<g" \
- -e "s<@GCCOPTS@<${GCCOPTS}<g" \
+ -e "s<@GCCOPTS@<${GCCOPTS} ${extccopts}<g" \
  -e "s<@TARGET_INC@<${TARGET_INC}<g" \
  -e "s<@LDOPTS@<${LDOPTS}<g" \
  -e "s<@GLOBAL_LDOPTS@<${GLOBAL_LDOPTS}<g" \
