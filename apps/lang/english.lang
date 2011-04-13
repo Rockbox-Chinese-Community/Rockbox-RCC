@@ -11938,6 +11938,57 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_GRAPHIC_EQ_OK
+  desc: in graphic EQ screen
+  user: core
+  <source>
+    *: none
+    swcodec: "Ok"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Ok"
+  </dest>
+  <voice>
+    *: none
+    rswcodec: ""
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_GRAPHIC_EQ_CANCEL
+  desc: in graphic EQ screen
+  user: core
+  <source>
+    *: none
+    swcodec: "Cancel"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Cancel"
+  </dest>
+  <voice>
+    *: none
+    rswcodec: ""
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SYSFONT_EQUALIZER_MODE
+  desc: in the equalizer settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "Mode: %s %s"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Mode: %s %s"
+  </dest>
+  <voice>
+    *: none
+    swcodec: ""
+  </voice>
+</phrase>
+<phrase>
   id: LANG_SKIP_OUTRO
   desc: skipping to the 5 seconds before the end of a track
   user: core

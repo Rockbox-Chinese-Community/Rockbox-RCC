@@ -1346,6 +1346,25 @@ const struct settings_list settings[] = {
     INT_SETTING_NOWRAP(F_EQSETTING, eq_precut, LANG_EQUALIZER_PRECUT, 0,
                        "eq precut", UNIT_DB, 0, 240, 5, eq_precut_format,
                        get_precut_talkid, dsp_set_eq_precut),
+
+#ifdef HAVE_TOUCHSCREEN
+    INT_SETTING_NOWRAP(F_EQSETTING, eq_band0_cutoff, LANG_EQUALIZER_BAND_CUTOFF,
+                       60, "eq band 0 cutoff", UNIT_HERTZ, 20,
+                       400, EQ_CUTOFF_STEP, NULL, NULL, NULL),
+    INT_SETTING_NOWRAP(F_EQSETTING, eq_band1_cutoff, LANG_EQUALIZER_BAND_CENTER,
+                       200, "eq band 1 cutoff", UNIT_HERTZ, 20,
+                       2000, EQ_CUTOFF_STEP, NULL, NULL, NULL),
+    INT_SETTING_NOWRAP(F_EQSETTING, eq_band2_cutoff, LANG_EQUALIZER_BAND_CENTER,
+                       800, "eq band 2 cutoff", UNIT_HERTZ, 500,
+                       5000, EQ_CUTOFF_STEP, NULL, NULL, NULL),
+    INT_SETTING_NOWRAP(F_EQSETTING, eq_band3_cutoff, LANG_EQUALIZER_BAND_CENTER,
+                       4000, "eq band 3 cutoff", UNIT_HERTZ, 2000,
+                       15000, EQ_CUTOFF_STEP, NULL, NULL, NULL),
+    INT_SETTING_NOWRAP(F_EQSETTING, eq_band4_cutoff, LANG_EQUALIZER_BAND_CUTOFF,
+                       12000, "eq band 4 cutoff", UNIT_HERTZ, 2000,
+                       22040, EQ_CUTOFF_STEP, NULL, NULL, NULL),
+#else
+
     /* 0..32768 Hz */
     INT_SETTING_NOWRAP(F_EQSETTING, eq_band0_cutoff, LANG_EQUALIZER_BAND_CUTOFF,
                        60, "eq band 0 cutoff", UNIT_HERTZ, EQ_CUTOFF_MIN,
@@ -1362,6 +1381,7 @@ const struct settings_list settings[] = {
     INT_SETTING_NOWRAP(F_EQSETTING, eq_band4_cutoff, LANG_EQUALIZER_BAND_CUTOFF,
                        12000, "eq band 4 cutoff", UNIT_HERTZ, EQ_CUTOFF_MIN,
                        EQ_CUTOFF_MAX, EQ_CUTOFF_STEP, NULL, NULL, NULL),
+#endif
     /* 0..64 (or 0.0 to 6.4) */
     INT_SETTING_NOWRAP(F_EQSETTING, eq_band0_q, LANG_EQUALIZER_BAND_Q, 7,
                        "eq band 0 q", UNIT_INT, EQ_Q_MIN, EQ_Q_MAX, EQ_Q_STEP,
