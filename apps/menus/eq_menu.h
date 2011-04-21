@@ -24,8 +24,15 @@
 #include "menu.h"
 #include "config.h"
 /* Various user interface limits and sizes */
+
+#ifdef HAVE_TOUCHSCREEN
+#define EQ_CUTOFF_MIN(a)     cutoff_lim[0][a]
+#define EQ_CUTOFF_MAX(b)     cutoff_lim[1][b]
+#else
 #define EQ_CUTOFF_MIN        20
 #define EQ_CUTOFF_MAX     22040
+#endif
+
 #define EQ_CUTOFF_STEP       10
 #define EQ_CUTOFF_FAST_STEP 100
 #define EQ_GAIN_MIN       (-240)
