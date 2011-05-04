@@ -98,6 +98,9 @@ Config::Config(QWidget *parent,int index) : QDialog(parent)
     connect(ui.treeDevices, SIGNAL(itemSelectionChanged()), this, SLOT(updateEncState()));
     connect(ui.testTTS,SIGNAL(clicked()),this,SLOT(testTts()));
     connect(ui.showDisabled, SIGNAL(toggled(bool)), this, SLOT(showDisabled(bool)));
+    // delete this dialog after it finished automatically.
+    connect(this, SIGNAL(finished(int)), this, SLOT(deleteLater()));
+
     setUserSettings();
     setDevices();
 }
@@ -616,9 +619,15 @@ void Config::autodetect()
             for(int j=0;j < itmList.at(i)->childCount();j++)
             {
                 QString data = itmList.at(i)->child(j)->data(0, Qt::UserRole).toString();
+                // unset bold flag
+                QFont f = itmList.at(i)->child(j)->font(0);
+                f.setBold(false);
+                itmList.at(i)->child(j)->setFont(0, f);
 
                 if(devicename == data) // item found
                 {
+                    f.setBold(true);
+                    itmList.at(i)->child(j)->setFont(0, f);
                     itmList.at(i)->child(j)->setSelected(true); //select the item
                     itmList.at(i)->setExpanded(true); //expand the platform item
                     //ui.treeDevices->indexOfTopLevelItem(itmList.at(i)->child(j));
@@ -729,14 +738,16 @@ void Config::testTts()
 {
     QString errstr;
     int index = ui.comboTts->currentIndex();
-    TTSBase* tts = TTSBase::getTTS(this,ui.comboTts->itemData(index).toString());
+    TTSBase* tts;
+
+    ui.testTTS->setEnabled(false);
+    tts = TTSBase::getTTS(this,ui.comboTts->itemData(index).toString());
     if(!tts->configOk())
     {
         QMessageBox::warning(this,tr("TTS configuration invalid"),
                 tr("TTS configuration invalid. \n Please configure TTS engine."));
         return;
     }
-    ui.testTTS->setEnabled(false);
     if(!tts->start(&errstr))
     {
         QMessageBox::warning(this,tr("Could not start TTS engine."),
@@ -746,10 +757,14 @@ void Config::testTts()
         return;
     }
 
+    QString filename;
     QTemporaryFile file(this);
-    file.open();
-    QString filename = file.fileName();
-    file.close();
+    // keep filename empty if the TTS can do speaking for itself.
+    if(!(tts->capabilities() & TTSBase::CanSpeak)) {
+        file.open();
+        filename = file.fileName();
+        file.close();
+    }
 
     if(tts->voice(tr("Rockbox Utility Voice Test"),filename,&errstr) == FatalError)
     {
@@ -761,16 +776,18 @@ void Config::testTts()
         return;
     }
     tts->stop();
+    if(!filename.isEmpty()) {
 #if defined(Q_OS_LINUX)
-    QString exe = Utils::findExecutable("aplay");
-    if(exe == "") exe = Utils::findExecutable("play");
-    if(exe != "")
-    {
-        QProcess::execute(exe+" "+filename);
-    }
+        QString exe = Utils::findExecutable("aplay");
+        if(exe == "") exe = Utils::findExecutable("play");
+        if(exe != "")
+        {
+            QProcess::execute(exe+" "+filename);
+        }
 #else
-    QSound::play(filename);
+        QSound::play(filename);
 #endif
+    }
     ui.testTTS->setEnabled(true);
     delete tts; /* Config objects are never deleted (in fact, they are
                    leaked..), so we can't rely on QObject, since that would

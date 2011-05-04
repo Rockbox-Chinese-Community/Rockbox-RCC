@@ -233,7 +233,6 @@ static void audio_stop_playback(void);
 
 /**************************************/
 
-
 /** Pcmbuf callbacks */
 
 /* Between the codec and PCM track change, we need to keep updating the
@@ -2208,6 +2207,8 @@ static void audio_thread(void)
             case Q_AUDIO_TRACK_CHANGED:
                 /* PCM track change done */
                 LOGFQUEUE("audio < Q_AUDIO_TRACK_CHANGED");
+                /* Set new playlist position for resuming. */
+                playlist_update_resume_index();
                 if (filling != STATE_ENDING)
                     audio_finalise_track_change();
                 else if (playing)

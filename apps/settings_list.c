@@ -252,7 +252,7 @@ static const char graphic_numeric[] = "graphic,numeric";
 #define DEFAULT_THEME_SELECTOR_END LCD_RGBPACK(0xb5, 0x8e, 0x00)
 #define DEFAULT_THEME_SELECTOR_TEXT LCD_RGBPACK(0x00, 0x00, 0x00)
 
-#define DEFAULT_BACKDROP    "cabbiev2"
+#define DEFAULT_BACKDROP    BACKDROP_DIR "/cabbiev2.bmp"
 
 #ifdef HAVE_RECORDING
 /* these should be in the config.h files */
@@ -1607,7 +1607,7 @@ const struct settings_list settings[] = {
     TEXT_SETTING(0,lang_file,"lang","",LANG_DIR "/",".lng"),
 #if LCD_DEPTH > 1
     TEXT_SETTING(F_THEMESETTING,backdrop_file,"backdrop",
-                     DEFAULT_BACKDROP, BACKDROP_DIR "/", ".bmp"),
+                     DEFAULT_BACKDROP, NULL, NULL),
 #endif
 #ifdef HAVE_LCD_BITMAP
     TEXT_SETTING(0,kbd_file,"kbd","-",ROCKBOX_DIR "/",".kbd"),

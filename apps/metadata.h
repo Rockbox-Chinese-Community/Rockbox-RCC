@@ -267,7 +267,9 @@ struct mp3entry {
 
     /* resume related */
     unsigned long offset;  /* bytes played */
+#if CONFIG_CODEC != SWCODEC
     int index;             /* playlist index */
+#endif
 
 #ifdef HAVE_TAGCACHE
     unsigned char autoresumable; /* caches result of autoresumable() */
@@ -283,6 +285,8 @@ struct mp3entry {
     
     /* replaygain support */
 #if CONFIG_CODEC == SWCODEC
+    long track_level;   /* holds the level in dB * (1<<FP_BITS) */
+    long album_level;
     long track_gain;    /* s19.12 signed fixed point. 0 for no gain. */
     long album_gain;
     long track_peak;    /* s19.12 signed fixed point. 0 for no peak. */

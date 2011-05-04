@@ -232,6 +232,7 @@ enum optiontype { INT, BOOL };
 
 const struct settings_list* find_setting(const void* variable, int *id);
 bool cfg_int_to_string(int setting_id, int val, char* buf, int buf_len);
+bool cfg_string_to_int(int setting_id, int* out, const char* str);
 bool cfg_to_string(int setting_id, char* buf, int buf_len);
 bool set_bool_options(const char* string, const bool* variable,
                       const char* yes_str, int yes_voice,
@@ -588,7 +589,7 @@ struct user_settings
 #endif /* HAVE_TAGCACHE */
 
 #if LCD_DEPTH > 1
-    unsigned char backdrop_file[MAX_FILENAME+1];  /* backdrop bitmap file */
+    unsigned char backdrop_file[MAX_PATHNAME+1];  /* backdrop bitmap file */
 #endif
 
 #ifdef HAVE_LCD_COLOR
