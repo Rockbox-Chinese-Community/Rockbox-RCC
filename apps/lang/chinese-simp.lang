@@ -10534,10 +10534,10 @@
     *: "Unknown"
   </source>
   <dest>
-    *: "不知道"
+    *: "未设定"
   </dest>
   <voice>
-    *: "不知道"
+    *: "没有被设置"
   </voice>
 </phrase>
 <phrase>
@@ -11907,10 +11907,10 @@
     *: "Skip to Outro"
   </source>
   <dest>
-    *: "Skip to Outro"
+    *: "跳转到结尾"
   </dest>
   <voice>
-    *: "Skip to Outro"
+    *: "跳转到歌曲结尾处"
   </voice>
 </phrase>
 <phrase>
