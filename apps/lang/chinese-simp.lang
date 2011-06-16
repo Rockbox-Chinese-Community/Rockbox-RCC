@@ -1230,10 +1230,10 @@
     *: "Play Selected First"
   </source>
   <dest>
-    *: "先播放选中的文件"
+    *: "建立播放列表后优先播放选中的文件"
   </dest>
   <voice>
-    *: "先播放选中的文件"
+    *: "建立播放列表后优先播放选中的文件"
   </voice>
 </phrase>
 <phrase>
@@ -11010,11 +11010,11 @@
   </source>
   <dest>
     *: none
-    speaker: "使用喇叭"
+    speaker: "开启扬声器"
   </dest>
   <voice>
     *: none
-    speaker: "使用喇叭"
+    speaker: "开启扬声器"
   </voice>
 </phrase>
 <phrase>
