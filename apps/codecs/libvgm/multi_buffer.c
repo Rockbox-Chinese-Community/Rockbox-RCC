@@ -10,7 +10,7 @@ module is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
 details. You should have received a copy of the GNU Lesser General Public
-License along with this_ module; if not, write to the Free Software Foundation,
+License along with this module; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 #include "blargg_source.h"
@@ -21,134 +21,134 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 // Stereo_Buffer
  
-void Buffer_init( struct Stereo_Buffer* this_ )
+void Buffer_init( struct Stereo_Buffer* this )
 {
-	Blip_init( &this_->bufs [0] );
-	Blip_init( &this_->bufs [1] );
-	Blip_init( &this_->bufs [2] );
+	Blip_init( &this->bufs [0] );
+	Blip_init( &this->bufs [1] );
+	Blip_init( &this->bufs [2] );
 			
-	this_->chan.center = &this_->bufs [0];
-	this_->chan.left = &this_->bufs [1];
-	this_->chan.right = &this_->bufs [2];
+	this->chan.center = &this->bufs [0];
+	this->chan.left = &this->bufs [1];
+	this->chan.right = &this->bufs [2];
 	
-	this_->length_ = 0;
-	this_->sample_rate_ = 0;
-	this_->channels_changed_count_ = 1;
-	this_->samples_per_frame_ = 2;
+	this->length_ = 0;
+	this->sample_rate_ = 0;
+	this->channels_changed_count_ = 1;
+	this->samples_per_frame_ = 2;
 }
 
-blargg_err_t Buffer_set_sample_rate( struct Stereo_Buffer* this_, long rate, int msec )
+blargg_err_t Buffer_set_sample_rate( struct Stereo_Buffer* this, long rate, int msec )
 {
 	int i;
 	for ( i = 0; i < buf_count; i++ )
-		RETURN_ERR( Blip_set_sample_rate( &this_->bufs[i], rate, msec ) );
+		RETURN_ERR( Blip_set_sample_rate( &this->bufs[i], rate, msec ) );
 		
-	this_->sample_rate_ = Blip_sample_rate( &this_->bufs [0] );
-	this_->length_ = Blip_length( &this_->bufs [0] );
+	this->sample_rate_ = Blip_sample_rate( &this->bufs [0] );
+	this->length_ = Blip_length( &this->bufs [0] );
 	return 0;
 }
 
-void Buffer_clock_rate( struct Stereo_Buffer* this_, long rate )
+void Buffer_clock_rate( struct Stereo_Buffer* this, long rate )
 {
 	int i;
 	for ( i = 0; i < buf_count; i++ )
-		Blip_set_clock_rate( &this_->bufs [i], rate );
+		Blip_set_clock_rate( &this->bufs [i], rate );
 }
 
-void Buffer_bass_freq( struct Stereo_Buffer* this_, int bass )
+void Buffer_bass_freq( struct Stereo_Buffer* this, int bass )
 {
 	unsigned i;
 	for ( i = 0; i < buf_count; i++ )
-		Blip_bass_freq( &this_->bufs [i], bass );
+		Blip_bass_freq( &this->bufs [i], bass );
 }
 
-struct channel_t Buffer_channel( struct Stereo_Buffer* this_ )
+struct channel_t Buffer_channel( struct Stereo_Buffer* this )
 {
-	return this_->chan;
+	return this->chan;
 }
 
-void Buffer_clear( struct Stereo_Buffer* this_ )
+void Buffer_clear( struct Stereo_Buffer* this )
 {
-	this_->stereo_added = 0;
-	this_->was_stereo   = false;
+	this->stereo_added = 0;
+	this->was_stereo   = false;
 	int i;
 	for ( i = 0; i < buf_count; i++ )
-		Blip_clear( &this_->bufs [i], 1 );
+		Blip_clear( &this->bufs [i], 1 );
 }
 
-void Buffer_end_frame( struct Stereo_Buffer* this_, blip_time_t clock_count )
+void Buffer_end_frame( struct Stereo_Buffer* this, blip_time_t clock_count )
 {
-	this_->stereo_added = 0;
+	this->stereo_added = 0;
 	unsigned i;
 	for ( i = 0; i < buf_count; i++ )
 	{
-		this_->stereo_added |= Blip_clear_modified( &this_->bufs [i] ) << i;
-		Blip_end_frame( &this_->bufs [i], clock_count );
+		this->stereo_added |= Blip_clear_modified( &this->bufs [i] ) << i;
+		Blip_end_frame( &this->bufs [i], clock_count );
 	}
 }
 
-long Buffer_read_samples( struct Stereo_Buffer* this_, blip_sample_t* out, long count )
+long Buffer_read_samples( struct Stereo_Buffer* this, blip_sample_t* out, long count )
 {
 	require( !(count & 1) ); // count must be even
 	count = (unsigned) count / 2;
 	
-	long avail = Blip_samples_avail( &this_->bufs [0] );
+	long avail = Blip_samples_avail( &this->bufs [0] );
 	if ( count > avail )
 		count = avail;
 	if ( count )
 	{
-		int bufs_used = this_->stereo_added | this_->was_stereo;
+		int bufs_used = this->stereo_added | this->was_stereo;
 		//dprintf( "%X\n", bufs_used );
 		if ( bufs_used <= 1 )
 		{
-			Buffer_mix_mono( this_, out, count );
-			Blip_remove_samples( &this_->bufs [0], count );
-			Blip_remove_silence( &this_->bufs [1], count );
-			Blip_remove_silence( &this_->bufs [2], count );
+			Buffer_mix_mono( this, out, count );
+			Blip_remove_samples( &this->bufs [0], count );
+			Blip_remove_silence( &this->bufs [1], count );
+			Blip_remove_silence( &this->bufs [2], count );
 		}
 		else if ( bufs_used & 1 )
 		{
-			Buffer_mix_stereo( this_, out, count );
-			Blip_remove_samples( &this_->bufs [0], count );
-			Blip_remove_samples( &this_->bufs [1], count );
-			Blip_remove_samples( &this_->bufs [2], count );
+			Buffer_mix_stereo( this, out, count );
+			Blip_remove_samples( &this->bufs [0], count );
+			Blip_remove_samples( &this->bufs [1], count );
+			Blip_remove_samples( &this->bufs [2], count );
 		}
 		else
 		{
-			Buffer_mix_stereo_no_center( this_, out, count );
-			Blip_remove_silence( &this_->bufs [0], count );
-			Blip_remove_samples( &this_->bufs [1], count );
-			Blip_remove_samples( &this_->bufs [2], count );
+			Buffer_mix_stereo_no_center( this, out, count );
+			Blip_remove_silence( &this->bufs [0], count );
+			Blip_remove_samples( &this->bufs [1], count );
+			Blip_remove_samples( &this->bufs [2], count );
 		}
 		
-		// to do: this_ might miss opportunities for optimization
-		if ( !Blip_samples_avail( &this_->bufs [0] ) )
+		// to do: this might miss opportunities for optimization
+		if ( !Blip_samples_avail( &this->bufs [0] ) )
 		{
-			this_->was_stereo   = this_->stereo_added;
-			this_->stereo_added = 0;
+			this->was_stereo   = this->stereo_added;
+			this->stereo_added = 0;
 		}
 	}
 	
 	return count * 2;
 }
 
-unsigned Buffer_channels_changed_count( struct Stereo_Buffer* this_ )
+unsigned Buffer_channels_changed_count( struct Stereo_Buffer* this )
 {
-	return this_->channels_changed_count_;
+	return this->channels_changed_count_;
 }
 
-void Buffer_channels_changed( struct Stereo_Buffer* this_ )
+void Buffer_channels_changed( struct Stereo_Buffer* this )
 {
-	this_->channels_changed_count_++;
+	this->channels_changed_count_++;
 }
 
-void Buffer_mix_stereo( struct Stereo_Buffer* this_, blip_sample_t* out_, blargg_long count )
+void Buffer_mix_stereo( struct Stereo_Buffer* this, blip_sample_t* out_, blargg_long count )
 {
 	blip_sample_t* BLIP_RESTRICT out = out_;
-	int const bass = BLIP_READER_BASS( this_->bufs [1] );
-	BLIP_READER_BEGIN( left, this_->bufs [1] );
-	BLIP_READER_BEGIN( right, this_->bufs [2] );
-	BLIP_READER_BEGIN( center, this_->bufs [0] );
+	int const bass = BLIP_READER_BASS( this->bufs [1] );
+	BLIP_READER_BEGIN( left, this->bufs [1] );
+	BLIP_READER_BEGIN( right, this->bufs [2] );
+	BLIP_READER_BEGIN( center, this->bufs [0] );
 	
 	for ( ; count; --count )
 	{
@@ -170,17 +170,17 @@ void Buffer_mix_stereo( struct Stereo_Buffer* this_, blip_sample_t* out_, blargg
 		out += 2;
 	}
 	
-	BLIP_READER_END( center, this_->bufs [0] );
-	BLIP_READER_END( right, this_->bufs [2] );
-	BLIP_READER_END( left, this_->bufs [1] );
+	BLIP_READER_END( center, this->bufs [0] );
+	BLIP_READER_END( right, this->bufs [2] );
+	BLIP_READER_END( left, this->bufs [1] );
 }
 
-void Buffer_mix_stereo_no_center( struct Stereo_Buffer* this_, blip_sample_t* out_, blargg_long count )
+void Buffer_mix_stereo_no_center( struct Stereo_Buffer* this, blip_sample_t* out_, blargg_long count )
 {
 	blip_sample_t* BLIP_RESTRICT out = out_;
-	int const bass = BLIP_READER_BASS( this_->bufs [1] );
-	BLIP_READER_BEGIN( left, this_->bufs [1] );
-	BLIP_READER_BEGIN( right, this_->bufs [2] );
+	int const bass = BLIP_READER_BASS( this->bufs [1] );
+	BLIP_READER_BEGIN( left, this->bufs [1] );
+	BLIP_READER_BEGIN( right, this->bufs [2] );
 	
 	for ( ; count; --count )
 	{
@@ -200,15 +200,15 @@ void Buffer_mix_stereo_no_center( struct Stereo_Buffer* this_, blip_sample_t* ou
 		out += 2;
 	}
 	
-	BLIP_READER_END( right, this_->bufs [2] );
-	BLIP_READER_END( left, this_->bufs [1] );
+	BLIP_READER_END( right, this->bufs [2] );
+	BLIP_READER_END( left, this->bufs [1] );
 }
 
-void Buffer_mix_mono( struct Stereo_Buffer* this_, blip_sample_t* out_, blargg_long count )
+void Buffer_mix_mono( struct Stereo_Buffer* this, blip_sample_t* out_, blargg_long count )
 {
 	blip_sample_t* BLIP_RESTRICT out = out_;
-	int const bass = BLIP_READER_BASS( this_->bufs [0] );
-	BLIP_READER_BEGIN( center, this_->bufs [0] );
+	int const bass = BLIP_READER_BASS( this->bufs [0] );
+	BLIP_READER_BEGIN( center, this->bufs [0] );
 	
 	for ( ; count; --count )
 	{
@@ -222,5 +222,5 @@ void Buffer_mix_mono( struct Stereo_Buffer* this_, blip_sample_t* out_, blargg_l
 		out += 2;
 	}
 	
-	BLIP_READER_END( center, this_->bufs [0] );
+	BLIP_READER_END( center, this->bufs [0] );
 }

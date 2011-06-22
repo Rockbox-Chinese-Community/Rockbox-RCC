@@ -302,6 +302,7 @@ enum data_type get_audio_base_data_type(int afmt)
     case AFMT_SID:
     case AFMT_MOD:
     case AFMT_SAP:
+    case AFMT_VGM:
         /* Type must be allocated and loaded in its entirety onto
            the buffer */
         return TYPE_ATOMIC_AUDIO;
@@ -423,6 +424,11 @@ bool get_metadata(struct mp3entry* id3, int fd, const char* trackname)
         DEBUGF("nothing to parse for %s (format %s)", trackname, entry->label);
         return false;
     }
+
+    /* Chip music (gme) codecs may use an extended m3u file to
+         get some extra info, but we need to set the path to load it */
+    if (get_audio_base_data_type(id3->codectype) == TYPE_ATOMIC_AUDIO)
+        strlcpy(id3->path, trackname, sizeof(id3->path));
 
     if (!entry->parse_func(fd, id3))
     {

@@ -3,7 +3,7 @@ multi_buffer.c
 resampler.c
 sms_apu.c
 vgm_emu.c
-ym2413.c
+emu2413.c
 ym2413_emu.c
 ym2612_emu.c
 bbfuncs.c

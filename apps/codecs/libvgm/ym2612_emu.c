@@ -1868,15 +1868,12 @@ static void OPNWriteReg(FM_OPN *OPN, int r, int v)
 /*		YM2612 local section                                                   */
 /*******************************************************************************/
 
-//static int dacen;
-
 /* Generate samples for one of the YM2612s */
 void YM2612UpdateOne(YM2612 *F2612, short *buffer, int length)
 {
 	FM_OPN *OPN   = &F2612->OPN;
-	int i;
 	FM_CH	*cch[6];
-	int dacen;
+	int dacen, i;
 
 	cch[0]   = &F2612->CH[0];
 	cch[1]   = &F2612->CH[1];
@@ -1884,7 +1881,7 @@ void YM2612UpdateOne(YM2612 *F2612, short *buffer, int length)
 	cch[3]   = &F2612->CH[3];
 	cch[4]   = &F2612->CH[4];
 	cch[5]   = &F2612->CH[5];
-	/* DAC mode */
+
 	dacen = F2612->dacen;
 
 	/* refresh PG and EG */
@@ -1930,8 +1927,10 @@ void YM2612UpdateOne(YM2612 *F2612, short *buffer, int length)
 		chan_calc(OPN, cch[2] );
 		chan_calc(OPN, cch[3] );
 		chan_calc(OPN, cch[4] );
-		if( dacen )
-			/* *cch[5]->connect4 += dacout */;
+		if( dacen ) {
+			/* DAC Mode */
+			OPN->out_fm[5] = F2612->dacout;
+		}
 		else
 			chan_calc(OPN, cch[5] );
 
@@ -1982,12 +1981,6 @@ void YM2612UpdateOne(YM2612 *F2612, short *buffer, int length)
 			lt += ((OPN->out_fm[5]>>0) & OPN->pan[10]);
 			rt += ((OPN->out_fm[5]>>0) & OPN->pan[11]);
 
-			lt >>= 1;
-			rt >>= 1;
-
-			Limit( lt );
-			Limit( rt );
-
 			#ifdef SAVE_SAMPLE
 				SAVE_ALL_CHANNELS
 			#endif
@@ -2005,12 +1998,15 @@ void YM2612UpdateOne(YM2612 *F2612, short *buffer, int length)
 		INTERNAL_TIMER_A( OPN );
 
 		/* CSM Mode Key ON still disabled */
-		/* CSM Mode Key OFF (verified by Nemesis on real hardware) */
-		FM_KEYOFF_CSM(cch[2],SLOT1);
-		FM_KEYOFF_CSM(cch[2],SLOT2);
-		FM_KEYOFF_CSM(cch[2],SLOT3);
-		FM_KEYOFF_CSM(cch[2],SLOT4);
-		OPN->SL3.key_csm = 0;
+		if (OPN->SL3.key_csm & 2)
+		{
+			/* CSM Mode Key OFF (verified by Nemesis on real hardware) */
+			FM_KEYOFF_CSM(cch[2],SLOT1);
+			FM_KEYOFF_CSM(cch[2],SLOT2);
+			FM_KEYOFF_CSM(cch[2],SLOT3);
+			FM_KEYOFF_CSM(cch[2],SLOT4);
+			OPN->SL3.key_csm = 0;
+		}
 	}
 	INTERNAL_TIMER_B(&OPN->ST,length);
 
@@ -2022,18 +2018,14 @@ void YM2612Init(YM2612 *F2612, void *param, int index, long clock, long rate)
 {
 	(void) index;
 	
-	/* allocate total level table (128kb space) */
-	if( !init_tables() )
-	{
-		return;
-	}
+	memset(F2612, 0, sizeof(YM2612));
+	init_tables();
 
 	F2612->OPN.ST.param = param;
 	F2612->OPN.P_CH = F2612->CH;
 	F2612->OPN.ST.clock = clock;
 	F2612->OPN.ST.rate = rate;
-	/* F2612->OPN.ST.irq = 0; */
-	/* F2612->OPN.ST.status = 0; */
+
 		/* Extend handler */
 	OPNSetPres(&F2612->OPN, 6*24, 6*24, 0);
 	YM2612ResetChip( F2612 );
@@ -2074,6 +2066,9 @@ void YM2612ResetChip(YM2612 *F2612)
 	OPN->ST.TBC = 0;
 
 	OPN->SL3.key_csm = 0;
+	
+	F2612->dacen  = 0;
+	F2612->dacout = 0;
 
 	OPNWriteMode(OPN,0x27,0x30);
 	OPNWriteMode(OPN,0x26,0x00);
@@ -2183,39 +2178,39 @@ int YM2612TimerOver(YM2612 *F2612,int c)
 
 // Ym2612_Emu
 
-const char* Ym2612_set_rate( struct Ym2612_Emu* this_, double sample_rate, double clock_rate )
+const char* Ym2612_set_rate( struct Ym2612_Emu* this, double sample_rate, double clock_rate )
 {
 	if ( !clock_rate )
 		clock_rate = sample_rate * 144.;
 
-	YM2612Init( &this_->impl, 0, 0, (long) (clock_rate + 0.5), (long) (sample_rate + 0.5) );
+	YM2612Init( &this->impl, 0, 0, (long) (clock_rate + 0.5), (long) (sample_rate + 0.5) );
 	return 0;
 }
 
-void Ym2612_reset( struct Ym2612_Emu* this_ )
+void Ym2612_reset( struct Ym2612_Emu* this )
 {
-	YM2612ResetChip( &this_->impl );
+	YM2612ResetChip( &this->impl );
 }
 
-void Ym2612_write0( struct Ym2612_Emu* this_, int addr, int data )
+void Ym2612_write0( struct Ym2612_Emu* this, int addr, int data )
 {
-	YM2612Write( &this_->impl, 0, addr );
-	YM2612Write( &this_->impl, 1, data );
+	YM2612Write( &this->impl, 0, addr );
+	YM2612Write( &this->impl, 1, data );
 }
 
-void Ym2612_write1( struct Ym2612_Emu* this_, int addr, int data )
+void Ym2612_write1( struct Ym2612_Emu* this, int addr, int data )
 {
-	YM2612Write( &this_->impl, 2, addr );
-	YM2612Write( &this_->impl, 3, data );
+	YM2612Write( &this->impl, 2, addr );
+	YM2612Write( &this->impl, 3, data );
 }
 
-void Ym2612_mute_voices( struct Ym2612_Emu* this_, int mask )
+void Ym2612_mute_voices( struct Ym2612_Emu* this, int mask )
 {
-	YM2612Mute( &this_->impl, mask );
+	YM2612Mute( &this->impl, mask );
 }
 
-void Ym2612_run( struct Ym2612_Emu* this_, int pair_count, sample_t* out )
+void Ym2612_run( struct Ym2612_Emu* this, int pair_count, sample_t* out )
 {
-	YM2612UpdateOne( &this_->impl, out, pair_count );
+	YM2612UpdateOne( &this->impl, out, pair_count );
 }
 

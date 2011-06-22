@@ -25,17 +25,17 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 int const silent_buf_size = 1; // size used for Silent_Blip_Buffer
 
-void Blip_init( struct Blip_Buffer* this_ )
+void Blip_init( struct Blip_Buffer* this )
 {
-	this_->factor_       = LONG_MAX;
-	this_->offset_       = 0;
-	this_->buffer_size_  = 0;
-	this_->sample_rate_  = 0;
-	this_->reader_accum_ = 0;
-	this_->bass_shift_   = 0;
-	this_->clock_rate_   = 0;
-	this_->bass_freq_    = 16;
-	this_->length_       = 0;
+	this->factor_       = LONG_MAX;
+	this->offset_       = 0;
+	this->buffer_size_  = 0;
+	this->sample_rate_  = 0;
+	this->reader_accum_ = 0;
+	this->bass_shift_   = 0;
+	this->clock_rate_   = 0;
+	this->bass_freq_    = 16;
+	this->length_       = 0;
 	
 	// assumptions code makes about implementation-defined features
 	#ifndef NDEBUG
@@ -49,27 +49,27 @@ void Blip_init( struct Blip_Buffer* this_ )
 	#endif
 }
 
-void Blip_stop( struct Blip_Buffer* this_ )
+void Blip_stop( struct Blip_Buffer* this )
 {
-	if ( this_->buffer_size_ != silent_buf_size )
-		free( this_->buffer_ );
+	if ( this->buffer_size_ != silent_buf_size )
+		free( this->buffer_ );
 }
 
-void Blip_clear( struct Blip_Buffer* this_, int entire_buffer )
+void Blip_clear( struct Blip_Buffer* this, int entire_buffer )
 {
-	this_->offset_      = 0;
-	this_->reader_accum_ = 0;
-	this_->modified_    = 0;
-	if ( this_->buffer_ )
+	this->offset_      = 0;
+	this->reader_accum_ = 0;
+	this->modified_    = 0;
+	if ( this->buffer_ )
 	{
-		long count = (entire_buffer ? this_->buffer_size_ : Blip_samples_avail( this_ ));
-		memset( this_->buffer_, 0, (count + blip_buffer_extra_) * sizeof (buf_t_) );
+		long count = (entire_buffer ? this->buffer_size_ : Blip_samples_avail( this ));
+		memset( this->buffer_, 0, (count + blip_buffer_extra_) * sizeof (buf_t_) );
 	}
 }
 
-blargg_err_t Blip_set_sample_rate( struct Blip_Buffer* this_, long new_rate, int msec )
+blargg_err_t Blip_set_sample_rate( struct Blip_Buffer* this, long new_rate, int msec )
 {
-	if ( this_->buffer_size_ == silent_buf_size )
+	if ( this->buffer_size_ == silent_buf_size )
 	{
 		assert( 0 );
 		return "Internal (tried to resize Silent_Blip_Buffer)";
@@ -89,105 +89,105 @@ blargg_err_t Blip_set_sample_rate( struct Blip_Buffer* this_, long new_rate, int
 	if ( new_size > blip_buffer_max )
 		return "Out of memory";
 	
-	this_->buffer_size_ = new_size;
-	assert( this_->buffer_size_ != silent_buf_size );
+	this->buffer_size_ = new_size;
+	assert( this->buffer_size_ != silent_buf_size );
 	
 	// update things based on the sample rate
-	this_->sample_rate_ = new_rate;
-	this_->length_ = new_size * 1000 / new_rate - 1;
+	this->sample_rate_ = new_rate;
+	this->length_ = new_size * 1000 / new_rate - 1;
 	if ( msec )
-		assert( this_->length_ == msec ); // ensure length is same as that passed in
-	if ( this_->clock_rate_ )
-		Blip_set_clock_rate( this_, this_->clock_rate_ );
-	Blip_bass_freq( this_, this_->bass_freq_ );
+		assert( this->length_ == msec ); // ensure length is same as that passed in
+	if ( this->clock_rate_ )
+		Blip_set_clock_rate( this, this->clock_rate_ );
+	Blip_bass_freq( this, this->bass_freq_ );
 	
-	Blip_clear( this_, 1 );
+	Blip_clear( this, 1 );
 	
 	return 0; // success
 }
 
-/* Not sure if this_ affects sound quality */
+/* Not sure if this affects sound quality */
 #if defined(ROCKBOX)
   #define floor
 #endif
 
-blip_resampled_time_t Blip_clock_rate_factor( struct Blip_Buffer* this_, long rate )
+blip_resampled_time_t Blip_clock_rate_factor( struct Blip_Buffer* this, long rate )
 {
-	double ratio = (double) this_->sample_rate_ / rate;
+	double ratio = (double) this->sample_rate_ / rate;
 	blip_long factor = (blip_long) floor( ratio * (1L << BLIP_BUFFER_ACCURACY) + 0.5 );
-	assert( factor > 0 || !this_->sample_rate_ ); // fails if clock/output ratio is too large
+	assert( factor > 0 || !this->sample_rate_ ); // fails if clock/output ratio is too large
 	return (blip_resampled_time_t) factor;
 }
 
-void Blip_bass_freq( struct Blip_Buffer* this_, int freq )
+void Blip_bass_freq( struct Blip_Buffer* this, int freq )
 {
-	this_->bass_freq_ = freq;
+	this->bass_freq_ = freq;
 	int shift = 31;
 	if ( freq > 0 )
 	{
 		shift = 13;
-		long f = (freq << 16) / this_->sample_rate_;
+		long f = (freq << 16) / this->sample_rate_;
 		while ( (f >>= 1) && --shift ) { }
 	}
-	this_->bass_shift_ = shift;
+	this->bass_shift_ = shift;
 }
 
-void Blip_end_frame( struct Blip_Buffer* this_, blip_time_t t )
+void Blip_end_frame( struct Blip_Buffer* this, blip_time_t t )
 {
-	this_->offset_ += t * this_->factor_;
-	assert( Blip_samples_avail( this_ ) <= (long) this_->buffer_size_ ); // time outside buffer length
+	this->offset_ += t * this->factor_;
+	assert( Blip_samples_avail( this ) <= (long) this->buffer_size_ ); // time outside buffer length
 }
 
-void Blip_remove_silence( struct Blip_Buffer* this_, long count )
+void Blip_remove_silence( struct Blip_Buffer* this, long count )
 {
-	assert( count <= Blip_samples_avail( this_ ) ); // tried to remove more samples than available
-	this_->offset_ -= (blip_resampled_time_t) count << BLIP_BUFFER_ACCURACY;
+	assert( count <= Blip_samples_avail( this ) ); // tried to remove more samples than available
+	this->offset_ -= (blip_resampled_time_t) count << BLIP_BUFFER_ACCURACY;
 }
 
-long Blip_count_samples( struct Blip_Buffer* this_, blip_time_t t )
+long Blip_count_samples( struct Blip_Buffer* this, blip_time_t t )
 {
-	unsigned long last_sample  = Blip_resampled_time( this_, t ) >> BLIP_BUFFER_ACCURACY;
-	unsigned long first_sample = this_->offset_ >> BLIP_BUFFER_ACCURACY;
+	unsigned long last_sample  = Blip_resampled_time( this, t ) >> BLIP_BUFFER_ACCURACY;
+	unsigned long first_sample = this->offset_ >> BLIP_BUFFER_ACCURACY;
 	return (long) (last_sample - first_sample);
 }
 
-blip_time_t Blip_count_clocks( struct Blip_Buffer* this_, long count )
+blip_time_t Blip_count_clocks( struct Blip_Buffer* this, long count )
 {
-	if ( !this_->factor_ )
+	if ( !this->factor_ )
 	{
 		assert( 0 ); // sample rate and clock rates must be set first
 		return 0;
 	}
 	
-	if ( count > this_->buffer_size_ )
-		count = this_->buffer_size_;
+	if ( count > this->buffer_size_ )
+		count = this->buffer_size_;
 	blip_resampled_time_t time = (blip_resampled_time_t) count << BLIP_BUFFER_ACCURACY;
-	return (blip_time_t) ((time - this_->offset_ + this_->factor_ - 1) / this_->factor_);
+	return (blip_time_t) ((time - this->offset_ + this->factor_ - 1) / this->factor_);
 }
 
-void Blip_remove_samples( struct Blip_Buffer* this_, long count )
+void Blip_remove_samples( struct Blip_Buffer* this, long count )
 {
 	if ( count )
 	{
-		Blip_remove_silence( this_, count );
+		Blip_remove_silence( this, count );
 		
 		// copy remaining samples to beginning and clear old samples
-		long remain = Blip_samples_avail( this_ ) + blip_buffer_extra_;
-		memmove( this_->buffer_, this_->buffer_ + count, remain * sizeof *this_->buffer_ );
-		memset( this_->buffer_ + remain, 0, count * sizeof *this_->buffer_ );
+		long remain = Blip_samples_avail( this ) + blip_buffer_extra_;
+		memmove( this->buffer_, this->buffer_ + count, remain * sizeof *this->buffer_ );
+		memset( this->buffer_ + remain, 0, count * sizeof *this->buffer_ );
 	}
 }
 
-long Blip_read_samples( struct Blip_Buffer* this_, blip_sample_t* BLIP_RESTRICT out, long max_samples, int stereo )
+long Blip_read_samples( struct Blip_Buffer* this, blip_sample_t* BLIP_RESTRICT out, long max_samples, int stereo )
 {
-	long count = Blip_samples_avail( this_ );
+	long count = Blip_samples_avail( this );
 	if ( count > max_samples )
 		count = max_samples;
 	
 	if ( count )
 	{
-		int const bass = BLIP_READER_BASS( *this_ );
-		BLIP_READER_BEGIN( reader, *this_ );
+		int const bass = BLIP_READER_BASS( *this );
+		BLIP_READER_BEGIN( reader, *this );
 		
 		if ( !stereo )
 		{
@@ -214,22 +214,22 @@ long Blip_read_samples( struct Blip_Buffer* this_, blip_sample_t* BLIP_RESTRICT 
 				BLIP_READER_NEXT( reader, bass );
 			}
 		}
-		BLIP_READER_END( reader, *this_ );
+		BLIP_READER_END( reader, *this );
 		
-		Blip_remove_samples( this_, count );
+		Blip_remove_samples( this, count );
 	}
 	return count;
 }
 
-void Blip_mix_samples( struct Blip_Buffer* this_,  blip_sample_t const* in, long count )
+void Blip_mix_samples( struct Blip_Buffer* this,  blip_sample_t const* in, long count )
 {
-	if ( this_->buffer_size_ == silent_buf_size )
+	if ( this->buffer_size_ == silent_buf_size )
 	{
 		assert( 0 );
 		return;
 	}
 	
-	buf_t_* out = this_->buffer_ + (this_->offset_ >> BLIP_BUFFER_ACCURACY) + blip_widest_impulse_ / 2;
+	buf_t_* out = this->buffer_ + (this->offset_ >> BLIP_BUFFER_ACCURACY) + blip_widest_impulse_ / 2;
 	
 	int const sample_shift = blip_sample_bits - 16;
 	int prev = 0;
@@ -243,40 +243,40 @@ void Blip_mix_samples( struct Blip_Buffer* this_,  blip_sample_t const* in, long
 	*out -= prev;
 }
 
-void Blip_set_modified( struct Blip_Buffer* this_ ) 
+void Blip_set_modified( struct Blip_Buffer* this ) 
 { 
-	this_->modified_ = 1; 
+	this->modified_ = 1; 
 }
 
-int Blip_clear_modified( struct Blip_Buffer* this_ )
+int Blip_clear_modified( struct Blip_Buffer* this )
 { 
-	int b = this_->modified_;
-	this_->modified_ = 0;
+	int b = this->modified_;
+	this->modified_ = 0;
 	return b; 
 }
 
-blip_resampled_time_t Blip_resampled_duration( struct Blip_Buffer* this_, int t )
+blip_resampled_time_t Blip_resampled_duration( struct Blip_Buffer* this, int t )
 {
-	return t * this_->factor_;
+	return t * this->factor_;
 }
 
-blip_resampled_time_t Blip_resampled_time( struct Blip_Buffer* this_, blip_time_t t )
+blip_resampled_time_t Blip_resampled_time( struct Blip_Buffer* this, blip_time_t t )
 {
-	return t * this_->factor_ + this_->offset_;
+	return t * this->factor_ + this->offset_;
 }
 
 
 // Blip_Synth
 
-void Synth_init( struct Blip_Synth* this_ )
+void Synth_init( struct Blip_Synth* this )
 {
-	this_->buf = 0;
-	this_->last_amp = 0;
-	this_->delta_factor = 0;
+	this->buf = 0;
+	this->last_amp = 0;
+	this->delta_factor = 0;
 }
 
 // Set overall volume of waveform
-void Synth_volume( struct Blip_Synth* this_, double v )
+void Synth_volume( struct Blip_Synth* this, double v )
 {
-	this_->delta_factor = (int) (v * (1L << blip_sample_bits) + 0.5);
+	this->delta_factor = (int) (v * (1L << blip_sample_bits) + 0.5);
 }

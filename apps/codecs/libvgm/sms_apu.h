@@ -36,28 +36,28 @@ struct Sms_Apu {
 
 // Basics
 
-void Apu_init( struct Sms_Apu* this_ );
+void Apu_init( struct Sms_Apu* this );
 
 // Sets buffer(s) to generate sound into, or 0 to mute. If only center is not 0,
 // output is mono.
-void Apu_set_output( struct Sms_Apu* this_, int i, struct Blip_Buffer* center, struct Blip_Buffer* left, struct Blip_Buffer* right);
+void Apu_set_output( struct Sms_Apu* this, int i, struct Blip_Buffer* center, struct Blip_Buffer* left, struct Blip_Buffer* right);
 
 // Emulates to time t, then writes data to Game Gear left/right assignment byte
-void Apu_write_ggstereo( struct Sms_Apu* this_, blip_time_t t, int data ); ICODE_ATTR
+void Apu_write_ggstereo( struct Sms_Apu* this, blip_time_t t, int data ); ICODE_ATTR
 	
 // Emulates to time t, then writes data
-void Apu_write_data( struct Sms_Apu* this_, blip_time_t t, int data ); ICODE_ATTR
+void Apu_write_data( struct Sms_Apu* this, blip_time_t t, int data ); ICODE_ATTR
 	
 // Emulates to time t, then subtracts t from the current time.
 // OK if previous write call had time slightly after t.
-void Apu_end_frame( struct Sms_Apu* this_, blip_time_t t ); ICODE_ATTR
+void Apu_end_frame( struct Sms_Apu* this, blip_time_t t ); ICODE_ATTR
 
 // More features
 
 // Resets sound chip and sets noise feedback bits and width
-void Apu_reset( struct Sms_Apu* this_, unsigned noise_feedback, int noise_width );
+void Apu_reset( struct Sms_Apu* this, unsigned noise_feedback, int noise_width );
 		
 // Sets overall volume, where 1.0 is normal
-void Apu_volume( struct Sms_Apu* this_, double vol );
+void Apu_volume( struct Sms_Apu* this, double vol );
 
 #endif

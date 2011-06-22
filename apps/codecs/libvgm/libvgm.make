@@ -11,7 +11,7 @@ $(VGMLIB): $(VGMLIB_OBJ)
 
 VGMFLAGS = $(filter-out -O%,$(CODECFLAGS)) -fno-strict-aliasing
 ifeq ($(CPU),arm)
-   VGMFLAGS += -O1
+   VGMFLAGS += -O3
 else
    VGMFLAGS += -O2
 endif

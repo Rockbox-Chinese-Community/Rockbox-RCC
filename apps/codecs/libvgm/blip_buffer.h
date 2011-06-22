@@ -65,64 +65,64 @@ struct Blip_Buffer {
 };
 
 // not documented yet
-void Blip_set_modified( struct Blip_Buffer* this_ ); ICODE_ATTR
-int Blip_clear_modified( struct Blip_Buffer* this__ ); ICODE_ATTR
-void Blip_remove_silence( struct Blip_Buffer* this__, long count ); ICODE_ATTR
-blip_resampled_time_t Blip_resampled_duration( struct Blip_Buffer* this__, int t ); ICODE_ATTR
-blip_resampled_time_t Blip_resampled_time( struct Blip_Buffer* this__, blip_time_t t ); ICODE_ATTR
-blip_resampled_time_t Blip_clock_rate_factor( struct Blip_Buffer* this__, long clock_rate ); ICODE_ATTR
+void Blip_set_modified( struct Blip_Buffer* this ); ICODE_ATTR
+int Blip_clear_modified( struct Blip_Buffer* this_ ); ICODE_ATTR
+void Blip_remove_silence( struct Blip_Buffer* this_, long count ); ICODE_ATTR
+blip_resampled_time_t Blip_resampled_duration( struct Blip_Buffer* this_, int t ); ICODE_ATTR
+blip_resampled_time_t Blip_resampled_time( struct Blip_Buffer* this_, blip_time_t t ); ICODE_ATTR
+blip_resampled_time_t Blip_clock_rate_factor( struct Blip_Buffer* this_, long clock_rate ); ICODE_ATTR
 
 // Initializes Blip_Buffer structure
-void Blip_init( struct Blip_Buffer* this__ );
+void Blip_init( struct Blip_Buffer* this_ );
 
 // Stops (clear) Blip_Buffer structure
-void Blip_stop( struct Blip_Buffer* this__ );
+void Blip_stop( struct Blip_Buffer* this_ );
 
 // Set output sample rate and buffer length in milliseconds (1/1000 sec, defaults
 // to 1/4 second), then clear buffer. Returns NULL on success, otherwise if there
 // isn't enough memory, returns error without affecting current buffer setup.
-blargg_err_t Blip_set_sample_rate( struct Blip_Buffer* this__, long samples_per_sec, int msec_length );
+blargg_err_t Blip_set_sample_rate( struct Blip_Buffer* this_, long samples_per_sec, int msec_length );
 
 // Set number of source time units per second
-static inline void Blip_set_clock_rate( struct Blip_Buffer* this__, long cps )
+static inline void Blip_set_clock_rate( struct Blip_Buffer* this_, long cps )
 {
-	this__->factor_ = Blip_clock_rate_factor( this__, this__->clock_rate_ = cps );
+	this_->factor_ = Blip_clock_rate_factor( this_, this_->clock_rate_ = cps );
 }
 
 // End current time frame of specified duration and make its samples available
 // (along with any still-unread samples) for reading with read_samples(). Begins
 // a new time frame at the end of the current frame.
-void Blip_end_frame( struct Blip_Buffer* this__, blip_time_t time ); ICODE_ATTR
+void Blip_end_frame( struct Blip_Buffer* this_, blip_time_t time ); ICODE_ATTR
 
 // Read at most 'max_samples' out of buffer into 'dest', removing them from from
 // the buffer. Returns number of samples actually read and removed. If stereo is
 // true, increments 'dest' one extra time after writing each sample, to allow
 // easy interleving of two channels into a stereo output buffer.
-long Blip_read_samples( struct Blip_Buffer* this__, blip_sample_t* dest, long max_samples, int stereo ); ICODE_ATTR
+long Blip_read_samples( struct Blip_Buffer* this_, blip_sample_t* dest, long max_samples, int stereo ); ICODE_ATTR
 
 // Additional optional features
 
 // Current output sample rate
-static inline long Blip_sample_rate( struct Blip_Buffer* this__ )
+static inline long Blip_sample_rate( struct Blip_Buffer* this_ )
 {
-	return this__->sample_rate_;
+	return this_->sample_rate_;
 }
 
 // Length of buffer, in milliseconds
-static inline int  Blip_length( struct Blip_Buffer* this__ )
+static inline int  Blip_length( struct Blip_Buffer* this_ )
 {
-	return this__->length_;
+	return this_->length_;
 }
 
 // Number of source time units per second
-static inline long Blip_clock_rate( struct Blip_Buffer* this__ )
+static inline long Blip_clock_rate( struct Blip_Buffer* this_ )
 {
-	return this__->clock_rate_;
+	return this_->clock_rate_;
 }
 
 
 // Set frequency high-pass filter frequency, where higher values reduce bass more
-void Blip_bass_freq( struct Blip_Buffer* this__, int frequency );
+void Blip_bass_freq( struct Blip_Buffer* this_, int frequency );
 
 // Number of samples delay from synthesis to samples read out
 static inline int  Blip_output_latency( void )
@@ -132,29 +132,29 @@ static inline int  Blip_output_latency( void )
 
 // Remove all available samples and clear buffer to silence. If 'entire_buffer' is
 // false, just clears out any samples waiting rather than the entire buffer.
-void Blip_clear( struct Blip_Buffer* this__, int entire_buffer );
+void Blip_clear( struct Blip_Buffer* this_, int entire_buffer );
 
 // Number of samples available for reading with read_samples()
-static inline long Blip_samples_avail( struct Blip_Buffer* this__ )
+static inline long Blip_samples_avail( struct Blip_Buffer* this_ )
 { 
-	return (long) (this__->offset_ >> BLIP_BUFFER_ACCURACY);
+	return (long) (this_->offset_ >> BLIP_BUFFER_ACCURACY);
 }
 
 // Remove 'count' samples from those waiting to be read
-void Blip_remove_samples( struct Blip_Buffer* this__, long count ); ICODE_ATTR
+void Blip_remove_samples( struct Blip_Buffer* this_, long count ); ICODE_ATTR
 
 // Experimental features
 
 // Count number of clocks needed until 'count' samples will be available.
 // If buffer can't even hold 'count' samples, returns number of clocks until
 // buffer becomes full.
-blip_time_t Blip_count_clocks( struct Blip_Buffer* this__, long count ); ICODE_ATTR
+blip_time_t Blip_count_clocks( struct Blip_Buffer* this_, long count ); ICODE_ATTR
 
 // Number of raw samples that can be mixed within frame of specified duration.
-long Blip_count_samples( struct Blip_Buffer* this__, blip_time_t duration ); ICODE_ATTR
+long Blip_count_samples( struct Blip_Buffer* this_, blip_time_t duration ); ICODE_ATTR
 
 // Mix 'count' samples from 'buf' into buffer.
-void Blip_mix_samples( struct Blip_Buffer* this__, blip_sample_t const* buf, long count ); ICODE_ATTR
+void Blip_mix_samples( struct Blip_Buffer* this_, blip_sample_t const* buf, long count ); ICODE_ATTR
 
 // Range specifies the greatest expected change in amplitude. Calculate it
 // by finding the difference between the maximum and minimum expected
@@ -167,15 +167,15 @@ struct Blip_Synth {
 };
 
 // Initializes Blip_Synth structure
-void Synth_init( struct Blip_Synth* this__ );
+void Synth_init( struct Blip_Synth* this_ );
 
 // Set overall volume of waveform
-void Synth_volume( struct Blip_Synth* this__, double v ); ICODE_ATTR
+void Synth_volume( struct Blip_Synth* this_, double v ); ICODE_ATTR
 /* In case we want to port the Nes emu */
-/* void Synth_volume( struct Blip_Synth *this__, double v, int range ); */
+/* void Synth_volume( struct Blip_Synth *this_, double v, int range ); */
 
 // Get/set Blip_Buffer used for output
-const struct Blip_Buffer* Synth_output( struct Blip_Synth* this__ ); ICODE_ATTR
+const struct Blip_Buffer* Synth_output( struct Blip_Synth* this_ ); ICODE_ATTR
 
 // Low-level interface
 
@@ -186,13 +186,13 @@ const struct Blip_Buffer* Synth_output( struct Blip_Synth* this__ ); ICODE_ATTR
 	#endif
 
 // Works directly in terms of fractional output samples. Contact author for more info.
-static inline void Synth_offset_resampled( struct Blip_Synth* this__, blip_resampled_time_t time,
+static inline void Synth_offset_resampled( struct Blip_Synth* this_, blip_resampled_time_t time,
 	int delta, struct Blip_Buffer* blip_buf )
 {
 	// Fails if time is beyond end of Blip_Buffer, due to a bug in caller code or the
 	// need for a longer buffer as set by set_sample_rate().
 	assert( (blip_long) (time >> BLIP_BUFFER_ACCURACY) < blip_buf->buffer_size_ );
-	delta *= this__->delta_factor;
+	delta *= this_->delta_factor;
 	blip_long* BLIP_RESTRICT buf = blip_buf->buffer_ + (time >> BLIP_BUFFER_ACCURACY);
 	int phase = (int) (time >> (BLIP_BUFFER_ACCURACY - BLIP_PHASE_BITS) & (blip_res - 1));
 
@@ -209,32 +209,32 @@ static inline void Synth_offset_resampled( struct Blip_Synth* this__, blip_resam
 	buf [1] = right;
 }
 
-// Update amplitude of waveform at given time. Using this__ requires a separate
+// Update amplitude of waveform at given time. Using this_ requires a separate
 // Blip_Synth for each waveform.
-static inline void Synth_update( struct Blip_Synth* this__, blip_time_t t, int amp )
+static inline void Synth_update( struct Blip_Synth* this_, blip_time_t t, int amp )
 {
-	int delta = amp - this__->last_amp;
-	this__->last_amp = amp;
-	Synth_offset_resampled( this__, t * this__->buf->factor_ + this__->buf->offset_, delta, this__->buf );
+	int delta = amp - this_->last_amp;
+	this_->last_amp = amp;
+	Synth_offset_resampled( this_, t * this_->buf->factor_ + this_->buf->offset_, delta, this_->buf );
 }
 
 // Add an amplitude transition of specified delta, optionally into specified buffer
 // rather than the one set with output(). Delta can be positive or negative.
 // The actual change in amplitude is delta * (volume / range)
-static inline void Synth_offset( struct Blip_Synth* this__, blip_time_t t, int delta, struct Blip_Buffer* buf )
+static inline void Synth_offset( struct Blip_Synth* this_, blip_time_t t, int delta, struct Blip_Buffer* buf )
 {
-	Synth_offset_resampled( this__, t * buf->factor_ + buf->offset_, delta, buf );
+	Synth_offset_resampled( this_, t * buf->factor_ + buf->offset_, delta, buf );
 }
-/* void Synth_offset( struct Blip_Synth* this__, blip_time_t t, int delta ) {
-	Synth_offset( this__, t, delta, this__->buf ); } */
+/* void Synth_offset( struct Blip_Synth* this_, blip_time_t t, int delta ) {
+	Synth_offset( this_, t, delta, this_->buf ); } */
 
 // Same as offset(), except code is inlined for higher performance
-static inline void Synth_offset_inline( struct Blip_Synth* this__, blip_time_t t, int delta, struct Blip_Buffer* buf )
+static inline void Synth_offset_inline( struct Blip_Synth* this_, blip_time_t t, int delta, struct Blip_Buffer* buf )
 {
-	Synth_offset_resampled( this__, t * buf->factor_ + buf->offset_, delta, buf );
+	Synth_offset_resampled( this_, t * buf->factor_ + buf->offset_, delta, buf );
 }
-/* void offset_inline( struct Blip_Synth* this__, blip_time_t t, int delta ) const {
-	offset_resampled( t * this__->buf->factor_ + this__->buf->offset_, delta, this__->buf );
+/* void offset_inline( struct Blip_Synth* this_, blip_time_t t, int delta ) const {
+	offset_resampled( t * this_->buf->factor_ + this_->buf->offset_, delta, this_->buf );
 } */
 
 

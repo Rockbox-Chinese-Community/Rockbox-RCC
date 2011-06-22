@@ -17,21 +17,21 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
 int const noise_osc = 3;
 
-void Apu_volume( struct Sms_Apu* this_, double vol )
+void Apu_volume( struct Sms_Apu* this, double vol )
 {
 	vol *= 0.85 / osc_count / 64;
 	/* norm_synth.volume( vol );
 	fast_synth.volume( vol ); */
-	Synth_volume( &this_->synth, vol );
+	Synth_volume( &this->synth, vol );
 }
 
-inline int calc_output( struct Sms_Apu* this_, int i )
+inline int calc_output( struct Sms_Apu* this, int i )
 {
-	int flags = this_->ggstereo >> i;
+	int flags = this->ggstereo >> i;
 	return (flags >> 3 & 2) | (flags & 1);
 }
 
-void Apu_set_output( struct Sms_Apu* this_, int i, struct Blip_Buffer* center, struct Blip_Buffer* left, struct Blip_Buffer* right )
+void Apu_set_output( struct Sms_Apu* this, int i, struct Blip_Buffer* center, struct Blip_Buffer* left, struct Blip_Buffer* right )
 {
 #if defined(ROCKBOX)
 	(void) left;
@@ -45,7 +45,7 @@ void Apu_set_output( struct Sms_Apu* this_, int i, struct Blip_Buffer* center, s
 	if ( center )
 	{
 		unsigned const divisor = 16384 * 16 * 2;
-		this_->min_tone_period = ((unsigned) Blip_clock_rate( center ) + divisor/2) / divisor;
+		this->min_tone_period = ((unsigned) Blip_clock_rate( center ) + divisor/2) / divisor;
 	}
 	
 	if ( !center || !left || !right )
@@ -54,12 +54,12 @@ void Apu_set_output( struct Sms_Apu* this_, int i, struct Blip_Buffer* center, s
 		right = center;
 	}
 	
-	struct Osc* o = &this_->oscs [i];
+	struct Osc* o = &this->oscs [i];
 	o->outputs [0] = NULL;
 	o->outputs [1] = right;
 	o->outputs [2] = left;
 	o->outputs [3] = center;
-	o->output = o->outputs [calc_output( this_, i )];
+	o->output = o->outputs [calc_output( this, i )];
 }
 
 static inline unsigned fibonacci_to_galois_lfsr( unsigned fibonacci, int width )
@@ -73,11 +73,11 @@ static inline unsigned fibonacci_to_galois_lfsr( unsigned fibonacci, int width )
 	return galois;
 }
 
-void Apu_reset( struct Sms_Apu* this_, unsigned feedback, int noise_width )
+void Apu_reset( struct Sms_Apu* this, unsigned feedback, int noise_width )
 {
-	this_->last_time = 0;
-	this_->latch     = 0;
-	this_->ggstereo  = 0;
+	this->last_time = 0;
+	this->latch     = 0;
+	this->ggstereo  = 0;
 	
 	// Calculate noise feedback values
 	if ( !feedback || !noise_width )
@@ -85,14 +85,14 @@ void Apu_reset( struct Sms_Apu* this_, unsigned feedback, int noise_width )
 		feedback    = 0x0009;
 		noise_width = 16;
 	}
-	this_->looped_feedback = 1 << (noise_width - 1);
-	this_->noise_feedback  = fibonacci_to_galois_lfsr( feedback, noise_width );
+	this->looped_feedback = 1 << (noise_width - 1);
+	this->noise_feedback  = fibonacci_to_galois_lfsr( feedback, noise_width );
 	
 	// Reset oscs
 	int i;
 	for ( i = osc_count; --i >= 0; )
 	{
-		struct Osc* o = &this_->oscs [i];
+		struct Osc* o = &this->oscs [i];
 		o->output   =  NULL;
 		o->last_amp =  0;
 		o->delay    =  0;
@@ -101,38 +101,38 @@ void Apu_reset( struct Sms_Apu* this_, unsigned feedback, int noise_width )
 		o->volume   = 15; // silent
 	}
 	
-	this_->oscs [noise_osc].phase = 0x8000;
-	Apu_write_ggstereo( this_, 0, 0xFF );
+	this->oscs [noise_osc].phase = 0x8000;
+	Apu_write_ggstereo( this, 0, 0xFF );
 }
 
-void Apu_init( struct Sms_Apu* this_ )
+void Apu_init( struct Sms_Apu* this )
 {
-	this_->min_tone_period = 7;
+	this->min_tone_period = 7;
 	
-	Synth_init( &this_->synth );
+	Synth_init( &this->synth );
 	
 	// Clear outputs to NULL FIRST
-	this_->ggstereo = 0;
+	this->ggstereo = 0;
 	
 	int i;
 	for ( i = osc_count; --i >= 0; )
-		Apu_set_output( this_, i, NULL, NULL, NULL );
+		Apu_set_output( this, i, NULL, NULL, NULL );
 	
-	Apu_volume( this_, 1.0 );
-	Apu_reset( this_, 0, 0 );
+	Apu_volume( this, 1.0 );
+	Apu_reset( this, 0, 0 );
 }
 
-void run_until( struct Sms_Apu* this_, blip_time_t end_time )
+void run_until( struct Sms_Apu* this, blip_time_t end_time )
 {
-	require( end_time >= this_->last_time );
-	if ( end_time <= this_->last_time )
+	require( end_time >= this->last_time );
+	if ( end_time <= this->last_time )
 		return;
 	
 	// Synthesize each oscillator
 	int idx;
 	for ( idx = osc_count; --idx >= 0; )
 	{
-		struct Osc* osc = &this_->oscs [idx];
+		struct Osc* osc = &this->oscs [idx];
 		int vol  = 0;
 		int amp  = 0;
 		
@@ -149,7 +149,7 @@ void run_until( struct Sms_Apu* this_, blip_time_t end_time )
 			amp = (osc->phase & 1) * vol;
 			
 			// Square freq above 16 kHz yields constant amplitude at half volume
-			if ( idx != noise_osc && osc->period < this_->min_tone_period )
+			if ( idx != noise_osc && osc->period < this->min_tone_period )
 			{
 				amp = vol >> 1;
 				vol = 0;
@@ -161,14 +161,14 @@ void run_until( struct Sms_Apu* this_, blip_time_t end_time )
 			{
 				osc->last_amp = amp;
 				/* norm_synth.offset( last_time, delta, out ); */
-				Synth_offset( &this_->synth, this_->last_time, delta, out );
+				Synth_offset( &this->synth, this->last_time, delta, out );
 				/* out->set_modified(); */
 				Blip_set_modified( out );
 			}
 		}
 		
 		// Generate wave
-		blip_time_t time = this_->last_time + osc->delay;
+		blip_time_t time = this->last_time + osc->delay;
 		if ( time < end_time )
 		{
 			// Calculate actual period
@@ -177,7 +177,7 @@ void run_until( struct Sms_Apu* this_, blip_time_t end_time )
 			{
 				period = 0x20 << (period & 3);
 				if ( period == 0x100 )
-					period = this_->oscs [2].period * 2;
+					period = this->oscs [2].period * 2;
 			}
 			period *= 0x10;
 			if ( !period )
@@ -203,7 +203,7 @@ void run_until( struct Sms_Apu* this_, blip_time_t end_time )
 					{
 						delta = -delta;
 						/* norm_synth.offset( time, delta, out ); */
-						Synth_offset( &this_->synth, time, delta, out );
+						Synth_offset( &this->synth, time, delta, out );
 						time += period;
 					}
 					while ( time < end_time );
@@ -212,7 +212,7 @@ void run_until( struct Sms_Apu* this_, blip_time_t end_time )
 				else
 				{
 					// Noise
-					unsigned const feedback = (osc->period & 4 ? this_->noise_feedback : this_->looped_feedback);
+					unsigned const feedback = (osc->period & 4 ? this->noise_feedback : this->looped_feedback);
 					do
 					{
 						unsigned changed = phase + 1;
@@ -221,7 +221,7 @@ void run_until( struct Sms_Apu* this_, blip_time_t end_time )
 						{
 							delta = -delta;
 							/* fast_synth.offset_inline( time, delta, out ); */
-							Synth_offset_inline( &this_->synth, time, delta, out );
+							Synth_offset_inline( &this->synth, time, delta, out );
 						}
 						time += period;
 					}
@@ -235,23 +235,23 @@ void run_until( struct Sms_Apu* this_, blip_time_t end_time )
 		}
 		osc->delay = time - end_time;
 	}
-	this_->last_time = end_time;
+	this->last_time = end_time;
 }
 
-void Apu_write_ggstereo( struct Sms_Apu* this_, blip_time_t time, int data )
+void Apu_write_ggstereo( struct Sms_Apu* this, blip_time_t time, int data )
 {
 	require( (unsigned) data <= 0xFF );
 	
-	run_until( this_, time );
-	this_->ggstereo = data;
+	run_until( this, time );
+	this->ggstereo = data;
 	
 	int i;
 	for ( i = osc_count; --i >= 0; )
 	{
-		struct Osc* osc = &this_->oscs [i];
+		struct Osc* osc = &this->oscs [i];
 		
 		struct Blip_Buffer* old = osc->output;
-		osc->output = osc->outputs [calc_output( this_, i )];
+		osc->output = osc->outputs [calc_output( this, i )];
 		if ( osc->output != old )
 		{
 			int delta = -osc->last_amp;
@@ -261,27 +261,27 @@ void Apu_write_ggstereo( struct Sms_Apu* this_, blip_time_t time, int data )
 				if ( old )
 				{
 					Blip_set_modified( old );
-					Synth_offset( &this_->synth, this_->last_time, delta, old );
+					Synth_offset( &this->synth, this->last_time, delta, old );
 				}
 			}
 		}
 	}
 }
 
-void Apu_write_data( struct Sms_Apu* this_, blip_time_t time, int data )
+void Apu_write_data( struct Sms_Apu* this, blip_time_t time, int data )
 {
 	require( (unsigned) data <= 0xFF );
 	
-	run_until( this_, time );
+	run_until( this, time );
 	
 	if ( data & 0x80 )
-		this_->latch = data;
+		this->latch = data;
 	
 	// We want the raw values written so our save state format can be
 	// as close to hardware as possible and unspecific to any emulator.
-	int idx = this_->latch >> 5 & 3;
-	struct Osc* osc = &this_->oscs [idx];
-	if ( this_->latch & 0x10 )
+	int idx = this->latch >> 5 & 3;
+	struct Osc* osc = &this->oscs [idx];
+	if ( this->latch & 0x10 )
 	{
 		osc->volume = data & 0x0F;
 	}
@@ -302,11 +302,11 @@ void Apu_write_data( struct Sms_Apu* this_, blip_time_t time, int data )
 	}
 }
 
-void Apu_end_frame( struct Sms_Apu* this_, blip_time_t end_time )
+void Apu_end_frame( struct Sms_Apu* this, blip_time_t end_time )
 {
-	if ( end_time > this_->last_time )
-		run_until( this_, end_time );
+	if ( end_time > this->last_time )
+		run_until( this, end_time );
 	
-	this_->last_time -= end_time;
-	assert( this_->last_time >= 0 );
+	this->last_time -= end_time;
+	assert( this->last_time >= 0 );
 }

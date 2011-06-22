@@ -129,7 +129,7 @@ static void get_vgm_length( struct header_t* h, struct mp3entry* id3 )
             loop_length = 0;
         }
         
-         id3->length = intro_length +  loop_length; // intro + 1 loop
+         id3->length = intro_length + 2 * loop_length; // intro + 2 loops
          return;
     }
 
@@ -149,9 +149,11 @@ bool get_vgm_metadata(int fd, struct mp3entry* id3)
         return false;
     }
 
-    id3->length = 0;
     id3->vbr = false;
     id3->filesize = filesize(fd);
+
+    id3->bitrate = 706;
+    id3->frequency = 44100;
 
     /* If file is gzipped, will get metadata later */
     if (memcmp(buf, "Vgm ", 4))
@@ -178,11 +180,12 @@ bool get_vgm_metadata(int fd, struct mp3entry* id3)
 
     byte* gd3 = buf;
     long gd3_size = check_gd3_header( gd3, read_bytes );
-    
+
     /* GD3 tag is zero */
-    if ( !gd3_size )
+    if ( gd3_size == 0 )
         return true;
 
+    /* Finally, parse gd3 tag */
     if ( gd3 )
         parse_gd3( gd3 + gd3_header_size, gd3 + read_bytes, id3 );
 

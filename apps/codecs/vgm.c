@@ -23,39 +23,40 @@ static char *songbuf;               /* destination for uncompressed song */
 static uint32_t songbuflen=0;  /* size of the song buffer */
 static uint32_t songlen=0;       /* used size of the song buffer */
 
-
 /****************** rockbox interface ******************/
 
 /* this is the codec entry point */
-enum codec_status codec_main(void)
+enum codec_status codec_main(enum codec_entry_call_reason reason)
+{
+    if (reason == CODEC_LOAD) {
+        /* we only render 16 bits */
+        ci->configure(DSP_SET_SAMPLE_DEPTH, 16);
+
+        /* 32 Khz, Interleaved stereo */
+        ci->configure(DSP_SET_FREQUENCY, 44100);
+        ci->configure(DSP_SET_STEREO_MODE, STEREO_INTERLEAVED);
+
+        Vgm_init(&vgm_emu);
+        Vgm_set_sample_rate(&vgm_emu, 44100);
+    }
+
+    return CODEC_OK;
+}
+
+/* this is called for each file to process */
+enum codec_status codec_run(void)
 {
     blargg_err_t err;
     uint8_t *buf;
     size_t n;
+    intptr_t param;
 
-     uint32_t elapsed_time;
-
-    /* we only render 16 bits */
-    ci->configure(DSP_SET_SAMPLE_DEPTH, 16);
-
-    /* 32 Khz, Interleaved stereo */
-    ci->configure(DSP_SET_FREQUENCY, 44100);
-    ci->configure(DSP_SET_STEREO_MODE, STEREO_INTERLEAVED);
-
-    Vgm_init(&vgm_emu);
-    Vgm_set_sample_rate(&vgm_emu, 44100);
-
-next_track:
-    elapsed_time = 0;
+    uint32_t elapsed_time = 0;
 
     DEBUGF("VGM: next_track\n");
     if (codec_init()) {
         return CODEC_ERROR;
-    }  
-
-    /* wait for track info to load */
-    if (codec_wait_taginfo() != 0)
-        goto request_next_track;
+    }
 
     codec_set_replaygain(ci->id3);
 
@@ -93,11 +94,7 @@ next_track:
         }
 
         /* Since metadata parser doesn't support VGZ 
-             will set info it here */
-        struct track_info_t* info = &vgm_emu.info;
-        ci->id3->title = info->song;
-        ci->id3->artist = info->author;
-        ci->id3->album = info->game;
+             will set song length here */
         ci->id3->length = Track_get_length( &vgm_emu );
     }
     else if ((err = Vgm_load_mem(&vgm_emu, buf, n, false))) {
@@ -109,25 +106,26 @@ next_track:
 
     /* for REPEAT_ONE we disable track limits */
     if (ci->global_settings->repeat_mode != REPEAT_ONE) {
-        Track_set_fade(&vgm_emu, ci->id3->length, 4000);
+        Track_set_fade(&vgm_emu, ci->id3->length - 4000, 4000);
     }
     
     ci->set_elapsed(0);
 
     /* The main decoder loop */
     while (1) {
-        ci->yield();
-        if (ci->stop_codec || ci->new_track)
+        enum codec_command_action action = ci->get_command(&param);
+
+        if (action == CODEC_ACTION_HALT)
             break;
 
-        if (ci->seek_time) {
-            ci->set_elapsed(ci->seek_time);
-            elapsed_time = ci->seek_time;
-            Track_seek(&vgm_emu, ci->seek_time);
+        if (action == CODEC_ACTION_SEEK_TIME) {
+            ci->set_elapsed(param);
+            elapsed_time = param;
+            Track_seek(&vgm_emu, param);
             ci->seek_complete();
             
             /* Set fade again in case we seek to start of song */
-            Track_set_fade(&vgm_emu, ci->id3->length, 4000);
+            Track_set_fade(&vgm_emu, ci->id3->length - 4000, 4000);
         }
 
         /* Generate audio buffer */
@@ -139,10 +137,6 @@ next_track:
         elapsed_time += (CHUNK_SIZE / 2) / 44.1;
         ci->set_elapsed(elapsed_time);
     }
-
-request_next_track:
-    if (ci->request_next_track())
-        goto next_track; /* when we fall through here we'll reload the file */
 
     return CODEC_OK;
 }

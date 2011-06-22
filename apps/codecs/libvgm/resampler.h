@@ -37,32 +37,32 @@ struct Resampler {
 	int step;
 };
 
-static inline void Resampler_init( struct Resampler* this_ )
+static inline void Resampler_init( struct Resampler* this )
 {
-	this_->pos = 0;
-	this_->write_pos = 0;
-	this_->rate_     = 0;
+	this->pos = 0;
+	this->write_pos = 0;
+	this->rate_     = 0;
 }
 
-blargg_err_t Resampler_reset( struct Resampler* this_, int max_pairs );
-void Resampler_resize( struct Resampler* this_, int pairs_per_frame );
+blargg_err_t Resampler_reset( struct Resampler* this, int max_pairs );
+void Resampler_resize( struct Resampler* this, int pairs_per_frame );
 	
-void Resampler_play( struct Resampler* this_, long count, dsample_t* out, struct Stereo_Buffer* ); ICODE_ATTR
+void Resampler_play( struct Resampler* this, long count, dsample_t* out, struct Stereo_Buffer* ); ICODE_ATTR
 
-static inline void Resampler_set_callback(struct Resampler* this_, int (*func)( void*, blip_time_t, int, dsample_t* ), void* user_data )
+static inline void Resampler_set_callback(struct Resampler* this, int (*func)( void*, blip_time_t, int, dsample_t* ), void* user_data )
 {
-	this_->callback = func;
-	this_->callback_data = user_data;
+	this->callback = func;
+	this->callback_data = user_data;
 }
 
-blargg_err_t Resampler_setup( struct Resampler* this_, double oversample, double rolloff, double gain );
+blargg_err_t Resampler_setup( struct Resampler* this, double oversample, double rolloff, double gain );
 
-static inline void Resampler_clear( struct Resampler* this_ )
+static inline void Resampler_clear( struct Resampler* this )
 {
-	this_->buf_pos = this_->sample_buf_size;
+	this->buf_pos = this->sample_buf_size;
 
-	this_->pos = 0;
-	this_->write_pos = 0;
+	this->pos = 0;
+	this->write_pos = 0;
 }
 
 #endif

@@ -45,6 +45,7 @@ include $(APPSDIR)/codecs/libpcm/libpcm.make
 include $(APPSDIR)/codecs/libtta/libtta.make
 include $(APPSDIR)/codecs/libvgm/libvgm.make
 
+
 # compile flags for codecs
 CODECFLAGS = $(CFLAGS) -fstrict-aliasing -I$(APPSDIR)/codecs \
 	-I$(APPSDIR)/codecs/lib -DCODEC

@@ -206,45 +206,45 @@ struct Ym2612_Emu  {
 	short* out;
 };
 
-static inline void Ym2612_init( struct Ym2612_Emu* this_ )
+static inline void Ym2612_init( struct Ym2612_Emu* this )
 { 
-	this_->last_time = ym2612_disabled_time; this_->out = 0;
+	this->last_time = ym2612_disabled_time; this->out = 0;
 }
 	
 // Sets sample rate and chip clock rate, in Hz. Returns non-zero
 // if error. If clock_rate=0, uses sample_rate*144
-const char* Ym2612_set_rate( struct Ym2612_Emu* this_, double sample_rate, double clock_rate );
+const char* Ym2612_set_rate( struct Ym2612_Emu* this, double sample_rate, double clock_rate );
 	
 // Resets to power-up state
-void Ym2612_reset( struct Ym2612_Emu* this_ );
+void Ym2612_reset( struct Ym2612_Emu* this );
 	
 // Mutes voice n if bit n (1 << n) of mask is set
-void Ym2612_mute_voices( struct Ym2612_Emu* this_, int mask );
+void Ym2612_mute_voices( struct Ym2612_Emu* this, int mask );
 	
 // Writes addr to register 0 then data to register 1
-void Ym2612_write0( struct Ym2612_Emu* this_, int addr, int data ); ICODE_ATTR
+void Ym2612_write0( struct Ym2612_Emu* this, int addr, int data ); ICODE_ATTR
 	
 // Writes addr to register 2 then data to register 3
-void Ym2612_write1( struct Ym2612_Emu* this_, int addr, int data ); ICODE_ATTR
+void Ym2612_write1( struct Ym2612_Emu* this, int addr, int data ); ICODE_ATTR
 	
 // Runs and adds pair_count*2 samples into current output buffer contents
-void Ym2612_run( struct Ym2612_Emu* this_, int pair_count, sample_t* out ); ICODE_ATTR
+void Ym2612_run( struct Ym2612_Emu* this, int pair_count, sample_t* out ); ICODE_ATTR
 
-static inline void Ym2612_enable( struct Ym2612_Emu* this_, bool b ) { this_->last_time = b ? 0 : ym2612_disabled_time; }
-static inline bool Ym2612_enabled( struct Ym2612_Emu* this_ ) { return this_->last_time != ym2612_disabled_time; }
-static inline void Ym2612_begin_frame( struct Ym2612_Emu* this_, short* buf ) { this_->out = buf; this_->last_time = 0; }
+static inline void Ym2612_enable( struct Ym2612_Emu* this, bool b ) { this->last_time = b ? 0 : ym2612_disabled_time; }
+static inline bool Ym2612_enabled( struct Ym2612_Emu* this ) { return this->last_time != ym2612_disabled_time; }
+static inline void Ym2612_begin_frame( struct Ym2612_Emu* this, short* buf ) { this->out = buf; this->last_time = 0; }
 		
-static inline int Ym2612_run_until( struct Ym2612_Emu* this_, int time )
+static inline int Ym2612_run_until( struct Ym2612_Emu* this, int time )
 {
-	int count = time - this_->last_time;
+	int count = time - this->last_time;
 	if ( count > 0 )
 	{
-		if ( this_->last_time < 0 )
+		if ( this->last_time < 0 )
 			return false;
-		this_->last_time = time;
-		short* p = this_->out;
-		this_->out += count * ym2612_out_chan_count;
-		Ym2612_run( this_, count, p );
+		this->last_time = time;
+		short* p = this->out;
+		this->out += count * ym2612_out_chan_count;
+		Ym2612_run( this, count, p );
 	}
 	return true;
 }
