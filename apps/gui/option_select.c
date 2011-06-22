@@ -35,12 +35,6 @@
 #include "menu.h"
 #include "quickscreen.h"
 
-#if defined (HAVE_SCROLLWHEEL)      || \
-    (CONFIG_KEYPAD == PLAYER_PAD)
-/* Define this if your target makes sense to have 
-   smaller values at the top of the list increasing down the list */
-#define ASCENDING_INT_SETTINGS
-#endif
 
 static int selection_to_val(const struct settings_list *setting, int selection);
 int option_value_as_int(const struct settings_list *setting)
@@ -282,7 +276,6 @@ void option_select_next_val(const struct settings_list *setting,
     else if ((setting->flags & F_CHOICE_SETTING) == F_CHOICE_SETTING)
     {
         struct choice_setting *info = (struct choice_setting *)setting->choice_setting;
-        val = *value + 1;
         if (!previous)
         {
             val = *value + 1;
@@ -321,7 +314,10 @@ void option_select_next_val(const struct settings_list *setting,
 
 static int selection_to_val(const struct settings_list *setting, int selection)
 {
-    int min = 0, max = 0, step = 1;
+    /* rockbox: comment 'set but unused' variables
+    int min = 0;
+    */
+    int max = 0, step = 1;
     if (((setting->flags & F_BOOL_SETTING) == F_BOOL_SETTING) ||
           ((setting->flags & F_CHOICE_SETTING) == F_CHOICE_SETTING))
         return selection;
@@ -345,10 +341,10 @@ static int selection_to_val(const struct settings_list *setting, int selection)
 #ifndef ASCENDING_INT_SETTINGS
         step = sound_steps(setting_id);
         max = sound_max(setting_id);
-        min = sound_min(setting_id);
+        /* min = sound_min(setting_id); */
 #else
         step = -sound_steps(setting_id);
-        min = sound_max(setting_id);
+        /* min = sound_max(setting_id); */
         max = sound_min(setting_id);
 #endif
     }
@@ -356,12 +352,12 @@ static int selection_to_val(const struct settings_list *setting, int selection)
     {
         const struct int_setting *info = setting->int_setting;
 #ifndef ASCENDING_INT_SETTINGS
-        min = info->min;
+        /* min = info->min; */
         max = info->max;
         step = info->step;
 #else
         max = info->min;
-        min = info->max;
+        /* min = info->max; */
         step = -info->step;
 #endif
     }
@@ -489,6 +485,7 @@ bool option_screen(const struct settings_list *setting,
         temp_var = oldvalue = *(bool*)setting->setting?1:0;
     }
     else return false; /* only int/bools can go here */
+    push_current_activity(ACTIVITY_OPTIONSELECT);
     gui_synclist_init(&lists, value_setting_get_name_cb,
                       (void*)setting, false, 1, parent);
     if (setting->lang_id == -1)
@@ -569,6 +566,7 @@ bool option_screen(const struct settings_list *setting,
         if (function == sound_get_fn(SOUND_VOLUME))
             global_status.last_volume_change = current_tick;
     }
+    pop_current_activity();
     return false;
 }
 

@@ -1990,19 +1990,16 @@
 </phrase>
 <phrase>
   id: LANG_HEADPHONE_UNPLUG_RW
-  desc: in pause_phones_menu.
+  desc: deprecated
   user: core
   <source>
-    *: none
-    headphone_detection: "Duration to Rewind"
+    *: ""
   </source>
   <dest>
-    *: none
-    headphone_detection: "Tid att spola bakåt"
+    *: ""
   </dest>
   <voice>
-    *: none
-    headphone_detection: "Tid att spola bakåt"
+    *: ""
   </voice>
 </phrase>
 <phrase>
@@ -6651,19 +6648,19 @@
   <source>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </source>
   <dest>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </dest>
   <voice>
     *: none
     multivolume: "H D 1"
-    sansae200*,sansac200*,sansafuze*: "mikro S D"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mikro S D"
     archosondio*: "M M C"
   </voice>
 </phrase>
@@ -7894,7 +7891,7 @@
     *: "Läge:"
   </dest>
   <voice>
-    *: ""
+    *: "Läge:"
   </voice>
 </phrase>
 <phrase>
@@ -12091,20 +12088,20 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_RECORDING_HISTOGRAM_INTERVAL
+  id: LANG_HISTOGRAM_INTERVAL
   desc: in record settings menu
   user: core
   <source>
     *: none
-    recording_histogram: "Histogram interval"
+    histogram: "Histogram interval"
   </source>
   <dest>
     *: none
-    recording_histogram: "Histogramintervall"
+    histogram: "Histogramintervall"
   </dest>
   <voice>
     *: none
-    recording_histogram: "Histogramintervall"
+    histogram: "Histogramintervall"
   </voice>
 </phrase>
 <phrase>
@@ -12594,6 +12591,34 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_AUTORESUME_ENABLE
+  desc: deprecated
+  user: core
+  <source>
+    *: ""
+  </source>
+  <dest>
+    *: ""
+  </dest>
+  <voice>
+    *: ""
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AUTORESUME_ENABLE_YES
+  desc: deprecated
+  user: core
+  <source>
+    *: ""
+  </source>
+  <dest>
+    *: ""
+  </dest>
+  <voice>
+    *: ""
+  </voice>
+</phrase>
+<phrase>
   id: LANG_AUTORESUME
   desc: resume settings menu
   user: core
@@ -12636,30 +12661,16 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_AUTORESUME_ENABLE_YES
-  desc: deprecated
+  id: LANG_PAUSE_REWIND
+  desc: Seconds to rewind when rewind on pause is enabled.
   user: core
   <source>
-    *: ""
+    *: "Rewind on Pause"
   </source>
   <dest>
-    *: ""
+    *: "Spola bakåt vid paus"
   </dest>
   <voice>
-    *: ""
-  </voice>
-</phrase>
-<phrase>
-  id: LANG_AUTORESUME_ENABLE
-  desc: deprecated
-  user: core
-  <source>
-    *: ""
-  </source>
-  <dest>
-    *: ""
-  </dest>
-  <voice>
-    *: ""
+    *: "Spola bakåt vid paus"
   </voice>
 </phrase>

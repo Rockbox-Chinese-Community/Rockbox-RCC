@@ -60,8 +60,9 @@ void ogg_free(void* ptr)
     tlsf_free(ptr);
 }
 
+#ifdef TREMOR_USE_IRAM
 /* Allocate IRAM buffer */
-static unsigned char iram_buff[IRAM_IBSS_SIZE] IBSS_ATTR __attribute__ ((aligned (16)));
+static unsigned char iram_buff[IRAM_IBSS_SIZE] IBSS_ATTR MEM_ALIGN_ATTR;
 static size_t iram_remain;
 
 void iram_malloc_init(void){
@@ -70,16 +71,16 @@ void iram_malloc_init(void){
 
 void *iram_malloc(size_t size){
     void* x;
-    
-    /* always ensure 16-byte aligned */
-    if(size&0x0f)
-      size=(size-(size&0x0f))+16;
-      
+
+    /* always ensure alignment to CACHEALIGN_SIZE byte */
+    size = (size + (CACHEALIGN_SIZE-1)) & ~(CACHEALIGN_SIZE-1);
+
     if(size>iram_remain)
       return NULL;
-    
+
     x = &iram_buff[IRAM_IBSS_SIZE-iram_remain];
     iram_remain-=size;
 
     return x;
 }
+#endif

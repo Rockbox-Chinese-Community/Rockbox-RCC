@@ -33,7 +33,8 @@ ZIPALIGN=$(ANDROID_SDK_PATH)/tools/zipalign
 KEYSTORE=$(HOME)/.android/debug.keystore
 ADB=$(ANDROID_SDK_PATH)/platform-tools/adb
 
-MANIFEST	:= $(ANDROID_DIR)/AndroidManifest.xml
+MANIFEST	:= $(BUILDDIR)/bin/AndroidManifest.xml
+MANIFEST_SRC	:= $(ANDROID_DIR)/AndroidManifest.xml
 
 R_JAVA		:= $(BUILDDIR)/gen/$(PACKAGE_PATH)/R.java
 R_OBJ		:= $(BUILDDIR)/bin/$(PACKAGE_PATH)/R.class
@@ -45,6 +46,7 @@ JAVA_OBJ	:= $(call java2class,$(subst $(ANDROID)/src/$(PACKAGE_PATH),$(ANDROID)/
 
 
 LIBS		:= $(BINLIB_DIR)/$(BINARY) $(BINLIB_DIR)/libmisc.so
+LIBS 		+= $(addprefix $(BINLIB_DIR)/lib,$(patsubst %.codec,%.so,$(notdir $(CODECS))))
 TEMP_APK	:= $(BUILDDIR)/bin/_rockbox.apk
 TEMP_APK2	:= $(BUILDDIR)/bin/__rockbox.apk
 DEX		:= $(BUILDDIR)/bin/classes.dex
@@ -63,6 +65,10 @@ RES		:= $(wildcard $(ANDROID_DIR)/res/*/*)
 CLEANOBJS += bin gen libs data
 
 JAVAC_OPTS += -implicit:none -classpath $(ANDROID_PLATFORM)/android.jar:$(BUILDDIR)/bin
+
+.PHONY:
+$(MANIFEST): $(MANIFEST_SRC) $(DIRS)
+	$(call PRINTS,MANIFEST $(@F))sed -e 's/versionName="1.0"/versionName="$(SVNVERSION)"/;s/screenOrientation="portrait"/screenOrientation="$(LCDORIENTATION)"/' $(MANIFEST_SRC) > $(MANIFEST)
 
 $(R_JAVA) $(AP_): $(MANIFEST) $(RES) | $(DIRS)
 	$(call PRINTS,AAPT $(subst $(BUILDDIR)/,,$@))$(AAPT) package -f -m \
@@ -101,6 +107,9 @@ $(BINLIB_DIR)/$(BINARY): $(BUILDDIR)/$(BINARY)
 
 $(BINLIB_DIR)/libmisc.so: $(BUILDDIR)/rockbox.zip
 	$(call PRINTS,CP rockbox.zip)cp $^ $@
+
+$(BINLIB_DIR)/lib%.so: $(BUILDDIR)/apps/codecs/%.codec
+	$(call PRINTS,CP $(@F))cp $^ $@
 
 libs: $(LIBS)
 

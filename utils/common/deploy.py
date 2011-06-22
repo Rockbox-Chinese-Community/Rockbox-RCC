@@ -132,8 +132,8 @@ def getsources(svnsrv, filelist, dest):
     return 0
 
 
-def gettrunkrev(svnsrv):
-    '''Get the revision of trunk for svnsrv'''
+def getfolderrev(svnsrv):
+    '''Get the most recent revision for svnsrv'''
     client = pysvn.Client()
     entries = client.info2(svnsrv, recurse=False)
     return entries[0][1].rev.number
@@ -469,9 +469,9 @@ def deploy():
     startup = time.time()
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "q:p:t:a:n:sbdkx:h",
+        opts, args = getopt.getopt(sys.argv[1:], "q:p:t:a:n:sbdkx:i:h",
             ["qmake=", "project=", "tag=", "add=", "makensis=", "source-only",
-             "binary-only", "dynamic", "keep-temp", "cross=", "help"])
+             "binary-only", "dynamic", "keep-temp", "cross=", "buildid=", "help"])
     except getopt.GetoptError, err:
         print str(err)
         usage(sys.argv[0])
@@ -487,6 +487,7 @@ def deploy():
     keeptemp = False
     makensis = ""
     cross = ""
+    buildid = None
     platform = sys.platform
     if sys.platform != "darwin":
         static = True
@@ -516,6 +517,8 @@ def deploy():
         if o in ("-x", "--cross") and sys.platform != "win32":
             cross = a
             platform = "win32"
+        if o in ("-i", "--buildid"):
+            buildid = a
         if o in ("-h", "--help"):
             usage(sys.argv[0])
             sys.exit(0)
@@ -540,16 +543,20 @@ def deploy():
         # make sure the path doesn't contain backslashes to prevent issues
         # later when running on windows.
         workfolder = re.sub(r'\\', '/', w)
-        if not tag == "":
+        revision = getfolderrev(svnbase)
+        if buildid == None:
+            versionextra = ""
+        else:
+            versionextra = "-" + buildid
+        if tag != "":
             sourcefolder = workfolder + "/" + tag + "/"
-            archivename = tag + "-src.tar.bz2"
+            archivename = tag + versionextra + "-src.tar.bz2"
             # get numeric version part from tag
             ver = "v" + re.sub('^[^\d]+', '', tag)
         else:
-            trunk = gettrunkrev(svnbase)
-            sourcefolder = workfolder + "/" + program + "-r" + str(trunk) + "/"
-            archivename = program + "-r" + str(trunk) + "-src.tar.bz2"
-            ver = "r" + str(trunk)
+            sourcefolder = workfolder + "/" + program + "-r" + str(revision) + versionextra + "/"
+            archivename = program + "-r" + str(revision) + versionextra + "-src.tar.bz2"
+            ver = "r" + str(revision)
         os.mkdir(sourcefolder)
     else:
         workfolder = "."
@@ -563,23 +570,29 @@ def deploy():
             tempclean(workfolder, cleanup and not keeptemp)
             sys.exit(1)
 
-        # replace version strings. Only done when building from trunk
-        if tag == "":
-            print "Updating version information in sources"
-            for f in regreplace:
-                infile = open(sourcefolder + "/" + f, "r")
-                incontents = infile.readlines()
-                infile.close()
+        # replace version strings.
+        print "Updating version information in sources"
+        for f in regreplace:
+            infile = open(sourcefolder + "/" + f, "r")
+            incontents = infile.readlines()
+            infile.close()
 
-                outfile = open(sourcefolder + "/" + f, "w")
-                for line in incontents:
+            outfile = open(sourcefolder + "/" + f, "w")
+            for line in incontents:
+                newline = line
+                for r in regreplace[f]:
                     # replacements made on the replacement string:
                     # %REVISION% is replaced with the revision number
-                    replacement = re.sub("%REVISION%", str(trunk), regreplace[f][1])
-                    outfile.write(re.sub(regreplace[f][0], replacement, line))
-                outfile.close()
+                    replacement = re.sub("%REVISION%", str(revision), r[1])
+                    # %BUILD% is replace with buildid as passed on the command line
+                    if buildid != None:
+                        replacement = re.sub("%BUILDID%", str(buildid), replacement)
+                        newline = re.sub(r[0], replacement, newline)
+                outfile.write(newline)
+            outfile.close()
 
         if source == True:
+            print "Creating source tarball %s\n" % archivename
             tf = tarfile.open(archivename, mode='w:bz2')
             tf.add(sourcefolder, os.path.basename(re.subn('/$', '', sourcefolder)[0]))
             tf.close()
@@ -590,6 +603,9 @@ def deploy():
         # figure version from sources. Need to take path to project file into account.
         versionfile = re.subn('[\w\.]+$', "version.h", proj)[0]
         ver = findversion(versionfile)
+    # append buildid if any.
+    if buildid != None:
+        ver += "-" + buildid
 
     # check project file
     if not os.path.exists(proj):

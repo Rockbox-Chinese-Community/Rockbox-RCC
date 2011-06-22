@@ -1001,12 +1001,13 @@ void *nb_decoder_init(const SpeexMode *m)
 }
 
 void nb_decoder_destroy(void *state)
-{
+{   
+#if !(defined(VAR_ARRAYS) || defined (USE_ALLOCA))
    DecState *st;
    st=(DecState*)state;
-   
-#if !(defined(VAR_ARRAYS) || defined (USE_ALLOCA))
    speex_free_scratch(st->stack);
+#else
+    (void)state;
 #endif
 /*
    speex_free (st->excBuf);
@@ -1091,7 +1092,7 @@ static void nb_decode_lost(DecState *st, spx_word16_t *out, char *stack)
 #endif
 
 /* Just so we don't need to carry the complete wideband mode information */
-static const int wb_skip_table[8] = {0, 36, 112, 192, 352, 0, 0, 0};
+static const unsigned short wb_skip_table[8] = {0, 36, 112, 192, 352, 0, 0, 0};
    
 int nb_decode(void *state, SpeexBits *bits, void *vout)
 {
@@ -1315,7 +1316,6 @@ int nb_decode(void *state, SpeexBits *bits, void *vout)
    {
       int offset;
       spx_word16_t *exc;
-      spx_word16_t *sp;
       spx_word16_t *innov_save = NULL;
       spx_word16_t tmp;
 
@@ -1323,8 +1323,7 @@ int nb_decode(void *state, SpeexBits *bits, void *vout)
       offset = st->subframeSize*sub;
       /* Excitation */
       exc=st->exc+offset;
-      /* Original signal */
-      sp=out+offset;
+
       if (st->innov_save)
          innov_save = st->innov_save+offset;
 
@@ -1517,13 +1516,11 @@ int nb_decode(void *state, SpeexBits *bits, void *vout)
    {
       int offset;
       spx_word16_t *sp;
-      spx_word16_t *exc;
+
       /* Offset relative to start of frame */
       offset = st->subframeSize*sub;
       /* Original signal */
       sp=out+offset;
-      /* Excitation */
-      exc=st->exc+offset;
 
       /* LSP interpolation (quantized and unquantized) */
       lsp_interpolate(st->old_qlsp, qlsp, interp_qlsp, st->lpcSize, sub, st->nbSubframes);

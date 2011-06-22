@@ -857,8 +857,6 @@ static bool delete_bookmark(const char* bookmark_file_name, int bookmark_id)
 static void say_bookmark(const char* bookmark,
                          int bookmark_id, bool show_playlist_name)
 {
-    bool is_dir;
-
     if (!parse_bookmark(bookmark, true))
     {
         talk_id(LANG_BOOKMARK_INVALID, false);
@@ -867,9 +865,10 @@ static void say_bookmark(const char* bookmark,
 
     talk_number(bookmark_id + 1, false);
 
-    is_dir = (global_temp_buffer[0]
-              && global_temp_buffer[strlen(global_temp_buffer)-1] == '/');
 #if CONFIG_CODEC == SWCODEC
+    bool is_dir = (global_temp_buffer[0]
+              && global_temp_buffer[strlen(global_temp_buffer)-1] == '/');
+
     /* HWCODEC cannot enqueue voice file entries and .talk thumbnails
        together, because there is no guarantee that the same mp3
        parameters are used. */
@@ -951,17 +950,17 @@ static const char* skip_token(const char* s)
     return s;
 }
 
-static const char* int_token(const char* s, int* dest) 	 
-{ 	 
+static const char* int_token(const char* s, int* dest)
+{
     *dest = atoi(s);
-    return skip_token(s); 	 
-} 	 
+    return skip_token(s);
+}
 
-static const char* long_token(const char* s, long* dest) 	 
-{ 	 
+static const char* long_token(const char* s, long* dest)
+{
     *dest = atoi(s);    /* Should be atol, but we don't have it. */
-    return skip_token(s); 	 
-} 	 
+    return skip_token(s);
+}
 
 /* ----------------------------------------------------------------------- */
 /* This function takes a bookmark and parses it.  This function also       */

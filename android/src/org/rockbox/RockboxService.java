@@ -64,11 +64,16 @@ public class RockboxService extends Service
     private static volatile boolean rockbox_running;
     private Activity current_activity = null;
     private IntentFilter itf;
+    private IntentFilter ifh;
     private BroadcastReceiver batt_monitor;
+    private BroadcastReceiver headphone_monitor;
+    private BroadcastReceiver noisy_monitor;
     private RunForegroundManager fg_runner;
     private MediaButtonReceiver mMediaButtonReceiver;
     private int battery_level;
+    private int headphone_state;
     private ResultReceiver resultReceiver;
+    private RockboxService rbservice;
 
     public static final int RESULT_INVOKING_MAIN = 0;
     public static final int RESULT_LIB_LOAD_PROGRESS = 1;
@@ -339,6 +344,38 @@ public class RockboxService extends Service
         registerReceiver(batt_monitor, itf);
     }
 
+
+    private void initHeadphoneMonitor()
+    {
+        ifh = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+        headphone_monitor = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                int state = intent.getIntExtra("state", -1);
+                LOG("headphone state:" + state);
+                headphone_state = state;
+            }
+        };
+        registerReceiver(headphone_monitor, ifh);
+        noisy_monitor = new BroadcastReceiver()
+        {
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                LOG("audio becoming noisy");
+                headphone_state = 0;
+            }
+        };
+        rbservice = RockboxService.get_instance();
+        /* We're relying on internal API's here,
+           this can break in the future! */
+        rbservice.registerReceiver(noisy_monitor,
+                new IntentFilter("android.media.AUDIO_BECOMING_NOISY"));
+    }
+
+
     void startForeground()
     {
         fg_runner.startForeground();
@@ -353,7 +390,10 @@ public class RockboxService extends Service
     public void onDestroy()
     {
         super.onDestroy();
-        mMediaButtonReceiver.unregister();
+        /* Don't unregister so we can receive them (and startup the service)
+         * after idle poweroff. Hopefully it's ok if mMediaButtonReceiver is
+         * garbage collected.
+         *  mMediaButtonReceiver.unregister(); */
         mMediaButtonReceiver = null;
         /* Make sure our notification is gone. */
         stopForeground();

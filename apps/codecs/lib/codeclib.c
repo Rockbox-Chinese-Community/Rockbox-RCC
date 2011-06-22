@@ -27,39 +27,27 @@
 #include "codeclib.h"
 #include "metadata.h"
 
-size_t mem_ptr;
-size_t bufsize;
-unsigned char* mp3buf;     // The actual MP3 buffer from Rockbox
-unsigned char* mallocbuf;  // 512K from the start of MP3 buffer
-unsigned char* filebuf;    // The rest of the MP3 buffer
+/* The following variables are used by codec_malloc() to make use of free RAM
+ * within the statically allocated codec buffer. */
+static size_t mem_ptr = 0;
+static size_t bufsize = 0;
+static unsigned char* mallocbuf = NULL;
 
 int codec_init(void)
 {
+    /* codec_get_buffer() aligns the resulting point to CACHEALIGN_SIZE. */
     mem_ptr = 0;
     mallocbuf = (unsigned char *)ci->codec_get_buffer((size_t *)&bufsize);
   
     return 0;
 }
 
-void codec_set_replaygain(struct mp3entry* id3)
+void codec_set_replaygain(const struct mp3entry *id3)
 {
     ci->configure(DSP_SET_TRACK_GAIN, id3->track_gain);
     ci->configure(DSP_SET_ALBUM_GAIN, id3->album_gain);
     ci->configure(DSP_SET_TRACK_PEAK, id3->track_peak);
     ci->configure(DSP_SET_ALBUM_PEAK, id3->album_peak);
-}
-
-/* Note: codec really needs its own private metdata copy for the current
-   track being processed in order to be stable. */
-int codec_wait_taginfo(void)
-{
-    while (!*ci->taginfo_ready && !ci->stop_codec && !ci->new_track)
-        ci->sleep(0);
-    if (ci->stop_codec)
-        return -1;
-    if (ci->new_track)
-        return 1;
-    return 0;
 }
 
 /* Various "helper functions" common to all the xxx2wav decoder plugins  */
@@ -73,7 +61,9 @@ void* codec_malloc(size_t size)
         return NULL;
     
     x=&mallocbuf[mem_ptr];
-    mem_ptr+=(size+3)&~3; /* Keep memory 32-bit aligned */
+    
+    /* Keep memory aligned to CACHEALIGN_SIZE. */
+    mem_ptr += (size + (CACHEALIGN_SIZE-1)) & ~(CACHEALIGN_SIZE-1);
 
     return(x);
 }

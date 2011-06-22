@@ -41,7 +41,7 @@
 #define DECAY_CUTOFF         3
 #define DECAY_SLOPE          0.05f
 
-/* type definitaions */
+/* type definitions */
 typedef const int8_t (*drm_ps_huff_tab)[2];
 
 
@@ -445,6 +445,8 @@ static const complex_t Phi_Fract_Qmf[] = {
     { FRAC_CONST(-0.7396311164), FRAC_CONST(0.6730124950) }
 };
 
+/* static variables */
+static drm_ps_info s_drm_ps_info;
 
 /* static function declarations */
 static void drm_ps_sa_element(drm_ps_info *ps, bitfile *ld);
@@ -658,7 +660,7 @@ static void drm_ps_delta_decode(drm_ps_info *ps)
     }
 }
 
-static void drm_calc_sa_side_signal(drm_ps_info *ps, qmf_t X[38][64], uint8_t rateselect) 
+static void drm_calc_sa_side_signal(drm_ps_info *ps, qmf_t X[MAX_NTSRPS][64], uint8_t rateselect) 
 {      
     uint8_t s, b, k;
     complex_t qfrac, tmp0, tmp, in, R0;
@@ -773,7 +775,9 @@ static void drm_calc_sa_side_signal(drm_ps_info *ps, qmf_t X[38][64], uint8_t ra
         ps->delay_buf_index_ser[k] = temp_delay_ser[k];
 }
 
-static void drm_add_ambiance(drm_ps_info *ps, uint8_t rateselect, qmf_t X_left[38][64], qmf_t X_right[38][64]) 
+static void drm_add_ambiance(drm_ps_info *ps, uint8_t rateselect, 
+                             qmf_t X_left[MAX_NTSRPS][64], 
+                             qmf_t X_right[MAX_NTSRPS][64]) 
 {
     uint8_t s, b, ifreq, qclass;    
     real_t sa_map[MAX_SA_BAND], sa_dir_map[MAX_SA_BAND], k_sa_map[MAX_SA_BAND], k_sa_dir_map[MAX_SA_BAND];
@@ -833,7 +837,9 @@ static void drm_add_ambiance(drm_ps_info *ps, uint8_t rateselect, qmf_t X_left[3
     }
 }
 
-static void drm_add_pan(drm_ps_info *ps, uint8_t rateselect, qmf_t X_left[38][64], qmf_t X_right[38][64]) 
+static void drm_add_pan(drm_ps_info *ps, uint8_t rateselect, 
+                        qmf_t X_left[MAX_NTSRPS][64], 
+                        qmf_t X_right[MAX_NTSRPS][64]) 
 {
     uint8_t s, b, qclass, ifreq;
     real_t tmp, coeff1, coeff2;
@@ -911,20 +917,16 @@ static void drm_add_pan(drm_ps_info *ps, uint8_t rateselect, qmf_t X_left[38][64
 
 drm_ps_info *drm_ps_init(void)
 {
-    drm_ps_info *ps = (drm_ps_info*)faad_malloc(sizeof(drm_ps_info));
-
+    drm_ps_info *ps = &s_drm_ps_info;
     memset(ps, 0, sizeof(drm_ps_info));     
 
     return ps;
 }
 
-void drm_ps_free(drm_ps_info *ps)
-{
-    faad_free(ps);
-}
-
 /* main DRM PS decoding function */
-uint8_t drm_ps_decode(drm_ps_info *ps, uint8_t guess, uint32_t samplerate, qmf_t X_left[38][64], qmf_t X_right[38][64])
+uint8_t drm_ps_decode(drm_ps_info *ps, uint8_t guess, uint32_t samplerate, 
+                      qmf_t X_left[MAX_NTSRPS][64], 
+                      qmf_t X_right[MAX_NTSRPS][64])
 {
     uint8_t rateselect = (samplerate >= 24000);
     

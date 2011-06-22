@@ -48,7 +48,7 @@
 #define LCD_SET_PWM_FRC    0x90
 #define LCD_SET_POWER_SAVE 0xa8
 #define LCD_REVERSE        0xa6
-#define LCD_RESET	   0xe2
+#define LCD_RESET          0xe2
 
 /* cached settings */
 static bool cached_invert = false;
@@ -130,12 +130,12 @@ void lcd_init_device(void)
     and_l(~0x00000800, &GPIO_FUNCTION); /* CS3 line */ 
 
     /* LCD Reset GPO34 */
-    or_l(0x00000004, &GPIO1_ENABLE);	/* set as output */
+    or_l(0x00000004, &GPIO1_ENABLE);    /* set as output */
     or_l(0x00000004, &GPIO1_FUNCTION);  /* switch to secondary function - GPIO */
    
-    and_l(~0x00000004, &GPIO1_OUT);	/* RESET low */
-    sleep(1);				/* delay at least 1000 ns */
-    or_l(0x00000004, &GPIO1_OUT);	/* RESET high */
+    and_l(~0x00000004, &GPIO1_OUT);     /* RESET low */
+    sleep(1);                           /* delay at least 1000 ns */
+    or_l(0x00000004, &GPIO1_OUT);       /* RESET high */
     sleep(1);
 
     /* parameters setup taken from original firmware */
@@ -167,7 +167,7 @@ void lcd_init_device(void)
     DSR3 = 1;
     DIVR3 = 57;        /* DMA3 is mapped into vector 57 in system.c */
     ICR9 = (6 << 2);   /* Enable DMA3 interrupt at level 6, priority 0 */
-    and_l(~(1<<17), &IMR);
+    coldfire_imr_mod(0, 1 << 17);
 
     mutex_init(&lcd_mtx);
 

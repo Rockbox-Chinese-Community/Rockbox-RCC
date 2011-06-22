@@ -692,7 +692,7 @@ static const struct plugin_api rockbox_api = {
 #if CONFIG_CODEC == SWCODEC
     codec_thread_do_callback,
     codec_load_file,
-    codec_begin,
+    codec_run_proc,
     codec_close,
     get_codec_filename,
     find_array_ptr,
@@ -747,7 +747,6 @@ static const struct plugin_api rockbox_api = {
     bufcuttail,
 
     buf_handle_offset,
-    buf_request_buffer_handle,
     buf_set_base_handle,
     buf_used,
 #endif

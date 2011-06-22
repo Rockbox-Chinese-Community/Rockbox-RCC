@@ -4022,19 +4022,19 @@
   <source>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </source>
   <dest>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </dest>
   <voice>
     *: none
     multivolume: "Эйч Ди 1"
-    sansae200*,sansac200*,sansafuze*: "микро Эс Ди"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "микро Эс Ди"
     archosondio*: "Эм Эм Си"
   </voice>
 </phrase>
@@ -8869,7 +8869,7 @@
     *: "Режим:"
   </dest>
   <voice>
-    *: ""
+    *: "Режим:"
   </voice>
 </phrase>
 <phrase>
@@ -12520,20 +12520,20 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_RECORDING_HISTOGRAM_INTERVAL
+  id: LANG_HISTOGRAM_INTERVAL
   desc: in record settings menu
   user: core
   <source>
     *: none
-    recording_histogram: "Histogram interval"
+    histogram: "Histogram interval"
   </source>
   <dest>
     *: none
-    recording_histogram: "Интервал гистограммы"
+    histogram: "Интервал гистограммы"
   </dest>
   <voice>
     *: none
-    recording_histogram: "Интервал гистограммы"
+    histogram: "Интервал гистограммы"
   </voice>
 </phrase>
 <phrase>

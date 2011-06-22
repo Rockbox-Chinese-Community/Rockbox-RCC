@@ -83,6 +83,9 @@
 #include "bookmark.h"
 #include "wps.h"
 #include "playback.h"
+#if CONFIG_CODEC == SWCODEC
+#include "voice_thread.h"
+#endif
 
 #ifdef BOOTFILE
 #if !defined(USB_NONE) && !defined(USB_HANDLED_BY_OF) \
@@ -181,15 +184,7 @@ int fast_readline(int fd, char *buf, int buf_size, void *parameters,
         if (rc >= 0)
             buf[pos+rc] = '\0';
 
-        if ( (p = strchr(buf, '\r')) != NULL)
-        {
-            *p = '\0';
-            next = ++p;
-        }
-        else
-            p = buf;
-
-        if ( (p = strchr(p, '\n')) != NULL)
+        if ( (p = strchr(buf, '\n')) != NULL)
         {
             *p = '\0';
             next = ++p;
@@ -451,10 +446,7 @@ static void car_adapter_mode_processing(bool inserted)
             if ((audio_status() & AUDIO_STATUS_PLAY) &&
                 !(audio_status() & AUDIO_STATUS_PAUSE))
             {
-                if (global_settings.fade_on_stop)
-                    fade(false, false);
-                else
-                    audio_pause();
+                pause_action(true, true);
             }
             waiting_to_resume_play = false;
         }
@@ -492,28 +484,18 @@ static void unplug_change(bool inserted)
         int audio_stat = audio_status();
         if (inserted)
         {
+            backlight_on();
             if ((audio_stat & AUDIO_STATUS_PLAY) &&
                     headphone_caused_pause &&
                     global_settings.unplug_mode > 1 )
-                audio_resume();
-            backlight_on();
+                unpause_action(true, true);
             headphone_caused_pause = false;
         } else {
             if ((audio_stat & AUDIO_STATUS_PLAY) &&
                     !(audio_stat & AUDIO_STATUS_PAUSE))
             {
                 headphone_caused_pause = true;
-                audio_pause();
-
-                if (global_settings.unplug_rw)
-                {
-                    if (audio_current_track()->elapsed >
-                            (unsigned long)(global_settings.unplug_rw*1000))
-                        audio_ff_rewind(audio_current_track()->elapsed -
-                                (global_settings.unplug_rw*1000));
-                    else
-                        audio_ff_rewind(0);
-                }
+                pause_action(false, false);
             }
         }
     }
@@ -578,7 +560,7 @@ long default_event_handler_ex(long event, void (*callback)(void *), void *parame
             return SYS_CHARGER_DISCONNECTED;
 
         case SYS_CAR_ADAPTER_RESUME:
-            audio_resume();
+            unpause_action(true, true);
             return SYS_CAR_ADAPTER_RESUME;
 #endif
 #ifdef HAVE_HOTSWAP_STORAGE_AS_MAIN
@@ -655,9 +637,9 @@ long default_event_handler_ex(long event, void (*callback)(void *), void *parame
             if (status & AUDIO_STATUS_PLAY)
             {
                 if (status & AUDIO_STATUS_PAUSE)
-                    audio_resume();
+                    unpause_action(true, true);
                 else
-                    audio_pause();
+                    pause_action(true, true);
             }
             else
                 if (playlist_resume() != -1)
@@ -705,9 +687,11 @@ int show_logo( void )
     lcd_getstringsize((unsigned char *)"A", &font_w, &font_h);
     lcd_putsxy((LCD_WIDTH/2) - ((strlen(version)*font_w)/2),
                0, (unsigned char *)version);
-    lcd_bitmap(rockboxlogo, 0, 16, BMPWIDTH_rockboxlogo, BMPHEIGHT_rockboxlogo);
+    lcd_bitmap(rockboxlogo, (LCD_WIDTH - BMPWIDTH_rockboxlogo) / 2, 16,
+            BMPWIDTH_rockboxlogo, BMPHEIGHT_rockboxlogo);
 #else
-    lcd_bitmap(rockboxlogo, 0, 10, BMPWIDTH_rockboxlogo, BMPHEIGHT_rockboxlogo);
+    lcd_bitmap(rockboxlogo, (LCD_WIDTH - BMPWIDTH_rockboxlogo) / 2, 10,
+            BMPWIDTH_rockboxlogo, BMPHEIGHT_rockboxlogo);
     lcd_setfont(FONT_SYSFIXED);
     lcd_getstringsize((unsigned char *)"A", &font_w, &font_h);
     lcd_putsxy((LCD_WIDTH/2) - ((strlen(version)*font_w)/2),
@@ -1031,3 +1015,20 @@ int clamp_value_wrap(int value, int max, int min)
 }
 #endif
 #endif
+#define MAX_ACTIVITY_DEPTH 12
+static enum current_activity 
+        current_activity[MAX_ACTIVITY_DEPTH] = {ACTIVITY_UNKNOWN};
+static int current_activity_top = 0;
+void push_current_activity(enum current_activity screen)
+{
+    current_activity[current_activity_top++] = screen;
+}
+void pop_current_activity(void)
+{
+    current_activity_top--;
+}
+enum current_activity get_current_activity(void)
+{
+    return current_activity[current_activity_top?current_activity_top-1:0];
+}
+

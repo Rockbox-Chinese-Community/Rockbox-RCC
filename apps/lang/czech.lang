@@ -140,10 +140,10 @@
     *: "Loading..."
   </source>
   <dest>
-    *: "Nahrávám..."
+    *: "Otevírám..."
   </dest>
   <voice>
-    *: "Nahrávám"
+    *: "Otevírám"
   </voice>
 </phrase>
 <phrase>
@@ -154,7 +154,7 @@
     *: "Loading... %d%% done (%s)"
   </source>
   <dest>
-    *: "Nahrávám... %d%% hotovo (%s)"
+    *: "Otevírám... %d%% hotovo (%s)"
   </dest>
   <voice>
     *: ""
@@ -1045,7 +1045,7 @@
   </source>
   <dest>
     *: none
-    swcodec: "Editační mód: %s"
+    swcodec: "Režim: %s"
   </dest>
   <voice>
     *: none
@@ -1686,11 +1686,11 @@
   </source>
   <dest>
     *: none
-    crossfade: "Mód zeslabení"
+    crossfade: "Režim zeslabení"
   </dest>
   <voice>
     *: none
-    crossfade: "Mód zeslabení"
+    crossfade: "Režim zeslabení"
   </voice>
 </phrase>
 <phrase>
@@ -1988,19 +1988,16 @@
 </phrase>
 <phrase>
   id: LANG_HEADPHONE_UNPLUG_RW
-  desc: in pause_phones_menu.
+  desc: deprecated
   user: core
   <source>
-    *: none
-    headphone_detection: "Duration to Rewind"
+    *: ""
   </source>
   <dest>
-    *: none
-    headphone_detection: "Délka přetočení zpět"
+    *: ""
   </dest>
   <voice>
-    *: none
-    headphone_detection: "Délka přetočení zpět"
+    *: ""
   </voice>
 </phrase>
 <phrase>
@@ -2672,11 +2669,11 @@
   </source>
   <dest>
     *: none
-    lcd_invert,remote_lcd_invert: "Mód displeje"
+    lcd_invert,remote_lcd_invert: "Režim displeje"
   </dest>
   <voice>
     *: none
-    lcd_invert,remote_lcd_invert: "Mód dyspleje"
+    lcd_invert,remote_lcd_invert: "Režim dyspleje"
   </voice>
 </phrase>
 <phrase>
@@ -5241,11 +5238,11 @@
   </source>
   <dest>
     *: none
-    radio: "Vymazat uložené stanice?"
+    radio: "Zrušit aktuální seznam stanic?"
   </dest>
   <voice>
     *: none
-    radio: "Vymazat uložené stanice?"
+    radio: "Zrušit aktuální seznam stanic?"
   </voice>
 </phrase>
 <phrase>
@@ -5343,11 +5340,11 @@
   </source>
   <dest>
     *: none
-    radio: "Vymazat seznam stanic"
+    radio: "Zrušit seznam stanic"
   </dest>
   <voice>
     *: none
-    radio: "Vymazat seznam stanic"
+    radio: "Zrušit seznam stanic"
   </voice>
 </phrase>
 <phrase>
@@ -6649,19 +6646,19 @@
   <source>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </source>
   <dest>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </dest>
   <voice>
     *: none
     multivolume: "hárdisk há dé 1"
-    sansae200*,sansac200*,sansafuze*: "paměťová karta mikro es dé"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "paměťová karta mikro es dé"
     archosondio*: "paměťová karta em em cé"
   </voice>
 </phrase>
@@ -7889,10 +7886,10 @@
     *: "Mode:"
   </source>
   <dest>
-    *: "Mód:"
+    *: "Režim:"
   </dest>
   <voice>
-    *: ""
+    *: "V režimu"
   </voice>
 </phrase>
 <phrase>
@@ -9692,7 +9689,7 @@
   </source>
   <dest>
     *: none
-    swcodec: "Editační mód: %s %s"
+    swcodec: "Režim: %s %s"
   </dest>
   <voice>
     *: none
@@ -9743,7 +9740,7 @@
   </source>
   <dest>
     *: none
-    lcd_bitmap: "Mód:"
+    lcd_bitmap: "Režim:"
   </dest>
   <voice>
     *: none
@@ -11428,11 +11425,11 @@
   </source>
   <dest>
     *: none
-    usb_hid: "Režim USB klávesnice"
+    usb_hid: "Mód USB klávesnice"
   </dest>
   <voice>
     *: none
-    usb_hid: "Režim ÚESBÉ klávesnice"
+    usb_hid: "Mód ÚESBÉ klávesnice"
   </voice>
 </phrase>
 <phrase>
@@ -12089,20 +12086,20 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_RECORDING_HISTOGRAM_INTERVAL
+  id: LANG_HISTOGRAM_INTERVAL
   desc: in record settings menu
   user: core
   <source>
     *: none
-    recording_histogram: "Histogram interval"
+    histogram: "Histogram interval"
   </source>
   <dest>
     *: none
-    recording_histogram: "Rozsah histogramu"
+    histogram: "Rozsah histogramu"
   </dest>
   <voice>
     *: none
-    recording_histogram: "Rozsah histogramu"
+    histogram: "Rozsah histogramu"
   </voice>
 </phrase>
 <phrase>
@@ -12659,5 +12656,19 @@
   </dest>
   <voice>
     *: "Pouze ve vlastních složkách"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_PAUSE_REWIND
+  desc: Seconds to rewind when rewind on pause is enabled.
+  user: core
+  <source>
+    *: "Rewind on Pause"
+  </source>
+  <dest>
+    *: "Přetočit zpět při pauze"
+  </dest>
+  <voice>
+    *: "Přetočit zpět při pauze"
   </voice>
 </phrase>

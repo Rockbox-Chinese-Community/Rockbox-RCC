@@ -30,6 +30,7 @@
 #define DIRCACHE_LIMIT    (1024*1024*6)
 
 #define DIRCACHE_APPFLAG_TAGCACHE  0x0001
+#define DIRCACHE_APPFLAG_PLAYLIST  0x0002
 
 /* Internal structures. */
 struct travel_data {
@@ -47,32 +48,6 @@ struct travel_data {
     int pathpos;
 };
 
-#define DIRCACHE_MAGIC  0x00d0c0a0
-struct dircache_maindata {
-    long magic;
-    long size;
-    long entry_count;
-    long appflags;
-    struct dircache_entry *root_entry;
-};
-
-#define MAX_PENDING_BINDINGS 2
-struct fdbind_queue {
-    char path[MAX_PATH];
-    int fd;
-};
-
-/* Exported structures. */
-struct dircache_entry {
-    struct dirinfo info;
-    struct dircache_entry *next;
-    struct dircache_entry *up;
-    struct dircache_entry *down;
-    long startcluster;
-    unsigned long name_len;
-    char *d_name;
-};
-
 struct dirent_cached {
     struct dirinfo info;
     char *d_name;
@@ -82,7 +57,7 @@ struct dirent_cached {
 typedef struct {
     bool busy;
     struct dirent_cached theent; /* .attribute is set to -1 on init(opendir) */
-    struct dircache_entry *internal_entry; /* the current entry in the directory */
+    int internal_entry;          /* the current entry in the directory */
     DIR_UNCACHED *regulardir;
 } DIR_CACHED;
 
@@ -100,8 +75,12 @@ int dircache_get_cache_size(void);
 int dircache_get_reserve_used(void);
 int dircache_get_build_ticks(void);
 void dircache_disable(void);
-const struct dircache_entry *dircache_get_entry_ptr(const char *filename);
-void dircache_copy_path(const struct dircache_entry *entry, char *buf, int size);
+int dircache_get_entry_id(const char *filename);
+size_t dircache_copy_path(int index, char *buf, size_t size);
+
+/* the next two are internal for file.c */
+long _dircache_get_entry_startcluster(int id);
+struct dirinfo* _dircache_get_entry_dirinfo(int id);
 
 void dircache_bind(int fd, const char *path);
 void dircache_update_filesize(int fd, long newsize, long startcluster);

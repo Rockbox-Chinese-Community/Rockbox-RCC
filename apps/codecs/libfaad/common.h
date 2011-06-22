@@ -56,29 +56,33 @@ extern struct codec_api* ci;
 #define IBSS_ATTR_FAAD_LARGE_IRAM   IBSS_ATTR
 #define ICODE_ATTR_FAAD_LARGE_IRAM
 #define ICONST_ATTR_FAAD_LARGE_IRAM ICONST_ATTR
-#define IBSS_ATTR_FAAD_XLARGE_IRAM
+#define IBSS_ATTR_FAAD_XLR
 
 #elif (CONFIG_CPU == PP5022) || (CONFIG_CPU == PP5024)
 /* Enough IRAM to move additional data and code to it. */
 #define IBSS_ATTR_FAAD_LARGE_IRAM   IBSS_ATTR
 #define ICODE_ATTR_FAAD_LARGE_IRAM  ICODE_ATTR
 #define ICONST_ATTR_FAAD_LARGE_IRAM ICONST_ATTR
-#define IBSS_ATTR_FAAD_XLARGE_IRAM
+#define IBSS_ATTR_FAAD_XLR
 
 #elif defined(CPU_S5L870X)
 /* Very large IRAM. Move even more data to it. */
 #define IBSS_ATTR_FAAD_LARGE_IRAM   IBSS_ATTR
 #define ICODE_ATTR_FAAD_LARGE_IRAM  ICODE_ATTR
 #define ICONST_ATTR_FAAD_LARGE_IRAM ICONST_ATTR
-#define IBSS_ATTR_FAAD_XLARGE_IRAM  IBSS_ATTR
+#define IBSS_ATTR_FAAD_XLR          IBSS_ATTR
+#define HAVE_FAAD_XLR_IN_IRAM
 
 #else
 /* Not enough IRAM available. */
 #define IBSS_ATTR_FAAD_LARGE_IRAM
 #define ICODE_ATTR_FAAD_LARGE_IRAM
 #define ICONST_ATTR_FAAD_LARGE_IRAM
-#define IBSS_ATTR_FAAD_XLARGE_IRAM
+#define IBSS_ATTR_FAAD_XLR
 #endif
+
+/* Used to allocate several SBR + PS arrays and variables statically. */
+//#define FAAD_STATIC_ALLOC
 
 #define INLINE __inline
 #if 0 //defined(_WIN32) && !defined(_WIN32_WCE)
@@ -110,10 +114,8 @@ extern struct codec_api* ci;
 
 /* Allow decoding of MAIN profile AAC */
 #define MAIN_DEC
-#if MEMORYSIZE > 2
 /* Allow decoding of SSR profile AAC */
 #define SSR_DEC
-#endif
 /* Allow decoding of LTP profile AAC */
 #define LTP_DEC
 /* Allow decoding of LD profile AAC */
@@ -149,9 +151,9 @@ extern struct codec_api* ci;
   #undef ERROR_RESILIENCE
 #endif
 
-#if MEMORYSIZE > 2
+#if CODEC_SIZE >= 0x80000
 #define SBR_DEC
-//#define SBR_LOW_POWER
+//#define SBR_LOW_POWER /* Does not work yet in rockbox. */
 #define PS_DEC
 #endif
 
@@ -442,8 +444,11 @@ uint8_t max_tns_sfb(const uint8_t sr_index, const uint8_t object_type,
 uint32_t get_sample_rate(const uint8_t sr_index);
 int8_t can_decode_ot(const uint8_t object_type);
 
-void *faad_malloc(size_t size);
-void faad_free(void *b);
+#ifndef FAAD_STATIC_ALLOC
+/* Those should not be defined or used anymore */
+#define faad_malloc(A) malloc(A)
+#define faad_free(A)   free(A)
+#endif
 
 //#define PROFILE
 #ifdef PROFILE

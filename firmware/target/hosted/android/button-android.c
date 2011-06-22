@@ -28,8 +28,13 @@
 #include "kernel.h"
 #include "system.h"
 #include "touchscreen.h"
+#include "powermgmt.h"
 
 extern JNIEnv *env_ptr;
+extern jclass  RockboxService_class;
+extern jobject RockboxService_instance;
+
+static jfieldID _headphone_state;
 static int last_y, last_x;
 static int last_btns;
 
@@ -77,13 +82,14 @@ Java_org_rockbox_RockboxFramebuffer_buttonHandler(JNIEnv*env, jclass class,
             button = dpad_to_button((int)keycode);
         if (button)
         {
+            reset_poweroff_timer();
             queue_post(&button_queue, button, 0);
             return true;
         }
     }
 
     if (!button)
-    {   
+    {
         button = key_to_button(keycode);
     }
 
@@ -102,12 +108,26 @@ Java_org_rockbox_RockboxFramebuffer_buttonHandler(JNIEnv*env, jclass class,
         last_btns &= (~button);
         return false;
     }
-        
+
     return true;
 }
 
 void button_init_device(void)
 {
+    jmethodID initHeadphoneMonitor = (*env_ptr)->GetMethodID(env_ptr,
+                                                           RockboxService_class,
+                                                           "initHeadphoneMonitor",
+                                                           "()V");
+    /* start the monitor */
+    (*env_ptr)->CallVoidMethod(env_ptr,
+                               RockboxService_instance,
+                               initHeadphoneMonitor);
+
+    /* cache the headphone state field id */
+    _headphone_state = (*env_ptr)->GetFieldID(env_ptr,
+                                            RockboxService_class,
+                                            "headphone_state",
+                                            "I");
 }
 
 int button_read_device(int *data)
@@ -125,3 +145,13 @@ int button_read_device(int *data)
 
     return btn;
 }
+
+
+/* Tell if anything is in the jack. */
+bool headphones_inserted(void)
+{
+    int state = (*env_ptr)->GetIntField(env_ptr, RockboxService_instance, _headphone_state);
+    /* 0 is disconnected, 1 and 2 are connected */
+    return (state == 0) ? false : true;
+}
+

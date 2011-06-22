@@ -392,8 +392,8 @@ void radio_screen(void)
 #endif
 #if CONFIG_CODEC != SWCODEC
     int timeout = current_tick + HZ/10;
-    unsigned int last_seconds = 0;
 #if !defined(SIMULATOR)
+    unsigned int last_seconds = 0;
     unsigned int seconds = 0;
     struct audio_recording_options rec_options;
 #endif /* SIMULATOR */
@@ -403,6 +403,7 @@ void radio_screen(void)
 #endif
 
     /* change status to "in screen" */
+    push_current_activity(ACTIVITY_FM);
     in_screen = true;
 
     if(radio_preset_count() <= 0)
@@ -547,8 +548,10 @@ void radio_screen(void)
                     rec_command(RECORDING_CMD_START);
                     update_type = SKIN_REFRESH_ALL;
                 }
-#endif /* SIMULATOR */
+#if CONFIG_CODEC != SWCODEC
                 last_seconds = 0;
+#endif
+#endif /* SIMULATOR */
                 break;
 #endif /* #ifdef FM_RECORD */
 
@@ -866,6 +869,7 @@ void radio_screen(void)
     cpu_idle_mode(false);
 #endif
     fms_fix_displays(FMS_EXIT);
+    pop_current_activity();
     in_screen = false;
 } /* radio_screen */
 

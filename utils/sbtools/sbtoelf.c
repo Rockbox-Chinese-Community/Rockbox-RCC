@@ -38,6 +38,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <strings.h>
 
 #include "crypto.h"
 #include "elf.h"
@@ -75,6 +76,12 @@ uint8_t *g_buf; /* file content */
 #define PREFIX_SIZE     128
 char out_prefix[PREFIX_SIZE];
 const char *key_file;
+
+char *s_getenv(const char *name)
+{
+    char *s = getenv(name);
+    return s ? s : "";
+}
 
 void *xmalloc(size_t s) /* malloc helper, used in elf.c */
 {
@@ -300,6 +307,17 @@ static void extract_section(int data_sec, char name[5], byte *buf, int size, con
             // fixme: useless as pos is a multiple of 16 and call struct is 4-bytes wide ?
             pos = ROUND_UP(pos, 16);
         }
+        else if(hdr->opcode == SB_INST_MODE)
+        {
+            struct sb_instruction_mode_t *mode = (struct sb_instruction_mode_t *)hdr;
+            color(RED);
+            printf("MODE");
+            color(OFF);printf(" | ");
+            color(BLUE);
+            printf("mod=0x%08x\n", mode->mode);
+            color(OFF);
+            pos += sizeof(struct sb_instruction_mode_t);
+        }
         else
         {
             color(RED);
@@ -337,8 +355,8 @@ static void extract(unsigned long filesize)
         bugp("File size mismatch");
     if(sb_header->header_size * BLOCK_SIZE != sizeof(struct sb_header_t))
         bugp("Bad header size");
-    if(sb_header->major_ver != IMAGE_MAJOR_VERSION ||
-            sb_header->minor_ver != IMAGE_MINOR_VERSION)
+    if((sb_header->major_ver != IMAGE_MAJOR_VERSION ||
+            sb_header->minor_ver != IMAGE_MINOR_VERSION) && strcasecmp(s_getenv("SB_IGNORE_VER"), "YES"))
         bugp("Bad file format version");
     if(sb_header->sec_hdr_size * BLOCK_SIZE != sizeof(struct sb_section_header_t))
         bugp("Bad section header size");
@@ -497,8 +515,7 @@ static void extract(unsigned long filesize)
     }
 
     /* sections */
-    char *raw_cmd_env = getenv("SB_RAW_CMD");
-    if(raw_cmd_env == NULL || strcmp(raw_cmd_env, "YES") != 0)
+    if(strcasecmp(s_getenv("SB_RAW_CMD"), "YES") != 0)
     {
         color(BLUE);
         printf("Sections\n");
@@ -699,6 +716,7 @@ int main(int argc, const char **argv)
     {
         printf("Usage: %s <firmware> <key file> [<out prefix>]\n",*argv);
         printf("To use raw command mode, set environment variable SB_RAW_CMD to YES\n");
+        printf("To ignore the file version check, set environment variable SB_IGNORE_VER to YES\n");
         return 1;
     }
 

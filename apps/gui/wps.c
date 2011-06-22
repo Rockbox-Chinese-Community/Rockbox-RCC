@@ -119,6 +119,33 @@ char* wps_default_skin(enum screen_type screen)
     return skin_buf[screen];
 }
 
+void pause_action(bool may_fade, bool updatewps)
+{
+    if (may_fade && global_settings.fade_on_stop)
+        fade(false, updatewps);
+    else
+        audio_pause();
+
+    if (global_settings.pause_rewind) {
+        long newpos;
+
+#if (CONFIG_CODEC == SWCODEC)
+        audio_pre_ff_rewind();
+#endif
+        newpos = audio_current_track()->elapsed
+            - global_settings.pause_rewind * 1000;
+        audio_ff_rewind(newpos > 0 ? newpos : 0);
+    }
+}
+
+void unpause_action(bool may_fade, bool updatewps)
+{
+    if (may_fade && global_settings.fade_on_stop)
+        fade(true, updatewps);
+    else
+        audio_resume();
+}        
+
 void fade(bool fade_in, bool updatewps)
 {
     int fp_global_vol = global_settings.volume << 8;
@@ -219,10 +246,10 @@ static int skintouch_to_wps(struct wps_data *data)
 #endif
         case ACTION_TOUCH_SCROLLBAR:
             skin_get_global_state()->id3->elapsed = skin_get_global_state()->id3->length*offset/100;
-            if (!skin_get_global_state()->paused)
 #if (CONFIG_CODEC == SWCODEC)
-                audio_pre_ff_rewind();
+            audio_pre_ff_rewind();
 #else
+            if (!skin_get_global_state()->paused)
                 audio_pause();
 #endif
             audio_ff_rewind(skin_get_global_state()->id3->elapsed);
@@ -300,10 +327,10 @@ bool ffwd_rew(int button)
                     if ( (audio_status() & AUDIO_STATUS_PLAY) &&
                           skin_get_global_state()->id3 && skin_get_global_state()->id3->length )
                     {
-                        if (!skin_get_global_state()->paused)
 #if (CONFIG_CODEC == SWCODEC)
-                            audio_pre_ff_rewind();
+                        audio_pre_ff_rewind();
 #else
+                        if (!skin_get_global_state()->paused)
                             audio_pause();
 #endif
 #if CONFIG_KEYPAD == PLAYER_PAD
@@ -472,10 +499,10 @@ static void prev_track(unsigned long skip_thresh)
             return;
         }
 
-        if (!state->paused)
 #if (CONFIG_CODEC == SWCODEC)
-            audio_pre_ff_rewind();
+        audio_pre_ff_rewind();
 #else
+        if (!state->paused)
             audio_pause();
 #endif
 
@@ -554,16 +581,20 @@ static void play_hop(int direction)
     {
         elapsed += step * direction;
     }
-    if((audio_status() & AUDIO_STATUS_PLAY) && !state->paused)
+    if(audio_status() & AUDIO_STATUS_PLAY)
     {
 #if (CONFIG_CODEC == SWCODEC)
         audio_pre_ff_rewind();
 #else
-        audio_pause();
+        if (!state->paused)
+            audio_pause();
 #endif
     }
+
+#if (CONFIG_CODEC == SWCODEC)
+    audio_ff_rewind(elapsed);
+#else
     audio_ff_rewind(state->id3->elapsed = elapsed);
-#if (CONFIG_CODEC != SWCODEC)
     if (!state->paused)
         audio_resume();
 #endif
@@ -656,6 +687,26 @@ static void gwps_enter_wps(void)
     /* force statusbar/skin update since we just cleared the whole screen */
     send_event(GUI_EVENT_ACTIONUPDATE, (void*)1);
 }
+
+void wps_do_playpause(bool updatewps)
+{
+    struct wps_state *state = skin_get_global_state();
+    if ( state->paused )
+    {
+        state->paused = false;
+        unpause_action(true, updatewps);
+    }
+    else
+    {
+        state->paused = true;
+        pause_action(true, updatewps);
+        settings_save();
+#if !defined(HAVE_RTC_RAM) && !defined(HAVE_SW_POWEROFF)
+        call_storage_idle_notifys(true);   /* make sure resume info is saved */
+#endif
+    }
+}
+    
 
 /* The WPS can be left in two ways:
  *      a)  call a function, which draws over the wps. In this case, the wps
@@ -766,8 +817,6 @@ long gui_wps_show(void)
                 else if (retval == ONPLAY_PICTUREFLOW)
                     return GO_TO_PICTUREFLOW;                 
 #endif
-                else if (retval == ONPLAY_LYRICS)
-                    return GO_TO_LYRICS;  
                 restore = true;
             }
             break;
@@ -785,26 +834,7 @@ long gui_wps_show(void)
             case ACTION_WPS_PLAY:
                 if (global_settings.party_mode)
                     break;
-                if ( state->paused )
-                {
-                    state->paused = false;
-                    if ( global_settings.fade_on_stop )
-                        fade(true, true);
-                    else
-                        audio_resume();
-                }
-                else
-                {
-                    state->paused = true;
-                    if ( global_settings.fade_on_stop )
-                        fade(false, true);
-                    else
-                        audio_pause();
-                    settings_save();
-#if !defined(HAVE_RTC_RAM) && !defined(HAVE_SW_POWEROFF)
-                    call_storage_idle_notifys(true);   /* make sure resume info is saved */
-#endif
-                }
+                wps_do_playpause(true);
                 break;
 
             case ACTION_WPS_VOLUP:
@@ -844,10 +874,10 @@ long gui_wps_show(void)
                 {
                     if (state->id3->cuesheet)
                     {
-                        if (!state->paused)
 #if (CONFIG_CODEC == SWCODEC)
-                            audio_pre_ff_rewind();
+                        audio_pre_ff_rewind();
 #else
+                        if (!state->paused)
                             audio_pause();
 #endif
                         audio_ff_rewind(0);
@@ -1004,29 +1034,6 @@ long gui_wps_show(void)
                 restore = true;
             }
             break;
-#ifdef HAVE_TOUCHSCREEN
-            case ACTION_TOUCH_SHUFFLE: /* toggle shuffle mode */
-            {
-                global_settings.playlist_shuffle = 
-                                                !global_settings.playlist_shuffle;
-#if CONFIG_CODEC == SWCODEC
-                dsp_set_replaygain();
-#endif
-                if (global_settings.playlist_shuffle)
-                    playlist_randomise(NULL, current_tick, true);
-                else
-                    playlist_sort(NULL, true);
-            }
-            break;
-            case ACTION_TOUCH_REPMODE: /* cycle the repeat mode setting */
-            {
-                const struct settings_list *rep_setting = 
-                                find_setting(&global_settings.repeat_mode, NULL);
-                option_select_next_val(rep_setting, false, true);
-                audio_flush_and_reload_tracks();
-            }
-            break;
-#endif /* HAVE_TOUCHSCREEN */
              /* this case is used by the softlock feature
               * it requests a full update here */
             case ACTION_REDRAW:
@@ -1164,6 +1171,17 @@ static void nextid3available_callback(void* param)
     skin_request_full_update(WPS);
 }
 
+#ifdef AUDIO_FAST_SKIP_PREVIEW
+/* this is called on the audio_skip caller thread */
+static void track_skip_callback(void *param)
+{
+    struct wps_state *state = skin_get_global_state();
+    state->id3 = audio_current_track();
+    state->nid3 = audio_next_track();
+    skin_request_full_update(WPS);
+    (void)param;
+}
+#endif /* AUDIO_FAST_SKIP_PREVIEW */
 
 static void wps_state_init(void)
 {
@@ -1185,6 +1203,14 @@ static void wps_state_init(void)
     /* add the WPS track event callbacks */
     add_event(PLAYBACK_EVENT_TRACK_CHANGE, false, track_changed_callback);
     add_event(PLAYBACK_EVENT_NEXTTRACKID3_AVAILABLE, false, nextid3available_callback);
+#if CONFIG_CODEC == SWCODEC
+    /* Use the same callback as ..._TRACK_CHANGE for when remaining handles have
+       finished */
+    add_event(PLAYBACK_EVENT_CUR_TRACK_READY, false, track_changed_callback);
+#endif
+#ifdef AUDIO_FAST_SKIP_PREVIEW
+    add_event(PLAYBACK_EVENT_TRACK_SKIP, false, track_skip_callback);
+#endif
 }
 
 

@@ -171,7 +171,6 @@ static void gui_quickscreen_draw(const struct gui_quickscreen *qs,
     int i;
     char buf[MAX_PATH];
     unsigned const char *title, *value;
-    void *setting;
     int temp;
     display->set_viewport(parent);
     display->clear_viewport();
@@ -184,7 +183,6 @@ static void gui_quickscreen_draw(const struct gui_quickscreen *qs,
         display->set_viewport(vp);
 
         title = P2STR(ID2P(qs->items[i]->lang_id));
-        setting = qs->items[i]->setting;
         temp = option_value_as_int(qs->items[i]);
         value = option_get_valuestring(qs->items[i],
                                        buf, MAX_PATH, temp);
@@ -275,7 +273,13 @@ static bool gui_quickscreen_do_button(struct gui_quickscreen * qs, int button)
     }
     if (qs->items[item] == NULL)
         return false;
-
+#ifdef ASCENDING_INT_SETTINGS
+    if (((qs->items[item]->flags & F_INT_SETTING) == F_INT_SETTING) &&
+        ( button == ACTION_QS_DOWN || button == ACTION_QS_TOP))
+    {
+        invert = !invert;
+    }
+#endif
     option_select_next_val(qs->items[item], invert, true);
     talk_qs_option(qs->items[item], false);
     return true;
@@ -313,6 +317,9 @@ static bool gui_syncquickscreen_run(struct gui_quickscreen * qs, int button_ente
      *  - an action taken while pressing the enter button,
      *    then release the enter button*/
     bool can_quit = false;
+    
+    push_current_activity(ACTIVITY_QUICKSCREEN);
+    
     FOR_NB_SCREENS(i)
     {
         screens[i].set_viewport(NULL);
@@ -365,6 +372,7 @@ static bool gui_syncquickscreen_run(struct gui_quickscreen * qs, int button_ente
         viewportmanager_theme_undo(i, true);
     }
 
+    pop_current_activity();
     return changed;
 }
 

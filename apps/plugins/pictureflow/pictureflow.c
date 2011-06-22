@@ -1257,14 +1257,13 @@ int create_empty_slide(bool force)
 {
     if ( force || ! rb->file_exists( EMPTY_SLIDE ) )  {
         struct bitmap input_bmp;
-        int ret;
         input_bmp.width = DISPLAY_WIDTH;
         input_bmp.height = DISPLAY_HEIGHT;
 #if LCD_DEPTH > 1
         input_bmp.format = FORMAT_NATIVE;
 #endif
         input_bmp.data = (char*)buf;
-        ret = scaled_read_bmp_file(EMPTY_SLIDE_BMP, &input_bmp,
+        scaled_read_bmp_file(EMPTY_SLIDE_BMP, &input_bmp,
                                 buf_size,
                                 FORMAT_NATIVE|FORMAT_RESIZE|FORMAT_KEEP_ASPECT,
                                 &format_transposed);
@@ -1331,8 +1330,7 @@ bool create_pf_thread(void)
                            sizeof(thread_stack),
                             0,
                            "Picture load thread"
-                               IF_PRIO(, MAX(PRIORITY_USER_INTERFACE / 2,
-                                       PRIORITY_REALTIME + 1))
+                               IF_PRIO(, PRIORITY_BUFFERING)
                                IF_COP(, CPU)
                                       )
         ) == 0) {
@@ -1929,10 +1927,6 @@ void render_slide(struct slide_data *slide, const int alpha)
                 pixel -= PIXELSTEP_Y;
             }
         }
-        rb->yield(); /* allow audio to play when fast scrolling */
-        bmp = surface(slide->slide_index); /* resync surface due to yield */
-        src = (pix_t*)(sizeof(struct dim) + (char *)bmp);
-        ptr = &src[column * bmp->height];
         p = (bmp->height-DISPLAY_OFFS) * PFREAL_ONE;
         plim = MIN(sh * PFREAL_ONE, p + (LCD_HEIGHT/2) * dy);
         int plim2 = MIN(MIN(sh + REFLECT_HEIGHT, sh * 2) * PFREAL_ONE,

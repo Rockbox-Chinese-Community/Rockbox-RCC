@@ -25,6 +25,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <errno.h>
 #include "config.h"
 
 #define HAVE_STATVFS (!defined(WIN32))
@@ -147,8 +148,7 @@ extern int _wrmdir(const wchar_t*);
 
 
 #ifdef HAVE_DIRCACHE
-struct dircache_entry;
-const struct dircache_entry *dircache_get_entry_ptr(const char *filename);
+int dircache_get_entry_id(const char *filename);
 void dircache_add_file(const char *name, long startcluster);
 void dircache_remove(const char *name);
 void dircache_rename(const char *oldname, const char *newname);
@@ -328,8 +328,11 @@ struct sim_dirent *sim_readdir(MYDIR *dir)
     char buffer[MAX_PATH]; /* sufficiently big */
     static struct sim_dirent secret;
     STAT_T s;
-    DIRENT_T *x11 = READDIR(dir->dir);
     struct tm tm;
+    DIRENT_T *x11;
+
+read_next:
+    x11 = READDIR(dir->dir);
 
     if(!x11)
         return (struct sim_dirent *)0;
@@ -339,8 +342,20 @@ struct sim_dirent *sim_readdir(MYDIR *dir)
     /* build file name */
     snprintf(buffer, sizeof(buffer), "%s/%s", 
         get_sim_pathname(dir->name), secret.d_name);
+
     if (STAT(buffer, &s)) /* get info */
+    {
+#ifdef EOVERFLOW
+        /* File size larger than 2 GB? */
+        if (errno == EOVERFLOW)
+        {
+            DEBUGF("stat() overflow for %s. Skipping\n", buffer);
+            goto read_next;
+        }
+#endif
+
         return NULL;
+    }
 
 #define ATTR_DIRECTORY 0x10
 
@@ -393,7 +408,7 @@ int sim_open(const char *name, int o, ...)
         mode_t mode = va_arg(ap, unsigned int);
         ret = OPEN(get_sim_pathname(name), opts, mode);
 #ifdef HAVE_DIRCACHE
-        if (ret >= 0 && !dircache_get_entry_ptr(name))
+        if (ret >= 0 && (dircache_get_entry_id(name) < 0))
             dircache_add_file(name, 0);
 #endif
         va_end(ap);
@@ -420,7 +435,7 @@ int sim_creat(const char *name, mode_t mode)
     int ret = OPEN(get_sim_pathname(name),
                    O_BINARY | O_WRONLY | O_CREAT | O_TRUNC, mode);
 #ifdef HAVE_DIRCACHE
-    if (ret >= 0 && !dircache_get_entry_ptr(name))
+    if (ret >= 0 && (dircache_get_entry_id(name) < 0))
         dircache_add_file(name, 0);
 #endif
     return ret;

@@ -6656,19 +6656,19 @@
   <source>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </source>
   <dest>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "microSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "microSD:"
     archosondio*: "MMC:"
   </dest>
   <voice>
     *: none
     multivolume: "ha de 1"
-    sansae200*,sansac200*,sansafuze*: "mikro es di"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mikro es di"
     archosondio*: "em em ce"
   </voice>
 </phrase>
@@ -7900,7 +7900,7 @@
     *: "Tryb:"
   </dest>
   <voice>
-    *: ""
+    *: "Tryb:"
   </voice>
 </phrase>
 <phrase>
@@ -12382,20 +12382,20 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_RECORDING_HISTOGRAM_INTERVAL
+  id: LANG_HISTOGRAM_INTERVAL
   desc: in record settings menu
   user: core
   <source>
     *: none
-    recording_histogram: "Histogram interval"
+    histogram: "Histogram interval"
   </source>
   <dest>
     *: none
-    recording_histogram: "Przedziały histogramu"
+    histogram: "Przedziały histogramu"
   </dest>
   <voice>
     *: none
-    recording_histogram: "Przedziały histogramu"
+    histogram: "Przedziały histogramu"
   </voice>
 </phrase>
 <phrase>

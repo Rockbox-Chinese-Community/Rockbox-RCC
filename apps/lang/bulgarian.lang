@@ -5919,7 +5919,7 @@
     *: "Режим:"
   </dest>
   <voice>
-    *: ""
+    *: "Режим:"
   </voice>
 </phrase>
 <phrase>
@@ -7957,17 +7957,17 @@
   user: core
   <source>
     *: none
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </source>
   <dest>
     *: none
-    sansae200*,sansac200*,sansafuze*: "MSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "MSD:"
     archosondio*: "MMC:"
   </dest>
   <voice>
     *: ""
-    sansae200*,sansac200*,sansafuze*: "micro S D"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "micro S D"
     archosondio*: "M M C"
   </voice>
 </phrase>
@@ -10617,7 +10617,7 @@
   </source>
   <dest>
     *: none
-    recording: "Време н	а разделяне:"
+    recording: "Време на разделяне:"
   </dest>
   <voice>
     *: none

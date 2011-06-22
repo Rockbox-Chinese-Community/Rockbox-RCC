@@ -7404,19 +7404,19 @@
   <source>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </source>
   <dest>
     *: none
     multivolume: "HD1"
-    sansae200*,sansac200*,sansafuze*: "mSD:"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "mSD:"
     archosondio*: "MMC:"
   </dest>
   <voice>
     *: none
     multivolume: "H D 1"
-    sansae200*,sansac200*,sansafuze*: "m S D"
+    sansae200*,sansac200*,sansafuze*,sansaclipplus: "m S D"
     archosondio*: "M M C"
   </voice>
 </phrase>
@@ -9562,7 +9562,7 @@
     *: "Modo:"
   </dest>
   <voice>
-    *: ""
+    *: "Modo:"
   </voice>
 </phrase>
 <phrase>
@@ -9728,19 +9728,16 @@
 </phrase>
 <phrase>
   id: LANG_HEADPHONE_UNPLUG_RW
-  desc: in pause_phones_menu.
+  desc: deprecated
   user: core
   <source>
-    *: none
-    headphone_detection: "Duration to Rewind"
+    *: ""
   </source>
   <dest>
-    *: none
-    headphone_detection: "Tiempo en rebobinar"
+    *: ""
   </dest>
   <voice>
-    *: none
-    headphone_detection: "Tiempo en rebobinar"
+    *: ""
   </voice>
 </phrase>
 <phrase>
@@ -12372,20 +12369,20 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_RECORDING_HISTOGRAM_INTERVAL
+  id: LANG_HISTOGRAM_INTERVAL
   desc: in record settings menu
   user: core
   <source>
     *: none
-    recording_histogram: "Histogram interval"
+    histogram: "Histogram interval"
   </source>
   <dest>
     *: none
-    recording_histogram: "Intervalo del histograma"
+    histogram: "Intervalo del histograma"
   </dest>
   <voice>
     *: none
-    recording_histogram: "Intervalo del histograma"
+    histogram: "Intervalo del histograma"
   </voice>
 </phrase>
 <phrase>
@@ -12656,5 +12653,19 @@
   </dest>
   <voice>
     *: ""
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_PAUSE_REWIND
+  desc: Seconds to rewind when rewind on pause is enabled.
+  user: core
+  <source>
+    *: "Rewind on Pause"
+  </source>
+  <dest>
+    *: "Rebobinado al entrar en pausa"
+  </dest>
+  <voice>
+    *: "Rebobinado al entrar en pausa"
   </voice>
 </phrase>

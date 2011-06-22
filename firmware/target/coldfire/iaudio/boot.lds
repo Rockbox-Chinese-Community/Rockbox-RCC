@@ -7,18 +7,19 @@ STARTUP(target/coldfire/crt0.o)
 #define DRAMSIZE (MEMORYSIZE * 0x100000)
 
 #if defined(IAUDIO_X5) || defined(IAUDIO_M5)
-#define DRAMORIG 0x31000000
 #define IRAMORIG 0x10000000
 #define IRAMSIZE 0x20000
-#define FLASHORIG 0x00010000
-#define FLASHSIZE 4M
 #elif defined(IAUDIO_M3)
-#define DRAMORIG 0x31000000
 #define IRAMORIG 0x10000000
 #define IRAMSIZE 0x18000
-#define FLASHORIG 0x00010000
-#define FLASHSIZE 4M
 #endif
+#define DRAMORIG 0x31000000
+#ifdef HAVE_DUALBOOT
+#define FLASHORIG 0x00150000
+#else
+#define FLASHORIG 0x00010000
+#endif
+#define FLASHSIZE 4M - FLASHORIG
 
 MEMORY
 {

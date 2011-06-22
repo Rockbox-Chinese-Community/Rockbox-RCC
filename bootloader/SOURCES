@@ -55,6 +55,9 @@ creativezvm.c
 #elif CONFIG_CPU==AS3525 || CONFIG_CPU==AS3525v2
 sansa_as3525.c
 show_logo.c
+#elif CONFIG_CPU==IMX233
+imx233.c
+show_logo.c
 #elif defined(LYRE_PROTO1)
 lyre_proto1.c
 show_logo.c
@@ -66,4 +69,7 @@ main-pp.c
 show_logo.c
 #elif defined(MPIO_HD200) || defined(MPIO_HD300)
 mpio_hd200_hd300.c
+#elif defined(RK27_GENERIC)
+rk27xx.c
+show_logo.c
 #endif

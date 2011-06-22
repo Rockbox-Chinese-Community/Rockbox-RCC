@@ -438,8 +438,8 @@ struct user_settings
     int rec_stop_gap;       /* index of trig_durations */
     int rec_trigger_mode;   /* see TRIG_MODE_XXX constants */
     int rec_trigger_type;   /* what to do when trigger released */
-#ifdef HAVE_RECORDING_HISTOGRAM
-    int rec_histogram_interval; /* recording peakmeter histogram */
+#ifdef HAVE_HISTOGRAM
+    int histogram_interval; /* recording peakmeter histogram */
 #endif
 
 #ifdef HAVE_AGC
@@ -483,9 +483,9 @@ struct user_settings
     int touchpad_sensitivity;
 #endif
 
+    int  pause_rewind; /* time in s to rewind when pausing */
 #ifdef HAVE_HEADPHONE_DETECTION
     int  unplug_mode; /* pause on headphone unplug */
-    int  unplug_rw; /* time in s to rewind when pausing */
     bool unplug_autoresume; /* disable auto-resume if no phones */
 #endif
 

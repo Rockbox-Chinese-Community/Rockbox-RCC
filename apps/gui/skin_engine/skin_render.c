@@ -559,7 +559,7 @@ bool skin_render_alternator(struct skin_element* element, struct skin_draw_info 
 
     if (changed_lines)
     {
-        struct skin_element *current_line = element->children[alternator->current_line];
+        struct skin_element *current_line;
         int start = alternator->current_line;
         int try_line = start;
         bool suitable = false;
@@ -687,7 +687,7 @@ void skin_render(struct gui_wps *gwps, unsigned refresh_mode)
     struct wps_data *data = gwps->data;
     struct screen *display = gwps->display;
     
-    struct skin_element* viewport = data->tree;
+    struct skin_element* viewport;
     struct skin_viewport* skin_viewport;
     
     int old_refresh_mode = refresh_mode;
@@ -780,7 +780,7 @@ static __attribute__((noinline)) void skin_render_playlistviewer(struct playlist
     int cur_pos, start_item, max;
     int nb_lines = viewport_get_nb_lines(viewer->vp);
 #if CONFIG_TUNER
-    if (current_screen() == GO_TO_FM)
+    if (get_current_activity() == ACTIVITY_FM)
     {
         cur_pos = radio_current_preset();
         start_item = cur_pos + viewer->start_offset;

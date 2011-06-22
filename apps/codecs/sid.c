@@ -66,15 +66,14 @@
 CODEC_HEADER
 
 #define CHUNK_SIZE (1024*2)
+#define SID_BUFFER_SIZE 0x10000
+#define SAMPLE_RATE 44100
 
 /* This codec supports SID Files:
  * 
  */
 
 static int32_t samples[CHUNK_SIZE] IBSS_ATTR;   /* The sample buffer */
-
-/* Static buffer for the plain SID-File */
-static unsigned char sidfile[0x10000];
 
 void sidPoke(int reg, unsigned char val) ICODE_ATTR;
 
@@ -159,8 +158,10 @@ struct sidflt {
 int  mixing_frequency IDATA_ATTR;
 unsigned long  freqmul IDATA_ATTR;
 int  filtmul IDATA_ATTR;
+#ifndef ROCKBOX
 unsigned long  attacks [16] IDATA_ATTR;
 unsigned long  releases[16] IDATA_ATTR;
+#endif
 
 /* ------------------------------------------------------------ globals */
 struct s6581 sid IDATA_ATTR;
@@ -189,6 +190,7 @@ static int internal_period, internal_order, internal_start, internal_end,
            internal_add, internal_repeat_times, internal_repeat_start IDATA_ATTR;
 
 /* ---------------------------------------------------------- constants */
+#ifndef ROCKBOX
 static const float attackTimes[16] ICONST_ATTR =
 {
     0.0022528606, 0.0080099577, 0.0157696042, 0.0237795619,
@@ -202,7 +204,23 @@ static const float decayReleaseTimes[16] ICONST_ATTR =
     0.169078356, 0.205199432, 0.240551975, 0.301266125, 0.750858245,
     1.50171551, 2.40243682, 3.00189298, 9.00721405, 15.010998, 24.0182111
 };
-
+#else
+#define DIV(X) ((int)(0x1000000 / (X * SAMPLE_RATE)))
+static const unsigned long attacks[16] ICONST_ATTR =
+{
+    DIV(0.0022528606), DIV(0.0080099577), DIV(0.0157696042), DIV(0.0237795619),
+    DIV(0.0372963655), DIV(0.0550684591), DIV(0.0668330845), DIV(0.0783473987),
+    DIV(0.0981219818), DIV(0.2445540210), DIV(0.4891080420), DIV(0.7824727420),
+    DIV(0.9777154610), DIV(2.9336470100), DIV(4.8890779300), DIV(7.8227249300)
+};
+static const unsigned long releases[16] ICONST_ATTR =
+{
+    DIV(0.00891777693), DIV(0.0245940510), DIV(0.0484185907), DIV(0.0730116639), 
+    DIV(0.11451247500), DIV(0.1690783560), DIV(0.2051994320), DIV(0.2405519750), 
+    DIV(0.30126612500), DIV(0.7508582450), DIV(1.5017155100), DIV(2.4024368200), 
+    DIV(3.00189298000), DIV(9.0072140500), DIV(15.010998000), DIV(24.018211100)
+};
+#endif
 static const int opcodes[256] ICONST_ATTR = {
     _brk,ora,xxx,xxx,xxx,ora,asl,xxx,php,ora,asl,xxx,xxx,ora,asl,xxx,
     bpl,ora,xxx,xxx,xxx,ora,asl,xxx,clc,ora,xxx,xxx,xxx,ora,asl,xxx,
@@ -248,10 +266,14 @@ static inline int quickfloat_ConvertFromInt(int i)
 {
     return (i<<16);
 }
+#ifndef ROCKBOX
 static inline int quickfloat_ConvertFromFloat(float f)
 {
     return (int)(f*(1<<16));
 }
+#else
+#define quickfloat_ConvertFromFloat(X) (int)(X*(1<<16))
+#endif
 static inline int quickfloat_Multiply(int a, int b)
 {
     return (a>>8)*(b>>8);
@@ -270,7 +292,6 @@ static inline unsigned char get_bit(unsigned long val, unsigned char b)
 
 static inline int GenerateDigi(int sIn)
 {
-    static int last_sample = 0;
     static int sample = 0;
 
     if (!sample_active) return(sIn);
@@ -283,9 +304,7 @@ static inline int GenerateDigi(int sIn)
         
         if (fracPos > mixing_frequency) 
         {
-            fracPos%=mixing_frequency;
-
-            last_sample = sample;           
+            fracPos%=mixing_frequency;        
                         
             // N�hstes Samples holen
             if (sample_order == 0) {
@@ -330,15 +349,19 @@ static inline int GenerateDigi(int sIn)
 void synth_init(unsigned long mixfrq) ICODE_ATTR;
 void synth_init(unsigned long mixfrq)
 {
+#ifndef ROCKBOX
     int i;
+#endif
     mixing_frequency = mixfrq;
     fracPos = 0;
     freqmul = 15872000 / mixfrq;
     filtmul = quickfloat_ConvertFromFloat(21.5332031f)/mixfrq;
+#ifndef ROCKBOX
     for (i=0;i<16;i++) {
         attacks [i]=(int) (0x1000000 / (attackTimes[i]*mixfrq));
         releases[i]=(int) (0x1000000 / (decayReleaseTimes[i]*mixfrq));
     }
+#endif
     memset(&sid,0,sizeof(sid));
     memset(osc,0,sizeof(osc));
     memset(&filter,0,sizeof(filter));
@@ -1203,73 +1226,80 @@ unsigned short LoadSIDFromMemory(void *pSidData, unsigned short *load_addr,
     return *load_addr;
 }
 
+static int nSamplesRendered = 0;
+static int nSamplesPerCall = 882;  /* This is PAL SID single speed (44100/50Hz) */
+static int nSamplesToRender = 0;
 
-enum codec_status codec_main(void)
+/* this is the codec entry point */
+enum codec_status codec_main(enum codec_entry_call_reason reason)
 {
-    unsigned int filesize;
+    if (reason == CODEC_LOAD) {
+        /* Make use of 44.1khz */
+        ci->configure(DSP_SWITCH_FREQUENCY, SAMPLE_RATE);
+        /* Sample depth is 28 bit host endian */
+        ci->configure(DSP_SET_SAMPLE_DEPTH, 28);
+        /* Mono output */
+        ci->configure(DSP_SET_STEREO_MODE, STEREO_MONO);
+    }
 
+    return CODEC_OK;
+}
+
+/* this is called for each file to process */
+enum codec_status codec_run(void)
+{
+    size_t filesize;
     unsigned short load_addr, init_addr, play_addr;
     unsigned char subSongsMax, subSong, song_speed;
+    unsigned char *sidfile = NULL;
+    intptr_t param;
 
-    int nSamplesRendered = 0;
-    int nSamplesPerCall = 882;  /* This is PAL SID single speed (44100/50Hz) */
-    int nSamplesToRender = 0;
-
-next_track:
     if (codec_init()) {
         return CODEC_ERROR;
     }
 
-    if (codec_wait_taginfo() != 0)
-        goto request_next_track;
-
     codec_set_replaygain(ci->id3);
     
     /* Load SID file the read_filebuf callback will return the full requested
-     * size if at all possible, so there is no need to loop */    
-    filesize = ci->read_filebuf(sidfile, sizeof(sidfile));
+     * size if at all possible, so there is no need to loop */
+    ci->seek_buffer(0);
+    sidfile = ci->request_buffer(&filesize, SID_BUFFER_SIZE);
 
-    if (filesize == 0)
+    if (filesize == 0) {
         return CODEC_ERROR;
+    }
     
-    c64Init(44100);
+    c64Init(SAMPLE_RATE);
     LoadSIDFromMemory(sidfile, &load_addr, &init_addr, &play_addr,
-            &subSongsMax, &subSong, &song_speed, filesize);
+            &subSongsMax, &subSong, &song_speed, (unsigned short)filesize);
     sidPoke(24, 15);                /* Turn on full volume */
     cpuJSR(init_addr, subSong);     /* Start the song initialize */
     
 
-    /* Make use of 44.1khz */
-    ci->configure(DSP_SWITCH_FREQUENCY, 44100);
-    /* Sample depth is 28 bit host endian */
-    ci->configure(DSP_SET_SAMPLE_DEPTH, 28);
-    /* Mono output */
-    ci->configure(DSP_SET_STEREO_MODE, STEREO_MONO);
-
-    
     /* Set the elapsed time to the current subsong (in seconds) */
     ci->set_elapsed(subSong*1000);
 
     /* The main decoder loop */    
     while (1) {
-        ci->yield();
-        if (ci->stop_codec || ci->new_track)
+        enum codec_command_action action = ci->get_command(&param);
+
+        if (action == CODEC_ACTION_HALT)
             break;
 
-        if (ci->seek_time) {
-            /* New time is ready in ci->seek_time */
+        if (action == CODEC_ACTION_SEEK_TIME) {
+            /* New time is ready in param */
 
             /* Start playing from scratch */
-            c64Init(44100);
-            LoadSIDFromMemory(sidfile, &load_addr, &init_addr, &play_addr, &subSongsMax, &subSong, &song_speed, filesize);
-            sidPoke(24, 15);                /* Turn on full volume */            
-            subSong = ci->seek_time / 1000; /* Now use the current seek time in seconds as subsong */
-            cpuJSR(init_addr, subSong);     /* Start the song initialize */
-            nSamplesToRender = 0;           /* Start the rendering from scratch */
-            
-            ci->seek_complete();
+            c64Init(SAMPLE_RATE);
+            LoadSIDFromMemory(sidfile, &load_addr, &init_addr, &play_addr,
+                              &subSongsMax, &subSong, &song_speed, (unsigned short)filesize);
+            sidPoke(24, 15);            /* Turn on full volume */            
+            subSong = param / 1000;     /* Now use the current seek time in seconds as subsong */
+            cpuJSR(init_addr, subSong); /* Start the song initialize */
+            nSamplesToRender = 0;       /* Start the rendering from scratch */
 
             /* Set the elapsed time to the current subsong (in seconds) */
+            ci->seek_complete();
             ci->set_elapsed(subSong*1000);
         }
         
@@ -1305,10 +1335,6 @@ next_track:
         
         ci->pcmbuf_insert(samples, NULL, CHUNK_SIZE);
     }
-
-request_next_track:
-    if (ci->request_next_track())
-        goto next_track;
 
     return CODEC_OK;
 }

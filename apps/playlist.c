@@ -575,7 +575,7 @@ static int add_indices_to_playlist(struct playlist_info* playlist,
                     playlist->indices[ playlist->amount ] = i+count;
 #ifdef HAVE_DIRCACHE
                     if (playlist->filenames)
-                        playlist->filenames[ playlist->amount ] = NULL;
+                        playlist->filenames[ playlist->amount ] = -1;
 #endif
                     playlist->amount++;
                 }
@@ -816,15 +816,12 @@ static int add_track_to_playlist(struct playlist_info* playlist,
 
 #ifdef HAVE_DIRCACHE
     if (playlist->filenames)
-        playlist->filenames[insert_position] = NULL;
+        playlist->filenames[insert_position] = -1;
 #endif
 
     playlist->amount++;
     playlist->num_inserted_tracks++;
     
-    /* Update index for resume. */
-    playlist_update_resume_index();
-
     return insert_position;
 }
 
@@ -925,9 +922,6 @@ static int remove_track_from_playlist(struct playlist_info* playlist,
         sync_control(playlist, false);
     }
     
-    /* Update index for resume. */
-    playlist_update_resume_index();
-
     return 0;
 }
 
@@ -964,9 +958,9 @@ static int randomise_playlist(struct playlist_info* playlist,
 #ifdef HAVE_DIRCACHE
         if (playlist->filenames)
         {
-            store = (long)playlist->filenames[candidate];
+            store = playlist->filenames[candidate];
             playlist->filenames[candidate] = playlist->filenames[count];
-            playlist->filenames[count] = (struct dircache_entry *)store;
+            playlist->filenames[count] = store;
         }
 #endif
     }
@@ -987,9 +981,6 @@ static int randomise_playlist(struct playlist_info* playlist,
             playlist->first_index, NULL, NULL, NULL);
     }
     
-    /* Update index for resume. */
-    playlist_update_resume_index();
-
     return 0;
 }
 
@@ -1030,9 +1021,6 @@ static int sort_playlist(struct playlist_info* playlist, bool start_current,
             playlist->first_index, -1, NULL, NULL, NULL);
     }
     
-    /* Update index for resume. */
-    playlist_update_resume_index();
-
     return 0;
 }
 
@@ -1205,9 +1193,6 @@ static void find_and_set_playlist_index(struct playlist_info* playlist,
             break;
         }
     }
-    
-    /* Update index for resume. */
-    playlist_update_resume_index();
 }
 
 /*
@@ -1259,7 +1244,12 @@ static void playlist_flush_callback(void *param)
         sync_control(playlist, true);
     }
 }
-         
+
+static bool is_dircache_pointers_intact(void)
+{
+    return dircache_get_appflag(DIRCACHE_APPFLAG_PLAYLIST) ? true : false;
+}
+
 static void playlist_thread(void)
 {
     struct queue_event ev;
@@ -1292,6 +1282,7 @@ static void playlist_thread(void)
             /* Start the background scanning after either the disk spindown
                timeout or 5s, whichever is less */
             case SYS_TIMEOUT:
+            {
                 playlist = &current_playlist;
                 if (playlist->control_fd >= 0)
                 {
@@ -1299,11 +1290,14 @@ static void playlist_thread(void)
                         register_storage_idle_func(playlist_flush_callback);
                 }
 
-                if (!dirty_pointers)
-                    break ;
-
                 if (!dircache_is_enabled() || !playlist->filenames
                      || playlist->amount <= 0)
+                {
+                    break ;
+                }
+                
+                /* Check if previously loaded pointers are intact. */
+                if (is_dircache_pointers_intact() && !dirty_pointers)
                     break ;
 
 #ifdef HAVE_ADJUSTABLE_CPU_FREQ
@@ -1313,7 +1307,7 @@ static void playlist_thread(void)
                      && queue_empty(&playlist_queue); index++)
                 {
                     /* Process only pointers that are not already loaded. */
-                    if (playlist->filenames[index])
+                    if (is_dircache_pointers_intact() && playlist->filenames[index] >= 0)
                         continue ;
                     
                     control_file = playlist->indices[index] & PLAYLIST_INSERT_TYPE_MASK;
@@ -1322,20 +1316,28 @@ static void playlist_thread(void)
                     /* Load the filename from playlist file. */
                     if (get_filename(playlist, index, seek, control_file, tmp,
                         sizeof(tmp)) < 0)
+                    {
                         break ;
+                    }
 
                     /* Set the dircache entry pointer. */
-                    playlist->filenames[index] = dircache_get_entry_ptr(tmp);
+                    playlist->filenames[index] = dircache_get_entry_id(tmp);
 
                     /* And be on background so user doesn't notice any delays. */
                     yield();
                 }
-
+                
+                if (dircache_is_enabled())
+                    dircache_set_appflag(DIRCACHE_APPFLAG_PLAYLIST);
+                
 #ifdef HAVE_ADJUSTABLE_CPU_FREQ
                 cpu_boost(false);
 #endif
-                dirty_pointers = false;
+                if (index == playlist->amount)
+                    dirty_pointers = false;
+            
                 break ;
+            }
             
 #if (CONFIG_PLATFORM & PLATFORM_NATIVE)
             case SYS_USB_CONNECTED:
@@ -1364,12 +1366,12 @@ static int get_filename(struct playlist_info* playlist, int index, int seek,
         buf_length = MAX_PATH+1;
 
 #ifdef HAVE_DIRCACHE
-    if (dircache_is_enabled() && playlist->filenames)
+    if (is_dircache_pointers_intact() && playlist->filenames)
     {
-        if (playlist->filenames[index] != NULL)
+        if (playlist->filenames[index] >= 0)
         {
-            dircache_copy_path(playlist->filenames[index], tmp_buf, sizeof(tmp_buf)-1);
-            max = strlen(tmp_buf);
+            max = dircache_copy_path(playlist->filenames[index],
+                                     tmp_buf, sizeof(tmp_buf)-1);
         }
     }
 #else
@@ -2404,7 +2406,7 @@ int playlist_add(const char *filename)
 
     playlist->indices[playlist->amount] = playlist->buffer_end_pos;
 #ifdef HAVE_DIRCACHE
-    playlist->filenames[playlist->amount] = NULL;
+    playlist->filenames[playlist->amount] = -1;
 #endif
     playlist->amount++;
     
@@ -2485,6 +2487,12 @@ const char* playlist_peek(int steps, char* buf, size_t buf_size)
     index = get_next_index(playlist, steps, -1);
     if (index < 0)
         return NULL;
+
+#if CONFIG_CODEC == SWCODEC
+    /* Just testing - don't care about the file name */
+    if (!buf || !buf_size)
+        return "";
+#endif
 
     control_file = playlist->indices[index] & PLAYLIST_INSERT_TYPE_MASK;
     seek = playlist->indices[index] & PLAYLIST_SEEK_MASK;
@@ -2632,30 +2640,17 @@ int playlist_get_resume_info(int *resume_index)
     return 0;
 }
 
-/* Get current playlist index. */
-int playlist_get_index(void)
-{
-    return current_playlist.index;
-}
-
-/* Update resume index within playlist_info structure. */
-void playlist_update_resume_index(void)
-{
-    struct playlist_info* playlist = &current_playlist;
-    playlist->resume_index = playlist->index;
-}
-
 /* Update resume info for current playing song.  Returns -1 on error. */
 int playlist_update_resume_info(const struct mp3entry* id3)
 {
     struct playlist_info* playlist = &current_playlist;
-    
+
     if (id3)
     {
-        if (global_status.resume_index  != playlist->resume_index ||
+        if (global_status.resume_index  != playlist->index ||
             global_status.resume_offset != id3->offset)
         {
-            global_status.resume_index  = playlist->resume_index;
+            global_status.resume_index  = playlist->index;
             global_status.resume_offset = id3->offset;
             status_save();
         }
@@ -2698,8 +2693,10 @@ void playlist_set_last_shuffled_start(void)
 /*
  * Create a new playlist  If playlist is not NULL then we're loading a
  * playlist off disk for viewing/editing.  The index_buffer is used to store
- * playlist indices (required for and only used if !current playlist).  The
- * temp_buffer (if not NULL) is used as a scratchpad when loading indices.
+ * playlist indices (required for and only used if playlist != NULL).  The
+ * temp_buffer is used as a scratchpad when loading indices.
+ *
+ * returns <0 on failure
  */
 int playlist_create_ex(struct playlist_info* playlist,
                        const char* dir, const char* file,
@@ -2710,6 +2707,8 @@ int playlist_create_ex(struct playlist_info* playlist,
         playlist = &current_playlist;
     else
     {
+        if (!index_buffer)
+            return -1;
         /* Initialize playlist structure */
         int r = rand() % 10;
         playlist->current = false;
@@ -2720,31 +2719,19 @@ int playlist_create_ex(struct playlist_info* playlist,
         playlist->fd = -1;
         playlist->control_fd = -1;
 
-        if (index_buffer)
-        {
-            int num_indices = index_buffer_size / sizeof(int);
+        int num_indices = index_buffer_size / sizeof(int);
 
 #ifdef HAVE_DIRCACHE
-            num_indices /= 2;
+        num_indices /= 2;
 #endif
-            if (num_indices > global_settings.max_files_in_playlist)
-                num_indices = global_settings.max_files_in_playlist;
+        if (num_indices > global_settings.max_files_in_playlist)
+            num_indices = global_settings.max_files_in_playlist;
 
-            playlist->max_playlist_size = num_indices;
-            playlist->indices = index_buffer;
+        playlist->max_playlist_size = num_indices;
+        playlist->indices = index_buffer;
 #ifdef HAVE_DIRCACHE
-            playlist->filenames = (const struct dircache_entry **)
-                &playlist->indices[num_indices];
+            playlist->filenames = (int*)&playlist->indices[num_indices];
 #endif
-        }
-        else
-        {
-            playlist->max_playlist_size = current_playlist.max_playlist_size;
-            playlist->indices = current_playlist.indices;
-#ifdef HAVE_DIRCACHE
-            playlist->filenames = current_playlist.filenames;
-#endif
-        }
 
         playlist->buffer_size = 0;
         playlist->buffer = NULL;
@@ -3202,9 +3189,6 @@ int playlist_move(struct playlist_info* playlist, int index, int new_index)
 #ifdef HAVE_DIRCACHE
     queue_post(&playlist_queue, PLAYLIST_LOAD_POINTERS, 0);
 #endif
-
-    /* Update index for resume. */
-    playlist_update_resume_index();
 
     return result;
 }

@@ -145,26 +145,15 @@ static const uint16_t map_group2bk34[32+18] =
     16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33
 };
 
-/* type definitions */
-typedef struct
-{
-    uint8_t frame_len;
-    uint8_t resolution20[3];
-    uint8_t resolution34[5];
-
-    qmf_t *work;
-    qmf_t **buffer;
-    qmf_t **temp;
-} hyb_info;
 
 /* static function declarations */
 static void ps_data_decode(ps_info *ps);
-static hyb_info *hybrid_init(void);
+static void hybrid_init(hyb_info *hyb);
 static void channel_filter2(hyb_info *hyb, uint8_t frame_len, const real_t *filter,
-                            qmf_t *buffer, qmf_t **X_hybrid);
+                            qmf_t *buffer, qmf_t X_hybrid[32][12]);
 static INLINE void DCT3_4_unscaled(real_t *y, real_t *x);
 static void channel_filter8(hyb_info *hyb, uint8_t frame_len, const real_t *filter,
-                            qmf_t *buffer, qmf_t **X_hybrid);
+                            qmf_t *buffer, qmf_t X_hybrid[32][12]);
 static void hybrid_analysis(hyb_info *hyb, qmf_t X[32][64], qmf_t X_hybrid[32][32],
                             uint8_t use34);
 static void hybrid_synthesis(hyb_info *hyb, qmf_t X[32][64], qmf_t X_hybrid[32][32],
@@ -181,20 +170,22 @@ static void map20indexto34(int8_t *index, uint8_t bins);
 static void map34indexto20(int8_t *index, uint8_t bins);
 #endif
 static void ps_data_decode(ps_info *ps);
-static void ps_decorrelate(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64],
-                           qmf_t X_hybrid_left[32][32], qmf_t X_hybrid_right[32][32]);
-static void ps_mix_phase(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64],
-                         qmf_t X_hybrid_left[32][32], qmf_t X_hybrid_right[32][32]);
+static void ps_decorrelate(ps_info *ps, 
+                           qmf_t X_left[MAX_NTSRPS][64], 
+                           qmf_t X_right[MAX_NTSRPS][64],
+                           qmf_t X_hybrid_left[32][32], 
+                           qmf_t X_hybrid_right[32][32]);
+static void ps_mix_phase(ps_info *ps, 
+                         qmf_t X_left[MAX_NTSRPS][64], 
+                         qmf_t X_right[MAX_NTSRPS][64],
+                         qmf_t X_hybrid_left[32][32], 
+                         qmf_t X_hybrid_right[32][32]);
 
 /*  */
 
 
-static hyb_info *hybrid_init()
+static void hybrid_init(hyb_info *hyb)
 {
-    uint8_t i;
-
-    hyb_info *hyb = (hyb_info*)faad_malloc(sizeof(hyb_info));
-
     hyb->resolution34[0] = 12;
     hyb->resolution34[1] = 8;
     hyb->resolution34[2] = 4;
@@ -207,52 +198,14 @@ static hyb_info *hybrid_init()
 
     hyb->frame_len = 32;
 
-    hyb->work = (qmf_t*)faad_malloc((hyb->frame_len+12) * sizeof(qmf_t));
-    memset(hyb->work, 0, (hyb->frame_len+12) * sizeof(qmf_t));
-
-    hyb->buffer = (qmf_t**)faad_malloc(5 * sizeof(qmf_t*));
-    for (i = 0; i < 5; i++)
-    {
-        hyb->buffer[i] = (qmf_t*)faad_malloc(hyb->frame_len * sizeof(qmf_t));
-        memset(hyb->buffer[i], 0, hyb->frame_len * sizeof(qmf_t));
-    }
-
-    hyb->temp = (qmf_t**)faad_malloc(hyb->frame_len * sizeof(qmf_t*));
-    for (i = 0; i < hyb->frame_len; i++)
-    {
-        hyb->temp[i] = (qmf_t*)faad_malloc(12 /*max*/ * sizeof(qmf_t));
-    }
-
-    return hyb;
-}
-
-static void hybrid_free(hyb_info *hyb)
-{
-    uint8_t i;
-
-    if (hyb->work)
-        faad_free(hyb->work);
-
-    for (i = 0; i < 5; i++)
-    {
-        if (hyb->buffer[i])
-            faad_free(hyb->buffer[i]);
-    }
-    if (hyb->buffer)
-        faad_free(hyb->buffer);
-
-    for (i = 0; i < hyb->frame_len; i++)
-    {
-        if (hyb->temp[i])
-            faad_free(hyb->temp[i]);
-    }
-    if (hyb->temp)
-        faad_free(hyb->temp);
+    memset(hyb->work  , 0, sizeof(hyb->work));
+    memset(hyb->buffer, 0, sizeof(hyb->buffer));
+    memset(hyb->temp  , 0, sizeof(hyb->temp));
 }
 
 /* real filter, size 2 */
 static void channel_filter2(hyb_info *hyb, uint8_t frame_len, const real_t *filter,
-                            qmf_t *buffer, qmf_t **X_hybrid)
+                            qmf_t *buffer, qmf_t X_hybrid[32][12])
 {
     uint8_t i;
 
@@ -286,7 +239,7 @@ static void channel_filter2(hyb_info *hyb, uint8_t frame_len, const real_t *filt
 
 /* complex filter, size 4 */
 static void channel_filter4(hyb_info *hyb, uint8_t frame_len, const real_t *filter,
-                            qmf_t *buffer, qmf_t **X_hybrid)
+                            qmf_t *buffer, qmf_t X_hybrid[32][12])
 {
     uint8_t i;
     real_t input_re1[2], input_re2[2], input_im1[2], input_im2[2];
@@ -361,7 +314,7 @@ static INLINE void DCT3_4_unscaled(real_t *y, real_t *x)
 
 /* complex filter, size 8 */
 static void channel_filter8(hyb_info *hyb, uint8_t frame_len, const real_t *filter,
-                            qmf_t *buffer, qmf_t **X_hybrid)
+                            qmf_t *buffer, qmf_t X_hybrid[32][12])
 {
     uint8_t i, n;
     real_t input_re1[4], input_re2[4], input_im1[4], input_im2[4];
@@ -454,7 +407,7 @@ static INLINE void DCT3_6_unscaled(real_t *y, real_t *x)
 
 /* complex filter, size 12 */
 static void channel_filter12(hyb_info *hyb, uint8_t frame_len, const real_t *filter,
-                             qmf_t *buffer, qmf_t **X_hybrid)
+                             qmf_t *buffer, qmf_t X_hybrid[32][12])
 {
     uint8_t i, n;
     real_t input_re1[6], input_re2[6], input_im1[6], input_im2[6];
@@ -1027,8 +980,11 @@ static void ps_data_decode(ps_info *ps)
 }
 
 /* decorrelate the mono signal using an allpass filter */
-static void ps_decorrelate(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64],
-                           qmf_t X_hybrid_left[32][32], qmf_t X_hybrid_right[32][32])
+static void ps_decorrelate(ps_info *ps, 
+                           qmf_t X_left[MAX_NTSRPS][64], 
+                           qmf_t X_right[MAX_NTSRPS][64],
+                           qmf_t X_hybrid_left[32][32], 
+                           qmf_t X_hybrid_right[32][32])
 {
     uint8_t gr, n, m, bk;
     uint8_t temp_delay = 0;
@@ -1423,8 +1379,11 @@ static const real_t ipdopd_sin_tab[] = {
     FRAC_CONST(-0.000000000000000)
 };
 
-static void ps_mix_phase(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64],
-                         qmf_t X_hybrid_left[32][32], qmf_t X_hybrid_right[32][32])
+static void ps_mix_phase(ps_info *ps, 
+                         qmf_t X_left[MAX_NTSRPS][64], 
+                         qmf_t X_right[MAX_NTSRPS][64],
+                         qmf_t X_hybrid_left[32][32], 
+                         qmf_t X_hybrid_right[32][32])
 {
     uint8_t n;
     uint8_t gr;
@@ -1836,24 +1795,12 @@ static void ps_mix_phase(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64
     }
 }
 
-void ps_free(ps_info *ps)
-{
-    /* free hybrid filterbank structures */
-    hybrid_free(ps->hyb);
-
-    faad_free(ps);
-}
-
-ps_info *ps_init(uint8_t sr_index)
+void ps_init(ps_info *ps)
 {
     uint8_t i;
     uint8_t short_delay_band;
 
-    ps_info *ps = (ps_info*)faad_malloc(sizeof(ps_info));
-    memset(ps, 0, sizeof(ps_info));
-
-    (void)sr_index;
-    ps->hyb = hybrid_init();
+    hybrid_init(&ps->hyb);
 
     ps->ps_data_available = 0;
 
@@ -1934,18 +1881,18 @@ ps_info *ps_init(uint8_t sr_index)
         RE(ps->opd_prev[i][1]) = 0;
         IM(ps->opd_prev[i][1]) = 0;
     }
-
-    return ps;
 }
 
 /* main Parametric Stereo decoding function */
-uint8_t ps_decode(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64])
+uint8_t ps_decode(ps_info *ps, 
+                  qmf_t X_left[MAX_NTSRPS][64], 
+                  qmf_t X_right[MAX_NTSRPS][64])
 {
     static qmf_t X_hybrid_left[32][32];
     static qmf_t X_hybrid_right[32][32];
 
-    memset(&X_hybrid_left,0,sizeof(X_hybrid_left));
-    memset(&X_hybrid_right,0,sizeof(X_hybrid_right));
+    memset(&X_hybrid_left , 0, sizeof(X_hybrid_left));
+    memset(&X_hybrid_right, 0, sizeof(X_hybrid_right));
 
     /* delta decoding of the bitstream data */
     ps_data_decode(ps);
@@ -1971,8 +1918,7 @@ uint8_t ps_decode(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64])
     /* Perform further analysis on the lowest subbands to get a higher
      * frequency resolution
      */
-    hybrid_analysis((hyb_info*)ps->hyb, X_left, X_hybrid_left,
-        ps->use34hybrid_bands);
+    hybrid_analysis(&ps->hyb, X_left, X_hybrid_left, ps->use34hybrid_bands);
 
     /* decorrelate mono signal */
     ps_decorrelate(ps, X_left, X_right, X_hybrid_left, X_hybrid_right);
@@ -1981,11 +1927,9 @@ uint8_t ps_decode(ps_info *ps, qmf_t X_left[38][64], qmf_t X_right[38][64])
     ps_mix_phase(ps, X_left, X_right, X_hybrid_left, X_hybrid_right);
 
     /* hybrid synthesis, to rebuild the SBR QMF matrices */
-    hybrid_synthesis((hyb_info*)ps->hyb, X_left, X_hybrid_left,
-        ps->use34hybrid_bands);
+    hybrid_synthesis(&ps->hyb, X_left, X_hybrid_left, ps->use34hybrid_bands);
 
-    hybrid_synthesis((hyb_info*)ps->hyb, X_right, X_hybrid_right,
-        ps->use34hybrid_bands);
+    hybrid_synthesis(&ps->hyb, X_right, X_hybrid_right, ps->use34hybrid_bands);
 
     return 0;
 }

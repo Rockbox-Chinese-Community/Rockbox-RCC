@@ -1238,14 +1238,14 @@ const struct settings_list settings[] = {
     CHOICE_SETTING(F_RECSETTING, rec_trigger_type, LANG_RECORD_TRIGGER_TYPE, TRIG_TYPE_STOP,
         "trigger type","stop,pause,nf stp", NULL ,3,
        ID2P(LANG_RECORD_TRIGGER_STOP), ID2P(LANG_PAUSE), ID2P(LANG_RECORD_TRIGGER_NEWFILESTP)),
-#ifdef HAVE_RECORDING_HISTOGRAM
+#endif /* HAVE_RECORDING */
+
+#ifdef HAVE_HISTOGRAM
      /* TO DO: additional restictions of following REP items? */
-    TABLE_SETTING(F_RECSETTING, rec_histogram_interval, LANG_RECORDING_HISTOGRAM_INTERVAL, 0,
+    TABLE_SETTING(F_RECSETTING, histogram_interval, LANG_HISTOGRAM_INTERVAL, 0,
         "histogram interval","0s,1s,2s,4s",
         UNIT_SEC, NULL, NULL, NULL, 4, 0,1,2,4),
-#endif /* HAVE_RECORDING_HISTOGRAM */
-
-#endif /* HAVE_RECORDING */
+#endif /* HAVE_HISTOGRAM */
 
 #ifdef HAVE_SPDIF_POWER
     OFFON_SETTING(F_SOUNDSETTING, spdif_enable, LANG_SPDIF_ENABLE, false,
@@ -1557,13 +1557,13 @@ const struct settings_list settings[] = {
                    "pause on headphone unplug", "off,pause,pause and resume",
                    NULL, 3, ID2P(LANG_OFF), ID2P(LANG_PAUSE),
                    ID2P(LANG_HEADPHONE_UNPLUG_RESUME)),
-    INT_SETTING(0, unplug_rw, LANG_HEADPHONE_UNPLUG_RW, 0,
-                "rewind duration on pause", UNIT_SEC, 0, 15, 1, NULL, NULL,
-                NULL),
     OFFON_SETTING(0, unplug_autoresume,
                   LANG_HEADPHONE_UNPLUG_DISABLE_AUTORESUME, false,
                   "disable autoresume if phones not present",NULL),
 #endif
+    INT_SETTING(0, pause_rewind, LANG_PAUSE_REWIND, 0,
+                "rewind duration on pause", UNIT_SEC, 0, 15, 1, NULL, NULL,
+                NULL),
 #if CONFIG_TUNER
     CHOICE_SETTING(0, fm_region, LANG_FM_REGION, 0,
                    "fm_region", "eu,us,jp,kr,it,wo", set_radio_region, 6,

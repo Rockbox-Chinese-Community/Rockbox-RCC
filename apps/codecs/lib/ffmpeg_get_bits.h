@@ -178,9 +178,11 @@ for examples see get_bits, show_bits, skip_bits, get_vlc
 #ifdef ALT_BITSTREAM_READER
 #   define MIN_CACHE_BITS 25
 
+
+/* ROCKBOX: work around "set but not used" warning */
 #   define OPEN_READER(name, gb)\
         unsigned int name##_index= (gb)->index;\
-        int name##_cache= 0;\
+        int name##_cache __attribute__((unused)) = 0;\
 
 #   define CLOSE_READER(name, gb)\
         (gb)->index= name##_index;\
@@ -569,9 +571,9 @@ int init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
 #define INIT_VLC_USE_NEW_STATIC 4
 void free_vlc(VLC *vlc);
 
-#define INIT_VLC_STATIC(vlc, bits, a,b,c,d,e,f,g, static_size)\
+#define INIT_VLC_STATIC(vlc, bits, a,b,c,d,e,f,g, static_size, attr)\
 {\
-    static VLC_TYPE table[static_size][2];\
+    static VLC_TYPE table[static_size][2] attr;\
     (vlc)->table= table;\
     (vlc)->table_allocated= static_size;\
     init_vlc(vlc, bits, a,b,c,d,e,f,g, INIT_VLC_USE_NEW_STATIC);\

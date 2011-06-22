@@ -321,7 +321,6 @@ void cb_saveposition ( void ) {
 /* ---- Restore saved position ---- */
 void cb_restoreposition ( void ) {
     int fd;
-    int c;
     short sq;
     unsigned short m;
     
@@ -357,7 +356,7 @@ void cb_restoreposition ( void ) {
             else
                 --color[sq];
         }
-        GameCnt = -1; c = '?';
+        GameCnt = -1;
         while (rb->read(fd, &(GameList[++GameCnt].gmove),
                         sizeof(GameList[GameCnt].gmove)) > 0) {
             rb->read(fd, &(GameList[GameCnt].score),
@@ -642,7 +641,10 @@ static int cb_menu(void)
 struct cb_command cb_getcommand (void) {
     static short x = 4 , y = 3 ;
     short c , r , l;
-    int button, lastbutton = BUTTON_NONE;
+    int button;
+#if defined(CB_PLAY_PRE) || defined(CB_SELECT_PRE)
+    int lastbutton = BUTTON_NONE;
+#endif
     int marked = false , from_marked = false ;
     short marked_x = 0 , marked_y = 0 ;
     struct cb_command result = { 0, {0,0,0,0,0}, 0 };
@@ -762,8 +764,10 @@ struct cb_command cb_getcommand (void) {
                 }
                 break;
         }
+#if defined(CB_PLAY_PRE) || defined(CB_SELECT_PRE)
         if (button != BUTTON_NONE)
             lastbutton = button;
+#endif
     }
 
 }

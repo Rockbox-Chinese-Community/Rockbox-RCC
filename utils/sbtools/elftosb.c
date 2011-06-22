@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdarg.h>
+#include <strings.h>
 
 #include "crypto.h"
 #include "elf.h"
@@ -47,6 +48,12 @@ bool g_debug = false;
 /**
  * Misc
  */
+
+char *s_getenv(const char *name)
+{
+    char *s = getenv(name);
+    return s ? s : "";
+}
 
 void generate_random_data(void *buf, size_t sz)
 {
@@ -111,6 +118,8 @@ static key_array_t read_keys(const char *key_file, int *num_keys)
         bugp("reading key file");
     close(fd);
 
+    if(g_debug)
+        printf("Parsing key file '%s'...\n", key_file);
     *num_keys = size ? 1 : 0;
     char *ptr = buf;
     /* allow trailing newline at the end (but no space after it) */
@@ -136,6 +145,13 @@ static key_array_t read_keys(const char *key_file, int *num_keys)
             if(convxdigit(buf[pos + 2 * j], &a) || convxdigit(buf[pos + 2 * j + 1], &b))
                 bugp(" invalid key, it should be a 128-bit key written in hexadecimal\n");
             keys[i][j] = (a << 4) | b;
+        }
+        if(g_debug)
+        {
+            printf("Add key: ");
+            for(int j = 0; j < 16; j++)
+                printf("%02x", keys[i][j]);
+               printf("\n");
         }
         pos += 32;
     }
@@ -298,7 +314,7 @@ static void parse_identifier(char **ptr, char *end, struct lexem_t *lexem)
 static void next_lexem(char **ptr, char *end, struct lexem_t *lexem)
 {
     #define ret_simple(t, advance) ({(*ptr) += advance; lexem->type = t; return;})
-    while(true)
+    while(*ptr != end)
     {
         /* skip whitespace */
         if(**ptr == ' ' || **ptr == '\t' || **ptr == '\n' || **ptr == '\r')
@@ -376,6 +392,8 @@ static struct cmd_file_t *read_command_file(const char *file)
         bugp("reading command file");
     close(fd);
 
+    if(g_debug)
+        printf("Parsing command file '%s'...\n", file);
     struct cmd_file_t *cmd_file = xmalloc(sizeof(struct cmd_file_t));
     memset(cmd_file, 0, sizeof(struct cmd_file_t));
 
@@ -397,6 +415,7 @@ static struct cmd_file_t *read_command_file(const char *file)
         if(lexem.type == LEX_RBRACE)
             break;
         struct cmd_source_t *src = xmalloc(sizeof(struct cmd_source_t));
+        memset(src, 0, sizeof(struct cmd_source_t));
         src->next = cmd_file->source_list;
         if(lexem.type != LEX_IDENTIFIER)
             bug("invalid command file: identifier expected in sources");
@@ -562,6 +581,8 @@ static void load_elf_by_id(struct cmd_file_t *cmd_file, const char *id)
     int fd = open(src->filename, O_RDONLY);
     if(fd < 0)
         bug("cannot open '%s' (id '%s')\n", src->filename, id);
+    if(g_debug)
+        printf("Loading ELF file '%s'...\n", src->filename);
     elf_init(&src->elf);
     src->elf_loaded = elf_read_file(&src->elf, elf_read, elf_printf, &fd);
     close(fd);
@@ -573,6 +594,9 @@ static struct sb_file_t *apply_cmd_file(struct cmd_file_t *cmd_file)
 {
     struct sb_file_t *sb = xmalloc(sizeof(struct sb_file_t));
     memset(sb, 0, sizeof(struct sb_file_t));
+    
+    if(g_debug)
+        printf("Applying command file...\n");
     /* count sections */
     struct cmd_section_t *csec = cmd_file->section_list;
     while(csec)
@@ -601,7 +625,7 @@ static struct sb_file_t *apply_cmd_file(struct cmd_file_t *cmd_file)
             else if(cinst->type == CMD_JUMP || cinst->type == CMD_CALL)
             {
                 if(!elf_get_start_addr(elf, NULL))
-                    bug("cannot jump/call '%s' because it has no starting point !", cinst->identifier);
+                    bug("cannot jump/call '%s' because it has no starting point !\n", cinst->identifier);
                 sec->nr_insts++;
             }
             
@@ -951,7 +975,7 @@ int main(int argc, const char **argv)
         return 1;
     }
 
-    if(getenv("SB_DEBUG") != NULL && strcmp(getenv("SB_DEBUG"), "YES") == 0)
+    if(strcasecmp(s_getenv("SB_DEBUG"), "YES") == 0)
         g_debug = true;
 
     g_key_array = read_keys(argv[2], &g_nr_keys);

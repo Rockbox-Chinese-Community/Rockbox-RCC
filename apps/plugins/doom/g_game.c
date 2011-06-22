@@ -229,6 +229,9 @@ static unsigned int   dclicktime2;
 static unsigned int   dclickstate2;
 static unsigned int   dclicks2;
 
+// scrollwheel values
+static int scrollmag;
+
 // joystick values are repeated
 static int   joyxmove;
 static int   joyymove;
@@ -316,6 +319,13 @@ void G_BuildTiccmd(ticcmd_t* cmd)
    }                                                             // phares
 
    // let movement keys cancel each other out
+
+   /* strafe with scrollwheel */
+   if (scrollmag > 0)
+         side += 5*sidemove[speed];
+   if (scrollmag < 0)
+         side -= 5*sidemove[speed];
+   scrollmag = 0;         
 
    if (strafe)
    {
@@ -756,6 +766,9 @@ boolean G_Responder (event_t* ev)
       joyxmove = ev->data2;
       joyymove = ev->data3;
       return true;    // eat events
+
+   case ev_scroll:
+      scrollmag = ev->data1;
 
    default:
       break;
@@ -1549,7 +1562,7 @@ static const size_t num_version_headers = sizeof(version_headers) / sizeof(versi
 
 void G_DoLoadGame(void)
 {
-   int  length, i;
+   int  i;
    // CPhipps - do savegame filename stuff here
    char name[100+1];     // killough 3/22/98
    int savegame_compatibility = -1;
@@ -1558,7 +1571,7 @@ void G_DoLoadGame(void)
 
    gameaction = ga_nothing;
 
-   length = M_ReadFile(name, &savebuffer);
+   M_ReadFile(name, &savebuffer);
    save_p = savebuffer + SAVESTRINGSIZE;
 
    // CPhipps - read the description field, compare with supported ones
@@ -2565,7 +2578,6 @@ static const byte* G_ReadDemoHeader(const byte *demo_p)
    skill_t skill;
    int i, episode, map;
    int demover;
-   const byte *option_p = NULL;      /* killough 11/98 */
 
    basetic = gametic;  // killough 9/29/98
 
@@ -2673,10 +2685,6 @@ static const byte* G_ReadDemoHeader(const byte *demo_p)
       map = *demo_p++;
       deathmatch = *demo_p++;
       consoleplayer = *demo_p++;
-
-      /* killough 11/98: save option pointer for below */
-      if (mbf_features)
-         option_p = demo_p;
 
       demo_p = G_ReadOptions(demo_p);  // killough 3/1/98: Read game options
 

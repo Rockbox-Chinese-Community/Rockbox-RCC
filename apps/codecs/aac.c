@@ -32,14 +32,20 @@ CODEC_HEADER
  * for each frame. */
 #define FAAD_BYTE_BUFFER_SIZE (2048-12)
 
-/* Global buffers to be used in the mdct synthesis. This way the arrays can
- * be moved to IRAM for some targets */
-#define GB_BUF_SIZE 1024
-static real_t gb_time_buffer[2][GB_BUF_SIZE] IBSS_ATTR_FAAD_LARGE_IRAM MEM_ALIGN_ATTR;
-static real_t gb_fb_intermed[2][GB_BUF_SIZE] IBSS_ATTR_FAAD_LARGE_IRAM MEM_ALIGN_ATTR;
-
 /* this is the codec entry point */
-enum codec_status codec_main(void)
+enum codec_status codec_main(enum codec_entry_call_reason reason)
+{
+    if (reason == CODEC_LOAD) {
+        /* Generic codec initialisation */
+        ci->configure(DSP_SET_STEREO_MODE, STEREO_NONINTERLEAVED);
+        ci->configure(DSP_SET_SAMPLE_DEPTH, 29);
+    }
+
+    return CODEC_OK;
+}
+
+/* this is called for each file to process */
+enum codec_status codec_run(void)
 {
     /* Note that when dealing with QuickTime/MPEG4 files, terminology is
      * a bit confusing. Files with sound are split up in chunks, where
@@ -55,7 +61,6 @@ enum codec_status codec_main(void)
     int file_offset;
     int framelength;
     int lead_trim = 0;
-    int needed_bufsize;
     unsigned int i;
     unsigned char* buffer;
     NeAACDecFrameInfo frame_info;
@@ -66,25 +71,16 @@ enum codec_status codec_main(void)
     uint32_t sbr_fac = 1;
     unsigned char c = 0;
     void *ret;
-
-    /* Generic codec initialisation */
-    ci->configure(DSP_SET_STEREO_MODE, STEREO_NONINTERLEAVED);
-    ci->configure(DSP_SET_SAMPLE_DEPTH, 29);
-
-next_track:
-    err = CODEC_OK;
+    intptr_t param;
+    bool empty_first_frame = false;
 
     /* Clean and initialize decoder structures */
     memset(&demux_res , 0, sizeof(demux_res));
     if (codec_init()) {
         LOGF("FAAD: Codec init error\n");
-        err = CODEC_ERROR;
-        goto exit;
+        return CODEC_ERROR;
     }
 
-    if (codec_wait_taginfo() != 0)
-        goto done;
-  
     file_offset = ci->id3->offset;
 
     ci->configure(DSP_SWITCH_FREQUENCY, ci->id3->frequency);
@@ -92,12 +88,13 @@ next_track:
 
     stream_create(&input_stream,ci);
 
+    ci->seek_buffer(ci->id3->first_frame_offset);
+
     /* if qtmovie_read returns successfully, the stream is up to
      * the movie data, which can be used directly by the decoder */
     if (!qtmovie_read(&input_stream, &demux_res)) {
         LOGF("FAAD: File init error\n");
-        err = CODEC_ERROR;
-        goto done;
+        return CODEC_ERROR;
     }
 
     /* initialise the sound converter */
@@ -105,8 +102,7 @@ next_track:
 
     if (!decoder) {
         LOGF("FAAD: Decode open error\n");
-        err = CODEC_ERROR;
-        goto done;
+        return CODEC_ERROR;
     }
 
     NeAACDecConfigurationPtr conf = NeAACDecGetCurrentConfiguration(decoder);
@@ -116,36 +112,7 @@ next_track:
     err = NeAACDecInit2(decoder, demux_res.codecdata, demux_res.codecdata_len, &s, &c);
     if (err) {
         LOGF("FAAD: DecInit: %d, %d\n", err, decoder->object_type);
-        err = CODEC_ERROR;
-        goto done;
-    }
-    
-    /* Set pointer to be able to use IRAM an to avoid alloc in decoder. Must
-     * be called after NeAACDecOpen(). */
-    /* A buffer of framelength or 2*frameLenght size must be allocated for
-     * time_out. If frameLength is too big or SBR/forceUpSampling is active, 
-     * we do not use the IRAM buffer and keep faad's internal allocation (see 
-     * specrec.c). */
-    needed_bufsize = decoder->frameLength;
-#ifdef SBR_DEC
-    if ((decoder->sbr_present_flag == 1) || (decoder->forceUpSampling == 1))
-    {
-        needed_bufsize *= 2;
-    }
-#endif
-    if (needed_bufsize <= GB_BUF_SIZE)
-    {
-        decoder->time_out[0]    = &gb_time_buffer[0][0];
-        decoder->time_out[1]    = &gb_time_buffer[1][0];
-    }
-    /* A buffer of with frameLength elements must be allocated for fb_intermed. 
-     * If frameLength is too big, we do not use the IRAM buffer and keep faad's 
-     * internal allocation (see specrec.c). */
-    needed_bufsize = decoder->frameLength;
-    if (needed_bufsize <= GB_BUF_SIZE)
-    {
-        decoder->fb_intermed[0] = &gb_fb_intermed[0][0];
-        decoder->fb_intermed[1] = &gb_fb_intermed[1][0];
+        return CODEC_ERROR;
     }
 
 #ifdef SBR_DEC
@@ -156,8 +123,6 @@ next_track:
         sbr_fac = 1;
     }
 #endif
-
-    ci->id3->frequency = s;
 
     i = 0;
     
@@ -173,6 +138,7 @@ next_track:
         } else {
             sound_samples_done = 0;
         }
+        NeAACDecPostSeekReset(decoder, i);
     } else {
         sound_samples_done = 0;
     }
@@ -184,20 +150,19 @@ next_track:
 
     /* The main decoding loop */
     while (i < demux_res.num_sample_byte_sizes) {
-        ci->yield();
+        enum codec_command_action action = ci->get_command(&param);
 
-        if (ci->stop_codec || ci->new_track) {
+        if (action == CODEC_ACTION_HALT)
             break;
-        }
 
         /* Deal with any pending seek requests */
-        if (ci->seek_time) {
+        if (action == CODEC_ACTION_SEEK_TIME) {
             /* Seek to the desired time position. Important: When seeking in SBR
              * upsampling files the seek_time must be divided by 2 when calling 
              * m4a_seek and the resulting sound_samples_done must be expanded 
              * by a factor 2. This is done via using sbr_fac. */
             if (m4a_seek(&demux_res, &input_stream,
-                          ((ci->seek_time-1)/10/sbr_fac)*(ci->id3->frequency/100),
+                          (param/10/sbr_fac)*(ci->id3->frequency/100),
                           &sound_samples_done, (int*) &i)) {
                 sound_samples_done *= sbr_fac;
                 elapsed_time = (sound_samples_done * 10) / (ci->id3->frequency / 100);
@@ -209,6 +174,7 @@ next_track:
                     lead_trim = ci->id3->lead_trim;
                 }
             }
+            NeAACDecPostSeekReset(decoder, i);
             ci->seek_complete();
         }
 
@@ -227,8 +193,7 @@ next_track:
         else if (file_offset == 0)
         {
             LOGF("AAC: get_sample_offset error\n");
-            err = CODEC_ERROR;
-            goto done;
+            return CODEC_ERROR;
         }
         
         /* Request the required number of bytes from the input buffer */
@@ -240,8 +205,7 @@ next_track:
         /* NeAACDecDecode may sometimes return NULL without setting error. */
         if (ret == NULL || frame_info.error > 0) {
             LOGF("FAAD: decode error '%s'\n", NeAACDecGetErrorMessage(frame_info.error));
-            err = CODEC_ERROR;
-            goto done;
+            return CODEC_ERROR;
         }
 
         /* Advance codec buffer (no need to call set_offset because of this) */
@@ -250,10 +214,24 @@ next_track:
         /* Output the audio */
         ci->yield();
         
+        if (empty_first_frame)
+        {
+            /* Remove the first frame from lead_trim, under the assumption
+             * that it had the same size as this frame
+             */
+            empty_first_frame = false;
+            lead_trim -= (frame_info.samples >> 1);
+
+            if (lead_trim < 0)
+            {
+                lead_trim = 0;
+            }
+        }
+
         /* Gather number of samples for the decoded frame. */
         framelength = (frame_info.samples >> 1) - lead_trim;
         
-        if (i == demux_res.num_sample_byte_sizes - 1 && framelength > 0)
+        if (i == demux_res.num_sample_byte_sizes - 1)
         {
             framelength -= ci->id3->tail_trim;
         }
@@ -263,15 +241,21 @@ next_track:
             ci->pcmbuf_insert(&decoder->time_out[0][lead_trim],
                               &decoder->time_out[1][lead_trim],
                               framelength);
-        } 
-        
+        }
+
         if (lead_trim > 0)
         {
-            /* frame_info.samples can be 0 for the first frame */
-            lead_trim -= (i > 0 || frame_info.samples)
-                ? (frame_info.samples >> 1) : (uint32_t)framelength;
+            /* frame_info.samples can be 0 for frame 0. We still want to
+             * remove it from lead_trim, so do that during frame 1.
+             */
+            if (0 == i && 0 == frame_info.samples)
+            {
+                empty_first_frame = true;
+            }
 
-            if (lead_trim < 0 || ci->id3->lead_trim == 0)
+            lead_trim -= (frame_info.samples >> 1);
+
+            if (lead_trim < 0)
             {
                 lead_trim = 0;
             }
@@ -284,12 +268,6 @@ next_track:
         i++;
     }
 
-done:
     LOGF("AAC: Decoded %lu samples\n", (unsigned long)sound_samples_done);
-
-    if (ci->request_next_track())
-        goto next_track;
-
-exit:
-    return err;
+    return CODEC_OK;
 }

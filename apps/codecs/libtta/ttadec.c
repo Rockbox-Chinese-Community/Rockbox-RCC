@@ -53,7 +53,7 @@ static decoder tta[MAX_NCH]     IBSS_ATTR; /* decoder state */
 /* Rockbox speciffic: cache is defined in get_samples() (non static value) */
 /* static int     cache[MAX_NCH];   // decoder cache */
 
-tta_info *ttainfo               IBSS_ATTR; /* currently playing file info */
+static tta_info *ttainfo        IBSS_ATTR; /* currently playing file info */
 
 static unsigned int fframes     IBSS_ATTR; /* number of frames in file */
 static unsigned int framelen    IBSS_ATTR; /* the frame length in samples */
@@ -227,6 +227,7 @@ static int done_buffer_read(void) {
 
 /************************* decoder functions ****************************/
 
+/* rockbox: not used
 const char *get_error_str (int error) {
     switch (error) {
     case NO_ERROR:      return "No errors found";
@@ -237,7 +238,7 @@ const char *get_error_str (int error) {
     case MEMORY_ERROR:  return "Insufficient memory available";
     default:            return "Unknown error code";
     }
-}
+} */
 
 int set_tta_info (tta_info *info)
 {

@@ -132,20 +132,18 @@ struct display_format {
 static struct display_format *formats[TAGMENU_MAX_FMTS];
 static int format_count;
 
-struct search_instruction {
-    char name[64];
-    int tagorder[MAX_TAGS];
-    int tagorder_count;
-    struct tagcache_search_clause *clause[MAX_TAGS][TAGCACHE_MAX_CLAUSES];
-    int format_id[MAX_TAGS];
-    int clause_count[MAX_TAGS];
-    int result_seek[MAX_TAGS];
-};
-
 struct menu_entry {
     char name[64];
     int type;
-    struct search_instruction *si;
+    struct search_instruction {
+        char name[64];
+        int tagorder[MAX_TAGS];
+        int tagorder_count;
+        struct tagcache_search_clause *clause[MAX_TAGS][TAGCACHE_MAX_CLAUSES];
+        int format_id[MAX_TAGS];
+        int clause_count[MAX_TAGS];
+        int result_seek[MAX_TAGS];
+    } si;
     int link;
 };
 
@@ -154,6 +152,12 @@ struct menu_root {
     char id[MAX_MENU_ID_SIZE];
     int itemcount;
     struct menu_entry *items[TAGMENU_MAX_ITEMS];
+};
+
+struct match
+{
+    const char* str;
+    int symbol;
 };
 
 /* Statusbar text of the current view. */
@@ -170,6 +174,27 @@ static int current_offset;
 static int current_entry_count;
 
 static struct tree_context *tc;
+
+/* a few memory alloc helper */
+static void* tagtree_alloc(size_t size)
+{
+    return buffer_alloc(size);
+}
+
+static void* tagtree_alloc0(size_t size)
+{
+    void* ret = tagtree_alloc(size);
+    memset(ret, 0, size);
+    return ret;
+}
+
+static char* tagtree_strdup(const char* buf)
+{
+    size_t len = strlen(buf) + 1;
+    char* dest = tagtree_alloc(len);
+    strcpy(dest, buf);
+    return dest;
+}
 
 static int get_token_str(char *buf, int size)
 {
@@ -193,16 +218,48 @@ static int get_token_str(char *buf, int size)
     return 0;
 }
 
-#define MATCH(tag,str1,str2,settag) \
-    if (!strcasecmp(str1, str2)) { \
-        *tag = settag; \
-        return 1; \
-    }
-
 static int get_tag(int *tag)
 {
+    static const struct match get_tag_match[] =
+    {
+        {"album", tag_album},
+        {"artist", tag_artist},
+        {"bitrate", tag_bitrate},
+        {"composer", tag_composer},
+        {"comment", tag_comment},
+        {"albumartist", tag_albumartist},
+        {"ensemble", tag_albumartist},
+        {"grouping", tag_grouping},
+        {"genre", tag_genre},
+        {"length", tag_length},
+        {"Lm", tag_virt_length_min},
+        {"Ls", tag_virt_length_sec},
+        {"Pm", tag_virt_playtime_min},
+        {"Ps", tag_virt_playtime_sec},
+        {"title", tag_title},
+        {"filename", tag_filename},
+        {"tracknum", tag_tracknumber},
+        {"discnum", tag_discnumber},
+        {"year", tag_year},
+        {"playcount", tag_playcount},
+        {"rating", tag_rating},
+        {"lastplayed", tag_lastplayed},
+        {"lastoffset", tag_lastoffset},
+        {"commitid", tag_commitid},
+        {"entryage", tag_virt_entryage},
+        {"autoscore", tag_virt_autoscore},
+        {"%sort", var_sorttype},
+        {"%limit", var_limit},
+        {"%strip", var_strip},
+        {"%menu_start", var_menu_start},
+        {"%include", var_include},
+        {"%root_menu", var_rootmenu},
+        {"%format", var_format},
+        {"->", menu_next},
+        {"==>", menu_load}
+    };
     char buf[128];
-    int i;
+    unsigned int i;
     
     /* Find the start. */
     while ((*strp == ' ' || *strp == '>') && *strp != '\0')
@@ -210,8 +267,8 @@ static int get_tag(int *tag)
     
     if (*strp == '\0' || *strp == '?')
         return 0;
-    
-    for (i = 0; i < (int)sizeof(buf)-1; i++)
+
+    for (i = 0; i < sizeof(buf)-1; i++)
     {
         if (*strp == '\0' || *strp == ' ')
             break ;
@@ -219,63 +276,54 @@ static int get_tag(int *tag)
         strp++;
     }
     buf[i] = '\0';
-    
-    MATCH(tag, buf, "album", tag_album);
-    MATCH(tag, buf, "artist", tag_artist);
-    MATCH(tag, buf, "bitrate", tag_bitrate);
-    MATCH(tag, buf, "composer", tag_composer);
-    MATCH(tag, buf, "comment", tag_comment);
-    MATCH(tag, buf, "albumartist", tag_albumartist);
-    MATCH(tag, buf, "ensemble", tag_albumartist);
-    MATCH(tag, buf, "grouping", tag_grouping);
-    MATCH(tag, buf, "genre", tag_genre);
-    MATCH(tag, buf, "length", tag_length);
-    MATCH(tag, buf, "Lm", tag_virt_length_min);
-    MATCH(tag, buf, "Ls", tag_virt_length_sec);
-    MATCH(tag, buf, "Pm", tag_virt_playtime_min);
-    MATCH(tag, buf, "Ps", tag_virt_playtime_sec);
-    MATCH(tag, buf, "title", tag_title);
-    MATCH(tag, buf, "filename", tag_filename);
-    MATCH(tag, buf, "tracknum", tag_tracknumber);
-    MATCH(tag, buf, "discnum", tag_discnumber);
-    MATCH(tag, buf, "year", tag_year);
-    MATCH(tag, buf, "playcount", tag_playcount);
-    MATCH(tag, buf, "rating", tag_rating);
-    MATCH(tag, buf, "lastplayed", tag_lastplayed);
-    MATCH(tag, buf, "lastoffset", tag_lastoffset);
-    MATCH(tag, buf, "commitid", tag_commitid);
-    MATCH(tag, buf, "entryage", tag_virt_entryage);
-    MATCH(tag, buf, "autoscore", tag_virt_autoscore);
-    MATCH(tag, buf, "%sort", var_sorttype);
-    MATCH(tag, buf, "%limit", var_limit);
-    MATCH(tag, buf, "%strip", var_strip);
-    MATCH(tag, buf, "%menu_start", var_menu_start);
-    MATCH(tag, buf, "%include", var_include);
-    MATCH(tag, buf, "%root_menu", var_rootmenu);
-    MATCH(tag, buf, "%format", var_format);
-    MATCH(tag, buf, "->", menu_next);
-    MATCH(tag, buf, "==>", menu_load);
-    
+
+    for (i = 0; i < ARRAYLEN(get_tag_match); i++)
+    {
+        if (!strcasecmp(buf, get_tag_match[i].str))
+        {
+            *tag = get_tag_match[i].symbol;
+            return 1;
+        }
+    }
+
     logf("NO MATCH: %s\n", buf);
     if (buf[0] == '?')
         return 0;
-    
+
     return -1;
 }
 
 static int get_clause(int *condition)
 {
+    static const struct match get_clause_match[] =
+    {
+        {"=", clause_is},
+        {"==", clause_is},
+        {"!=", clause_is_not},
+        {">", clause_gt},
+        {">=", clause_gteq},
+        {"<", clause_lt},
+        {"<=", clause_lteq},
+        {"~", clause_contains},
+        {"!~", clause_not_contains},
+        {"^", clause_begins_with},
+        {"!^", clause_not_begins_with},
+        {"$", clause_ends_with},
+        {"!$", clause_not_ends_with},
+        {"@", clause_oneof}
+    };
+
     char buf[4];
-    int i;
-    
+    unsigned int i;
+
     /* Find the start. */
     while (*strp == ' ' && *strp != '\0')
         strp++;
-    
+
     if (*strp == '\0')
         return 0;
-    
-    for (i = 0; i < (int)sizeof(buf)-1; i++)
+
+    for (i = 0; i < sizeof(buf)-1; i++)
     {
         if (*strp == '\0' || *strp == ' ')
             break ;
@@ -283,22 +331,16 @@ static int get_clause(int *condition)
         strp++;
     }
     buf[i] = '\0';
-    
-    MATCH(condition, buf, "=", clause_is);
-    MATCH(condition, buf, "==", clause_is);
-    MATCH(condition, buf, "!=", clause_is_not);
-    MATCH(condition, buf, ">", clause_gt);
-    MATCH(condition, buf, ">=", clause_gteq);
-    MATCH(condition, buf, "<", clause_lt);
-    MATCH(condition, buf, "<=", clause_lteq);
-    MATCH(condition, buf, "~", clause_contains);
-    MATCH(condition, buf, "!~", clause_not_contains);
-    MATCH(condition, buf, "^", clause_begins_with);
-    MATCH(condition, buf, "!^", clause_not_begins_with);
-    MATCH(condition, buf, "$", clause_ends_with);
-    MATCH(condition, buf, "!$", clause_not_ends_with);
-    MATCH(condition, buf, "@", clause_oneof);
-    
+
+    for (i = 0; i < ARRAYLEN(get_clause_match); i++)
+    {
+        if (!strcasecmp(buf, get_clause_match[i].str))
+        {
+            *condition = get_clause_match[i].symbol;
+            return 1;
+        }
+    }
+
     return 0;
 }
 
@@ -325,13 +367,12 @@ static bool read_clause(struct tagcache_search_clause *clause)
     if (i<ARRAYLEN(id3_to_search_mapping)) /* runtime search operand found */
     {
         clause->source = source_runtime+i;
-        clause->str = buffer_alloc(SEARCHSTR_SIZE);
+        clause->str = tagtree_alloc(SEARCHSTR_SIZE);
     }    
     else 
     {
         clause->source = source_constant;
-        clause->str = buffer_alloc(strlen(buf)+1);
-        strcpy(clause->str, buf);
+        clause->str = tagtree_strdup(buf);
     }    
     
     if (TAGCACHE_IS_NUMERIC(clause->tag))
@@ -397,8 +438,7 @@ static int get_format_str(struct display_format *fmt)
     if (get_token_str(buf, sizeof buf) < 0)
         return -10;
     
-    fmt->formatstr = buffer_alloc(strlen(buf) + 1);
-    strcpy(fmt->formatstr, buf);
+    fmt->formatstr = tagtree_strdup(buf);
     
     while (fmt->tag_count < MAX_TAGS)
     {
@@ -439,15 +479,21 @@ static int get_format_str(struct display_format *fmt)
 
 static int add_format(const char *buf)
 {
+    if (format_count >= TAGMENU_MAX_FMTS)
+    {
+        logf("too many formats");
+        return -1;
+    }
+
     strp = buf;
     
     if (formats[format_count] == NULL)
-        formats[format_count] = buffer_alloc(sizeof(struct display_format));
+        formats[format_count] = tagtree_alloc0(sizeof(struct display_format));
     
-    memset(formats[format_count], 0, sizeof(struct display_format));
     if (get_format_str(formats[format_count]) < 0)
     {
         logf("get_format_str() parser failed!");
+        memset(formats[format_count], 0, sizeof(struct display_format));
         return -4;
     }
     
@@ -461,16 +507,18 @@ static int add_format(const char *buf)
         
         while (1)
         {
+            struct tagcache_search_clause *newclause;
+            
             if (clause_count >= TAGCACHE_MAX_CLAUSES)
             {
                 logf("too many clauses");
                 break;
             }
             
-            formats[format_count]->clause[clause_count] = 
-                buffer_alloc(sizeof(struct tagcache_search_clause));
+            newclause = tagtree_alloc(sizeof(struct tagcache_search_clause));
             
-            if (!read_clause(formats[format_count]->clause[clause_count]))
+            formats[format_count]->clause[clause_count] = newclause;
+            if (!read_clause(newclause))
                 break;
             
             clause_count++;
@@ -486,6 +534,7 @@ static int add_format(const char *buf)
 
 static int get_condition(struct search_instruction *inst)
 {
+    struct tagcache_search_clause *new_clause;
     int clause_count;
     char buf[128];
         
@@ -530,10 +579,15 @@ static int get_condition(struct search_instruction *inst)
         return false;
     }
     
-    inst->clause[inst->tagorder_count][clause_count] = 
-        buffer_alloc(sizeof(struct tagcache_search_clause));
+    new_clause = tagtree_alloc(sizeof(struct tagcache_search_clause));
+    inst->clause[inst->tagorder_count][clause_count] = new_clause;
     
-    if (!read_clause(inst->clause[inst->tagorder_count][clause_count]))
+    if (*strp == '|')
+    {
+        strp++;
+        new_clause->type = clause_logical_or;
+    }
+    else if (!read_clause(new_clause))
         return -1;
     
     inst->clause_count[inst->tagorder_count]++;
@@ -553,7 +607,7 @@ static bool parse_search(struct menu_entry *entry, const char *str)
 {
     int ret;
     int type;
-    struct search_instruction *inst = entry->si;
+    struct search_instruction *inst = &entry->si;
     char buf[MAX_PATH];
     int i;
     struct menu_root *new_menu;
@@ -593,9 +647,8 @@ static bool parse_search(struct menu_entry *entry, const char *str)
         }
         
         /* Allocate a new menu unless link is found. */
-        menus[menu_count] = buffer_alloc(sizeof(struct menu_root));
+        menus[menu_count] = tagtree_alloc0(sizeof(struct menu_root));
         new_menu = menus[menu_count];
-        memset(new_menu, 0, sizeof(struct menu_root));
         strlcpy(new_menu->id, buf, MAX_MENU_ID_SIZE);
         entry->link = menu_count;
         ++menu_count;
@@ -887,10 +940,9 @@ static int parse_line(int n, const char *buf, void *parameters)
             
                 if (menu == NULL) 
                 {
-                    menus[menu_count] = buffer_alloc(sizeof(struct menu_root));
+                    menus[menu_count] = tagtree_alloc0(sizeof(struct menu_root));
                     menu = menus[menu_count];
                     ++menu_count;
-                    memset(menu, 0, sizeof(struct menu_root));
                     strlcpy(menu->id, data, MAX_MENU_ID_SIZE);
                 }
             
@@ -935,13 +987,8 @@ static int parse_line(int n, const char *buf, void *parameters)
     
     /* Allocate */
     if (menu->items[menu->itemcount] == NULL)
-    {
-        menu->items[menu->itemcount] = buffer_alloc(sizeof(struct menu_entry));
-        memset(menu->items[menu->itemcount], 0, sizeof(struct menu_entry));
-        menu->items[menu->itemcount]->si = buffer_alloc(sizeof(struct search_instruction));
-    }
-    
-    memset(menu->items[menu->itemcount]->si, 0, sizeof(struct search_instruction));
+        menu->items[menu->itemcount] = tagtree_alloc0(sizeof(struct menu_entry));
+
     if (!parse_search(menu->items[menu->itemcount], buf))
         return 0;
     
@@ -988,7 +1035,7 @@ void tagtree_init(void)
     if (rootmenu < 0)
         rootmenu = 0;
     
-    uniqbuf = buffer_alloc(UNIQBUF_SIZE);
+    uniqbuf = tagtree_alloc(UNIQBUF_SIZE);
 
     add_event(PLAYBACK_EVENT_TRACK_BUFFER, false, tagtree_buffer_event);
     add_event(PLAYBACK_EVENT_TRACK_FINISH, false, tagtree_track_finish_event);
@@ -1220,12 +1267,6 @@ static int retrieve_entries(struct tree_context *c, int offset, bool init)
         if (total_count++ < offset)
             continue;
         
-        if ( strcmp(tcs.result , UNTAGGED ) == 0)
-        {
-            tcs.result_len = strlcpy(tcs.result, 
-                                     str(LANG_TAGNAVI_UNTAGGED), TAG_MAXLEN )+1;
-        }
-        
         dptr->newtable = NAVIBROWSE;
         if (tag == tag_title || tag == tag_filename)
         {
@@ -1250,6 +1291,13 @@ static int retrieve_entries(struct tree_context *c, int offset, bool init)
             }
         }
 
+        if (strcmp(tcs.result, UNTAGGED) == 0)
+        {
+            tcs.result = str(LANG_TAGNAVI_UNTAGGED);
+            tcs.result_len = strlen(tcs.result);
+            tcs.ramresult = true;
+        }
+        
         if (!tcs.ramresult || fmt)
         {
             char buf[MAX_PATH];
@@ -1288,7 +1336,7 @@ static int retrieve_entries(struct tree_context *c, int offset, bool init)
         dptr++;
         current_entry_count++;
 
-        if (current_entry_count >= global_settings.max_files_in_dir)
+        if (current_entry_count >= c->dircache_count)
         {
             logf("chunk mode #3: %d", current_entry_count);
             c->dirfull = true;
@@ -1490,7 +1538,7 @@ int tagtree_enter(struct tree_context* c)
             {
                 int i, j;
                 
-                csi = menu->items[seek]->si;
+                csi = &menu->items[seek]->si;
                 c->currextra = 0;
                 
                 strlcpy(current_title[c->currextra], dptr->name, 
@@ -1502,6 +1550,10 @@ int tagtree_enter(struct tree_context* c)
                     for (j = 0; j < csi->clause_count[i]; j++)
                     {
                         char* searchstring;
+
+                        if (csi->clause[i][j]->type == clause_logical_or)
+                            continue;
+
                         source = csi->clause[i][j]->source;
                         
                         if (source == source_constant)

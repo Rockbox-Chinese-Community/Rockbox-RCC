@@ -74,3 +74,9 @@
 #if CONFIG_CPU == AS3525v2
 #include "as3525v2.h"
 #endif
+#if CONFIG_CPU == IMX233
+#include "imx233.h"
+#endif
+#if CONFIG_CPU == RK27XX
+#include "rk27xx.h"
+#endif

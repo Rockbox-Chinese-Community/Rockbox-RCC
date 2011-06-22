@@ -110,7 +110,7 @@ int get_cpu_boost_counter(void);
 #define ALIGN_UP_P2(n, p2)   ALIGN_DOWN_P2((n) + P2_M1(p2),p2)
 
 /* align up or down to nearest integer multiple of a */
-#define ALIGN_DOWN(n, a)     ((n)/(a)*(a))
+#define ALIGN_DOWN(n, a)     ((typeof(n))((typeof(a))(n)/(a)*(a)))
 #define ALIGN_UP(n, a)       ALIGN_DOWN((n)+((a)-1),a)
 
 /* align start and end of buffer to nearest integer multiple of a */
@@ -135,6 +135,12 @@ int get_cpu_boost_counter(void);
 #undef betoh32
 #undef htobe16
 #undef htobe32
+#endif
+
+/* Android NDK contains swap16 and swap32, ignore them */
+#if (CONFIG_PLATFORM & PLATFORM_ANDROID)
+#undef swap16
+#undef swap32
 #endif
 
 #if (CONFIG_PLATFORM & PLATFORM_HOSTED) && defined(PLATFORM_HAS_VOLUME_CHANGE)

@@ -206,7 +206,7 @@ static unsigned int read_part_line(struct bmp_args *ba)
     uint8_t *ibuf;
     struct uint8_rgb *buf = (struct uint8_rgb *)(ba->buf);
     const struct uint8_rgb *palette = ba->palette;
-    uint32_t component, data = data;
+    uint32_t component, data;
     int ret;
     int i, cols, len;
 
@@ -492,7 +492,6 @@ int read_bmp_fd(int fd,
 #if (LCD_DEPTH > 1 || (defined(HAVE_REMOTE_LCD) && LCD_REMOTE_DEPTH > 1)) && \
     defined(HAVE_BMP_SCALING) || defined(PLUGIN)
     unsigned int resize = IMG_NORESIZE;
-    bool transparent = false;
 
 #ifdef HAVE_REMOTE_LCD
     bool remote = false;
@@ -508,9 +507,6 @@ int read_bmp_fd(int fd,
         resize = IMG_RESIZE;
     }
 
-    if (format & FORMAT_TRANSPARENT) {
-        transparent = true;
-    }
 #else
 
     (void)format;

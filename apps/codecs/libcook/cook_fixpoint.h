@@ -36,7 +36,7 @@
  */
 
 #ifdef ROCKBOX
-/* get definitions of MULT31, MULT31_SHIFT15, vect_add, from codelib */
+/* get definitions of MULT31, MULT31_SHIFT16, vect_add, from codelib */
 #include "codeclib_misc.h"
 #include "codeclib.h"
 #endif
@@ -68,7 +68,7 @@ static inline FIXP fixp_pow2(FIXP x, int i)
  * @param b                     fix point fraction, 0 <= b < 1
  */
 #ifdef ROCKBOX
-#define fixp_mult_su(x,y) (MULT31_SHIFT15(x,y))
+#define fixp_mult_su(x,y) (MULT31_SHIFT16(x,y))
 #else
 static inline FIXP fixp_mult_su(FIXP a, FIXPU b)
 {
@@ -120,23 +120,28 @@ static inline int av_clip(int a, int amin, int amax)
  * @param subband_coef_sign     use random noise instead of predetermined value
  * @param mlt_ptr               pointer to the mlt coefficients
  */
+
+static void scalar_dequant_math(COOKContext *q, int index,
+                                int quant_index, int* subband_coef_index,
+                                int* subband_coef_sign, REAL_T *mlt_p)
+                                ICODE_ATTR_COOK_DECODE;
 static void scalar_dequant_math(COOKContext *q, int index,
                                 int quant_index, int* subband_coef_index,
                                 int* subband_coef_sign, REAL_T *mlt_p)
 {
     /* Num. half bits to right shift */
-    const int s = (33 - quant_index + av_log2(q->samples_per_channel)) >> 1;
+    const int s = 33 - quant_index + av_log2(q->samples_per_channel);
     const FIXP *table = quant_tables[s & 1][index];
     FIXP f;
     int i;
 
 
-    if(s >= 32)
+    if(s >= 64)
         memset(mlt_p, 0, sizeof(REAL_T)*SUBBAND_SIZE);
     else 
     {
         for(i=0 ; i<SUBBAND_SIZE ; i++) {
-            f = (table[subband_coef_index[i]])>>s;
+            f = (table[subband_coef_index[i]]) >> (s >> 1);
             /* noise coding if subband_coef_index[i] == 0 */
             if (((subband_coef_index[i] == 0) && cook_random(q)) ||
                 ((subband_coef_index[i] != 0) && subband_coef_sign[i]))

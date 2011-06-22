@@ -1026,7 +1026,8 @@ static int parse_lasttouch(struct skin_element *element,
         if (element->params[i].type == STRING)
             data->region = skin_find_item(element->params[i].data.text,
                                           SKIN_FIND_TOUCHREGION, wps_data);
-        else if (element->params[i].type == INTEGER)
+        else if (element->params[i].type == INTEGER ||
+                 element->params[i].type == DECIMAL)
             data->timeout = element->params[i].data.number;
     }
 
@@ -1137,12 +1138,12 @@ static int parse_touchregion(struct skin_element *element,
         region->action = ACTION_TOUCH_VOLUME;
     else
     {
-        if (*action == '&')
+        if (*action == '*')
         {
             action++;
             region->press_length = LONG_PRESS;
         }
-        else if(*action == '*')
+        else if(*action == '&')
         {
             action++;
             region->press_length = REPEAT;
@@ -1307,7 +1308,7 @@ static void skin_data_reset(struct wps_data *wps_data)
     wps_data->touchregions = NULL;
 #endif
 #ifdef HAVE_SKIN_VARIABLES
-	wps_data->skinvars = NULL;
+    wps_data->skinvars = NULL;
 #endif
 #ifdef HAVE_ALBUMART
     wps_data->albumart = NULL;
