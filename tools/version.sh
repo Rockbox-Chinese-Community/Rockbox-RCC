@@ -21,12 +21,12 @@ svnversion_safe() {
     # LANG=C forces svnversion to not localize "exported".
     if OUTPUT=`LANG=C svnversion "$@"`; then
         if [ "$OUTPUT" = "exported" ]; then
-            echo "PMP-Firmware's Rockbox X1 RC1 r29613"
+            echo "PMP-Firmware's Rockbox X"
         else
             echo "r$OUTPUT"
         fi
     else
-        echo "PMP-Firmware's Rockbox X1 RC1 r29613"
+        echo "PMP-Firmware's Rockbox X"
     fi
 }
 
@@ -43,9 +43,9 @@ gitversion() {
 	version=`git log --pretty=format:'%b' --grep='git-svn-id: svn' -1 | tail -n 1 | perl -ne 'm/@(\d*)/; print "r" . $1;'`
 	mod=""
 	# Is this a git-svn commit?
-	if ! git log -1 --pretty=format:"%b" | grep -q "git-svn-id: svn" ; then
-	    version="$version+$head"
-	fi
+#	if ! git log -1 --pretty=format:"%b" | grep -q "git-svn-id: svn" ; then
+#	    version="$version+$head"
+#	fi
 	# Are there uncommitted changes?
 	export GIT_WORK_TREE="$1"
 	if git diff --name-only HEAD | read dummy; then
@@ -110,7 +110,8 @@ if [ -z $VERSION ]; then
         fi
     fi
 #VERSION=$VER-`date -u +%y%m%d`
-VERSION="PMP-Firmware's Rockbox X1 RC1 r29613"
+TAGVER=`git describe --tags`
+VERSION="PMP-Firmware's Rockbox $TAGVER $VER"
 fi
 echo $VERSION
 
