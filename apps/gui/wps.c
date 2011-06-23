@@ -815,7 +815,9 @@ long gui_wps_show(void)
                     return GO_TO_PLAYLIST_VIEWER;
 #ifdef HAVE_PICTUREFLOW_INTEGRATION
                 else if (retval == ONPLAY_PICTUREFLOW)
-                    return GO_TO_PICTUREFLOW;                 
+                    return GO_TO_PICTUREFLOW;   
+                else if (retval == ONPLAY_LYRICS)
+                    return GO_TO_LYRICS;        
 #endif
                 restore = true;
             }
