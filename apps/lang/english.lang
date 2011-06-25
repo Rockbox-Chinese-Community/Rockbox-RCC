@@ -882,6 +882,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_CHANNEL_SWAP
+  desc: in sound_settings
+  user: core
+  <source>
+    *: "Swap Channel"
+  </source>
+  <dest>
+    *: "Swap Channel"
+  </dest>
+  <voice>
+    *: "Swap Channel"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_STEREO_WIDTH
   desc: in sound_settings
   user: core
