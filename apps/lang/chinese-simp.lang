@@ -12710,6 +12710,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_PAUSE_REWIND
+  desc: Seconds to rewind when rewind on pause is enabled.
+  user: core
+  <source>
+    *: "Rewind on Pause"
+  </source>
+  <dest>
+    *: "从暂停恢复播放时快退"
+  </dest>
+  <voice>
+    *: "从暂停恢复播放时快退"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_SET_AS_START_DIR
   desc: used in the onplay menu to set a starting browser dir
   user: core
