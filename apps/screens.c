@@ -750,11 +750,11 @@ static const char* id3_get_info(int selected_item, void* data,
                 val=buffer;
                 break;
             case LANG_ID3_PLAYCOUNT:
-                snprintf(buffer, buffer_len, "%d", (int)id3->playcount);
+                snprintf(buffer, buffer_len, "%d", id3->playcount);
                 val = buffer;
                 break;
             case LANG_ID3_RATING:
-                snprintf(buffer, buffer_len, "%d", (int)id3->rating);
+                snprintf(buffer, buffer_len, "%d", id3->rating);
                 val = buffer;
                 break;                
         }
