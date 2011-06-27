@@ -13182,3 +13182,31 @@
     *: "Restart Sleep Timer On Keypress"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_ID3_PLAYCOUNT
+  desc: in tag viewer
+  user: core
+  <source>
+    *: "Play Count"
+  </source>
+  <dest>
+    *: "Play Count"
+  </dest>
+  <voice>
+    *: ""
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_ID3_RATING
+  desc: in tag viewer
+  user: core
+  <source>
+    *: "Rating"
+  </source>
+  <dest>
+    *: "Rating"
+  </dest>
+  <voice>
+    *: ""
+  </voice>
+</phrase>
