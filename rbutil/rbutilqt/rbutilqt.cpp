@@ -1039,21 +1039,12 @@ void RbUtilQt::uninstallBootloader(void)
     // create installer
     BootloaderInstallBase *bl = BootloaderInstallBase::createBootloaderInstaller(this,
                                     SystemInfo::value(SystemInfo::CurBootloaderMethod).toString());
-  
+
     if(bl == NULL ) {
         logger->addItem(tr("No uninstall method for this target known."), LOGERROR);
         logger->setFinished();
         return;
     }
-    if( (bl->capabilities() & BootloaderInstallBase::Uninstall) == 0)
-    {
-        logger->addItem(tr("Rockbox Utility can not uninstall the bootloader on this target."
-                            "Try a normal firmware update to remove the booloader."), LOGERROR);
-        logger->setFinished();
-        delete bl;
-        return;
-    }
-    
     QStringList blfile = SystemInfo::value(SystemInfo::CurBootloaderFile).toStringList();
     QStringList blfilepath;
     for(int a = 0; a < blfile.size(); a++) {
@@ -1061,6 +1052,18 @@ void RbUtilQt::uninstallBootloader(void)
                 + blfile.at(a));
     }
     bl->setBlFile(blfilepath);
+
+    BootloaderInstallBase::BootloaderType currentbl = bl->installed();
+    if((bl->capabilities() & BootloaderInstallBase::Uninstall) == 0
+            || currentbl == BootloaderInstallBase::BootloaderUnknown
+            || currentbl == BootloaderInstallBase::BootloaderOther)
+    {
+        logger->addItem(tr("Rockbox Utility can not uninstall the bootloader on this target. "
+                            "Try a normal firmware update to remove the booloader."), LOGERROR);
+        logger->setFinished();
+        delete bl;
+        return;
+    }
 
     connect(bl, SIGNAL(logItem(QString, int)), logger, SLOT(addItem(QString, int)));
     connect(bl, SIGNAL(logProgress(int, int)), logger, SLOT(setProgress(int, int)));
@@ -1237,11 +1240,13 @@ void RbUtilQt::updateInfo()
 
 QUrl RbUtilQt::proxy()
 {
+    QUrl proxy;
     if(RbSettings::value(RbSettings::ProxyType) == "manual")
-        return QUrl(RbSettings::value(RbSettings::Proxy).toString());
+        proxy.setEncodedUrl(RbSettings::value(RbSettings::Proxy).toByteArray());
     else if(RbSettings::value(RbSettings::ProxyType) == "system")
-        return System::systemProxy();
-    return QUrl("");
+        proxy = System::systemProxy();
+    qDebug() << proxy.userName() << proxy.password() << proxy.host() << proxy.port();
+    return proxy;
 }
 
 
