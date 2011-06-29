@@ -12534,10 +12534,10 @@
     *: "Filesize"
   </source>
   <dest>
-    *: "按照文件大小"
+    *: "文件大小"
   </dest>
   <voice>
-    *: "按照文件大小"
+    *: "文件大小"
   </voice>
 </phrase>
 <phrase>
