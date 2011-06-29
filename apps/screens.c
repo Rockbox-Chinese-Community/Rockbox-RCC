@@ -624,6 +624,8 @@ static const int id3_headers[]=
     LANG_ID3_YEAR,
     LANG_ID3_LENGTH,
     LANG_ID3_PLAYLIST,
+    LANG_ID3_PLAYCOUNT,
+    LANG_ID3_RATING,    
     LANG_ID3_BITRATE,
     LANG_ID3_FREQUENCY,
 #if CONFIG_CODEC == SWCODEC
@@ -747,6 +749,14 @@ static const char* id3_get_info(int selected_item, void* data,
                 output_dyn_value(buffer, buffer_len, id3->filesize, byte_units, true);
                 val=buffer;
                 break;
+            case LANG_ID3_PLAYCOUNT:
+                snprintf(buffer, buffer_len, "%d", id3->playcount);
+                val = buffer;
+                break;
+            case LANG_ID3_RATING:
+                snprintf(buffer, buffer_len, "%d", id3->rating);
+                val = buffer;
+                break;                
         }
         return val && *val ? val : NULL;
     }
