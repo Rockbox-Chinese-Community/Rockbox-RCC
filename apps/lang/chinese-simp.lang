@@ -12325,10 +12325,10 @@
   desc: in tag viewer
   user: core
   <source>
-    *: "Composer"
+    *: "作曲家"
   </source>
   <dest>
-    *: "Composer"
+    *: "作曲家"
   </dest>
   <voice>
     *: ""
@@ -12659,5 +12659,33 @@
   <voice>
     *: none
     recording_histogram: "柱状图间隔"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_ID3_PLAYCOUNT
+  desc: in tag viewer
+  user: core
+  <source>
+    *: "Play Count"
+  </source>
+  <dest>
+    *: "播放次数"
+  </dest>
+  <voice>
+    *: "曲目播放次数"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_ID3_RATING
+  desc: in tag viewer
+  user: core
+  <source>
+    *: "Rating"
+  </source>
+  <dest>
+    *: "用户评分"
+  </dest>
+  <voice>
+    *: "用户评分"
   </voice>
 </phrase>
