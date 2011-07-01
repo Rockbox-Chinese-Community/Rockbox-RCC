@@ -261,6 +261,7 @@ void gui_usb_screen_run(bool early_usb)
     usb_keypad_mode = global_settings.usb_keypad_mode;
 #endif
 
+#ifdef USE_SYSFONT_IN_USB_SCREEN
     if(!early_usb)
     {
         /* The font system leaves the .fnt fd's open, so we need for force close them all */
@@ -272,6 +273,7 @@ void gui_usb_screen_run(bool early_usb)
         skin_font_init(); /* unload all the skin fonts */
 #endif
     }
+#endif
 
     FOR_NB_SCREENS(i)
     {
