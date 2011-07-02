@@ -819,6 +819,8 @@ long gui_wps_show(void)
                 else if (retval == ONPLAY_LYRICS)
                     return GO_TO_LYRICS;        
 #endif
+                else if (retval == ONPLAY_SLEEP_TIMER)
+                    return GO_TO_SLEEP_TIMER;
                 restore = true;
             }
             break;

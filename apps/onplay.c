@@ -63,6 +63,7 @@
 #include "pitchscreen.h"
 #include "viewport.h"
 #include "filefuncs.h"
+#include "time.h"
 
 static int context;
 static char* selected_file = NULL;
@@ -937,6 +938,8 @@ MENUITEM_RETURNVALUE(pictureflow_item, ID2P(LANG_ONPLAY_PICTUREFLOW),
 #endif
 MENUITEM_RETURNVALUE(lyrics_item, ID2P(LANG_ONPLAY_LYRICS), 
                   GO_TO_LYRICS, NULL, Icon_NOICON); 
+/* in main_menu.c */
+extern const struct menu_item_ex sleep_timer_call;
 
 static bool view_cue(void)
 {
@@ -1150,6 +1153,7 @@ MAKE_ONPLAYMENU( wps_onplay_menu, ID2P(LANG_ONPLAY_MENU_TITLE),
 #endif           
            &lyrics_item,
 		   &browse_id3_item, &list_viewers_item,
+           &sleep_timer_call,
            &delete_file_item, &view_cue_item,
 #ifdef HAVE_PITCHSCREEN
            &pitch_screen_item,
@@ -1270,6 +1274,9 @@ static struct hotkey_assignment hotkey_items[] = {
     { HOTKEY_LYRICS, LANG_ONPLAY_LYRICS,
             HOTKEY_FUNC(NULL, NULL),
             ONPLAY_LYRICS },
+    { HOTKEY_SLEEP_TIMER, LANG_SLEEP_TIMER,
+            HOTKEY_FUNC(NULL, NULL),
+            ONPLAY_SLEEP_TIMER },
 };
 
 /* Return the language ID for this action */
@@ -1358,6 +1365,8 @@ int onplay(char* file, int attr, int from, bool hotkey)
 #endif
         case GO_TO_LYRICS:
             return ONPLAY_LYRICS;
+        case GO_TO_SLEEP_TIMER:
+            return ONPLAY_SLEEP_TIMER;
         default:
             return onplay_result;
     }

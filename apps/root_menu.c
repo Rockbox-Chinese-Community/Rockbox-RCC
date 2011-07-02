@@ -702,7 +702,10 @@ void root_menu(void)
             case GO_TO_LYRICS:
                 next_screen = load_plugin_screen(PLUGIN_APPS_DIR "/snclrc.rock");
                 break;
-#endif                
+#endif
+            case GO_TO_SLEEP_TIMER:
+                next_screen = GO_TO_SLEEP_TIMER;
+                break;
             default:
                 if (next_screen == GO_TO_FILEBROWSER 
 #ifdef HAVE_TAGCACHE
