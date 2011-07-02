@@ -54,6 +54,7 @@ enum {
        be the "start screen" after a boot up. The setting in settings_list.c
        will need editing if this is the case. */
     GO_TO_LYRICS,
+    GO_TO_SLEEP_TIMER,
     GO_TO_BROWSEDICTS,
     GO_TO_BROWSEPLUGINS,
     GO_TO_TIMESCREEN,
