@@ -68,6 +68,7 @@ enum Colors {
     COLOR_LSS,
     COLOR_LSE,
     COLOR_LST,
+    COLOR_SEP,
     COLOR_COUNT
 };
 static struct colour_info
@@ -81,6 +82,7 @@ static struct colour_info
     [COLOR_LSE] = {&global_settings.lse_color, LANG_SELECTOR_END_COLOR},
     [COLOR_LST] = {&global_settings.lst_color, LANG_SELECTOR_TEXT_COLOR},
 #ifdef HAVE_TOUCHSCREEN
+    [COLOR_SEP] = {&global_settings.list_separator_color, LANG_LIST_SEPARATOR_COLOR},
 #endif
 };
 
@@ -116,6 +118,7 @@ static int reset_color(void)
     global_settings.lse_color = LCD_DEFAULT_BG;
     global_settings.lst_color = LCD_DEFAULT_FG;
 #ifdef HAVE_TOUCHSCREEN
+    global_settings.list_separator_color = LCD_DARKGRAY;
 #endif
     
     settings_save();
@@ -133,6 +136,8 @@ MENUITEM_FUNCTION(set_lse_col, MENU_FUNC_USEPARAM, ID2P(LANG_SELECTOR_END_COLOR)
                   set_color_func, (void*)COLOR_LSE, NULL, Icon_NOICON);
 MENUITEM_FUNCTION(set_lst_col, MENU_FUNC_USEPARAM, ID2P(LANG_SELECTOR_TEXT_COLOR),
                   set_color_func, (void*)COLOR_LST, NULL, Icon_NOICON);
+MENUITEM_FUNCTION(set_sep_col, MENU_FUNC_USEPARAM, ID2P(LANG_LIST_SEPARATOR_COLOR),
+                  set_color_func, (void*)COLOR_SEP, NULL, Icon_NOICON);
 MENUITEM_FUNCTION(reset_colors, 0, ID2P(LANG_RESET_COLORS),
                     reset_color, NULL, NULL, Icon_NOICON);
 
@@ -145,7 +150,7 @@ MAKE_MENU(lss_settings, ID2P(LANG_SELECTOR_COLOR_MENU),
 MAKE_MENU(colors_settings, ID2P(LANG_COLORS_MENU),
             NULL, Icon_Display_menu,
             &lss_settings,
-            &set_bg_col, &set_fg_col, &reset_colors
+            &set_bg_col, &set_fg_col, &set_sep_col, &reset_colors
          );
          
 #endif /* HAVE_LCD_COLOR */
@@ -392,6 +397,9 @@ MENUITEM_FUNCTION(browse_themes, MENU_FUNC_USEPARAM,
 #ifdef HAVE_LCD_BITMAP
 MENUITEM_SETTING(cursor_style, &global_settings.cursor_style, NULL);
 #endif
+#ifdef HAVE_TOUCHSCREEN
+MENUITEM_SETTING(sep_menu, &global_settings.list_separator_enabled, NULL);
+#endif
 
 MAKE_MENU(theme_menu, ID2P(LANG_THEME_MENU),
             NULL, Icon_Wps,
@@ -422,6 +430,9 @@ MAKE_MENU(theme_menu, ID2P(LANG_THEME_MENU),
 #ifdef HAVE_LCD_BITMAP
             &bars_menu,
             &cursor_style,
+#endif
+#ifdef HAVE_TOUCHSCREEN
+            &sep_menu,
 #endif
 #ifdef HAVE_LCD_COLOR
             &colors_settings,
