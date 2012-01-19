@@ -279,6 +279,8 @@ static int  channels_mode;
        long dsp_sw_gain;
        long dsp_sw_cross;
 static bool dither_enabled;
+static bool surround_enabled;
+static bool aatube_enabled;
 static long eq_precut;
 static long track_gain;
 static bool new_gain;
@@ -321,7 +323,15 @@ static int32_t comp_makeup_gain IBSS_ATTR; /* S7.24 format */
 static int32_t comp_curve[66] IBSS_ATTR;   /* S7.24 format */
 static int32_t release_gain IBSS_ATTR;     /* S7.24 format */
 #define UNITY (1L << 24)                   /* unity gain in S7.24 format */
-static void    compressor_process(int count, int32_t *buf[]);
+static void compressor_process(int count, int32_t *buf[]);
+
+/* dolby surround */
+#define DOLBY_SURROUND_MAX 1024
+static int32_t dolbyBuffer[DOLBY_SURROUND_MAX * 2];
+static int32_t dolbyBufferPointer IBSS_ATTR;
+
+/* antialias-tube */
+static int32_t aatube_filter_state[2] IBSS_ATTR;
 
 
 #ifdef HAVE_PITCHSCREEN
@@ -888,6 +898,119 @@ void dsp_dither_enable(bool enable)
     struct dsp_config *dsp = &AUDIO_DSP;
     dither_enabled = enable;
     sample_output_new_format(dsp);
+}
+
+/* Dolby surround */
+void dsp_surround_enable(bool enable)
+{
+    if (enable)
+    {
+        memset(dolbyBuffer, 0, sizeof(dolbyBuffer));
+        dolbyBufferPointer = 0;
+    }
+    
+    surround_enabled = enable;
+}
+
+static void dolby_surround_process(int count, int32_t *buf[])
+{
+    int32_t *inputSamplesA, *inputSamplesB;
+    int32_t *backBuffer;
+    int32_t X;
+		
+    if (dolbyBufferPointer < DOLBY_SURROUND_MAX)
+    {
+        inputSamplesA = buf[0];
+        inputSamplesB = buf[1];	
+		
+        backBuffer = dolbyBuffer + dolbyBufferPointer;
+        X = DOLBY_SURROUND_MAX - dolbyBufferPointer;
+		
+        if (X < 0) X = 0;
+        if (X > count) X = count;
+        while (X--)
+        {
+            backBuffer[1] = *inputSamplesB;
+            *inputSamplesB *= 0;
+			
+        		inputSamplesB ++;
+            backBuffer += 2;
+            dolbyBufferPointer += 2;
+        }
+    }
+    else
+    {
+        inputSamplesA = buf[0];
+        inputSamplesB = buf[1];	
+		
+        backBuffer = dolbyBuffer + dolbyBufferPointer;
+        X = count;
+		
+        while (X--)
+        {
+            backBuffer[1] = *inputSamplesB;
+			
+            inputSamplesB ++;
+            backBuffer += 2;
+            dolbyBufferPointer += 2;
+        }
+		
+        inputSamplesA = buf[0];
+        inputSamplesB = buf[1];	
+		
+        backBuffer = dolbyBuffer;
+        X = count;
+		
+        while (X--)
+        {
+            *inputSamplesB = backBuffer[1];
+			
+            inputSamplesB ++;
+            backBuffer += 2;
+            dolbyBufferPointer -= 2;
+        }
+        memcpy(dolbyBuffer, backBuffer, dolbyBufferPointer * 4);
+    }
+}
+
+/* antialias tube */
+void dsp_aatube_enable(bool enable)
+{
+    if (enable)
+    {
+        aatube_filter_state[0] = 0;
+		aatube_filter_state[1] = 0;
+    }
+    
+    aatube_enabled = enable;
+}
+
+static void antialias_tube_process(int nch, int count, int32_t *buf[])
+{
+    int32_t *pSmpCH0, *pSmpCH1;
+    int32_t i;
+
+    if (nch == 1)
+    {
+        pSmpCH0 = buf[0];
+        for (i = 0; i < count; i++)
+        {
+            aatube_filter_state[0] = (aatube_filter_state[0] + pSmpCH0[i]) >> 1;
+            pSmpCH0[i] = aatube_filter_state[0];
+        }
+    }
+    else if (nch == 2)
+    {
+        pSmpCH0 = buf[0];
+        pSmpCH1 = buf[1];
+        for (i = 0; i < count; i++)
+        {
+            aatube_filter_state[0] = (aatube_filter_state[0] + pSmpCH0[i]) >> 1;
+            pSmpCH0[i] = aatube_filter_state[0];
+            aatube_filter_state[1] = (aatube_filter_state[1] + pSmpCH1[i]) >> 1;
+            pSmpCH1[i] = aatube_filter_state[1];
+        }
+    }
 }
 
 /* Applies crossfeed to the stereo signal in src.
@@ -1513,7 +1636,13 @@ int dsp_process(struct dsp_config *dsp, char *dst, const char *src[], int count)
 
             if (dsp->channels_process)
                 dsp->channels_process(chunk, t2);
-            
+                
+            if ((dsp->data.num_channels == 2) && surround_enabled)
+                dolby_surround_process(chunk, t2);
+			
+            if (aatube_enabled)
+                antialias_tube_process(dsp->data.num_channels, chunk, t2);
+
             if (dsp->compressor_process)
                 dsp->compressor_process(chunk, t2);
 

@@ -78,6 +78,8 @@ void dsp_set_eq(bool enable);
 void dsp_set_eq_precut(int precut);
 void dsp_set_eq_coefs(int band);
 void dsp_dither_enable(bool enable);
+void dsp_surround_enable(bool enable);
+void dsp_aatube_enable(bool enable);
 void dsp_timestretch_enable(bool enable);
 bool dsp_timestretch_available(void);
 void sound_set_pitch(int32_t r);
