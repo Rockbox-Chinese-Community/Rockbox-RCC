@@ -13092,3 +13092,17 @@
     *: "Restart Sleep Timer On Keypress"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_QUIT_ROCKBOX
+  desc: Quit Rockbox item in root menu
+  user: core
+  <source>
+    *: "Quit Rockbox"
+  </source>
+  <dest>
+    *: "Quit Rockbox"
+  </dest>
+  <voice>
+    *: "Quit Rockbox"
+  </voice>
+</phrase>

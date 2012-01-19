@@ -463,7 +463,7 @@ MENUITEM_RETURNVALUE(playlists, ID2P(LANG_CATALOG), GO_TO_PLAYLISTS_SCREEN,
 MENUITEM_RETURNVALUE(system_menu_, ID2P(LANG_SYSTEM), GO_TO_SYSTEM_SCREEN,
                      NULL, Icon_System_menu);
 
-#if CONFIG_KEYPAD == PLAYER_PAD
+#if (CONFIG_KEYPAD == PLAYER_PAD) || (CONFIG_PLATFORM&PLATFORM_ANDROID)
 static int do_shutdown(void)
 {
 #if CONFIG_CHARGING
@@ -474,7 +474,12 @@ static int do_shutdown(void)
         sys_poweroff();
     return 0;
 }
+#endif
+#if (CONFIG_KEYPAD == PLAYER_PAD)
 MENUITEM_FUNCTION(do_shutdown_item, 0, ID2P(LANG_SHUTDOWN),
+                  do_shutdown, NULL, NULL, Icon_NOICON);
+#elif (CONFIG_PLATFORM&PLATFORM_ANDROID)
+MENUITEM_FUNCTION(do_shutdown_item, 0, ID2P(LANG_QUIT_ROCKBOX),
                   do_shutdown, NULL, NULL, Icon_NOICON);
 #endif
 MAKE_MENU(root_menu_, ID2P(LANG_ROCKBOX_TITLE),
@@ -492,8 +497,8 @@ MAKE_MENU(root_menu_, ID2P(LANG_ROCKBOX_TITLE),
 #endif
             &playlists, &rocks_browser,  &system_menu_
 
-#if CONFIG_KEYPAD == PLAYER_PAD
-            ,&do_shutdown_item
+#if (CONFIG_KEYPAD == PLAYER_PAD) || (CONFIG_PLATFORM&PLATFORM_ANDROID)
+             ,&do_shutdown_item
 #endif
             ,&shortcut_menu
         );
