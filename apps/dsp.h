@@ -54,7 +54,8 @@ enum
     DSP_SET_ALBUM_GAIN,
     DSP_SET_TRACK_PEAK,
     DSP_SET_ALBUM_PEAK,
-    DSP_CROSSFEED
+    DSP_CROSSFEED,
+    DSP_SPACE80
 };
 
 struct dsp_config;
@@ -71,6 +72,8 @@ void dsp_set_crossfeed(bool enable);
 void dsp_set_crossfeed_direct_gain(int gain);
 void dsp_set_crossfeed_cross_params(long lf_gain, long hf_gain,
                                     long cutoff);
+void dsp_set_space80(bool enable);
+void dsp_set_space80_params(long decay, long freq, long gain, long mix);
 void dsp_set_eq(bool enable);
 void dsp_set_eq_precut(int precut);
 void dsp_set_eq_coefs(int band);

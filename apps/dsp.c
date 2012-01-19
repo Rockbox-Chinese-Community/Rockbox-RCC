@@ -31,6 +31,7 @@
 #include "core_alloc.h"
 #include "fixedpoint.h"
 #include "fracmul.h"
+#include "dspk.h"
 
 /* Define LOGF_ENABLE to enable logf output in this file */
 /*#define LOGF_ENABLE*/
@@ -120,6 +121,43 @@ struct crossfeed_data
                             /* 8ch */
 };
 
+struct space80_data_e
+{
+    int32_t dl_0[728];
+    int32_t dl_1[700];
+    int32_t dl_2[680];
+    int32_t dl_3[654];
+    int32_t dl_4[610];
+    int32_t dl_5[587];
+    int32_t dl_6[13];
+    int32_t dl_7[12];
+};
+
+struct space80_data
+{
+    int32_t c_decay;
+    int32_t c_freq;
+    int32_t c_gain;
+    int32_t c_mix;
+
+    int32_t *idx_w0;
+    int32_t *idx_r0;
+    int32_t *idx_w1;
+    int32_t *idx_r1;
+    int32_t *idx_w2;
+    int32_t *idx_r2;
+    int32_t *idx_w3;
+    int32_t *idx_r3;
+    int32_t *idx_w4;
+    int32_t *idx_r4;
+    int32_t *idx_w5;
+    int32_t *idx_r5;
+    int32_t *idx_w6;
+    int32_t *idx_r6;
+    int32_t *idx_w7;
+    int32_t *idx_r7;
+};
+
 /* Current setup is one lowshelf filters three peaking filters and one
  *  highshelf filter. Varying the number of shelving filters make no sense,
  *  but adding peaking filters is possible.
@@ -178,6 +216,7 @@ struct dsp_config
        way */
     channels_process_dsp_fn_type apply_gain;
     channels_process_fn_type     apply_crossfeed;
+    channels_process_fn_type     apply_space80;
     channels_process_fn_type     eq_process;
     channels_process_fn_type     channels_process;
     channels_process_fn_type     compressor_process;
@@ -193,6 +232,32 @@ static long   dither_bias IBSS_ATTR;
 struct crossfeed_data crossfeed_data IDATA_ATTR =    /* A */
 {
     .index = (int32_t *)crossfeed_data.delay
+};
+
+struct space80_data_e space80_data_e;
+
+struct space80_data space80_data IDATA_ATTR = 
+{
+    .c_decay = 0x73333333,
+    .c_freq = 0x1fffffff,
+    .c_gain = 0x3fffffff,
+    .c_mix = 0x33333333,
+    .idx_w0 = space80_data_e.dl_0,
+    .idx_r0 = space80_data_e.dl_0+1,
+    .idx_w1 = space80_data_e.dl_1,
+    .idx_r1 = space80_data_e.dl_1+1,
+    .idx_w2 = space80_data_e.dl_2,
+    .idx_r2 = space80_data_e.dl_2+1,
+    .idx_w3 = space80_data_e.dl_3,
+    .idx_r3 = space80_data_e.dl_3+1,
+    .idx_w4 = space80_data_e.dl_4,
+    .idx_r4 = space80_data_e.dl_4+1,
+    .idx_w5 = space80_data_e.dl_5,
+    .idx_r5 = space80_data_e.dl_5+1,
+    .idx_w6 = space80_data_e.dl_6,
+    .idx_r6 = space80_data_e.dl_6+1,
+    .idx_w7 = space80_data_e.dl_7,
+    .idx_r7 = space80_data_e.dl_7+1
 };
 
 /* Equalizer */
@@ -222,6 +287,7 @@ static long track_peak;
 static long album_peak;
 static long replaygain;
 static bool crossfeed_enabled;
+static bool space80_enabled;
 
 #define AUDIO_DSP (dsp_conf[CODEC_IDX_AUDIO])
 #define VOICE_DSP (dsp_conf[CODEC_IDX_VOICE])
@@ -922,6 +988,114 @@ void dsp_set_crossfeed_cross_params(long lf_gain, long hf_gain, long cutoff)
     c[2] <<= 4;
 }
 
+static void apply_space80(int count, int32_t *buf[])
+{
+    int32_t c_decay = space80_data.c_decay;
+    int32_t c_freq = space80_data.c_freq;
+    int32_t c_gain = space80_data.c_gain;
+    int32_t c_mix = space80_data.c_mix;
+
+    int32_t *idx_dl0  = &space80_data_e.dl_0[0] + 728;
+    int32_t *idx_dl1  = &space80_data_e.dl_1[0] + 700;
+    int32_t *idx_dl2  = &space80_data_e.dl_2[0] + 680;
+    int32_t *idx_dl3  = &space80_data_e.dl_3[0] + 654;
+    int32_t *idx_dl4  = &space80_data_e.dl_4[0] + 610;
+    int32_t *idx_dl5  = &space80_data_e.dl_5[0] + 587;
+    int32_t *idx_dl6  = &space80_data_e.dl_6[0] + 13;
+    int32_t *idx_dl7  = &space80_data_e.dl_7[0] + 12;
+
+    int32_t *idx_w0  = space80_data.idx_w0;
+    int32_t *idx_r0  = space80_data.idx_r0;
+    int32_t *idx_w1  = space80_data.idx_w1;
+    int32_t *idx_r1  = space80_data.idx_r1;
+    int32_t *idx_w2  = space80_data.idx_w2;
+    int32_t *idx_r2  = space80_data.idx_r2;
+    int32_t *idx_w3  = space80_data.idx_w3;
+    int32_t *idx_r3  = space80_data.idx_r3;
+    int32_t *idx_w4  = space80_data.idx_w4;
+    int32_t *idx_r4  = space80_data.idx_r4;
+    int32_t *idx_w5  = space80_data.idx_w5;
+    int32_t *idx_r5  = space80_data.idx_r5;
+    int32_t *idx_w6  = space80_data.idx_w6;
+    int32_t *idx_r6  = space80_data.idx_r6;
+    int32_t *idx_w7  = space80_data.idx_w7;
+    int32_t *idx_r7  = space80_data.idx_r7;
+
+    int32_t t_wet, t_c, t_d[2];
+
+    int i;
+
+    for (i = 0; i < count; i++)
+    {
+        t_wet = FRACMUL((buf[0][i] >> 4) + (buf[0][i] >> 6) + (buf[1][i] >> 4) + (buf[1][i] >> 6), c_mix);
+        buf[0][i] -=  buf[0][i] >> 4;
+        buf[1][i] -=  buf[1][i] >> 4;
+        buf[0][i] -= FRACMUL(buf[0][i], c_mix);
+        buf[1][i] -= FRACMUL(buf[1][i], c_mix);
+        *idx_w0 = t_wet + FRACMUL(*idx_r0, c_decay);
+        *idx_w1 = t_wet + FRACMUL(*idx_r1, c_decay);
+        *idx_w2 = t_wet + FRACMUL(*idx_r2, c_decay);
+        *idx_w3 = t_wet + FRACMUL(*idx_r3, c_decay);
+        *idx_w4 = t_wet + FRACMUL(*idx_r4, c_decay);
+        *idx_w5 = t_wet + FRACMUL(*idx_r5, c_decay);
+        t_c = FRACMUL(*idx_r0 + *idx_r1 + *idx_r2 + *idx_r3 + *idx_r4 + *idx_r5, c_gain);
+        *idx_w6 = t_c - FRACMUL(*idx_r6, c_freq);
+        t_d[0] = *idx_r6 + FRACMUL(*idx_w6, c_freq);
+        *idx_w7 = t_d[0] - FRACMUL(*idx_r7, c_freq);
+        t_d[1] = *idx_r7 + FRACMUL(*idx_w7, c_freq);
+        buf[0][i] += t_d[1];
+        buf[1][i] -= t_d[1];
+
+        if(++idx_w0 >= idx_dl0) idx_w0 = idx_dl0 - 728;
+        if(++idx_r0 >= idx_dl0) idx_r0 = idx_dl0 - 728;
+        if(++idx_w1 >= idx_dl1) idx_w1 = idx_dl1 - 700;
+        if(++idx_r1 >= idx_dl1) idx_r1 = idx_dl1 - 700;
+        if(++idx_w2 >= idx_dl2) idx_w2 = idx_dl2 - 680;
+        if(++idx_r2 >= idx_dl2) idx_r2 = idx_dl2 - 680;
+        if(++idx_w3 >= idx_dl3) idx_w3 = idx_dl3 - 654;
+        if(++idx_r3 >= idx_dl3) idx_r3 = idx_dl3 - 654;
+        if(++idx_w4 >= idx_dl4) idx_w4 = idx_dl4 - 610;
+        if(++idx_r4 >= idx_dl4) idx_r4 = idx_dl4 - 610;
+        if(++idx_w5 >= idx_dl5) idx_w5 = idx_dl5 - 587;
+        if(++idx_r5 >= idx_dl5) idx_r5 = idx_dl5 - 587;
+        if(++idx_w6 >= idx_dl6) idx_w6 = idx_dl6 - 13;
+        if(++idx_r6 >= idx_dl6) idx_r6 = idx_dl6 - 13;
+        if(++idx_w7 >= idx_dl7) idx_w7 = idx_dl7 - 12;
+        if(++idx_r7 >= idx_dl7) idx_r7 = idx_dl7 - 12;
+    }
+    space80_data.idx_w0 = idx_w0;
+    space80_data.idx_r0 = idx_r0;
+    space80_data.idx_w1 = idx_w1;
+    space80_data.idx_r1 = idx_r1;
+    space80_data.idx_w2 = idx_w2;
+    space80_data.idx_r2 = idx_r2;
+    space80_data.idx_w3 = idx_w3;
+    space80_data.idx_r3 = idx_r3;
+    space80_data.idx_w4 = idx_w4;
+    space80_data.idx_r4 = idx_r4;
+    space80_data.idx_w5 = idx_w5;
+    space80_data.idx_r5 = idx_r5;
+    space80_data.idx_w6 = idx_w6;
+    space80_data.idx_r6 = idx_r6;
+    space80_data.idx_w7 = idx_w7;
+    space80_data.idx_r7 = idx_r7;
+}
+
+void dsp_set_space80(bool enable)
+{
+    space80_enabled = enable;
+    AUDIO_DSP.apply_space80 = (enable && AUDIO_DSP.data.num_channels > 1)
+                                    ? apply_space80 : NULL;
+}
+
+void dsp_set_space80_params(long decay, long freq, long gain, long mix)
+{
+    space80_data.c_decay = log15(0x5c28f5c * (decay / 5));
+    space80_data.c_freq = 0x6666666 * (freq / 5);
+    space80_data.c_gain = 0x6666666 * (gain / 5);
+    space80_data.c_mix = 0x6666666 * (mix / 5);
+}
+
 /* Apply a constant gain to the samples (e.g., for ReplayGain).
  * Note that this must be called before the resampler.
  */
@@ -1306,6 +1480,9 @@ int dsp_process(struct dsp_config *dsp, char *dst, const char *src[], int count)
             if (dsp->apply_crossfeed)
                 dsp->apply_crossfeed(chunk, t2);
 
+            if (dsp->apply_space80)
+                dsp->apply_space80(chunk, t2);
+
             if (dsp->eq_process)
                 dsp->eq_process(chunk, t2);
 
@@ -1409,6 +1586,7 @@ static void dsp_update_functions(struct dsp_config *dsp)
     sample_output_new_format(dsp);
     if (dsp == &AUDIO_DSP)
         dsp_set_crossfeed(crossfeed_enabled);
+        dsp_set_space80(space80_enabled);
 }
 
 intptr_t dsp_configure(struct dsp_config *dsp, int setting, intptr_t value)

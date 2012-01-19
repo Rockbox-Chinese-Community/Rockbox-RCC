@@ -336,6 +336,13 @@ struct user_settings
     unsigned int crossfeed_hf_attenuation;      /* dB x 10 */
     unsigned int crossfeed_hf_cutoff;           /* Frequency in Hz */
 
+    /* Space'80 Reverb */
+    bool space80;
+    unsigned int space80_decay;
+    unsigned int space80_freq;
+    unsigned int space80_gain;
+    unsigned int space80_mix;
+
     /* EQ */
     bool eq_enabled;            /* Enable equalizer */
     unsigned int eq_precut;     /* dB */

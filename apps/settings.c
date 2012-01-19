@@ -987,6 +987,11 @@ void settings_apply(bool read_disk)
     dsp_set_crossfeed_cross_params(global_settings.crossfeed_cross_gain,
                                    global_settings.crossfeed_hf_attenuation,
                                    global_settings.crossfeed_hf_cutoff);
+    dsp_set_space80(global_settings.space80);
+    dsp_set_space80_params(global_settings.space80_decay,
+                           global_settings.space80_freq,
+                           global_settings.space80_gain,
+                           global_settings.space80_mix);
 
     /* Configure software equalizer, hardware eq is handled in audio_init() */
     dsp_set_eq(global_settings.eq_enabled);

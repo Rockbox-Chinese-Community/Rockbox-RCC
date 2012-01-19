@@ -433,6 +433,15 @@ static void crossfeed_cross_set(int val)
                                   global_settings.crossfeed_hf_cutoff);
 }
 
+static void space80_set(int val)
+{
+   (void)val;
+   dsp_set_space80_params(global_settings.space80_decay,
+                          global_settings.space80_freq,
+                          global_settings.space80_gain,
+                          global_settings.space80_mix);
+}
+
 static void compressor_set(int val)
 {
     (void)val;
@@ -1412,6 +1421,26 @@ const struct settings_list settings[] = {
                        LANG_CROSSFEED_HF_CUTOFF, 700,
                        "crossfeed hf cutoff", UNIT_HERTZ, 500, 2000, 100,
                        NULL, NULL, crossfeed_cross_set),
+
+    /* space80 */
+    OFFON_SETTING(F_SOUNDSETTING, space80, LANG_SPACE80, false,
+                  "space80", dsp_set_space80),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, space80_decay,
+                       LANG_SPACE80_DECAY, 40,
+                       "space80 decay", UNIT_PERCENT, 0, 100,
+                       5, NULL, NULL, space80_set),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, space80_freq,
+                       LANG_SPACE80_FREQ, 25,
+                       "space80 freq", UNIT_PERCENT, 0, 100,
+                       5, NULL, NULL, space80_set),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, space80_gain,
+                       LANG_SPACE80_GAIN, 50,
+                       "space80 gain", UNIT_PERCENT, 0, 100,
+                       5, NULL, NULL, space80_set),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, space80_mix,
+                       LANG_SPACE80_MIX, 40,
+                       "space80 mix", UNIT_PERCENT, 0, 100,
+                       5, NULL, NULL, space80_set),
 
     /* equalizer */
     OFFON_SETTING(F_EQSETTING, eq_enabled, LANG_EQUALIZER_ENABLED, false,

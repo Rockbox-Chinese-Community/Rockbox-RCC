@@ -675,6 +675,7 @@ struct plugin_api {
     void (*audio_set_input_source)(int source, unsigned flags);
 #endif
     void (*dsp_set_crossfeed)(bool enable);
+    void (*dsp_set_space80)(bool enable);
     void (*dsp_set_eq)(bool enable);
     void (*dsp_dither_enable)(bool enable);
     intptr_t (*dsp_configure)(struct dsp_config *dsp, int setting,

@@ -981,6 +981,91 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_SPACE80
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Space'80 Reverb"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Space'80 Reverb"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Space'80 Reverb"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_DECAY
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Decay"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Decay"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Decay"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_FREQ
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Frequency Compensation"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Frequency Compensation"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Frequency Compensation"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_GAIN
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Gain"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Gain"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Gain"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_MIX
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Dry / Wet Mix"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Dry / Wet Mix"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Dry / Wet Mix"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_EQUALIZER
   desc: in the sound settings menu
   user: core
