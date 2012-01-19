@@ -63,6 +63,7 @@
 #include "pitchscreen.h"
 #include "viewport.h"
 #include "filefuncs.h"
+#include "time.h"
 #include "shortcuts.h"
 
 static int context;
@@ -953,9 +954,10 @@ MENUITEM_FUNCTION(rating_item, 0, ID2P(LANG_MENU_SET_RATING),
 MENUITEM_RETURNVALUE(pictureflow_item, ID2P(LANG_ONPLAY_PICTUREFLOW), 
                   GO_TO_PICTUREFLOW, NULL, Icon_NOICON);                  
 #endif
-
 MENUITEM_RETURNVALUE(lyrics_item, ID2P(LANG_ONPLAY_LYRICS), 
                   GO_TO_LYRICS, NULL, Icon_NOICON); 
+/* in main_menu.c */
+extern const struct menu_item_ex sleep_timer_call;
 static bool view_cue(void)
 {
     struct mp3entry* id3 = audio_current_track();
@@ -1173,16 +1175,16 @@ static int onplaymenu_callback(int action,const struct menu_item_ex *this_item);
 MAKE_ONPLAYMENU( wps_onplay_menu, ID2P(LANG_ONPLAY_MENU_TITLE),
            onplaymenu_callback, Icon_Audio,
            &wps_playlist_menu, &cat_playlist_menu,
-           &sound_settings, &playback_settings,
+           &sound_settings, &playback_settings, &lyrics_item,
 #ifdef HAVE_TAGCACHE
            &rating_item,
 #endif
            &bookmark_menu, 
 #ifdef HAVE_PICTUREFLOW_INTEGRATION
            &pictureflow_item,
-#endif     
-	   &lyrics_item,      
+#endif           
            &browse_id3_item, &list_viewers_item,
+	   &sleep_timer_call,
            &delete_file_item, &view_cue_item,
 #ifdef HAVE_PITCHSCREEN
            &pitch_screen_item,
@@ -1303,6 +1305,9 @@ static struct hotkey_assignment hotkey_items[] = {
     { HOTKEY_LYRICS, LANG_ONPLAY_LYRICS,
             HOTKEY_FUNC(NULL, NULL),
             ONPLAY_LYRICS },
+    { HOTKEY_SLEEP_TIMER, LANG_SLEEP_TIMER,
+            HOTKEY_FUNC(NULL, NULL),
+            ONPLAY_SLEEP_TIMER },
 };
 
 /* Return the language ID for this action */
@@ -1391,9 +1396,11 @@ int onplay(char* file, int attr, int from, bool hotkey)
 #ifdef HAVE_PICTUREFLOW_INTEGRATION
         case GO_TO_PICTUREFLOW:
             return ONPLAY_PICTUREFLOW;
+#endif
         case GO_TO_LYRICS:
             return ONPLAY_LYRICS;
-#endif
+        case GO_TO_SLEEP_TIMER:
+            return ONPLAY_SLEEP_TIMER;
         default:
             return onplay_result;
     }

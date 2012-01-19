@@ -458,7 +458,7 @@ MENUITEM_RETURNVALUE(menu_, ID2P(LANG_SETTINGS), GO_TO_MAINMENU,
 MENUITEM_RETURNVALUE(bookmarks, ID2P(LANG_BOOKMARK_MENU_RECENT_BOOKMARKS),
                         GO_TO_RECENTBMARKS,  item_callback, 
                         Icon_Bookmark);
-MENUITEM_RETURNVALUE(playlists, ID2P(LANG_CATALOG), GO_TO_PLAYLISTS_SCREEN,
+MENUITEM_RETURNVALUE(playlists, ID2P(LANG_PLAYLISTS), GO_TO_PLAYLISTS_SCREEN,
                      NULL, Icon_Playlist);
 MENUITEM_RETURNVALUE(system_menu_, ID2P(LANG_SYSTEM), GO_TO_SYSTEM_SCREEN,
                      NULL, Icon_System_menu);
@@ -488,19 +488,18 @@ MAKE_MENU(root_menu_, ID2P(LANG_ROCKBOX_TITLE),
 #ifdef HAVE_TAGCACHE
             &db_browser,
 #endif
-            &wps_item, &menu_, 
+            &wps_item,  
 #ifdef HAVE_RECORDING
             &rec, 
 #endif
 #if CONFIG_TUNER
             &fm,
 #endif
-            &playlists, &rocks_browser,  &system_menu_
+            &playlists, &shortcut_menu, &menu_, &rocks_browser,  &system_menu_  
 
 #if (CONFIG_KEYPAD == PLAYER_PAD) || (CONFIG_PLATFORM&PLATFORM_ANDROID)
-             ,&do_shutdown_item
-#endif
-            ,&shortcut_menu
+            ,&do_shutdown_item
+#endif    
         );
 
 static int item_callback(int action, const struct menu_item_ex *this_item) 
@@ -726,7 +725,10 @@ void root_menu(void)
 #endif
             case GO_TO_LYRICS:
                 next_screen = load_plugin_screen(PLUGIN_APPS_DIR "/lrcplayer.rock");
-		break;               
+		break;
+            case GO_TO_SLEEP_TIMER:
+                next_screen = GO_TO_SLEEP_TIMER;
+                break;
             default:
                 if (next_screen == GO_TO_FILEBROWSER 
 #ifdef HAVE_TAGCACHE
