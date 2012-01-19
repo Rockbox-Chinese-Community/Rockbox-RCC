@@ -164,8 +164,8 @@ struct space80_data
  */
 struct eq_state
 {
-    char enabled[5];            /* 00h - Flags for active filters */
-    struct eqfilter filters[5]; /* 08h - packing is 4? */
+    char enabled[24];            /* 00h - Flags for active filters */
+    struct eqfilter filters[24]; /* 08h - packing is 4? */
                                 /* 10ch */
 };
 
@@ -1199,7 +1199,7 @@ void dsp_set_eq_coefs(int band)
     {
         if (band == 0)
             eq_ls_coefs(cutoff, q, gain, eq_data.filters[band].coefs);
-        else if (band == 4)
+        else if (band == 23)
             eq_hs_coefs(cutoff, q, gain, eq_data.filters[band].coefs);
         else
             eq_pk_coefs(cutoff, q, gain, eq_data.filters[band].coefs);
@@ -1217,6 +1217,25 @@ static void eq_process(int count, int32_t *buf[])
         EQ_PEAK_SHIFT,   /* peaking    */
         EQ_PEAK_SHIFT,   /* peaking    */
         EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
+        EQ_PEAK_SHIFT,   /* peaking    */
         EQ_SHELF_SHIFT,  /* high shelf */
     };
     unsigned int channels = AUDIO_DSP.data.num_channels;
@@ -1226,7 +1245,7 @@ static void eq_process(int count, int32_t *buf[])
        filters and 1 high shelf filter, in that order. we need to know this
        so we can choose the correct shift factor.
      */
-    for (i = 0; i < 5; i++)
+    for (i = 0; i < 24; i++)
     {
         if (!eq_data.enabled[i])
             continue;

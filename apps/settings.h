@@ -375,6 +375,101 @@ struct user_settings
     int eq_band4_q;
     int eq_band4_gain;          /* +/- dB */
 
+    /* Band 5 settings */
+    int eq_band5_cutoff;        /* Hz */
+    int eq_band5_q;
+    int eq_band5_gain;          /* +/- dB */
+
+    /* Band 6 settings */
+    int eq_band6_cutoff;        /* Hz */
+    int eq_band6_q;
+    int eq_band6_gain;          /* +/- dB */
+
+    /* Band 7 settings */
+    int eq_band7_cutoff;        /* Hz */
+    int eq_band7_q;
+    int eq_band7_gain;          /* +/- dB */
+
+    /* Band 8 settings */
+    int eq_band8_cutoff;        /* Hz */
+    int eq_band8_q;
+    int eq_band8_gain;          /* +/- dB */
+
+    /* Band 9 settings */
+    int eq_band9_cutoff;        /* Hz */
+    int eq_band9_q;
+    int eq_band9_gain;          /* +/- dB */
+
+    /* Band 10 settings */
+    int eq_band10_cutoff;        /* Hz */
+    int eq_band10_q;
+    int eq_band10_gain;          /* +/- dB */
+
+    /* Band 11 settings */
+    int eq_band11_cutoff;        /* Hz */
+    int eq_band11_q;
+    int eq_band11_gain;          /* +/- dB */
+
+    /* Band 12 settings */
+    int eq_band12_cutoff;        /* Hz */
+    int eq_band12_q;
+    int eq_band12_gain;          /* +/- dB */
+
+    /* Band 13 settings */
+    int eq_band13_cutoff;        /* Hz */
+    int eq_band13_q;
+    int eq_band13_gain;          /* +/- dB */
+
+    /* Band 14 settings */
+    int eq_band14_cutoff;        /* Hz */
+    int eq_band14_q;
+    int eq_band14_gain;          /* +/- dB */
+
+    /* Band 15 settings */
+    int eq_band15_cutoff;        /* Hz */
+    int eq_band15_q;
+    int eq_band15_gain;          /* +/- dB */
+
+    /* Band 16 settings */
+    int eq_band16_cutoff;        /* Hz */
+    int eq_band16_q;
+    int eq_band16_gain;          /* +/- dB */
+
+    /* Band 17 settings */
+    int eq_band17_cutoff;        /* Hz */
+    int eq_band17_q;
+    int eq_band17_gain;          /* +/- dB */
+
+    /* Band 18 settings */
+    int eq_band18_cutoff;        /* Hz */
+    int eq_band18_q;
+    int eq_band18_gain;          /* +/- dB */
+
+    /* Band 19 settings */
+    int eq_band19_cutoff;        /* Hz */
+    int eq_band19_q;
+    int eq_band19_gain;          /* +/- dB */
+
+    /* Band 20 settings */
+    int eq_band20_cutoff;        /* Hz */
+    int eq_band20_q;
+    int eq_band20_gain;          /* +/- dB */
+
+    /* Band 21 settings */
+    int eq_band21_cutoff;        /* Hz */
+    int eq_band21_q;
+    int eq_band21_gain;          /* +/- dB */
+
+    /* Band 22 settings */
+    int eq_band22_cutoff;        /* Hz */
+    int eq_band22_q;
+    int eq_band22_gain;          /* +/- dB */
+
+    /* Band 23 settings */
+    int eq_band23_cutoff;        /* Hz */
+    int eq_band23_q;
+    int eq_band23_gain;          /* +/- dB */
+
     /* Misc. swcodec */
     int  beep;              /* system beep volume when changing tracks etc. */
     int  keyclick;          /* keyclick volume */

@@ -996,7 +996,7 @@ void settings_apply(bool read_disk)
     /* Configure software equalizer, hardware eq is handled in audio_init() */
     dsp_set_eq(global_settings.eq_enabled);
     dsp_set_eq_precut(global_settings.eq_precut);
-    for(i = 0; i < 5; i++) {
+    for(i = 0; i < 24; i++) {
         dsp_set_eq_coefs(i);
     }
 
