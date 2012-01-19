@@ -469,7 +469,7 @@ enum eq_type {
 };
 
 /* Size of just the slider/srollbar */
-#define SCROLLBAR_SIZE 6
+#define SCROLLBAR_SIZE 18
 
 /* Draw the UI for a whole EQ band */
 static int draw_eq_slider(struct screen * screen, int x, int y,
@@ -608,7 +608,13 @@ static void draw_eq_sliders(struct screen * screen, int x, int y,
 
 /* Provides a graphical means of editing the EQ settings */
 bool eq_menu_graphical(void)
-{
+{   
+
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+    touchscreen_set_mode(TOUCHSCREEN_BUTTON);
+#endif
+#endif
     bool exit_request = false;
     bool result = true;
     bool has_changed = false;
@@ -624,7 +630,7 @@ bool eq_menu_graphical(void)
 
     FOR_NB_SCREENS(i) {
         screens[i].set_viewport(NULL);
-        screens[i].setfont(FONT_SYSFIXED);
+        screens[i].setfont(FONT_UI);
         screens[i].clear_display();
 
         /* Figure out how many sliders can be drawn on the screen */
@@ -792,14 +798,18 @@ bool eq_menu_graphical(void)
             has_changed = false;
         }
     }
-
     /* Reset screen settings */
     FOR_NB_SCREENS(i) 
-    {
-        screens[i].setfont(FONT_UI);
+    {       
+	screens[i].setfont(FONT_UI);
         screens[i].clear_display();
         screens[i].set_viewport(NULL);
         viewportmanager_theme_undo(i, false);
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+        touchscreen_set_mode(TOUCHSCREEN_POINT);
+#endif
+#endif
     }
     return result;
 }
@@ -818,15 +828,52 @@ static bool eq_save_preset(void)
 }
 
 /* Allows browsing of preset files */
-static struct browse_folder_info eqs = { EQS_DIR, SHOW_CFG };
+static void eq_reset_gain(void)
+{
+    global_settings.eq_band0_gain = 0;
+    global_settings.eq_band1_gain = 0;
+    global_settings.eq_band2_gain = 0;
+    global_settings.eq_band3_gain = 0;
+    global_settings.eq_band4_gain = 0;
+    global_settings.eq_band5_gain = 0;
+    global_settings.eq_band6_gain = 0;
+    global_settings.eq_band7_gain = 0;
+    global_settings.eq_band8_gain = 0;
+    global_settings.eq_band9_gain = 0;
+    global_settings.eq_band10_gain = 0;
+    global_settings.eq_band11_gain = 0;
+    global_settings.eq_band12_gain = 0;
+    global_settings.eq_band13_gain = 0;
+    global_settings.eq_band14_gain = 0;
+    global_settings.eq_band15_gain = 0;
+    global_settings.eq_band16_gain = 0;
+    global_settings.eq_band17_gain = 0;
+    global_settings.eq_band18_gain = 0;
+    global_settings.eq_band19_gain = 0;
+    global_settings.eq_band20_gain = 0;
+    global_settings.eq_band21_gain = 0;
+    global_settings.eq_band22_gain = 0;
+    global_settings.eq_band23_gain = 0;
+    return eq_apply();
+}
+
+/* Allows browsing of preset files */
+static bool eq_browse_preset(void)
+{
+    static struct browse_folder_info eqs = { EQS_DIR, SHOW_CFG };
+
+    /*Reset all the bands gain before loding presets*/
+    eq_reset_gain();
+    return browse_folder((void*)&eqs);
+}
 
 MENUITEM_FUNCTION(eq_graphical, 0, ID2P(LANG_EQUALIZER_GRAPHICAL),
                     (int(*)(void))eq_menu_graphical, NULL, lowlatency_callback, 
                     Icon_EQ);
 MENUITEM_FUNCTION(eq_save, 0, ID2P(LANG_EQUALIZER_SAVE),
                     (int(*)(void))eq_save_preset, NULL, NULL, Icon_NOICON);
-MENUITEM_FUNCTION(eq_browse, MENU_FUNC_USEPARAM, ID2P(LANG_EQUALIZER_BROWSE),
-                    browse_folder, (void*)&eqs, lowlatency_callback,
+MENUITEM_FUNCTION(eq_browse, 0, ID2P(LANG_EQUALIZER_BROWSE),
+                    (int(*)(void))eq_browse_preset, NULL, NULL,
                     Icon_NOICON);
 
 MAKE_MENU(equalizer_menu, ID2P(LANG_EQUALIZER), NULL, Icon_EQ,
