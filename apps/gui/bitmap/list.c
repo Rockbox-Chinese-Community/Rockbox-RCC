@@ -334,6 +334,22 @@ void list_draw(struct screen *display, struct gui_synclist *list)
                 display->puts_style_xyoffset(0, line, entry_name,
                         style, item_offset, draw_offset);
         }
+#ifdef HAVE_TOUCHSCREEN
+        /* do the line separator */
+        if (global_settings.list_separator_enabled)
+        {
+            struct viewport tmp = *list_text_vp;
+            if (icon_count)
+            {
+                tmp.x = list_icons.x;
+                tmp.width += list_icons.width;
+            }
+            display->set_viewport(&tmp);
+            display->set_foreground(global_settings.list_separator_color);
+            display->hline(0, parent->width, line*line_height+draw_offset);
+            display->hline(0, parent->width, (line+1)*line_height+draw_offset);
+        }
+#endif
         /* do the icon */
         display->set_viewport(&list_icons);
         if (list->callback_get_item_icon != NULL)

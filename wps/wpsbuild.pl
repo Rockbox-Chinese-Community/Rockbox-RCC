@@ -52,6 +52,8 @@ my $font;
 my $remotefont;
 my $fgcolor;
 my $bgcolor;
+my $sepcolor;
+my $sep;
 my $statusbar;
 my $author;
 my $backdrop;
@@ -299,11 +301,20 @@ MOO
             push @out, "remote font: $rbdir/fonts/$remotefont\n";
         }
     }
-    if($fgcolor && $main_depth > 2) {
-        push @out, "foreground color: $fgcolor\n";
-    }
-    if($bgcolor && $main_depth > 2) {
-        push @out, "background color: $bgcolor\n";
+    if ($main_depth > 2) {
+        if($fgcolor) {
+            push @out, "foreground color: $fgcolor\n";
+        }
+        if($bgcolor) {
+            push @out, "background color: $bgcolor\n";
+        }
+        # list separator actually depends on HAVE_TOUCSCREEN
+        if($sep) {
+            push @out, "list separator: $sep\n";
+        }
+        if($sepcolor) {
+            push @out, "list separator color: $sepcolor\n";
+        }
     }
     if($statusbar) {
         if($rwps && $has_remote ) {
@@ -425,6 +436,8 @@ while(<WPS>) {
         undef $remotefont;
         undef $fgcolor;
         undef $bgcolor;
+        undef $sepcolor;
+        undef $sep;
         undef $statusbar;
         undef $author;
         undef $req_g_wps;
@@ -586,6 +599,12 @@ while(<WPS>) {
         }
         elsif($l =~ /^Background Color: *(.*)/i) {
             $bgcolor = $1;
+        }
+        elsif($l =~ /^list separator color: *(.*)/i) {
+            $sepcolor = $1;
+        }
+        elsif($l =~ /^list separator: *(.*)/i) {
+            $sep = $1;
         }
         elsif($l =~ /^Statusbar: *(.*)/i) {
             $statusbar = $1;

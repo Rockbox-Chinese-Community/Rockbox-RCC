@@ -139,6 +139,10 @@ viewers iconset.240x400x16: icons/tango_icons_viewers.16x16.bmp
 Statusbar: top
 remote statusbar: top
 
+# Touchscreen: whether to show line separators or not
+list separator: yes
+list separator color: 808080
+
 # list & remote ui viewports
 ui viewport:
 remote ui viewport:
