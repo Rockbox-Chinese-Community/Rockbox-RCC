@@ -17,7 +17,10 @@
   <Button android:id="@+id/infoDisplay"
           style="@style/appwidget_infodisplay"
           android:layout_height="fill_parent"
-          android:text="@string/appwidget_infoDisplay" />
+	  android:textStyle="normal"
+	  android:textSize="10.0dip"
+	  android:textColor="#ffffffff"
+          android:text="@string/appwidget_infoDisplay"/>
   <ImageButton android:id="@+id/prev"
                style="@style/appwidget_button"
                android:layout_height="fill_parent"
