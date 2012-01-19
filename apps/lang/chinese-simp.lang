@@ -28,7 +28,7 @@
     *: "Yes"
   </source>
   <dest>
-    *: "√"
+    *: "是"
   </dest>
   <voice>
     *: "是"
@@ -42,7 +42,7 @@
     *: "No"
   </source>
   <dest>
-    *: "×"
+    *: "否"
   </dest>
   <voice>
     *: "否"
@@ -84,10 +84,10 @@
     *: "Always"
   </source>
   <dest>
-    *: "总是开启"
+    *: "总是"
   </dest>
   <voice>
-    *: "总是开启"
+    *: "总是"
   </voice>
 </phrase>
 <phrase>
@@ -98,10 +98,10 @@
     *: "Loading..."
   </source>
   <dest>
-    *: "读取中,请稍候..."
+    *: "加载中..."
   </dest>
   <voice>
-    *: "读取中 请稍候"
+    *: "加载中..."
   </voice>
 </phrase>
 <phrase>
@@ -129,10 +129,10 @@
     *: "Shutting down..."
   </source>
   <dest>
-    *: "关机中..."
+    *: "关闭中..."
   </dest>
   <voice>
-    *: "关机中"
+    *: "关闭中"
   </voice>
 </phrase>
 <phrase>
@@ -174,10 +174,10 @@
     *: "Recent Bookmarks"
   </source>
   <dest>
-    *: "最近书签"
+    *: "最近的书签"
   </dest>
   <voice>
-    *: "最近书签"
+    *: "最近的书签"
   </voice>
 </phrase>
 <phrase>
@@ -202,10 +202,10 @@
     *: "General Settings"
   </source>
   <dest>
-    *: "一般设置"
+    *: "常规设置"
   </dest>
   <voice>
-    *: "一般设置"
+    *: "常规设置"
   </voice>
 </phrase>
 <phrase>
@@ -216,10 +216,10 @@
     *: "Manage Settings"
   </source>
   <dest>
-    *: "设置管理"
+    *: "管理设置"
   </dest>
   <voice>
-    *: "设置管理"
+    *: "管理设置"
   </voice>
 </phrase>
 <phrase>
@@ -230,10 +230,10 @@
     *: "Browse Theme Files"
   </source>
   <dest>
-    *: "主题"
+    *: "浏览主题文件"
   </dest>
   <voice>
-    *: "主题"
+    *: "浏览主题文件"
   </voice>
 </phrase>
 <phrase>
@@ -246,11 +246,11 @@
   </source>
   <dest>
     *: none
-    radio: "FM广播"
+    radio: "FM收音机"
   </dest>
   <voice>
     *: none
-    radio: "FM广播"
+    radio: "FM收音机"
   </voice>
 </phrase>
 <phrase>
@@ -263,11 +263,11 @@
   </source>
   <dest>
     *: none
-    recording: "录音界面"
+    recording: "录音中"
   </dest>
   <voice>
     *: none
-    recording: "录音界面"
+    recording: "录音中"
   </voice>
 </phrase>
 <phrase>
@@ -326,7 +326,7 @@
     *: "低频增益"
   </dest>
   <voice>
-    *: "低频增益"
+    *: "低音"
   </voice>
 </phrase>
 <phrase>
@@ -340,7 +340,7 @@
     *: "高频增益"
   </dest>
   <voice>
-    *: "高频增益"
+    *: "高音"
   </voice>
 </phrase>
 <phrase>
@@ -351,10 +351,10 @@
     *: "Balance"
   </source>
   <dest>
-    *: "左右声道平衡"
+    *: "声道平衡"
   </dest>
   <voice>
-    *: "左右声道平衡"
+    *: "平衡"
   </voice>
 </phrase>
 <phrase>
@@ -435,10 +435,10 @@
     *: "Karaoke"
   </source>
   <dest>
-    *: "卡啦OK模式"
+    *: "卡拉OK模式"
   </dest>
   <voice>
-    *: "卡啦 OK模式"
+    *: "卡拉OK模式"
   </voice>
 </phrase>
 <phrase>
@@ -625,6 +625,92 @@
     swcodec: "交叉馈音"
   </voice>
 </phrase>
+ <phrase>
+  id: LANG_SPACE80
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Space'80 Reverb"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Space'80混响效果"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Space 80 混响效果"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_DECAY
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Decay"
+  </source>
+  <dest>
+    *: none
+    swcodec: "衰减"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "回声的衰减百分比"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_FREQ
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Frequency Compensation"
+  </source>
+  <dest>
+    *: none
+    swcodec: "频率补偿"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "频率补偿"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_GAIN
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Gain"
+  </source>
+  <dest>
+    *: none
+    swcodec: "增益"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "增益百分比"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_MIX
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Dry / Wet Mix"
+  </source>
+  <dest>
+    *: none
+    swcodec: "干湿度混合"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "干湿度混合"
+  </voice>
+</phrase>
+<phrase>
 <phrase>
   id: LANG_EQUALIZER
   desc: in the sound settings menu
@@ -664,7 +750,7 @@
     *: "File View"
   </source>
   <dest>
-    *: "文件查看设置"
+    *: "文件查看"
   </dest>
   <voice>
     *: "文件查看设置"
@@ -776,7 +862,7 @@
     *: "Cleared"
   </source>
   <dest>
-    *: "所有设置已恢复出厂状态"
+    *: "已清除"
   </dest>
   <voice>
     *: "所有设置已经恢复到出厂时的状态"
@@ -840,7 +926,7 @@
   </source>
   <dest>
     *: none
-    swcodec: "图形化均衡器"
+    swcodec: "图形化均衡器(3X3九宫格触控)"
   </dest>
   <voice>
     *: none
@@ -857,11 +943,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "预增益"
+    swcodec: "预切"
   </dest>
   <voice>
     *: none
-    swcodec: "预增益"
+    swcodec: "预切"
   </voice>
 </phrase>
 <phrase>
@@ -976,11 +1062,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "低通滤波器"
+    swcodec: "低架滤波器"
   </dest>
   <voice>
     *: none
-    swcodec: "低通滤波器"
+    swcodec: "低架滤波器"
   </voice>
 </phrase>
 <phrase>
@@ -993,11 +1079,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "带通滤波器%d"
+    swcodec: "峰值滤波器%d"
   </dest>
   <voice>
     *: none
-    swcodec: "带通滤波器%d"
+    swcodec: "峰值滤波器%d"
   </voice>
 </phrase>
 <phrase>
@@ -1010,11 +1096,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "高通滤波器"
+    swcodec: "高架滤波器"
   </dest>
   <voice>
     *: none
-    swcodec: "高通滤波器"
+    swcodec: "高架滤波器"
   </voice>
 </phrase>
 <phrase>
@@ -1061,11 +1147,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "Q值(品质因素)"
+    swcodec: "Q(品质因素)"
   </dest>
   <voice>
     *: none
-    swcodec: "Q值(品质因素)"
+    swcodec: "Q(品质因素)"
   </voice>
 </phrase>
 <phrase>
@@ -1146,7 +1232,7 @@
     *: "Version"
   </source>
   <dest>
-    *: "RB版本"
+    *: "版本"
   </dest>
   <voice>
     *: "Rockbox的版本"
@@ -1160,7 +1246,7 @@
     *: "Debug (Keep Out!)"
   </source>
   <dest>
-    *: "调试(勿入!)"
+    *: "调试(非专业人员请勿进入修改)"
   </dest>
   <voice>
     *: "调试 勿入"
@@ -1216,7 +1302,7 @@
     *: "A-B"
   </source>
   <dest>
-    *: "A-B重复段"
+    *: "A-B"
   </dest>
   <voice>
     *: "AB段"
@@ -1259,11 +1345,11 @@
     flash_storage: none
   </source>
   <dest>
-    *: "防跳音缓冲"
+    *: "防止中断缓冲区"
     flash_storage: none
   </dest>
   <voice>
-    *: "防跳音缓冲"
+    *: "防止中断缓冲区"
     flash_storage: none
   </voice>
 </phrase>
@@ -1320,10 +1406,10 @@
     *: "Replaygain"
   </source>
   <dest>
-    *: "播放增益"
+    *: "回放增益"
   </dest>
   <voice>
-    *: "播放增益"
+    *: "回放增益"
   </voice>
 </phrase>
 <phrase>
@@ -1336,11 +1422,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "曲目更换提示音"
+    swcodec: "曲目跳转提示音"
   </dest>
   <voice>
     *: none
-    swcodec: "曲目更换时发出提示音"
+    swcodec: "曲目跳转时发出提示音"
   </voice>
 </phrase>
 <phrase>
@@ -1419,10 +1505,10 @@
     *: "Auto-Change Directory"
   </source>
   <dest>
-    *: "自动跳转目录"
+    *: "自动切换目录"
   </dest>
   <voice>
-    *: "自动跳转目录"
+    *: "自动切换目录"
   </voice>
 </phrase>
 <phrase>
@@ -1815,10 +1901,10 @@
     *: "Default Codepage"
   </source>
   <dest>
-    *: "默认文字编码"
+    *: "默认编码"
   </dest>
   <voice>
-    *: "默认文字编码"
+    *: "默认编码"
   </voice>
 </phrase>
 <phrase>
@@ -2268,7 +2354,7 @@
     *: "Voice Directories"
   </source>
   <dest>
-    *: "读出目录名"
+    *: "语音目录"
   </dest>
   <voice>
     *: "读出目录名"
@@ -2643,7 +2729,7 @@
   </source>
   <dest>
     *: none
-    crossfade: "淡入时滞"
+    crossfade: "淡入延迟"
   </dest>
   <voice>
     *: none
@@ -2677,7 +2763,7 @@
   </source>
   <dest>
     *: none
-    crossfade: "淡出时滞"
+    crossfade: "淡出延迟"
   </dest>
   <voice>
     *: none
@@ -2816,10 +2902,10 @@
     *: "Pre-amp"
   </source>
   <dest>
-    *: "预增益"
+    *: "前置放大"
   </dest>
   <voice>
-    *: "预增益"
+    *: "前置放大"
   </voice>
 </phrase>
 <phrase>
@@ -3092,11 +3178,11 @@
   </source>
   <dest>
     *: none
-    lcd_color: "字体颜色"
+    lcd_color: "前景颜色"
   </dest>
   <voice>
     *: none
-    lcd_color: "字体颜色"
+    lcd_color: "前景颜色"
   </voice>
 </phrase>
 <phrase>
@@ -3259,10 +3345,10 @@
     *: "Paged Scrolling"
   </source>
   <dest>
-    *: "翻页滚动"
+    *: "分页滚动"
   </dest>
   <voice>
-    *: "翻页滚动"
+    *: "分页滚动"
   </voice>
 </phrase>
 <phrase>
@@ -3478,7 +3564,7 @@
     masd: none
   </source>
   <dest>
-    *: "对数(dB)坐标"
+    *: "对数(dB)"
     masd: none
   </dest>
   <voice>
@@ -3495,7 +3581,7 @@
     masd: none
   </source>
   <dest>
-    *: "线性(%)坐标"
+    *: "线性(%)"
     masd: none
   </dest>
   <voice>
@@ -3595,11 +3681,11 @@
   </source>
   <dest>
     *: none
-    battery_types: "锂镁氢"
+    battery_types: "镍氢"
   </dest>
   <voice>
     *: none
-    battery_types: "锂镁氢"
+    battery_types: "镍氢"
   </voice>
 </phrase>
 <phrase>
@@ -6902,7 +6988,7 @@
   </source>
   <dest>
     *: none
-    radio_screen_button_bar: "选单"
+    radio_screen_button_bar: "菜单"
   </dest>
   <voice>
     *: none
@@ -7751,7 +7837,7 @@
   </source>
   <dest>
     *: none
-    swcodec: "编辑模式: %s %s"
+    swcodec: "Edit: %s %s"
   </dest>
   <voice>
     *: none
@@ -7887,7 +7973,7 @@
   </source>
   <dest>
     *: none
-    recorder_pad: "选单"
+    recorder_pad: "菜单"
   </dest>
   <voice>
     *: none
@@ -8133,11 +8219,11 @@
   </source>
   <dest>
     *: none
-    lcd_sleep: "休眠(背光关闭后)时滞"
+    lcd_sleep: "休眠(背光关闭后)"
   </dest>
   <voice>
     *: none
-    lcd_sleep: "在背光关闭后休眠时滞"
+    lcd_sleep: "在背光关闭后休眠"
   </voice>
 </phrase>
 <phrase>
@@ -8418,11 +8504,11 @@
   </source>
   <dest>
     *: none
-    crossfade: "乱序或曲目跳转时"
+    crossfade: "乱序或手动切换曲目时"
   </dest>
   <voice>
     *: none
-    crossfade: "乱序或曲目跳转时"
+    crossfade: "乱序或手动切换曲目时"
   </voice>
 </phrase>
 <phrase>
@@ -8692,6 +8778,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_SHORTCUTS
+  desc: Title in the shortcuts menu
+  user: core
+  <source>
+    *: "Shortcuts"
+  </source>
+  <dest>
+    *: "快捷方式"
+  </dest>
+  <voice>
+    *: "快捷方式"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_ADD_TO_FAVES
   desc: 
   user: core
@@ -8730,10 +8830,10 @@
     *: "Main Menu"
   </source>
   <dest>
-    *: "主选单"
+    *: "主菜单"
   </dest>
   <voice>
-    *: "主选单"
+    *: "主菜单"
   </voice>
 </phrase>
 <phrase>
@@ -9131,7 +9231,7 @@
     *: "播放列表选项"
   </dest>
   <voice>
-    *: "播放列表选项"
+    *: "播放列表"
   </voice>
 </phrase>
 <phrase>
@@ -9373,10 +9473,10 @@
     *: "Context Menu"
   </source>
   <dest>
-    *: "相关选单"
+    *: "相关菜单"
   </dest>
   <voice>
-    *: "相关选单"
+    *: "相关菜单"
   </voice>
 </phrase>
 <phrase>
@@ -9611,11 +9711,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "高频抖动"
+    swcodec: "抖动"
   </dest>
   <voice>
     *: none
-    swcodec: "高频抖动"
+    swcodec: "抖动"
   </voice>
 </phrase>
 <phrase>
@@ -10072,11 +10172,11 @@
   </source>
   <dest>
     *: none
-    radio: "FM广播选单"
+    radio: "FM收音机菜单"
   </dest>
   <voice>
     *: none
-    radio: "FM广播选单"
+    radio: "FM收音机菜单"
   </voice>
 </phrase>
 <phrase>
@@ -10519,10 +10619,10 @@
     *: "Unknown"
   </source>
   <dest>
-    *: "不知道"
+    *: "未知"
   </dest>
   <voice>
-    *: "不知道"
+    *: "未知"
   </voice>
 </phrase>
 <phrase>
@@ -11246,11 +11346,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "压限释放时间"
+    swcodec: "释放时间"
   </dest>
   <voice>
     *: none
-    swcodec: "压限释放时间"
+    swcodec: "释放时间"
   </voice>
 </phrase>
 <phrase>
@@ -11280,11 +11380,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "增益"
+    swcodec: "增益补偿"
   </dest>
   <voice>
     *: none
-    swcodec: "增益"
+    swcodec: "增益补偿"
   </voice>
 </phrase>
 <phrase>
@@ -11365,11 +11465,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "柔和度"
+    swcodec: "拐点"
   </dest>
   <voice>
     *: none
-    swcodec: "柔和度"
+    swcodec: "拐点"
   </voice>
 </phrase>
 <phrase>
@@ -11413,11 +11513,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "柔和"
+    swcodec: "软拐点"
   </dest>
   <voice>
     *: none
-    swcodec: "柔和"
+    swcodec: "软拐点"
   </voice>
 </phrase>
 <phrase>
@@ -11444,11 +11544,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "压限比例"
+    swcodec: "压限比"
   </dest>
   <voice>
     *: none
-    swcodec: "压限比例"
+    swcodec: "压限比"
   </voice>
 </phrase>
 <phrase>
@@ -11478,11 +11578,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "锐利"
+    swcodec: "硬拐点"
   </dest>
   <voice>
     *: none
-    swcodec: "锐利"
+    swcodec: "硬拐点"
   </voice>
 </phrase>
 <phrase>
@@ -11888,11 +11988,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "音调/音速"
+    swcodec: "时间延伸"
   </dest>
   <voice>
     *: none
-    swcodec: "音调/音速"
+    swcodec: "时间延伸"
   </voice>
 </phrase>
 <phrase>
@@ -12197,7 +12297,7 @@
     *: "Update on Stop"
   </source>
   <dest>
-    *: "在播放停止时创建"
+    *: "在播放停止时更新"
   </dest>
   <voice>
     *: "在播放停止时创建书签"
@@ -12675,6 +12775,34 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_ONPLAY_LYRICS
+  desc: Onplay snclrc/lycplayer
+  user: core
+  <source>
+    *: "Lyric"
+  </source>
+  <dest>
+    *: "显示歌词"
+  </dest>
+  <voice>
+    *: "显示歌词"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_QUIT_ROCKBOX
+  desc: Quit Rockbox item in root menu
+  user: core
+  <source>
+    *: "Quit Rockbox"
+  </source>
+  <dest>
+    *: "退出"
+  </dest>
+  <voice>
+    *: "退出"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_SURROUND
   desc: in the sound settings menu
   user: core
@@ -12701,10 +12829,167 @@
   </source>
   <dest>
     *: none
-    swcodec: "反锯齿(Tube)"
+    swcodec: "抗混频(tube)"
   </dest>
   <voice>
     *: none
     swcodec: "tube"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CURRENT_PLAYLIST
+  desc: Used when you need to say playlist, also voiced
+  user: core
+  <source>
+    *: "Current Playlist"
+  </source>
+  <dest>
+    *: "当前播放列表"
+  </dest>
+  <voice>
+    *: "当前播放列表"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_LINE_PADDING
+  desc: list padding, in display settings
+  user: core
+  <source>
+    *: none
+    touchscreen: "Line Padding in Lists"
+  </source>
+  <dest>
+    *: none
+    touchscreen: "文字填充高度"
+  </dest>
+  <voice>
+    *: none
+    touchscreen: "填充行高度"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AUTOMATIC
+  desc: generic automatic
+  user: core
+  <source>
+    *: "Automatic"
+  </source>
+  <dest>
+    *: "自动"
+  </dest>
+  <voice>
+    *: "自动"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_SEPARATOR
+  desc: line between lines in lists
+  user: core
+  <source>
+    *: "Line Separator"
+  </source>
+  <dest>
+    *: "是否显示行分隔线"
+  </dest>
+  <voice>
+    *: "是否显示行分隔线"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_SEPARATOR_COLOR
+  desc: line between lines in lists
+  user: core
+  <source>
+    *: "Color of Line Separator"
+  </source>
+  <dest>
+    *: "分隔线颜色"
+  </dest>
+  <voice>
+    *: "分隔线颜色"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SLEEP_TIMER_DURATION
+  desc: default sleep timer duration in minutes (unused in UI)
+  user: core
+  <source>
+    *: "Default Sleep Timer Duration"
+  </source>
+  <dest>
+    *: "默认睡眠定时间隔"
+  </dest>
+  <voice>
+    *: "默认睡眠定时间隔"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SLEEP_TIMER_ON_POWER_UP
+  desc: whether sleep timer starts on power up
+  user: core
+  <source>
+    *: "Start Sleep Timer On Boot"
+  </source>
+  <dest>
+    *: "启动时开始睡眠计时"
+  </dest>
+  <voice>
+    *: "启动时开始睡眠计时"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SLEEP_TIMER_CANCEL_CURRENT
+  desc: shown instead of sleep timer when it's running
+  user: core
+  <source>
+    *: "Cancel Sleep Timer"
+  </source>
+  <dest>
+    *: "取消睡眠定时"
+  </dest>
+  <voice>
+    *: "取消睡眠定时"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_GLYPHS
+  desc: in settings_menu
+  user: core
+  <source>
+    *: "Glyphs To Cache"
+  </source>
+  <dest>
+    *: "字形缓存"
+  </dest>
+  <voice>
+    *: "字形缓存"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_STARTUP_SHUTDOWN
+  desc: in the general settings menu
+  user: core
+  <source>
+    *: "Startup/Shutdown"
+  </source>
+  <dest>
+    *: "启动/关闭设置"
+  </dest>
+  <voice>
+    *: "启动/关闭设置"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_KEYPRESS_RESTARTS_SLEEP_TIMER
+  desc: whether to restart running sleep timer on keypress
+  user: core
+  <source>
+    *: "Restart Sleep Timer On Keypress"
+  </source>
+  <dest>
+    *: "按键后重新开始睡眠计时"
+  </dest>
+  <voice>
+    *: "按键后重新开始睡眠计时"
   </voice>
 </phrase>
