@@ -19,6 +19,8 @@ settings_dumper.c
 snow.c
 sort.c
 stats.c
+oscilloscope.c
+vu_meter.c
 #ifdef HAVE_TOUCHSCREEN
 stopwatch.lua
 #else

@@ -372,7 +372,7 @@ CONFIG_KEYPAD == SANSA_M200_PAD
 #define MPEG_FF         BUTTON_RIGHT
 
 #else
-#error No keymap defined!
+/* #error No keymap defined! */
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

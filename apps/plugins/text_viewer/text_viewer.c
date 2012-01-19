@@ -202,9 +202,9 @@ enum plugin_status plugin_start(const void* file)
                 done = true;
                 break;
 
-            case TV_BOOKMARK:
-                tv_add_or_remove_bookmark();
-                break;
+//            case TV_BOOKMARK:
+//                tv_add_or_remove_bookmark();
+//                break;
 
             default:
                 exit_on_usb(button);

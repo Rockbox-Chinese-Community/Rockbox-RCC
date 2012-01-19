@@ -2205,8 +2205,8 @@ static int timetag_editor(void)
 
     if (current.changed_lrc)
     {
-        MENUITEM_STRINGLIST(save_menu, "Save Changes?", NULL,
-                            "Yes", "No (save later)", "Discard All Changes")
+        MENUITEM_STRINGLIST(save_menu, "保存更改?(Save Changes?)", NULL,
+                            "是", "不(稍后保存)", "取消所有更改")
         button = 0;
         exit = false;
         while (!exit)
@@ -2297,7 +2297,7 @@ static void load_or_save_settings(bool save)
     }
     else if (rb->memcmp(&old_prefs, &prefs, sizeof(prefs)))
     {
-        rb->splash(0, "Saving Settings");
+        rb->splash(0, "保存设置(Saving Settings)");
         configfile_save(config_file, config, ARRAYLEN(config), 0);
     }
     rb->memcpy(&old_prefs, &prefs, sizeof(prefs));
@@ -2320,15 +2320,15 @@ static bool lrc_theme_menu(void)
     int selected = 0;
     bool exit = false, usb = false;
 
-    MENUITEM_STRINGLIST(menu, "Theme Settings", NULL,
+    MENUITEM_STRINGLIST(menu, "主题设置(Theme Settings)", NULL,
 #ifdef HAVE_LCD_BITMAP
-                        "Show Statusbar", "Display Title",
+                        "显示状态栏(Show Statusbar)", "显示标题(Display Title)",
 #endif
-                        "Display Time",
+                        "显示时间(Display Time)",
 #ifdef HAVE_LCD_COLOR
-                        "Inactive Colour",
+                        "非高亮颜色(Inactive Colour)",
 #endif
-                        "Backlight Always On");
+                        "背光常亮(Backlight Always On)");
 
     while (!exit && !usb)
     {
@@ -2336,23 +2336,33 @@ static bool lrc_theme_menu(void)
         {
 #ifdef HAVE_LCD_BITMAP
             case LRC_MENU_STATUSBAR:
-                usb = rb->set_bool("Show Statusbar", &prefs.statusbar_on);
+                usb = rb->set_bool("显示状态栏(Show Statusbar)", &prefs.statusbar_on);
                 break;
             case LRC_MENU_DISP_TITLE:
-                usb = rb->set_bool("Display Title", &prefs.display_title);
+                usb = rb->set_bool("显示标题(Display Title)", &prefs.display_title);
                 break;
 #endif
             case LRC_MENU_DISP_TIME:
-                usb = rb->set_bool("Display Time", &prefs.display_time);
+                usb = rb->set_bool("显示时间(Display Time)", &prefs.display_time);
                 break;
 #ifdef HAVE_LCD_COLOR
             case LRC_MENU_INACTIVE_COLOR:
-                usb = rb->set_color(NULL, "Inactive Colour",
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+		rb->touchscreen_set_mode(TOUCHSCREEN_BUTTON);
+#endif
+#endif
+                usb = rb->set_color(NULL, "非高亮颜色(Inactive Colour)",
                                     &prefs.inactive_color, -1);
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+		rb->touchscreen_set_mode(TOUCHSCREEN_POINT);
+#endif
+#endif
                 break;
 #endif
             case LRC_MENU_BACKLIGHT:
-                usb = rb->set_bool("Backlight Always On", &prefs.backlight_on);
+                usb = rb->set_bool("背光常亮(Backlight Always On)", &prefs.backlight_on);
                 break;
             case MENU_ATTACHED_USB:
                 usb = true;
@@ -2379,12 +2389,12 @@ static bool lrc_display_menu(void)
     int selected = 0;
     bool exit = false, usb = false;
 
-    MENUITEM_STRINGLIST(menu, "Display Settings", NULL,
-                        "Wrap", "Wipe", "Alignment",
-                        "Activate Only Current Line");
+    MENUITEM_STRINGLIST(menu, "显示设置(Display Settings)", NULL,
+                        "换行(Wrap)", "擦除模式(卡拉OK模式)(Wipe)", "对齐(Alignment)",
+                        "仅当前行高亮(Activate Only Current Line)");
 
     struct opt_items align_names[] = {
-        {"Left", -1}, {"Centre", -1}, {"Right", -1},
+        {"左对齐(Left)", -1}, {"局中(Centre)", -1}, {"右对齐(Right)", -1},
     };
 
     while (!exit && !usb)
@@ -2392,17 +2402,17 @@ static bool lrc_display_menu(void)
         switch (rb->do_menu(&menu, &selected, NULL, false))
         {
             case LRC_MENU_WRAP:
-                usb = rb->set_bool("Wrap", &prefs.wrap);
+                usb = rb->set_bool("换行(Wrap)", &prefs.wrap);
                 break;
             case LRC_MENU_WIPE:
-                usb = rb->set_bool("Wipe", &prefs.wipe);
+                usb = rb->set_bool("擦除模式(卡拉OK模式)(Wipe)", &prefs.wipe);
                 break;
             case LRC_MENU_ALIGN:
-                usb = rb->set_option("Alignment", &prefs.align, INT,
+                usb = rb->set_option("对齐(Alignment)", &prefs.align, INT,
                                      align_names, 3, NULL);
                 break;
             case LRC_MENU_LINE_MODE:
-                usb = rb->set_bool("Activate Only Current Line",
+                usb = rb->set_bool("仅当前行高亮(Activate Only Current Line)",
                                         &prefs.active_one_line);
                 break;
             case MENU_ATTACHED_USB:
@@ -2434,14 +2444,14 @@ static bool lrc_lyrics_menu(void)
     struct opt_items cp_names[NUM_CODEPAGES+1];
     int old_val;
 
-    MENUITEM_STRINGLIST(menu, "Lyrics Settings", NULL,
-                        "Encoding",
+    MENUITEM_STRINGLIST(menu, "歌词设置(Lyrics Settings)", NULL,
+                        "文字编码(Encoding)",
 #ifdef LRC_SUPPORT_ID3
-                        "Read ID3 tag",
+                        "读取ID3标签(Read ID3 tag)",
 #endif
-                        "Lrc Directry");
+                        "歌词文件目录(Lrc Directry)");
 
-    cp_names[0].string = "Use default codepage";
+    cp_names[0].string = "使用默认设置(Use default codepage)";
     cp_names[0].voice_id = -1;
     for (old_val = 1; old_val < NUM_CODEPAGES+1; old_val++)
     {
@@ -2456,7 +2466,7 @@ static bool lrc_lyrics_menu(void)
             case LRC_MENU_ENCODING:
                 prefs.encoding++;
                 old_val = prefs.encoding;
-                usb = rb->set_option("Encoding", &prefs.encoding, INT,
+                usb = rb->set_option("文字编码(Encoding)", &prefs.encoding, INT,
                                      cp_names, NUM_CODEPAGES+1, NULL);
                 if (prefs.encoding != old_val)
                 {
@@ -2471,7 +2481,7 @@ static bool lrc_lyrics_menu(void)
                 break;
 #ifdef LRC_SUPPORT_ID3
             case LRC_MENU_READ_ID3:
-                usb = rb->set_bool("Read ID3 tag", &prefs.read_id3);
+                usb = rb->set_bool("读取ID3标签(Read ID3 tag)", &prefs.read_id3);
                 break;
 #endif
             case LRC_MENU_LRC_DIR:
@@ -2505,20 +2515,20 @@ static const char* lrc_debug_data(int selected, void * data,
             rb->strlcpy(buffer, current.lrc_file, buffer_len);
             break;
         case 2:
-            rb->snprintf(buffer, buffer_len, "buf usage: %d,%d/%d",
+            rb->snprintf(buffer, buffer_len, "缓冲使用(buf usage): %d,%d/%d",
                             (int)lrc_buffer_used, (int)lrc_buffer_end,
                             (int)lrc_buffer_size);
             break;
         case 3:
-            rb->snprintf(buffer, buffer_len, "line count: %d,%d",
+            rb->snprintf(buffer, buffer_len, "总行数(line count): %d,%d",
                             current.nlrcline, current.nlrcbrpos);
             break;
         case 4:
-            rb->snprintf(buffer, buffer_len, "loaded lrc? %s",
+            rb->snprintf(buffer, buffer_len, "lrc已加载?(loaded lrc?) %s",
                             current.loaded_lrc?"yes":"no");
             break;
         case 5:
-            rb->snprintf(buffer, buffer_len, "too many lines? %s",
+            rb->snprintf(buffer, buffer_len, "行数过多?(too many lines?) %s",
                             current.too_many_lines?"yes":"no");
             break;
         default:
@@ -2530,7 +2540,7 @@ static const char* lrc_debug_data(int selected, void * data,
 static bool lrc_debug_menu(void)
 {
     struct simplelist_info info;
-    rb->simplelist_info_init(&info, "Debug Menu", 6, NULL);
+    rb->simplelist_info_init(&info, "调试(Debug Menu)", 6, NULL);
     info.hide_selection = true;
     info.scroll_all = true;
     info.get_name = lrc_debug_data;
@@ -2557,17 +2567,17 @@ static int lrc_menu(void)
     };
 
     MENUITEM_STRINGLIST(menu, "Lrcplayer Menu", NULL,
-                        "Theme Settings",
+                        "主题设置(Theme Settings)",
 #ifdef HAVE_LCD_BITMAP
-                        "Display Settings",
+                        "显示设置(Display Settings)",
 #endif
-                        "Lyrics Settings",
-                        "Playback Control",
+                        "歌词设置(Lyrics Settings)",
+                        "后台播放控置(Playback Control)",
 #ifdef LRC_DEBUG
-                        "Debug Menu",
+                        "调试(Debug Menu)",
 #endif
-                        "Time Offset", "Timetag Editor",
-                        "Quit");
+                        "时间偏移(Time Offset)", "时间标签编辑(Timetag Editor)",
+                        "退出插件(Quit)");
     int selected = 0, ret = LRC_GOTO_MENU;
     bool usb = false;
 
@@ -2597,13 +2607,33 @@ static int lrc_menu(void)
                 break;
 #endif
             case LRC_MENU_OFFSET:
-                usb = (lrc_set_time("Time Offset", "sec", &current.offset,
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+		rb->touchscreen_set_mode(TOUCHSCREEN_BUTTON);
+#endif
+#endif
+                usb = (lrc_set_time("时间偏移(Time Offset)", "sec", &current.offset,
                                     10, -60*1000, 60*1000,
                                     LST_SET_MSEC|LST_SET_SEC) == 1);
                 ret = LRC_GOTO_MAIN;
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+		rb->touchscreen_set_mode(TOUCHSCREEN_POINT);
+#endif
+#endif
                 break;
             case LRC_MENU_TIMETAG_EDITOR:
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+		rb->touchscreen_set_mode(TOUCHSCREEN_BUTTON);
+#endif
+#endif
                 ret = LRC_GOTO_EDITOR;
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+		rb->touchscreen_set_mode(TOUCHSCREEN_POINT);
+#endif
+#endif
                 break;
             case LRC_MENU_QUIT:
                 ret = PLUGIN_OK;
@@ -2910,6 +2940,12 @@ static int lrc_main(void)
 /* this is the plugin entry point */
 enum plugin_status plugin_start(const void* parameter)
 {
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+    rb->touchscreen_set_mode(TOUCHSCREEN_POINT);
+#endif
+#endif
+
     int ret = LRC_GOTO_MAIN;
 
     /* initialize settings. */

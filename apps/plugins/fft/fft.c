@@ -267,7 +267,7 @@ GREY_INFO_STRUCT
 #   define FFT_QUIT         BUTTON_BACK
 
 #else
-#error No keymap defined!
+/* #error No keymap defined! */
 #endif
 
 #ifdef HAVE_TOUCHSCREEN
@@ -377,16 +377,16 @@ enum fft_display_mode
 #define FFT_DM_COUNT (FFT_DM_SPECTROGRAPH+1)
 
 static const unsigned char* const modes_text[FFT_DM_COUNT] =
-{ "Lines", "Bars", "Spectrogram" };
+{ "线条(Lines)", "条形(Bars)", "声谱图(Spectrogram)" };
 
 static const unsigned char* const amp_scales_text[2] =
-{ "Linear amplitude", "Logarithmic amplitude" };
+{ "线性幅度(Linear amplitude)", "对数幅度(Logarithmic amplitude)" };
 
 static const unsigned char* const freq_scales_text[2] =
-{ "Linear frequency", "Logarithmic frequency" };
+{ "线性频率(Linear frequency)", "对数频率(Logarithmic frequency)" };
 
 static const unsigned char* const window_text[FFT_WF_COUNT] =
-{ "Hamming window", "Hann window" };
+{ "汉明窗(Hamming window)", "汉宁窗(Hann window)" };
 
 static struct {
     bool orientation_vertical;

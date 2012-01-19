@@ -451,7 +451,7 @@
 #define TV_BOOKMARK     BUTTON_SELECT
 
 #else
-#error No keymap defined!
+/* #error No keymap defined! */
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

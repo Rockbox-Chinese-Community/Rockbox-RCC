@@ -350,7 +350,7 @@
 #define LABEL_VOLUME "Up/Down"
 
 #else
-#error No keymap defined!
+/*#error No keymap defined!*/
 #endif
 
 #ifdef HAVE_TOUCHSCREEN
@@ -541,55 +541,55 @@ static bool vu_meter_menu(void)
     bool menu_quit = false;
     bool exit = false;
     
-    MENUITEM_STRINGLIST(menu,"VU Meter Menu",NULL,"Meter Type","Scale",
-                        "Minimeters","Decay Speed","Playback Control",
-                        "Quit");
+    MENUITEM_STRINGLIST(menu,"VU指示器菜单(VU Meter Menu)",NULL,"仪表类型(Meter Type)","标度(Scale)",
+                        "Mini指示器(Minimeters)","衰变速度(Decay Speed)","后台播放控置(Playback Control)",
+                        "退出(Quit)");
     
     static const struct opt_items meter_type_option[2] = {
-        { "Analog", -1 },
-        { "Digital", -1 },
+        { "模拟(Analog)", -1 },
+        { "数字(Digital)", -1 },
     };
 
     static const struct opt_items decay_speed_option[7] = {
-        { "No Decay", -1 },
-        { "Very Fast", -1 },
-        { "Fast", -1 },
-        { "Medium", -1 },
-        { "Medium-Slow", -1 },
-        { "Slow", -1 },
-        { "Very Slow", -1 },
+        { "无衰变(No Decay)", -1 },
+        { "非常快(Very Fast)", -1 },
+        { "快(Fast)", -1 },
+        { "中(Medium)", -1 },
+        { "中慢(Medium-Slow)", -1 },
+        { "慢(Slow)", -1 },
+        { "非常慢(Very Slow)", -1 },
     };
 
     while (!menu_quit) {
         switch(rb->do_menu(&menu, &selection, NULL, false))
         {
             case 0:
-                rb->set_option("Meter Type", &vumeter_settings.meter_type, INT,
+                rb->set_option("仪表类型(Meter Type)", &vumeter_settings.meter_type, INT,
                                meter_type_option, 2, NULL);
                 break;
                 
             case 1:
                 if(vumeter_settings.meter_type==ANALOG)
                 {
-                    rb->set_bool_options("Scale", &vumeter_settings.analog_use_db_scale,
-                                         "dBfs", -1, "Linear", -1, NULL);
+                    rb->set_bool_options("标度(Scale)", &vumeter_settings.analog_use_db_scale,
+                                         "对数刻度(dBfs)", -1, "线性(Linear)", -1, NULL);
                 }
                 else
                 {
-                    rb->set_bool_options("Scale", &vumeter_settings.digital_use_db_scale,
-                                         "dBfs", -1, "Linear", -1, NULL);
+                    rb->set_bool_options("标度(Scale)", &vumeter_settings.digital_use_db_scale,
+                                         "对数刻度(dBfs)", -1, "线性(Linear)", -1, NULL);
                 }
                 break;
                 
             case 2:
                 if(vumeter_settings.meter_type==ANALOG)
                 {
-                    rb->set_bool("Enable Minimeters",
+                    rb->set_bool("启用Mini指示器(Enable Minimeters)",
                                  &vumeter_settings.analog_minimeters);
                 }
                 else
                 {
-                    rb->set_bool("Enable Minimeters",
+                    rb->set_bool("启用Mini指示器(Enable Minimeters)",
                                  &vumeter_settings.digital_minimeters);
                 }
                 break;
@@ -597,12 +597,12 @@ static bool vu_meter_menu(void)
             case 3:
                 if(vumeter_settings.meter_type==ANALOG)
                 {
-                    rb->set_option("Decay Speed", &vumeter_settings.analog_decay, INT, 
+                    rb->set_option("衰变速度(Decay Speed)", &vumeter_settings.analog_decay, INT, 
                                decay_speed_option, 7, NULL);
                 }
                 else
                 {
-                    rb->set_option("Decay Speed", &vumeter_settings.digital_decay, INT, 
+                    rb->set_option("衰变速度(Decay Speed)", &vumeter_settings.digital_decay, INT, 
                                decay_speed_option, 7, NULL);
                 }
                 break;
@@ -620,7 +620,7 @@ static bool vu_meter_menu(void)
         }
     }
     /* the menu uses the userfont, set it back to sysfont */
-    rb->lcd_setfont(FONT_SYSFIXED);
+    rb->lcd_setfont(FONT_UI);
     return exit;
 }
 
