@@ -718,7 +718,10 @@ void root_menu(void)
                 }
                 previous_browser = GO_TO_PICTUREFLOW;
                 break;
-#endif                
+#endif
+            case GO_TO_LYRICS:
+                next_screen = load_plugin_screen(PLUGIN_APPS_DIR "/lrcplayer.rock");
+		break;               
             default:
                 if (next_screen == GO_TO_FILEBROWSER 
 #ifdef HAVE_TAGCACHE

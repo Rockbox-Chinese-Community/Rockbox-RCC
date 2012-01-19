@@ -12904,6 +12904,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_ONPLAY_LYRICS
+  desc: Onplay snclrc/lycplayer
+  user: core
+  <source>
+    *: "Lyric"
+  </source>
+  <dest>
+    *: "Lyric"
+  </dest>
+  <voice>
+    *: "View lyrics"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_SHORTCUTS
   desc: Title in the shortcuts menu
   user: core

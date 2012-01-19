@@ -954,6 +954,8 @@ MENUITEM_RETURNVALUE(pictureflow_item, ID2P(LANG_ONPLAY_PICTUREFLOW),
                   GO_TO_PICTUREFLOW, NULL, Icon_NOICON);                  
 #endif
 
+MENUITEM_RETURNVALUE(lyrics_item, ID2P(LANG_ONPLAY_LYRICS), 
+                  GO_TO_LYRICS, NULL, Icon_NOICON); 
 static bool view_cue(void)
 {
     struct mp3entry* id3 = audio_current_track();
@@ -1178,7 +1180,8 @@ MAKE_ONPLAYMENU( wps_onplay_menu, ID2P(LANG_ONPLAY_MENU_TITLE),
            &bookmark_menu, 
 #ifdef HAVE_PICTUREFLOW_INTEGRATION
            &pictureflow_item,
-#endif           
+#endif     
+	   &lyrics_item,      
            &browse_id3_item, &list_viewers_item,
            &delete_file_item, &view_cue_item,
 #ifdef HAVE_PITCHSCREEN
@@ -1297,6 +1300,9 @@ static struct hotkey_assignment hotkey_items[] = {
             HOTKEY_FUNC(NULL, NULL),
             ONPLAY_PICTUREFLOW },
 #endif
+    { HOTKEY_LYRICS, LANG_ONPLAY_LYRICS,
+            HOTKEY_FUNC(NULL, NULL),
+            ONPLAY_LYRICS },
 };
 
 /* Return the language ID for this action */
@@ -1385,6 +1391,8 @@ int onplay(char* file, int attr, int from, bool hotkey)
 #ifdef HAVE_PICTUREFLOW_INTEGRATION
         case GO_TO_PICTUREFLOW:
             return ONPLAY_PICTUREFLOW;
+        case GO_TO_LYRICS:
+            return ONPLAY_LYRICS;
 #endif
         default:
             return onplay_result;
