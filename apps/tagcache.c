@@ -4264,9 +4264,26 @@ static void __attribute__ ((noinline)) check_ignore(const char *dirname,
 {
     char newpath[MAX_PATH];
 
-    /* check for a database.ignore file */
+    /* check for a database.ignore or a .nomedia file */
     snprintf(newpath, MAX_PATH, "%s/database.ignore", dirname);
     *ignore = file_exists(newpath);
+    snprintf(newpath, MAX_PATH, "%s/.nomedia", dirname);
+    *ignore = file_exists(newpath);
+    /* check for Android dirname */
+    if(strncmp(dirname,"/system/media",13)==0)
+    *ignore=1;
+    if(strncmp(dirname,"/sdcard/Android",13)==0)
+    *ignore=1;
+    if(strncmp(dirname,"/sdcard/gameloft",13)==0)
+    *ignore=1;
+    if(strncmp(dirname,"/sdcard/Recorder",13)==0)
+    *ignore=1;
+    if(strncmp(dirname,"/sdcard/Ringtones",13)==0)
+    *ignore=1;
+    if(strncmp(dirname,"/sdcard/Video",13)==0)
+    *ignore=1;
+    if(strncmp(dirname,"/sdcard/Camera",13)==0)
+    *ignore=1;
     /* check for a database.unignore file */
     snprintf(newpath, MAX_PATH, "%s/database.unignore", dirname);
     *unignore = file_exists(newpath);
