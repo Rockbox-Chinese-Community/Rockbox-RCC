@@ -21,7 +21,7 @@
 
 package org.rockbox;
 
-
+import android.content.Context;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -31,6 +31,7 @@ import android.os.ResultReceiver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
+import android.os.PowerManager;
 
 public class RockboxActivity extends Activity 
 {
@@ -39,6 +40,9 @@ public class RockboxActivity extends Activity
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
+	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE); 
+	PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService"); 
+	wl.acquire(); 
 	Toast.makeText(this, "Rockbox中文社区精心定制", Toast.LENGTH_LONG).show();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -100,6 +104,9 @@ public class RockboxActivity extends Activity
     public void onResume()
     {
         super.onResume();
+	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE); 
+	PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService"); 
+	wl.acquire(); 
         setVisible(true);
     }
     
@@ -110,6 +117,9 @@ public class RockboxActivity extends Activity
     protected void onPause() 
     {
         super.onPause();
+	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE); 
+	PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService"); 
+	wl.acquire(); 
         /* this will cause the framebuffer's Surface to be destroyed, enabling
          * us to disable drawing */
         setVisible(false);
@@ -119,6 +129,9 @@ public class RockboxActivity extends Activity
     protected void onStop() 
     {
         super.onStop();
+	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE); 
+	PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService"); 
+	wl.acquire(); 
         setServiceActivity(false);
     }
     
@@ -126,6 +139,9 @@ public class RockboxActivity extends Activity
     protected void onDestroy() 
     {
         super.onDestroy();
+	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE); 
+	PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService"); 
+	wl.acquire(); 
         setServiceActivity(false);
     }
 }
