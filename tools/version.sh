@@ -46,17 +46,17 @@ gitversion() {
 	# Is this a git-svn commit?
 	if ! git log -1 --pretty=format:"%b" | grep -q "git-svn-id: svn" ; then
 	#   version="$head"
-	    version="${manufacturer}"
+	    version="${manufacturer} $head"
 	fi
 	# Are there uncommitted changes?
 	export GIT_WORK_TREE="$1"
 	if git diff --name-only HEAD | read dummy; then
-	    mod="M"
+	    mod="TESTBUILD"
 	elif git diff --name-only --cached HEAD | read dummy; then
-	    mod="M"
+	    mod="TESTBUILD"
 	fi
 
-	echo "${version}${mod}"
+	echo "${version} ${mod}"
 	# All done with git
 	exit
     fi
