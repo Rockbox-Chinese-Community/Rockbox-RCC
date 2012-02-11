@@ -29,16 +29,13 @@ extern void debugf(const char* fmt,...) ATTRIBUTE_PRINTF(1, 2);
 extern void ldebugf(const char* file, int line, const char *fmt, ...)
                     ATTRIBUTE_PRINTF(3, 4);
 
-#ifndef CODEC                    
-#ifdef __GNUC__
+#ifndef CODEC  
 
-/*  */
 #if defined(SIMULATOR) && !defined(__PCTOOL__) \
-    || ((CONFIG_PLATFORM & (PLATFORM_ANDROID|PLATFORM_MAEMO|PLATFORM_PANDORA)) && defined(DEBUG))
+    || (defined(APPLICATION) && defined(DEBUG))
 #define DEBUGF  debugf
 #define LDEBUGF(...) ldebugf(__FILE__, __LINE__, __VA_ARGS__)
-#else
-#if defined(DEBUG)
+#elif defined(DEBUG) /* DEBUG on native targets */
 
 #ifdef HAVE_GDB_API
 void breakpoint(void);
@@ -46,19 +43,13 @@ void breakpoint(void);
 
 #define DEBUGF  debugf
 #define LDEBUGF debugf
-#else
+
+#else /* !DEBUG */
+
 #define DEBUGF(...) do { } while(0)
 #define LDEBUGF(...) do { } while(0)
-#endif
-#endif
 
-
-#else
-
-#define DEBUGF debugf
-#define LDEBUGF debugf
-
-#endif /* GCC */
+#endif /* SIMULATOR && !__PCTOOL__ || APPLICATION && DEBUG */
 
 #endif /* CODEC */
 #endif

@@ -27,6 +27,11 @@
  * This driver uses the so-called unsafe async callback method and hardcoded device
  * names. It fails when the audio device is busy by other apps.
  *
+ * To make the async callback safer, an alternative stack is installed, since
+ * it's run from a signal hanlder (which otherwise uses the user stack). If
+ * tick tasks are run from a signal handler too, please install
+ * an alternative stack for it too.
+ *
  * TODO: Rewrite this to do it properly with multithreading
  *
  * Alternatively, a version using polling in a tick task is provided. While
@@ -76,6 +81,7 @@ static size_t       pcm_size = 0;
 #ifdef USE_ASYNC_CALLBACK
 static snd_async_handler_t *ahandler;
 static pthread_mutex_t pcm_mtx;
+static char signal_stack[SIGSTKSZ];
 #else
 static int recursion;
 #endif
@@ -85,7 +91,7 @@ static int set_hwparams(snd_pcm_t *handle, unsigned sample_rate)
     unsigned int rrate;
     int err;
     snd_pcm_hw_params_t *params;
-    snd_pcm_hw_params_alloca(&params);
+    snd_pcm_hw_params_malloc(&params);
 
 
     /* choose all parameters */
@@ -93,28 +99,28 @@ static int set_hwparams(snd_pcm_t *handle, unsigned sample_rate)
     if (err < 0)
     {
         printf("Broken configuration for playback: no configurations available: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
     /* set the interleaved read/write format */
     err = snd_pcm_hw_params_set_access(handle, params, access_);
     if (err < 0)
     {
         printf("Access type not available for playback: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
     /* set the sample format */
     err = snd_pcm_hw_params_set_format(handle, params, format);
     if (err < 0)
     {
         printf("Sample format not available for playback: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
     /* set the count of channels */
     err = snd_pcm_hw_params_set_channels(handle, params, channels);
     if (err < 0)
     {
         printf("Channels count (%i) not available for playbacks: %s\n", channels, snd_strerror(err));
-        return err;
+        goto error;
     }
     /* set the stream rate */
     rrate = sample_rate;
@@ -122,28 +128,29 @@ static int set_hwparams(snd_pcm_t *handle, unsigned sample_rate)
     if (err < 0)
     {
         printf("Rate %iHz not available for playback: %s\n", rate, snd_strerror(err));
-        return err;
+        goto error;
     }
     if (rrate != sample_rate)
     {
         printf("Rate doesn't match (requested %iHz, get %iHz)\n", sample_rate, err);
-        return -EINVAL;
+        err = -EINVAL;
+        goto error;
     }
 
     /* set the buffer size */
     err = snd_pcm_hw_params_set_buffer_size_near(handle, params, &buffer_size);
     if (err < 0)
     {
-        printf("Unable to set buffer size %i for playback: %s\n", buffer_size, snd_strerror(err));
-        return err;
+        printf("Unable to set buffer size %ld for playback: %s\n", buffer_size, snd_strerror(err));
+        goto error;
     }
 
     /* set the period size */
     err = snd_pcm_hw_params_set_period_size_near (handle, params, &period_size, NULL);
     if (err < 0)
     {
-        printf("Unable to set period size %i for playback: %s\n", period_size, snd_strerror(err));
-        return err;
+        printf("Unable to set period size %ld for playback: %s\n", period_size, snd_strerror(err));
+        goto error;
     }
     if (!frames)
         frames = malloc(period_size * channels * sizeof(short));
@@ -153,9 +160,13 @@ static int set_hwparams(snd_pcm_t *handle, unsigned sample_rate)
     if (err < 0)
     {
         printf("Unable to set hw params for playback: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
-    return 0;
+
+    err = 0; /* success */
+error:
+    snd_pcm_hw_params_free(params);
+    return err;
 }
 
 /* Set sw params: playback start threshold and low buffer watermark */
@@ -164,37 +175,41 @@ static int set_swparams(snd_pcm_t *handle)
     int err;
 
     snd_pcm_sw_params_t *swparams;
-    snd_pcm_sw_params_alloca(&swparams);
+    snd_pcm_sw_params_malloc(&swparams);
 
     /* get the current swparams */
     err = snd_pcm_sw_params_current(handle, swparams);
     if (err < 0)
     {
         printf("Unable to determine current swparams for playback: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
     /* start the transfer when the buffer is haalmost full */
     err = snd_pcm_sw_params_set_start_threshold(handle, swparams, buffer_size / 2);
     if (err < 0)
     {
         printf("Unable to set start threshold mode for playback: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
     /* allow the transfer when at least period_size samples can be processed */
     err = snd_pcm_sw_params_set_avail_min(handle, swparams, period_size);
     if (err < 0)
     {
         printf("Unable to set avail min for playback: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
     /* write the parameters to the playback device */
     err = snd_pcm_sw_params(handle, swparams);
     if (err < 0)
     {
         printf("Unable to set sw params for playback: %s\n", snd_strerror(err));
-        return err;
+        goto error;
     }
-    return 0;
+
+    err = 0; /* success */
+error:
+    snd_pcm_sw_params_free(swparams);
+    return err;
 }
 
 /* copy pcm samples to a spare buffer, suitable for snd_pcm_writei() */
@@ -271,10 +286,35 @@ static int async_rw(snd_pcm_t *handle)
     short *samples;
 
 #ifdef USE_ASYNC_CALLBACK
+    /* assign alternative stack for the signal handlers */
+    stack_t ss = {
+        .ss_sp = signal_stack,
+        .ss_size = sizeof(signal_stack),
+        .ss_flags = 0
+    };
+    struct sigaction sa;
+
+    err = sigaltstack(&ss, NULL);
+    if (err < 0)
+    {
+        DEBUGF("Unable to install alternative signal stack: %s", strerror(err));
+        return err;
+    }
+    
     err = snd_async_add_pcm_handler(&ahandler, handle, async_callback, NULL);
     if (err < 0)
     {
         DEBUGF("Unable to register async handler: %s\n", snd_strerror(err));
+        return err;
+    }
+
+    /* only modify the stack the handler runs on */
+    sigaction(SIGIO, NULL, &sa);
+    sa.sa_flags |= SA_ONSTACK;
+    err = sigaction(SIGIO, &sa, NULL);
+    if (err < 0)
+    {
+        DEBUGF("Unable to install alternative signal stack: %s", strerror(err));
         return err;
     }
 #endif

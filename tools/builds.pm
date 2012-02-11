@@ -205,6 +205,10 @@ $releasenotes="/wiki/ReleaseNotes310";
         name => 'Samsung YH-925',
         status => 2,
     },
+    'samsungypr0' => {
+        name => 'Samsung YP-R0',
+        status => 2,
+    },
     'samsungyps3' => {
         name => 'Samsung YP-S3',
         status => 1,
@@ -256,6 +260,11 @@ $releasenotes="/wiki/ReleaseNotes310";
         name => 'SanDisk Sansa Fuze v2',
         status => 3,
         icon => 'sansafuze',
+    },
+    'sansafuzeplus' => {
+        name => 'SanDisk Sansa Fuze+',
+        status => 2,
+        icon => 'sansafuzeplus',
     },
     'sansam200' => {
         name => 'SanDisk Sansa m200',

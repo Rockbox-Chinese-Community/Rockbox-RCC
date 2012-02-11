@@ -437,13 +437,13 @@ enum {
 #define BJACK_LEFT          BUTTON_VOL_DOWN
 
 #elif CONFIG_KEYPAD == MPIO_HD300_PAD
-#define BJACK_SELECT_NAME   "FUNC"
-#define BJACK_STAY_NAME     "VOL +"
-#define BJACK_RESUME_NAME   "PLAY"
-#define BJACK_QUIT_NAME     "REC+PLAY"
-#define BJACK_DOUBLE_NAME   "VOL -"
+#define BJACK_SELECT_NAME   "ENTER"
+#define BJACK_STAY_NAME     "PLAY"
+#define BJACK_RESUME_NAME   ""
+#define BJACK_QUIT_NAME     "Long MENU"
+#define BJACK_DOUBLE_NAME   "REC"
 #define BJACK_SELECT        BUTTON_ENTER
-#define BJACK_QUIT          (BUTTON_REC|BUTTON_REPEAT)
+#define BJACK_QUIT          (BUTTON_MENU|BUTTON_REPEAT)
 #define BJACK_STAY          BUTTON_PLAY
 #define BJACK_DOUBLEDOWN    BUTTON_REC
 #define BJACK_UP            BUTTON_UP
@@ -1050,7 +1050,8 @@ static signed int blackjack_get_amount(char message[20], signed int lower_limit,
       (CONFIG_KEYPAD == IPOD_1G2G_PAD) || \
       (CONFIG_KEYPAD == SANSA_E200_PAD) || \
       (CONFIG_KEYPAD == SANSA_FUZE_PAD) || \
-      (CONFIG_KEYPAD == SANSA_CONNECT_PAD)
+      (CONFIG_KEYPAD == SANSA_CONNECT_PAD) || \
+      (CONFIG_KEYPAD == MPIO_HD300_PAD)
     rb->lcd_putsxy(LCD_WIDTH/2 - 9*w, LCD_HEIGHT/2 - h-2, " >>|:     +1");
     rb->lcd_putsxy(LCD_WIDTH/2 - 9*w, LCD_HEIGHT/2 - 1, " |<<:     -1");
     rb->lcd_putsxy(LCD_WIDTH/2 - 9*w, LCD_HEIGHT/2 + h, "SCROLL+: +10");

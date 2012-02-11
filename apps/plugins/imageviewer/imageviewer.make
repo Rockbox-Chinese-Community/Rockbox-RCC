@@ -32,7 +32,7 @@ ifndef APP_TYPE
     IMGDEC_OUTLDS = $(IMGVBUILDDIR)/%.link
     IMGDEC_OVLFLAGS = -T$(IMGVBUILDDIR)/$*.link -Wl,--gc-sections -Wl,-Map,$(IMGVBUILDDIR)/$*.map
 else
-    IMGDEC_OVLFLAGS = $(PLUGINLDFLAGS)
+    IMGDEC_OVLFLAGS = $(PLUGINLDFLAGS) -Wl,-Map,$(IMGVBUILDDIR)/$*.map
 endif
 
 $(IMGVBUILDDIR)/%.ovl: $(IMGDEC_OUTLDS)
@@ -47,7 +47,7 @@ else
 endif
 
 # rule to create reference map for image decoder
-$(IMGVBUILDDIR)/%.refmap: $(APPSDIR)/plugin.h $(IMGVSRCDIR)/imageviewer.h $(PLUGINLINK_LDS) $(PLUGINLIB) $(PLUGINBITMAPLIB)
+$(IMGVBUILDDIR)/%.refmap: $(APPSDIR)/plugin.h $(IMGVSRCDIR)/imageviewer.h $(PLUGINLINK_LDS) $(PLUGINLIB) $(LIBARMSUPPORT) $(PLUGINBITMAPLIB)
 	$(call PRINTS,LD $(@F))$(CC) $(IMGDECFLAGS) -o /dev/null \
 		$(filter %.o, $^) \
 		$(filter %.a, $+) \

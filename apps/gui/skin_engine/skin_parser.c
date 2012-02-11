@@ -739,6 +739,16 @@ static int parse_setting_and_lang(struct skin_element *element,
     token->value.i = i;
     return 0;
 }
+
+static int parse_logical_andor(struct skin_element *element,
+                             struct wps_token *token,
+                             struct wps_data *wps_data)
+{
+    (void)wps_data;
+    token->value.data = PTRTOSKINOFFSET(skin_buffer, element);
+    return 0;
+}
+
 static int parse_logical_if(struct skin_element *element,
                              struct wps_token *token,
                              struct wps_data *wps_data)
@@ -1242,9 +1252,8 @@ static int parse_lasttouch(struct skin_element *element,
 struct touchaction {const char* s; int action;};
 static const struct touchaction touchactions[] = {
     /* generic actions, convert to screen actions on use */
-    {"none", ACTION_TOUCHSCREEN},       {"lock", ACTION_TOUCH_SOFTLOCK },
+    {"none", ACTION_TOUCHSCREEN_IGNORE},{"lock", ACTION_TOUCH_SOFTLOCK },
     {"prev", ACTION_STD_PREV },         {"next", ACTION_STD_NEXT },
-    {"rwd", ACTION_STD_PREVREPEAT },    {"ffwd", ACTION_STD_NEXTREPEAT },
     {"hotkey", ACTION_STD_HOTKEY},      {"select", ACTION_STD_OK },
     {"menu", ACTION_STD_MENU },         {"cancel", ACTION_STD_CANCEL },
     {"contextmenu", ACTION_STD_CONTEXT},{"quickscreen", ACTION_STD_QUICKSCREEN },
@@ -1260,6 +1269,7 @@ static const struct touchaction touchactions[] = {
     {"setting_set", ACTION_SETTINGS_SET}, 
 
     /* WPS specific actions */
+    {"rwd", ACTION_WPS_SEEKBACK },      {"ffwd", ACTION_WPS_SEEKFWD },
     {"wps_prev", ACTION_WPS_SKIPPREV }, {"wps_next", ACTION_WPS_SKIPNEXT },
     {"browse", ACTION_WPS_BROWSE },
     {"play", ACTION_WPS_PLAY },         {"stop", ACTION_WPS_STOP },
@@ -1945,6 +1955,10 @@ static int skin_element_callback(struct skin_element* element, void* data)
                     break;
                 case SKIN_TOKEN_LOGICAL_IF:
                     function = parse_logical_if;
+                    break;
+                case SKIN_TOKEN_LOGICAL_AND:
+                case SKIN_TOKEN_LOGICAL_OR:
+                    function = parse_logical_andor;
                     break;
                 case SKIN_TOKEN_SUBSTRING:
                     function = parse_substring_tag;

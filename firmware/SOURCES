@@ -1,3 +1,6 @@
+#undef unix /* causes problems with some files */
+#undef linux
+
 ata_idle_notify.c
 events.c
 backlight.c
@@ -9,13 +12,18 @@ powermgmt.c
 #if (CONFIG_PLATFORM & PLATFORM_HOSTED)
 
 #ifdef __linux__
-#undef linux
 target/hosted/cpuinfo-linux.c
 #endif
 
 #ifndef SAMSUNG_YPR0 /* uses as3514 rtc */
 target/hosted/rtc.c
 #endif
+
+#if (CONFIG_PLATFORM & PLATFORM_ANDROID) == 0 && \
+    (defined(DEBUG) || defined(SIMULATOR)) /* sim should define DEBUG instead */
+target/hosted/debug-hosted.c
+#endif
+
 #endif
 system.c
 usb.c
@@ -65,17 +73,18 @@ target/hosted/sdl/app/button-application.c
 
 #ifdef SAMSUNG_YPR0
 drivers/adc-as3514.c
+drivers/lcd-memframe.c
 #if (CONFIG_RTC == RTC_AS3514)
 drivers/rtc/rtc_as3514.c
 #else
 target/hosted/rtc.c
 #endif
+target/hosted/kernel-unix.c
+target/hosted/filesystem-unix.c
+target/hosted/lc-unix.c
 target/hosted/ypr0/button-ypr0.c
-target/hosted/ypr0/kernel-ypr0.c
 target/hosted/ypr0/lcd-ypr0.c
 target/hosted/ypr0/system-ypr0.c
-target/hosted/ypr0/fs-ypr0.c
-target/hosted/ypr0/lc-ypr0.c
 thread.c
 #ifdef HAVE_BACKLIGHT
 target/hosted/ypr0/backlight-ypr0.c
@@ -108,24 +117,12 @@ libc/ctype.c
 libc/memchr.c
 libc/memcmp.c
 
-#if !defined(CPU_SH) && !defined(CPU_COLDFIRE) && !defined(CPU_ARM)
-#if !defined(CPU_MIPS)
-libc/memcpy.c
-libc/memset.c
-#endif /* CPU_MIPS */
-libc/memmove.c
-#endif /* CPU_* */
-
 libc/qsort.c
 libc/random.c
 libc/strcat.c
 libc/strchr.c
 libc/strcmp.c
 libc/strcpy.c
-
-#if !defined(CPU_SH) && !defined(CPU_COLDFIRE)
-libc/strlen.c
-#endif
 
 libc/strncmp.c
 libc/strrchr.c
@@ -414,10 +411,6 @@ target/sh/adc-sh.c
 target/sh/bitswap.S
 target/sh/crt0.S
 target/sh/kernel-sh.c
-target/sh/memcpy-sh.S
-target/sh/memmove-sh.S
-target/sh/memset-sh.S
-target/sh/strlen-sh.S
 target/sh/system-sh.c
 target/sh/archos/descramble.S
 target/sh/archos/i2c-archos.c
@@ -426,18 +419,6 @@ target/sh/debug-sh.c
 #elif defined(CPU_COLDFIRE)
 
 target/coldfire/crt0.S
-#ifdef HAVE_PRIORITY_SCHEDULING
-common/ffs.c
-target/coldfire/ffs-coldfire.S
-#endif
-target/coldfire/memcpy-coldfire.S
-target/coldfire/memmove-coldfire.S
-target/coldfire/memset-coldfire.S
-target/coldfire/strlen-coldfire.S
-#if defined(HAVE_LCD_COLOR) || (LCD_PIXELFORMAT == VERTICAL_INTERLEAVED) \
- || defined(HAVE_REMOTE_LCD) && (LCD_REMOTE_PIXELFORMAT == VERTICAL_INTERLEAVED)
-target/coldfire/memset16-coldfire.S
-#endif
 target/coldfire/kernel-coldfire.c
 target/coldfire/system-coldfire.c
 target/coldfire/timer-coldfire.c
@@ -452,14 +433,8 @@ target/coldfire/i2c-coldfire.c
 target/coldfire/ata-as-coldfire.S
 #endif
 
-#elif defined(CPU_PP) || defined(CPU_ARM)
+#elif defined(CPU_PP) || (defined(CPU_ARM) && CONFIG_PLATFORM & PLATFORM_NATIVE)
 /* CPU_PP => CPU_ARM, CPU_ARM !=> CPU_PP */
-target/arm/support-arm.S
-target/arm/memcpy-arm.S
-target/arm/memmove-arm.S
-
-target/arm/memset-arm.S
-target/arm/memset16-arm.S
 
 # if ARM_ARCH < 6
 target/arm/bits-armv4.S
@@ -470,14 +445,7 @@ target/arm/bits-armv4.S
 target/arm/mmu-arm.S
 #  endif
 # endif
-
-#ifdef HAVE_PRIORITY_SCHEDULING
-target/arm/ffs-arm.S
-#endif
-
-#if CONFIG_PLATFORM & PLATFORM_NATIVE
 target/arm/system-arm.c
-#endif
 
 #if CONFIG_STORAGE & STORAGE_ATA
 # ifdef CPU_PP502x
@@ -647,10 +615,6 @@ target/arm/crt0.S
 #endif /* defined(CPU_*) */
 
 #elif defined(CPU_MIPS)
-common/memset16.c
-target/mips/ffs-mips.S
-target/mips/memcpy-mips.S
-target/mips/memset-mips.S
 target/mips/mmu-mips.c
 #if CONFIG_CPU==JZ4732
 target/mips/ingenic_jz47xx/crt0.S
@@ -658,10 +622,6 @@ target/mips/ingenic_jz47xx/crt0.S
 
 #else
 
-#ifdef HAVE_PRIORITY_SCHEDULING
-common/ffs.c
-#endif
-common/memset16.c
 #if (CONFIG_PLATFORM & PLATFORM_NATIVE)
 crt0.S
 drivers/i2c.c
@@ -880,7 +840,6 @@ target/arm/sandisk/audio-c200_e200.c
 
 #ifdef SANSA_E200
 drivers/lcd-memframe.c
-target/arm/lcd-as-memframe.S
 target/arm/sandisk/sansa-e200/lcd-e200.c
 target/arm/sandisk/sansa-e200/button-e200.c
 target/arm/sandisk/sansa-e200/powermgmt-e200.c
@@ -1060,7 +1019,6 @@ target/arm/iriver/h10/lcd-h10_5gb.c
 
 #ifdef GIGABEAT_F
 drivers/lcd-memframe.c
-target/arm/lcd-as-memframe.S
 target/arm/s3c2440/gigabeat-fx/ata-meg-fx.c
 target/arm/s3c2440/gigabeat-fx/backlight-meg-fx.c
 target/arm/s3c2440/gigabeat-fx/button-meg-fx.c
@@ -1077,7 +1035,6 @@ target/arm/s3c2440/gigabeat-fx/wmcodec-meg-fx.c
 #ifdef GIGABEAT_S
 drivers/lcd-memframe.c
 target/arm/bits-armv6.S
-target/arm/lcd-as-memframe.S
 target/arm/mmu-armv6.S
 target/arm/imx31/ata-imx31.c
 target/arm/imx31/avic-imx31.c
@@ -1129,9 +1086,6 @@ target/arm/tms320dm320/uart-dm320.c
 #endif /* CONFIG_CPU == DM320 */
 
 #ifdef MROBE_500
-#if !defined(LCD_USE_DMA)
-target/arm/lcd-as-memframe.S
-#endif
 target/arm/tms320dm320/mrobe-500/crt0-board.S
 target/arm/tms320dm320/mrobe-500/adc-mr500.c
 target/arm/tms320dm320/mrobe-500/ata-mr500.c
@@ -1150,7 +1104,6 @@ target/arm/tms320dm320/mrobe-500/usb-mr500.c
 
 #ifdef CREATIVE_ZVx
 drivers/lcd-memframe.c
-target/arm/lcd-as-memframe.S
 target/arm/tms320dm320/creative-zvm/adc-creativezvm.c
 target/arm/tms320dm320/creative-zvm/ata-creativezvm.c
 target/arm/tms320dm320/creative-zvm/dma-creativezvm.c
@@ -1164,7 +1117,6 @@ target/arm/tms320dm320/creative-zvm/usb-creativezvm.c
 
 #ifdef SANSA_CONNECT
 drivers/lcd-memframe.c
-target/arm/lcd-as-memframe.S
 target/arm/tms320dm320/sdmmc-dm320.c
 target/arm/tms320dm320/sansa-connect/crt0-board.S
 target/arm/tms320dm320/sansa-connect/lcd-sansaconnect.c
@@ -1370,10 +1322,8 @@ target/arm/as3525/lcd-as-e200v2-fuze-fuzev2.S
 #endif /* SANSA_FUZEV2 */
 
 #ifdef SANSA_FUZEPLUS
-drivers/lcd-memframe.c
 drivers/synaptics-rmi.c
 drivers/generic_i2c.c
-target/arm/lcd-as-memframe.S
 target/arm/imx233/sansa-fuzeplus/fmradio-i2c-fuzeplus.c
 target/arm/imx233/sansa-fuzeplus/backlight-fuzeplus.c
 target/arm/imx233/sansa-fuzeplus/lcd-fuzeplus.c
@@ -1415,7 +1365,6 @@ drivers/nand_id.c
 drivers/pcf50606.c
 drivers/pcf50635.c
 drivers/tsc200x.c
-target/arm/lcd-as-memframe.S
 target/arm/tcc780x/adc-tcc780x.c
 target/arm/tcc780x/system-tcc780x.c
 target/arm/tcc780x/kernel-tcc780x.c
@@ -1584,7 +1533,6 @@ target/arm/at91sam/lyre_proto1/timer-lyre_proto1.c
 
 #if defined(MINI2440)
 drivers/lcd-memframe.c
-target/arm/lcd-as-memframe.S
 target/arm/s3c2440/dma-s3c2440.c
 target/arm/s3c2440/sd-s3c2440.c
 target/arm/s3c2440/uart-s3c2440.c
@@ -1686,14 +1634,14 @@ target/arm/rk27xx/hm801/power-hm801.c
 #endif
 
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)
-target/hosted/android/fs-android.c
+target/hosted/kernel-unix.c
+target/hosted/filesystem-unix.c
+target/hosted/lc-unix.c
 target/hosted/android/lcd-android.c
-target/hosted/android/lc-android.c
 target/hosted/android/button-android.c
 #ifdef DEBUG
 target/hosted/android/debug-android.c
 #endif
-target/hosted/android/kernel-android.c
 target/hosted/android/pcm-android.c
 target/hosted/android/powermgmt-android.c
 target/hosted/android/system-android.c

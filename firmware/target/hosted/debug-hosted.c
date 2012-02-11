@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2010 by Thomas Martitz
+ * Copyright (c) 2002 Daniel Stenberg
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,22 +19,49 @@
  *
  ****************************************************************************/
 
-#include <string.h> /* size_t */
-#include "load_code.h"
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-/* the load_code wrappers simply wrap, nothing to do */
-void *lc_open(const char *filename, unsigned char *buf, size_t buf_size)
+#ifdef WIN32
+#include <windows.h>
+static unsigned old_cp;
+
+void debug_exit(void)
 {
-    return _lc_open(filename, buf, buf_size);
+    /* Reset console output codepage */
+    SetConsoleOutputCP(old_cp);
 }
 
-void *lc_get_header(void *handle)
+void debug_init(void)
 {
-    return _lc_get_header(handle);
+    old_cp = GetConsoleOutputCP();
+    /* Set console output codepage to UTF8. Only works
+     * correctly when the console uses a truetype font. */
+    SetConsoleOutputCP(65001);
+    atexit(debug_exit);
+}
+#else
+void debug_init(void)
+{
+    /* nothing to be done */
+}
+#endif
+
+void debugf(const char *fmt, ...)
+{
+    va_list ap;
+    va_start( ap, fmt );
+    vfprintf( stderr, fmt, ap );
+    va_end( ap );
 }
 
-void lc_close(void *handle)
+void ldebugf(const char* file, int line, const char *fmt, ...)
 {
-    _lc_close(handle);
+    va_list ap;
+    va_start( ap, fmt );
+    fprintf( stderr, "%s:%d ", file, line );
+    vfprintf( stderr, fmt, ap );
+    va_end( ap );
 }
-

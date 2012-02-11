@@ -18,21 +18,12 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+
 #ifndef __SYSTEM_TARGET_H__
 #define __SYSTEM_TARGET_H__
 
-#define disable_irq()
-#define enable_irq()
-#define disable_irq_save() 0
-#define restore_irq(level) (void)level
-
-static inline void commit_dcache(void) {}
-static inline void commit_discard_dcache(void) {}
-static inline void commit_discard_idcache(void) {}
-
-void power_off(void);
-void wait_for_interrupt(void);
-void interrupt(void);
+#include "kernel-unix.h"
+#include "system-hosted.h"
 
  /* don't pull in jni.h for every user of this file, it should be only needed
   * within the target tree (if at all)
@@ -47,4 +38,3 @@ extern JNIEnv* getJavaEnvironment(void);
 #endif /* __SYSTEM_TARGET_H__ */
 
 #define NEED_GENERIC_BYTESWAPS
-

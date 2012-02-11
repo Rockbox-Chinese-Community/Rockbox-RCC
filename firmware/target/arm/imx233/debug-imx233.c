@@ -31,6 +31,7 @@
 #include "powermgmt-imx233.h"
 #include "rtc-imx233.h"
 #include "dcp-imx233.h"
+#include "pinctrl-imx233.h"
 #include "string.h"
 
 #define DEBUG_CANCEL  BUTTON_BACK
@@ -378,17 +379,45 @@ bool dbg_hw_info_dcp(void)
             info.gather_writes, info.otp_key_ready, info.ch0_merged);
         lcd_putsf(0, 4, "ctx switching: %d caching: %d", info.context_switching,
             info.context_caching);
-        lcd_putsf(0, 5, "ch  irq ien en rdy pri sem cmdptr");
+        lcd_putsf(0, 5, "ch  irq ien en rdy pri sem cmdptr     a");
         int nr = HW_DCP_NUM_CHANNELS;
         for(int i = 0; i < nr; i++)
         {
-            lcd_putsf(0, 6 + i, "%d    %d   %d   %d  %d   %d   %d  0x%08lx",
+            lcd_putsf(0, 6 + i, "%d    %d   %d   %d  %d   %d   %d  0x%08lx %d",
                 i, info.channel[i].irq, info.channel[i].irq_en, info.channel[i].enable,
                 info.channel[i].ready, info.channel[i].high_priority,
-                info.channel[i].sema, info.channel[i].cmdptr);
+                info.channel[i].sema, info.channel[i].cmdptr, info.channel[i].acquired);
         }
         lcd_putsf(0, 6 + nr, "csc  %d   %d   %d      %d",
                   info.csc.irq, info.csc.irq_en, info.csc.enable, info.csc.priority);
+        lcd_update();
+        yield();
+    }
+}
+
+bool dbg_hw_info_pinctrl(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+
+    while(1)
+    {
+        int button = get_action(CONTEXT_STD, HZ / 10);
+        switch(button)
+        {
+            case ACTION_STD_NEXT:
+            case ACTION_STD_PREV:
+            case ACTION_STD_OK:
+            case ACTION_STD_MENU:
+                lcd_setfont(FONT_UI);
+                return true;
+            case ACTION_STD_CANCEL:
+                lcd_setfont(FONT_UI);
+                return false;
+        }
+
+        lcd_clear_display();
+        for(int i = 0; i < 4; i++)
+            lcd_putsf(0, i, "DIN%d = 0x%08x", i, imx233_get_gpio_input_mask(i, 0xffffffff));
         lcd_update();
         yield();
     }
@@ -398,7 +427,7 @@ bool dbg_hw_info(void)
 {
     return dbg_hw_info_clkctrl() && dbg_hw_info_dma() && dbg_hw_info_adc() &&
         dbg_hw_info_power() && dbg_hw_info_powermgmt() && dbg_hw_info_rtc() &&
-        dbg_hw_info_dcp() && dbg_hw_target_info();
+        dbg_hw_info_dcp() && dbg_hw_info_pinctrl() && dbg_hw_target_info();
 }
 
 bool dbg_ports(void)

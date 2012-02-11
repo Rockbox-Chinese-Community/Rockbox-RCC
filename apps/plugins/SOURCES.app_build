@@ -3,6 +3,8 @@
 #include "SOURCES"
 #else
 /* plugins common to all models */
+chopper.c
+clix.c
 credits.c
 properties.c
 random_folder_advance_config.c
@@ -13,8 +15,14 @@ vbrfix.c
 lrcplayer.c
 oscilloscope.c
 vu_meter.c
+#if PLUGIN_BUFFER_SIZE >= 0x80000
+boomshine.lua
+stopwatch.lua
+#endif
+
 
 #ifdef HAVE_TEST_PLUGINS /* enable in advanced build options */
+test_fps.c
 #ifdef HAVE_ADJUSTABLE_CPU_FREQ
 test_boost.c
 #endif

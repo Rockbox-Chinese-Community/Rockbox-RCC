@@ -167,14 +167,14 @@ static bool game_finished;
 #define B_QUIT_H    (LCD_HEIGHT/4)
 #else
 /* Define Menu button x, y, width, height */
-#define B_MENU_X    (LCD_WIDTH/2)
+#define B_MENU_X    (LCD_WIDTH/2 - XOFS)
 #define B_MENU_Y    (CELL_HEIGHT*BOARD_SIZE+YOFS*2)
-#define B_MENU_W    (LCD_WIDTH/4)
+#define B_MENU_W    (LCD_WIDTH/4 - XOFS)
 #define B_MENU_H    (2*CELL_HEIGHT)
 /* Define Quit Button x, y, width, height */
-#define B_QUIT_X    (LCD_WIDTH-LCD_WIDTH/4)
+#define B_QUIT_X    (B_MENU_X + B_MENU_W + 1)
 #define B_QUIT_Y    (CELL_HEIGHT*BOARD_SIZE+YOFS*2)
-#define B_QUIT_W    (LCD_WIDTH/4)
+#define B_QUIT_W    (LCD_WIDTH/4 - XOFS)
 #define B_QUIT_H    (2*CELL_HEIGHT)
 #endif
 
@@ -316,22 +316,16 @@ static void reversi_gui_display_board(void) {
     y = LEGEND_Y(0);
     reversi_gui_draw_cell(x, y+(LEGEND_Y(1)-LEGEND_Y(0))/2-CELL_WIDTH/2, BLACK);
     rb->snprintf(buf, sizeof(buf), "%01d", c);
+
+    rb->viewport_set_defaults(&tempvp, SCREEN_MAIN);
     
     tempvp.x=x+CELL_WIDTH+2;
     tempvp.y=y;
     tempvp.width=LCD_WIDTH-tempvp.x;
     tempvp.height=LEGEND_Y(1);
-    
-    tempvp.font=FONT_UI; 
-    tempvp.drawmode=STYLE_DEFAULT;
 #if LCD_DEPTH > 1
-    tempvp.fg_pattern=0;
-    tempvp.bg_pattern=0xFFFF;
-#ifdef HAVE_LCD_COLOR
-    tempvp.lss_pattern=0;
-    tempvp.lse_pattern=0;
-    tempvp.lst_pattern=0;
-#endif
+    tempvp.fg_pattern = LCD_BLACK;
+    tempvp.bg_pattern = LCD_WHITE;
 #endif
 
     rb->screens[SCREEN_MAIN]->set_viewport(&tempvp);
@@ -430,11 +424,6 @@ static bool reversi_gui_menu(void) {
                         MENU_TEXT_STRAT_BLACK, MENU_TEXT_STRAT_WHITE,
                         MENU_TEXT_WRAP_MODE, "Playback Control", "Quit");
 
-#ifdef HAVE_TOUCHSCREEN
-    /* Entering Menu, set the touchscreen to the global setting */
-    rb->touchscreen_set_mode(rb->global_settings->touch_mode);
-#endif
-
     result = rb->do_menu(&menu, NULL, NULL, false);
 
     switch (result) {
@@ -477,11 +466,6 @@ static bool reversi_gui_menu(void) {
             quit_plugin = true;
             break;
     }
-
-#ifdef HAVE_TOUCHSCREEN
-    /* Leaving the menu, set back to pointer mode */
-    rb->touchscreen_set_mode(TOUCHSCREEN_POINT);
-#endif
 
     return (result == MENU_ATTACHED_USB);
 }
@@ -688,7 +672,7 @@ enum plugin_status plugin_start(const void *parameter) {
         
         /* The touchscreen buttons can act as true buttons so OR them in */
 #ifdef HAVE_TOUCHSCREEN
-        button |= touchbutton_get(reversi_buttons, button, TOUCHBUTTON_COUNT);
+        button |= touchbutton_check_button(button, reversi_buttons, TOUCHBUTTON_COUNT);
 #endif
 
         /* All of these button presses wait for the release event */

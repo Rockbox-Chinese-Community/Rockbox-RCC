@@ -21,17 +21,8 @@
 #ifndef __SYSTEM_TARGET_H__
 #define __SYSTEM_TARGET_H__
 
-#define disable_irq()
-#define enable_irq()
-#define disable_irq_save() 0
-#define restore_irq(level) (void)level
-
-void wait_for_interrupt(void);
-void interrupt(void);
-
-static inline void commit_dcache(void) {}
-static inline void commit_discard_dcache(void) {}
-static inline void commit_discard_idcache(void) {}
+#include "kernel-unix.h"
+#include "system-hosted.h"
 
 #define NEED_GENERIC_BYTESWAPS
 #endif /* __SYSTEM_TARGET_H__ */

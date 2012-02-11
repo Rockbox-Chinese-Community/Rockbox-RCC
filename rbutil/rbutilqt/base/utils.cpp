@@ -51,6 +51,7 @@
 #include <windows.h>
 #include <setupapi.h>
 #include <winioctl.h>
+#include <tlhelp32.h>
 #endif
 #if defined(Q_OS_MACX)
 #include <CoreFoundation/CoreFoundation.h>
@@ -271,7 +272,7 @@ QString Utils::findExecutable(QString name)
     QStringList path = QString(getenv("PATH")).split(";", QString::SkipEmptyParts);
 #endif
     qDebug() << "[Utils] system path:" << path;
-    for(int i = 0; i < path.size(); i++) 
+    for(int i = 0; i < path.size(); i++)
     {
         QString executable = QDir::fromNativeSeparators(path.at(i)) + "/" + name;
 #if defined(Q_OS_WIN)
@@ -279,12 +280,13 @@ QString Utils::findExecutable(QString name)
         QStringList ex = executable.split("\"", QString::SkipEmptyParts);
         executable = ex.join("");
 #endif
-        qDebug() << "[Utils] executable:" << executable;
         if(QFileInfo(executable).isExecutable())
         {
+            qDebug() << "[Utils] findExecutable: found" << executable;
             return QDir::toNativeSeparators(executable);
         }
     }
+    qDebug() << "[Utils] findExecutable: could not find" << name;
     return "";
 }
 
@@ -606,3 +608,58 @@ QStringList Utils::mountpoints()
 }
 
 
+/** Check if a process with a given name is running
+ *  @param names list of names to check
+ *  @return list of detected processes.
+ */
+QStringList Utils::findRunningProcess(QStringList names)
+{
+    QStringList processlist;
+    QStringList found;
+#if defined(Q_OS_WIN32)
+    HANDLE hdl;
+    PROCESSENTRY32 entry;
+    bool result;
+
+    hdl = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if(hdl == INVALID_HANDLE_VALUE) {
+        qDebug() << "[Utils] CreateToolhelp32Snapshot failed.";
+        return found;
+    }
+    entry.dwSize = sizeof(PROCESSENTRY32);
+    entry.szExeFile[0] = '\0';
+    if(!Process32First(hdl, &entry)) {
+        qDebug() << "[Utils] Process32First failed.";
+        return found;
+    }
+
+    processlist.append(QString::fromWCharArray(entry.szExeFile));
+    do {
+        entry.dwSize = sizeof(PROCESSENTRY32);
+        entry.szExeFile[0] = '\0';
+        result = Process32Next(hdl, &entry);
+        if(result) {
+            processlist.append(QString::fromWCharArray(entry.szExeFile));
+        }
+    } while(result);
+    CloseHandle(hdl);
+    qDebug() << processlist;
+#endif
+#if defined(Q_OS_MACX)
+
+#endif
+    // check for given names in list of processes
+    for(int i = 0; i < names.size(); ++i) {
+#if defined(Q_OS_WIN32)
+        // the process name might be truncated. Allow the extension to be partial.
+        int index = processlist.indexOf(QRegExp(names.at(i) + "(\\.(e(x(e?)?)?)?)?"));
+#else
+        int index = processlist.indexOf(names.at(i));
+#endif
+        if(index != -1) {
+            found.append(processlist.at(index));
+        }
+    }
+    qDebug() << "[Utils] Found listed processes running:" << found;
+    return found;
+}

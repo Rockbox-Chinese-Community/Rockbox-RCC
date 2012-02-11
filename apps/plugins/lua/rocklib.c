@@ -28,6 +28,7 @@
 #include "lauxlib.h"
 #include "rocklib.h"
 #include "lib/helper.h"
+#include "lib/pluginlib_actions.h"
 
 /*
  * http://www.lua.org/manual/5.1/manual.html#lua_CFunction
@@ -425,6 +426,11 @@ RB_WRAP(touchscreen_set_mode)
     rb->touchscreen_set_mode(mode);
     return 0;
 }
+RB_WRAP(touchscreen_get_mode)
+{
+    lua_pushinteger(L, rb->touchscreen_get_mode());
+    return 1;
+}
 #endif
 
 RB_WRAP(font_getstringsize)
@@ -608,6 +614,24 @@ RB_WRAP(backlight_brightness_set)
 SIMPLE_VOID_WRAPPER(backlight_brightness_use_setting);
 #endif
 
+RB_WRAP(get_plugin_action)
+{
+    static const struct button_mapping *m1[] = { pla_main_ctx };
+    int timeout = luaL_checkint(L, 1);
+    int btn;
+#ifdef HAVE_REMOTE_LCD
+    static const struct button_mapping *m2[] = { pla_main_ctx, pla_remote_ctx };
+    bool with_remote = luaL_optint(L, 2, 0);
+    if (with_remote)
+        btn = pluginlib_getaction(timeout, m2, 2);
+    else
+#endif
+        btn = pluginlib_getaction(timeout, m1, 1);
+
+    lua_pushinteger(L, btn);
+    return 1;
+}
+
 #define R(NAME) {#NAME, rock_##NAME}
 static const luaL_Reg rocklib[] =
 {
@@ -638,6 +662,7 @@ static const luaL_Reg rocklib[] =
 #ifdef HAVE_TOUCHSCREEN
     R(action_get_touchscreen_press),
     R(touchscreen_set_mode),
+    R(touchscreen_get_mode),
 #endif
     R(kbd_input),
 
@@ -664,6 +689,7 @@ static const luaL_Reg rocklib[] =
     R(backlight_brightness_set),
     R(backlight_brightness_use_setting),
 #endif
+    R(get_plugin_action),
 
     {"new_image", rli_new},
 
@@ -673,7 +699,8 @@ static const luaL_Reg rocklib[] =
 extern const luaL_Reg rocklib_aux[];
 
 
-#define RB_CONSTANT(x) lua_pushinteger(L, x); lua_setfield(L, -2, #x);
+#define RB_CONSTANT(x)        lua_pushinteger(L, x); lua_setfield(L, -2, #x);
+#define RB_STRING_CONSTANT(x) lua_pushstring(L, x); lua_setfield(L, -2, #x);
 /*
  ** Open Rockbox library
  */
@@ -700,6 +727,15 @@ LUALIB_API int luaopen_rock(lua_State *L)
 #ifdef HAVE_REMOTE_LCD
     RB_CONSTANT(SCREEN_REMOTE);
 #endif
+
+    /* some useful paths constants */
+    RB_STRING_CONSTANT(ROCKBOX_DIR);
+    RB_STRING_CONSTANT(HOME_DIR);
+    RB_STRING_CONSTANT(PLUGIN_DIR);
+    RB_STRING_CONSTANT(PLUGIN_APPS_DATA_DIR);
+    RB_STRING_CONSTANT(PLUGIN_GAMES_DATA_DIR);
+    RB_STRING_CONSTANT(PLUGIN_DATA_DIR);
+    RB_STRING_CONSTANT(VIEWERS_DATA_DIR);
 
     rli_init(L);
 

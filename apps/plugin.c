@@ -326,6 +326,7 @@ static const struct plugin_api rockbox_api = {
 #endif
 #ifdef HAVE_TOUCHSCREEN
     touchscreen_set_mode,
+    touchscreen_get_mode,
 #endif
     
 #ifdef HAVE_BUTTON_LIGHT
@@ -430,6 +431,7 @@ static const struct plugin_api rockbox_api = {
 
     commit_dcache,
     commit_discard_dcache,
+    commit_discard_idcache,
 
     lc_open,
     lc_open_from_mem,
@@ -793,8 +795,6 @@ static const struct plugin_api rockbox_api = {
 
     /* new stuff at the end, sort into place next time
        the API gets incompatible */
-
-    commit_discard_idcache,
 };
 
 int plugin_load(const char* plugin, const void* parameter)

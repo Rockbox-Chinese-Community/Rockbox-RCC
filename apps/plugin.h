@@ -37,6 +37,14 @@
 #include "string-extra.h"
 #include "gcc_extensions.h"
 
+
+
+/* on some platforms strcmp() seems to be a tricky define which
+ * breaks if we write down strcmp's prototype */
+#undef strcmp
+#undef strncmp
+#undef strchr
+
 char* strncpy(char *, const char *, size_t);
 void* plugin_get_buffer(size_t *buffer_size);
 
@@ -119,12 +127,6 @@ void* plugin_get_buffer(size_t *buffer_size);
 #endif
 
 
-/* on some platforms strcmp() seems to be a tricky define which
- * breaks if we write down strcmp's prototype */
-#undef strcmp
-#undef strncmp
-#undef strchr
-
 #ifdef PLUGIN
 
 #if defined(DEBUG) || defined(SIMULATOR)
@@ -151,12 +153,12 @@ void* plugin_get_buffer(size_t *buffer_size);
 #define PLUGIN_MAGIC 0x526F634B /* RocK */
 
 /* increase this every time the api struct changes */
-#define PLUGIN_API_VERSION 215
+#define PLUGIN_API_VERSION 216
 
 /* update this to latest version if a change to the api struct breaks
    backwards compatibility (and please take the opportunity to sort in any
    new function which are "waiting" at the end of the function table) */
-#define PLUGIN_MIN_API_VERSION 214
+#define PLUGIN_MIN_API_VERSION 216
 
 /* plugin return codes */
 /* internal returns start at 0x100 to make exit(1..255) work */
@@ -411,6 +413,7 @@ struct plugin_api {
 #endif
 #ifdef HAVE_TOUCHSCREEN
     void (*touchscreen_set_mode)(enum touchscreen_mode);
+    enum touchscreen_mode (*touchscreen_get_mode)(void);
 #endif
 #ifdef HAVE_BUTTON_LIGHT
     void (*buttonlight_set_timeout)(int value);
@@ -518,6 +521,7 @@ struct plugin_api {
 
     void (*commit_dcache)(void);
     void (*commit_discard_dcache)(void);
+    void (*commit_discard_idcache)(void);
 
     /* load code api for overlay */
     void* (*lc_open)(const char *filename, unsigned char *buf, size_t buf_size);
@@ -950,8 +954,6 @@ struct plugin_api {
 
     /* new stuff at the end, sort into place next time
        the API gets incompatible */
-
-    void (*commit_discard_idcache)(void);
 };
 
 /* plugin header */

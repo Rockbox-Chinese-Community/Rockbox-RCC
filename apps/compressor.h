@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2010 by Thomas Martitz
+ * Copyright (C) 2009 Jeffrey Goode
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,22 +19,11 @@
  *
  ****************************************************************************/
 
-#include <string.h> /* size_t */
-#include "load_code.h"
+#ifndef COMPRESSOR_H
+#define COMPRESSOR_H
 
-/* the load_code wrappers simply wrap, nothing to do */
-void *lc_open(const char *filename, unsigned char *buf, size_t buf_size)
-{
-    return _lc_open(filename, buf, buf_size);
-}
+void compressor_process(int count, struct dsp_data *data, int32_t *buf[]);
+bool compressor_update(void);
+void compressor_reset(void);
 
-void *lc_get_header(void *handle)
-{
-    return _lc_get_header(handle);
-}
-
-void lc_close(void *handle)
-{
-    _lc_close(handle);
-}
-
+#endif /* COMPRESSOR_H */

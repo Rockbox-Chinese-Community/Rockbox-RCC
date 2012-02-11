@@ -162,8 +162,13 @@
 #elif (CONFIG_KEYPAD == ONDAVX747_PAD)
 #define CLIX_BUTTON_QUIT    BUTTON_POWER
 #define CLIX_BUTTON_CLICK   BUTTON_MENU
+
 #elif (CONFIG_KEYPAD == ONDAVX777_PAD)
 #define CLIX_BUTTON_QUIT    BUTTON_POWER
+
+#elif (CONFIG_KEYPAD == ANDROID_PAD) \
+   || (CONFIG_KEYPAD == SDL_PAD)
+#define CLIX_BUTTON_QUIT    BUTTON_BACK
 
 #elif (CONFIG_KEYPAD == MROBE500_PAD)
 #define CLIX_BUTTON_QUIT    BUTTON_POWER
@@ -226,6 +231,9 @@ struct highscore highscores[NUM_SCORES];
 #else
 #define CELL_SIZE (LCD_WIDTH/BOARD_WIDTH)
 #endif
+
+#elif (LCD_WIDTH >= 312 && LCD_HEIGHT >= 468)
+#define CELL_SIZE 24
 
 #elif (LCD_WIDTH >= 306 && LCD_HEIGHT>= 204)
 #define CELL_SIZE 16
@@ -646,11 +654,6 @@ static int clix_menu(struct clix_game_state_t* state, bool ingame)
                              "Playback Control",
                              "Quit");
 
-#ifdef HAVE_TOUCHSCREEN
-    /* Entering Menu, set the touchscreen to the global setting */
-    rb->touchscreen_set_mode(rb->global_settings->touch_mode);
-#endif
-
     while (!leave_menu) {
 
         switch (rb->do_menu(&main_menu, &choice, NULL, false)) {
@@ -684,11 +687,6 @@ static int clix_menu(struct clix_game_state_t* state, bool ingame)
                 break;
         }
     }
-
-#ifdef HAVE_TOUCHSCREEN
-    /* Leaving the menu, set back to pointer mode */
-    rb->touchscreen_set_mode(TOUCHSCREEN_POINT);
-#endif
 
     return ret;
 }
@@ -784,7 +782,7 @@ static int clix_handle_game(struct clix_game_state_t* state)
                     if(x < BOARD_WIDTH && y < BOARD_HEIGHT
                        && state->board[XYPOS(x, y)] != CC_BLACK)
                     {
-                        if(state->x == x && state->y == y)
+                        if(state->x == x && state->y == y && button & BUTTON_REL)
                             button = CLIX_BUTTON_CLICK;
                         else
                         {
