@@ -137,10 +137,10 @@
 /* The number of bytes reserved for loadable plugins */
 #define PLUGIN_BUFFER_SIZE 0x80000
 
-// TODO: Figure out real values
-#define BATTERY_CAPACITY_DEFAULT 400 /* default battery capacity */
+/* 6g has a standard battery of 550mAh, except for the thick 6g (2007 160gb) which has a standard battery of 850mAh */
+#define BATTERY_CAPACITY_DEFAULT 550 /* default battery capacity */
 #define BATTERY_CAPACITY_MIN     300 /* min. capacity selectable */
-#define BATTERY_CAPACITY_MAX     500 /* max. capacity selectable */
+#define BATTERY_CAPACITY_MAX     1000 /* max. capacity selectable */
 #define BATTERY_CAPACITY_INC      10 /* capacity increment */
 #define BATTERY_TYPES_COUNT        1 /* only one type */
 
@@ -203,6 +203,8 @@
 /* define this if the hard drive uses large physical sectors (ATA-7 feature) */
 /* and doesn't handle them in the drive firmware */
 //#define MAX_PHYS_SECTOR_SIZE 4096
+
+#define HAVE_HARDWARE_CLICK
 
 /* Define this if you have adjustable CPU frequency */
 //#define HAVE_ADJUSTABLE_CPU_FREQ

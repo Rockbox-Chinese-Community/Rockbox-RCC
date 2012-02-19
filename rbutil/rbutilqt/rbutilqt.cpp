@@ -38,6 +38,7 @@
 #include "serverinfo.h"
 #include "systeminfo.h"
 #include "ziputil.h"
+#include "manualwidget.h"
 
 #include "progressloggerinterface.h"
 
@@ -113,8 +114,11 @@ RbUtilQt::RbUtilQt(QWidget *parent) : QMainWindow(parent)
     m_gotInfo = false;
     m_auto = false;
 
-    // manual tab
-    ui.radioPdf->setChecked(true);
+    // insert ManualWidget() widget in manual tab
+    QGridLayout *mantablayout = new QGridLayout(this);
+    ui.manual->setLayout(mantablayout);
+    manual = new ManualWidget(this);
+    mantablayout->addWidget(manual);
 
     // info tab
     ui.treeInfo->setAlternatingRowColors(true);
@@ -145,7 +149,6 @@ RbUtilQt::RbUtilQt(QWidget *parent) : QMainWindow(parent)
     connect(ui.buttonThemes, SIGNAL(clicked()), this, SLOT(installThemes()));
     connect(ui.buttonRemoveRockbox, SIGNAL(clicked()), this, SLOT(uninstall()));
     connect(ui.buttonRemoveBootloader, SIGNAL(clicked()), this, SLOT(uninstallBootloader()));
-    connect(ui.buttonDownloadManual, SIGNAL(clicked()), this, SLOT(downloadManual()));
     connect(ui.buttonSmall, SIGNAL(clicked()), this, SLOT(smallInstall()));
     connect(ui.buttonComplete, SIGNAL(clicked()), this, SLOT(completeInstall()));
 
@@ -343,7 +346,7 @@ void RbUtilQt::updateSettings()
 {
     qDebug() << "[RbUtil] updating current settings";
     updateDevice();
-    updateManual();
+    manual->updateManual();
     HttpGet::setGlobalProxy(proxy());
     HttpGet::setGlobalCache(RbSettings::value(RbSettings::CachePath).toString());
     HttpGet::setGlobalDumbCache(RbSettings::value(RbSettings::CacheOffline).toBool());
@@ -356,7 +359,7 @@ void RbUtilQt::updateSettings()
                 " or review your settings."));
         configDialog();
     }
-    else if(chkConfig(false)) {
+    else if(chkConfig(0)) {
         QApplication::processEvents();
         QMessageBox::critical(this, tr("Configuration error"),
             tr("Your configuration is invalid. This is most likely due "
@@ -387,7 +390,7 @@ void RbUtilQt::updateDevice()
     ui.actionRemove_bootloader->setEnabled(bootloaderUninstallable);
 
     /* Disable the whole tab widget if configuration is invalid */
-    bool configurationValid = !chkConfig(false);
+    bool configurationValid = !chkConfig(0);
     ui.tabWidget->setEnabled(configurationValid);
     ui.menuA_ctions->setEnabled(configurationValid);
 
@@ -416,42 +419,9 @@ void RbUtilQt::updateDevice()
 }
 
 
-void RbUtilQt::updateManual()
-{
-    if(RbSettings::value(RbSettings::Platform) != "")
-    {
-        QString manual = SystemInfo::value(SystemInfo::CurManual).toString();
-        QString buildservermodel = SystemInfo::value(SystemInfo::CurBuildserverModel).toString();
-        QString pdfmanual = SystemInfo::value(SystemInfo::ManualUrl).toString();
-        QString htmlmanual = pdfmanual;
-
-        pdfmanual.replace("%EXTENSION%", "pdf");
-        htmlmanual.replace("%EXTENSION%", "html");
-        if(manual.isEmpty()) {
-            pdfmanual.replace("%MANUALBASENAME%", "rockbox-" + buildservermodel);
-            htmlmanual.replace("%MANUALBASENAME%", "rockbox-" + buildservermodel + "/rockbox-build");
-        }
-        else {
-            pdfmanual.replace("%MANUALBASENAME%", "rockbox-" + manual);
-            htmlmanual.replace("%MANUALBASENAME%", "rockbox-" + manual + "/rockbox-build");
-        }
-
-        ui.labelPdfManual->setText(tr("<a href='%1'>PDF Manual</a>")
-            .arg(pdfmanual));
-        ui.labelHtmlManual->setText(tr("<a href='%1'>HTML Manual (opens in browser)</a>")
-            .arg(htmlmanual));
-    }
-    else {
-        ui.labelPdfManual->setText(tr("Select a device for a link to the correct manual"));
-        ui.labelHtmlManual->setText(tr("<a href='%1'>Manual Overview</a>")
-            .arg("http://www.rockbox.org/manual.shtml"));
-
-    }
-}
-
 void RbUtilQt::completeInstall()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     if(QMessageBox::question(this, tr("Confirm Installation"),
            tr("Do you really want to perform a complete installation?\n\n"
               "This will install Rockbox %1. To install the most recent "
@@ -507,7 +477,7 @@ void RbUtilQt::completeInstall()
 
 void RbUtilQt::smallInstall()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     if(QMessageBox::question(this, tr("Confirm Installation"),
            tr("Do you really want to perform a minimal installation? "
               "A minimal installation will contain only the absolutely "
@@ -581,7 +551,7 @@ void RbUtilQt::installdone(bool error)
 
 void RbUtilQt::installBtn()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     install();
 }
 
@@ -684,7 +654,7 @@ bool RbUtilQt::installBootloaderAuto()
 
 void RbUtilQt::installBootloaderBtn()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     if(QMessageBox::question(this, tr("Confirm Installation"),
            tr("Do you really want to install the Bootloader?"),
               QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) return;
@@ -846,7 +816,7 @@ void RbUtilQt::installBootloaderPost(bool error)
 
 void RbUtilQt::installFontsBtn()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     QString mountpoint = RbSettings::value(RbSettings::Mountpoint).toString();
     RockboxInfo installInfo(mountpoint);
     if(installInfo.revision().isEmpty() && installInfo.release().isEmpty()) {
@@ -910,7 +880,7 @@ void RbUtilQt::installFonts()
 
 void RbUtilQt::installVoice()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
 
     if(m_gotInfo == false)
     {
@@ -980,7 +950,7 @@ void RbUtilQt::installVoice()
 
 void RbUtilQt::installDoomBtn()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     if(!hasDoom()){
         QMessageBox::critical(this, tr("Error"),
             tr("Your device doesn't have a doom plugin. Aborting."));
@@ -1031,7 +1001,7 @@ void RbUtilQt::installDoom()
 
 void RbUtilQt::installThemes()
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     ThemesInstallWindow* tw = new ThemesInstallWindow(this);
     tw->setModal(true);
     tw->show();
@@ -1039,7 +1009,7 @@ void RbUtilQt::installThemes()
 
 void RbUtilQt::createTalkFiles(void)
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     InstallTalkWindow *installWindow = new InstallTalkWindow(this);
     connect(installWindow, SIGNAL(settingsUpdated()), this, SLOT(updateSettings()));
     installWindow->show();
@@ -1048,16 +1018,16 @@ void RbUtilQt::createTalkFiles(void)
 
 void RbUtilQt::createVoiceFile(void)
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     CreateVoiceWindow *installWindow = new CreateVoiceWindow(this);
-    
+
     connect(installWindow, SIGNAL(settingsUpdated()), this, SLOT(updateSettings()));
     installWindow->show();
 }
 
 void RbUtilQt::uninstall(void)
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     UninstallWindow *uninstallWindow = new UninstallWindow(this);
     uninstallWindow->show();
 
@@ -1065,7 +1035,7 @@ void RbUtilQt::uninstall(void)
 
 void RbUtilQt::uninstallBootloader(void)
 {
-    if(chkConfig(true)) return;
+    if(chkConfig(this)) return;
     if(QMessageBox::question(this, tr("Confirm Uninstallation"),
            tr("Do you really want to uninstall the Bootloader?"),
            QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) return;
@@ -1112,55 +1082,6 @@ void RbUtilQt::uninstallBootloader(void)
 
     logger->setFinished();
 
-}
-
-
-void RbUtilQt::downloadManual(void)
-{
-    if(chkConfig(true)) return;
-    if(QMessageBox::question(this, tr("Confirm download"),
-       tr("Do you really want to download the manual? The manual will be saved "
-            "to the root folder of your player."),
-        QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
-        return;
-
-    QString manual = SystemInfo::value(SystemInfo::CurManual).toString();
-    if(manual.isEmpty())
-        manual = "rockbox-"
-            + SystemInfo::value(SystemInfo::CurBuildserverModel).toString();
-
-    QDate date = QDate::fromString(ServerInfo::value(ServerInfo::DailyDate).toString(),Qt::ISODate);
-
-    QString manualurl;
-    QString target;
-    QString section;
-    if(ui.radioPdf->isChecked()) {
-        target = "/" + manual + ".pdf";
-        section = "Manual (PDF)";
-    }
-    else {
-        target = "/" + manual + "-" + date.toString("yyyyMMdd") + "-html.zip";
-        section = "Manual (HTML)";
-    }
-    manualurl = SystemInfo::value(SystemInfo::ManualUrl).toString() + "/" + target;
-    qDebug() << "[RbUtil] Manual URL:" << manualurl;
-
-    ProgressLoggerGui* logger = new ProgressLoggerGui(this);
-    logger->show();
-    installer = new ZipInstaller(this);
-    installer->setMountPoint(RbSettings::value(RbSettings::Mountpoint).toString());
-    if(!RbSettings::value(RbSettings::CacheDisabled).toBool())
-        installer->setCache(true);
-    installer->setLogSection(section);
-    installer->setLogVersion(ServerInfo::value(ServerInfo::DailyDate).toString());
-    installer->setUrl(manualurl);
-    installer->setUnzip(false);
-    installer->setTarget(target);
-    connect(installer, SIGNAL(logItem(QString, int)), logger, SLOT(addItem(QString, int)));
-    connect(installer, SIGNAL(logProgress(int, int)), logger, SLOT(setProgress(int, int)));
-    connect(installer, SIGNAL(done(bool)), logger, SLOT(setFinished()));
-    connect(logger, SIGNAL(aborted()), installer, SLOT(abort()));
-    installer->install();
 }
 
 
@@ -1290,7 +1211,7 @@ QUrl RbUtilQt::proxy()
 }
 
 
-bool RbUtilQt::chkConfig(bool warn)
+bool RbUtilQt::chkConfig(QWidget *parent)
 {
     bool error = false;
     if(RbSettings::value(RbSettings::Platform).toString().isEmpty()
@@ -1298,7 +1219,7 @@ bool RbUtilQt::chkConfig(bool warn)
         || !QFileInfo(RbSettings::value(RbSettings::Mountpoint).toString()).isWritable()) {
         error = true;
 
-        if(warn) QMessageBox::critical(this, tr("Configuration error"),
+        if(parent) QMessageBox::critical(parent, tr("Configuration error"),
             tr("Your configuration is invalid. Please go to the configuration "
                 "dialog and make sure the selected values are correct."));
     }

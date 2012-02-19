@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2005 Stepan Moskovchenko
+ * Copyright (c) 2011 Michael Sevakis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,14 +18,35 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+#if defined(CPU_ARM)
+#include "arm/beep.c"
+#elif defined (CPU_COLDFIRE)
+#include "m68k/beep.c"
+#else /* Generic */
 
-int tick(void);
+/* Actually output samples into beep_buf */
+static FORCE_INLINE void beep_generate(int16_t *out, int count,
+                                       uint32_t *phase, uint32_t step,
+                                       int16_t amplitude)
+{
+    uint32_t ph = *phase;
 
-/* used by beatbox */
-void rewindFile(void);
+    do
+    {
+        int16_t amp = amplitude;
 
-void seekForward(int nSec);
-void seekBackward(int nSec);
+        if (ph > UINT32_MAX / 2)
+            amp = -amp;
 
-extern long tempo;
+        *out++ = amp;
+        *out++ = amp;
 
+        ph += step;
+    }
+    while (--count > 0);
+
+    *phase = ph;
+}
+
+#define BEEP_GENERIC
+#endif /* CPU_* */

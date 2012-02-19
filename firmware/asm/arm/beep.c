@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2005 Stepan Moskovchenko
+ * Copyright (c) 2011 Michael Sevakis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,13 +19,21 @@
  *
  ****************************************************************************/
 
-int tick(void);
+/* Actually output samples into beep_buf */
+static FORCE_INLINE void beep_generate(uint32_t *out, int count,
+                                       int32_t *phase, uint32_t step,
+                                       uint32_t amplitude)
+{
+    uint32_t s;
 
-/* used by beatbox */
-void rewindFile(void);
-
-void seekForward(int nSec);
-void seekBackward(int nSec);
-
-extern long tempo;
-
+    asm volatile (
+    "1:                            \n"
+        "eor   %3, %5, %1, asr #31 \n"
+        "subs  %2, %2, #1          \n"
+        "str   %3, [%0], #4        \n"
+        "add   %1, %1, %4          \n"
+        "bgt   1b                  \n"
+        : "+r"(out), "+r"(*phase), "+r"(count),
+          "=&r"(s)
+        : "r"(step), "r"(amplitude));
+}

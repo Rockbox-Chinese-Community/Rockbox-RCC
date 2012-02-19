@@ -32,6 +32,7 @@
 #include "zipinstaller.h"
 #include "progressloggergui.h"
 #include "bootloaderinstallbase.h"
+#include "manualwidget.h"
 
 class RbUtilQt : public QMainWindow
 {
@@ -40,8 +41,10 @@ class RbUtilQt : public QMainWindow
     public:
         RbUtilQt(QWidget *parent = 0);
         static QList<QTranslator*> translators;
+        static bool chkConfig(QWidget *parent = 0);
 
     private:
+        ManualWidget *manual;
         Ui::RbUtilQtFrm ui;
 
         void changeEvent(QEvent *e);
@@ -54,11 +57,9 @@ class RbUtilQt : public QMainWindow
         QString absolutePath;
         QTemporaryFile buildInfo;
         QTemporaryFile bleedingInfo;
-        void updateManual(void);
         ProgressLoggerGui *logger;
         ZipInstaller *installer;
         QUrl proxy(void);
-        bool chkConfig(bool);
 
         volatile bool m_installed;
         volatile bool m_error;
@@ -109,7 +110,6 @@ class RbUtilQt : public QMainWindow
         void installThemes(void);
         void uninstall(void);
         void uninstallBootloader(void);
-        void downloadManual(void);
         void installPortable(void);
         void updateInfo(void);
         void updateTabs(int);
