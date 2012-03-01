@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "kernel.h"
+#include "power.h"
 #include "tuner.h" /* tuner abstraction interface */
 #include "fmradio.h"
 #include "fmradio_i2c.h" /* physical interface driver */
@@ -177,9 +178,12 @@ static void rda5802_sleep(int snooze)
         rda5802_write_clear(POWERCFG, POWERCFG_ENABLE);
     }
     else {
+        tuner_power(true);
         rda5802_write_set(POWERCFG, POWERCFG_ENABLE);
     }
     rda5802_write_cache();
+    if(snooze)
+        tuner_power(false);
 }
 
 bool rda5802_detect(void)

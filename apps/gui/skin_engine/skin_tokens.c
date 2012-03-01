@@ -942,6 +942,10 @@ const char *get_token_value(struct gui_wps *gwps,
                     buf = &buf[start_byte];
 
                 buf[byte_len] = '\0';
+                if (ss->expect_number &&
+                    intval && (buf[0] >= '0' && buf[0] <= '9'))
+                    *intval = atoi(buf) + 1; /* so 0 is the first item */
+                    
                 return buf;
             }
             return NULL;
@@ -977,6 +981,16 @@ const char *get_token_value(struct gui_wps *gwps,
             struct listitem *li = (struct listitem *)SKINOFFSETTOPTR(get_skin_buffer(data), token->value.data);
             return skinlist_get_item_text(li->offset, li->wrap, buf, buf_size);
         }
+        case SKIN_TOKEN_LIST_ITEM_ROW:
+            if (intval)
+                *intval = skinlist_get_item_row() + 1;
+            snprintf(buf, buf_size, "%d",skinlist_get_item_row() + 1);
+            return buf;
+        case SKIN_TOKEN_LIST_ITEM_COLUMN:
+            if (intval)
+                *intval = skinlist_get_item_column() + 1;
+            snprintf(buf, buf_size, "%d",skinlist_get_item_column() + 1);
+            return buf;
         case SKIN_TOKEN_LIST_ITEM_NUMBER:
             if (intval)
                 *intval = skinlist_get_item_number() + 1;

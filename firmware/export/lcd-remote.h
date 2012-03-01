@@ -96,7 +96,10 @@ extern unsigned lcd_remote_color_to_native(unsigned color);
 #endif
 
 /* The actual framebuffer */
-extern fb_remote_data lcd_remote_framebuffer[LCD_REMOTE_FBHEIGHT][LCD_REMOTE_FBWIDTH];
+extern fb_remote_data *lcd_remote_framebuffer;
+extern fb_remote_data lcd_remote_static_framebuffer[LCD_REMOTE_FBHEIGHT][LCD_REMOTE_FBWIDTH];
+#define FBREMOTEADDR(x, y) (lcd_remote_framebuffer + ((y) * LCD_REMOTE_FBWIDTH) + (x))
+#define FRAMEBUFFER_REMOTE_SIZE (sizeof(lcd_remote_static_framebuffer))
 
 #if LCD_REMOTE_DEPTH > 1
 extern void     lcd_remote_set_foreground(unsigned foreground);
@@ -129,6 +132,7 @@ void lcd_remote_init(void);
 void lcd_remote_write_command(int cmd);
 void lcd_remote_write_command_ex(int cmd, int data);
 void lcd_remote_write_data(const fb_remote_data *data, int count);
+extern void lcd_remote_set_framebuffer(fb_remote_data *fb);
 
 extern void lcd_remote_bitmap_part(const fb_remote_data *src, int src_x,
                                    int src_y, int stride, int x, int y,

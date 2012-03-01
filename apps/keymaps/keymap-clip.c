@@ -165,6 +165,12 @@ static const struct button_mapping button_context_listtree_scroll_with_combo[]  
     LAST_ITEM_IN_LIST__NEXTLIST(CONTEXT_CUSTOM|CONTEXT_TREE),
 }; /* button_context_listtree_scroll_with_combo */
 
+static const struct button_mapping button_context_mainmenu[]  = {
+    { ACTION_TREE_WPS, BUTTON_HOME|BUTTON_REL, BUTTON_HOME },
+
+    LAST_ITEM_IN_LIST__NEXTLIST(CONTEXT_TREE),
+}; /* button_context_mainmenu */
+
 static const struct button_mapping button_context_yesno[]  = {
     { ACTION_YESNO_ACCEPT,          BUTTON_SELECT,              BUTTON_NONE },
 
@@ -175,6 +181,7 @@ static const struct button_mapping button_context_quickscreen[]  = {
     { ACTION_NONE,       BUTTON_LEFT,                   BUTTON_NONE },
     { ACTION_STD_CANCEL, BUTTON_POWER|BUTTON_REL,       BUTTON_NONE },
     { ACTION_STD_CANCEL, BUTTON_HOME,                   BUTTON_NONE },
+    { ACTION_STD_CANCEL, BUTTON_SELECT,                 BUTTON_NONE },
     { ACTION_QS_TOP,     BUTTON_UP|BUTTON_REL,          BUTTON_NONE },
     { ACTION_QS_TOP,     BUTTON_UP|BUTTON_REPEAT,       BUTTON_NONE },
     { ACTION_QS_DOWN,    BUTTON_DOWN|BUTTON_REL,        BUTTON_NONE },
@@ -398,11 +405,12 @@ const struct button_mapping* get_context_mapping(int context)
         case CONTEXT_LIST:
             return button_context_list;
         case CONTEXT_TREE:
-        case CONTEXT_MAINMENU:
             if (global_settings.hold_lr_for_scroll_in_list)
                 return button_context_listtree_scroll_without_combo;
             else
                 return button_context_listtree_scroll_with_combo;
+        case CONTEXT_MAINMENU:
+            return button_context_mainmenu;
         case CONTEXT_CUSTOM|CONTEXT_TREE:
             return button_context_tree;
 

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "kernel.h"
+#include "power.h"
 #include "tuner.h" /* tuner abstraction interface */
 #include "fmradio.h"
 #include "fmradio_i2c.h" /* physical interface driver */
@@ -106,7 +107,11 @@ int tea5767_set(int setting, int value)
             return -1;
     }
 
+    if(setting == RADIO_SLEEP && !value)
+        tuner_power(true); /* wakeup */
     fmradio_i2c_write(I2C_ADR, write_bytes, sizeof(write_bytes));
+    if(setting == RADIO_SLEEP && value)
+        tuner_power(false); /* sleep */
     return 1;
 }
 

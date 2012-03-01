@@ -387,19 +387,30 @@ static int parse_image_load(struct skin_element *element,
 {
     const char* filename;
     const char* id;
-    int x,y;
+    int x = 0,y = 0, subimages = 1;
     struct gui_img *img;
 
-    /* format: %x(n,filename.bmp,x,y)
-       or %xl(n,filename.bmp,x,y)
-       or %xl(n,filename.bmp,x,y,num_subimages)
+    /* format: %x(n,filename.bmp[,x,y])
+       or %xl(n,filename.bmp[,x,y])
+       or %xl(n,filename.bmp[,x,y,num_subimages])
     */
 
     id = get_param_text(element, 0);
     filename = get_param_text(element, 1);
-    x = get_param(element, 2)->data.number;
-    y = get_param(element, 3)->data.number;
-
+    /* x,y,num_subimages handling:
+     * If all 3 are left out use sane defaults.
+     * If there are 2 params it must be x,y
+     * if there is only 1 param it must be the num_subimages
+     */
+    if (element->params_count == 3)
+        subimages = get_param(element, 2)->data.number;
+    else if (element->params_count > 3)
+    {
+        x = get_param(element, 2)->data.number;
+        y = get_param(element, 3)->data.number;
+        if (element->params_count == 5)
+            subimages = get_param(element, 4)->data.number;
+    }
     /* check the image number and load state */
     if(skin_find_item(id, SKIN_FIND_IMAGE, wps_data))
     {
@@ -414,8 +425,7 @@ static int parse_image_load(struct skin_element *element,
     img->label = PTRTOSKINOFFSET(skin_buffer, (void*)id);
     img->x = x;
     img->y = y;
-    img->num_subimages = 1;
-    img->always_display = false;
+    img->num_subimages = subimages;
     img->display = -1;
     img->using_preloaded_icons = false;
     img->buflib_handle = -1;
@@ -424,15 +434,7 @@ static int parse_image_load(struct skin_element *element,
     img->vp = PTRTOSKINOFFSET(skin_buffer, &curr_vp->vp);
 
     if (token->type == SKIN_TOKEN_IMAGE_DISPLAY)
-    {
-        img->always_display = true;
-    }
-    else if (element->params_count == 5)
-    {
-        img->num_subimages = get_param(element, 4)->data.number;
-        if (img->num_subimages <= 0)
-            return WPS_ERROR_INVALID_PARAM;
-    }
+        token->value.data = PTRTOSKINOFFSET(skin_buffer, img);
 
     if (!strcmp(img->bm.data, "__list_icons__"))
     {
@@ -577,7 +579,7 @@ static int parse_listitemviewport(struct skin_element *element,
         return -1;
     cfg->data = wps_data;
     cfg->tile = false;
-    cfg->label = get_param_text(element, 0);
+    cfg->label = PTRTOSKINOFFSET(skin_buffer, get_param_text(element, 0));
     cfg->width = -1;
     cfg->height = -1;
     if (!isdefault(get_param(element, 1)))
@@ -824,6 +826,10 @@ static int parse_substring_tag(struct skin_element* element,
     else
         ss->length = get_param(element, 1)->data.number;
     ss->token = get_param_code(element, 2)->data;
+    if (element->params_count > 3)
+        ss->expect_number = !strcmp(get_param_text(element, 3), "number");
+    else
+        ss->expect_number = false;
     token->value.data = PTRTOSKINOFFSET(skin_buffer, ss);
     return 0;
 }
@@ -996,7 +1002,6 @@ static int parse_progressbar_tag(struct skin_element* element,
             img->x = 0;
             img->y = 0;
             img->num_subimages = 1;
-            img->always_display = false;
             img->display = -1;
             img->using_preloaded_icons = false;
             img->buflib_handle = -1;
@@ -1179,7 +1184,10 @@ static int parse_skinvar(  struct skin_element *element,
             if (!data)
                 return WPS_ERROR_INVALID_PARAM;
             data->var = PTRTOSKINOFFSET(skin_buffer, var);
-            data->newval = get_param(element, 2)->data.number;
+            if (!isdefault(get_param(element, 2)))
+                data->newval = get_param(element, 2)->data.number;
+            else if (strcmp(get_param_text(element, 1), "touch"))
+                return WPS_ERROR_INVALID_PARAM;
             data->max = 0;
             if (!strcmp(get_param_text(element, 1), "set"))
                 data->direct = true;
@@ -1191,6 +1199,11 @@ static int parse_skinvar(  struct skin_element *element,
             {
                 data->direct = false;
                 data->newval *= -1;
+            }
+            else if (!strcmp(get_param_text(element, 1), "touch"))
+            {
+                data->direct = false;
+                data->newval = 0;
             }
             if (element->params_count > 3)
                 data->max = get_param(element, 3)->data.number;
@@ -1820,6 +1833,7 @@ static int convert_viewport(struct wps_data *data, struct skin_element* element)
     viewport_set_defaults(&skin_vp->vp, curr_screen);
     
 #if (LCD_DEPTH > 1) || (defined(HAVE_REMOTE_LCD) && (LCD_REMOTE_DEPTH > 1))
+    skin_vp->output_to_backdrop_buffer = false;
     skin_vp->start_fgcolour = skin_vp->vp.fg_pattern;
     skin_vp->start_bgcolour = skin_vp->vp.bg_pattern;
 #endif
@@ -2010,6 +2024,11 @@ static int skin_element_callback(struct skin_element* element, void* data)
                     break;
                 case SKIN_TOKEN_VIEWPORT_TEXTSTYLE:
                     function = parse_viewporttextstyle;
+                    break;
+                case SKIN_TOKEN_VIEWPORT_DRAWONBG:
+                    curr_vp->output_to_backdrop_buffer = true;
+                    backdrop_filename = BACKDROP_BUFFERNAME;
+                    wps_data->use_extra_framebuffer = true;
                     break;
 #endif
 #ifdef HAVE_LCD_COLOR
