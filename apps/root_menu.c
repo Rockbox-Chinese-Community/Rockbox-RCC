@@ -506,12 +506,12 @@ static struct menu_table menu_table[] = {
     { "radio", &fm },
 #endif
     { "playlists", &playlists },
-    { "plugins", &rocks_browser },
+    { "plugins", &rocks_browser },    
+    { "shortcuts", &shortcut_menu },
     { "system_menu", &system_menu_ },
 #if (CONFIG_KEYPAD == PLAYER_PAD) || (CONFIG_PLATFORM&PLATFORM_ANDROID)
     { "shutdown", &do_shutdown_item },
-#endif    
-    { "shortcuts", &shortcut_menu },
+#endif
 };
 #define MAX_MENU_ITEMS (sizeof(menu_table) / sizeof(struct menu_table))
 static struct menu_item_ex *root_menu__[MAX_MENU_ITEMS];
