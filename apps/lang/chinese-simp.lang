@@ -13009,7 +13009,7 @@
     *: "Line Separator"
   </source>
   <dest>
-    *: "是否显示行分隔线"
+    *: "显示行分隔线"
   </dest>
   <voice>
     *: "是否显示行分隔线"
