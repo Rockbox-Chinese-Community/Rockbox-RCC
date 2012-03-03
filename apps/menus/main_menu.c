@@ -376,7 +376,7 @@ static bool show_info(void)
 MENUITEM_FUNCTION(show_info_item, 0, ID2P(LANG_ROCKBOX_INFO),
                    (menu_function)show_info, NULL, NULL, Icon_NOICON);
 
-#if CONFIG_RTC
+#if CONFIG_RTC && CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
 int time_screen(void* ignored);
 MENUITEM_FUNCTION(timedate_item, MENU_FUNC_CHECK_RETVAL, ID2P(LANG_TIME_MENU),
                     time_screen, NULL,  NULL, Icon_Menu_setting );
@@ -425,7 +425,7 @@ MAKE_MENU(main_menu_, ID2P(LANG_SETTINGS), mainmenu_callback,
 #ifdef HAVE_RECORDING
         &recording_settings,
 #endif
-#if CONFIG_RTC
+#if CONFIG_RTC && CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
         &timedate_item,
 #endif
         &manage_settings,

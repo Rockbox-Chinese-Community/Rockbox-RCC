@@ -84,6 +84,7 @@ static int flipdisplay_callback(int action,const struct menu_item_ex *this_item)
 
 /***********************************/
 /*    LCD MENU                     */
+#if CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
 #ifdef HAVE_BACKLIGHT
 MENUITEM_SETTING(backlight_timeout, &global_settings.backlight_timeout, NULL);
 #if CONFIG_CHARGING
@@ -159,6 +160,7 @@ MAKE_MENU(lcd_settings,ID2P(LANG_LCD_MENU),
 # endif
 #endif /* HAVE_LCD_BITMAP */
          );
+#endif /* CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID) */
 /*    LCD MENU                    */
 /***********************************/
 
@@ -530,7 +532,9 @@ MENUITEM_SETTING(codepage_setting, &global_settings.default_codepage, NULL);
 
 MAKE_MENU(display_menu, ID2P(LANG_DISPLAY),
             NULL, Icon_Display_menu,
+#if CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
             &lcd_settings,
+#endif /* CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID) */
 #ifdef HAVE_REMOTE_LCD
             &lcd_remote_settings,
 #endif
