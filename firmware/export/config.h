@@ -499,6 +499,11 @@ Lyre prototype 1 */
 /* no known platform */
 #endif
 
+#ifdef __PCTOOL__
+#undef CONFIG_CPU
+#define CONFIG_CPU 0
+#endif
+
 #ifdef APPLICATION
 #define CONFIG_CPU 0
 #define CONFIG_STORAGE 0
@@ -517,6 +522,8 @@ Lyre prototype 1 */
 #include "config_caps.h"
 
 /* setup CPU-specific defines */
+
+#ifndef __PCTOOL__
 
 /* define for all cpus from SH family */
 #if (CONFIG_CPU == SH7034)
@@ -584,6 +591,8 @@ Lyre prototype 1 */
 #if (CONFIG_CPU == JZ4732)
 #define CPU_MIPS 32
 #endif
+
+#endif /*__PCTOOL__*/
 
 /* now set any CONFIG_ defines correctly if they are not used,
    No need to do this on CONFIG_'s which are compulsory (e.g CONFIG_CODEC ) */
@@ -758,6 +767,11 @@ Lyre prototype 1 */
 
 #if defined(BOOTLOADER) && defined(HAVE_ADJUSTABLE_CPU_FREQ)
 /* Bootloaders don't use CPU frequency adjustment */
+#undef HAVE_ADJUSTABLE_CPU_FREQ
+#endif
+
+#if defined(__PCTOOL__) && defined(HAVE_ADJUSTABLE_CPU_FREQ)
+/* PCTOOLs don't use CPU frequency adjustment */
 #undef HAVE_ADJUSTABLE_CPU_FREQ
 #endif
 

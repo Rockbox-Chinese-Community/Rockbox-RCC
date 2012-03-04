@@ -93,11 +93,6 @@ static int app_ftruncate(int fd, off_t length)
 {
     return ftruncate(fd,length);
 }
-
-static off_t app_filesize(int fd)
-{
-    return filesize(fd);
-}
 #endif
 
 #if defined(HAVE_PLUGIN_CHECK_OPEN_CLOSE) && (MAX_OPEN_FILES>32)
@@ -357,7 +352,7 @@ static const struct plugin_api rockbox_api = {
     PREFIX(remove),
     PREFIX(rename),
     PREFIX(ftruncate),
-    PREFIX(filesize),
+    filesize,
     fdprintf,
     read_line,
     settings_parseline,
