@@ -4,18 +4,16 @@
 #   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
 #   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
 #                     \/            \/     \/    \/            \/
-#
 
-ARMSUPPORTLIB_DIR := $(ROOTDIR)/lib/arm_support
-ARMSUPPORTLIB_SRC := $(ARMSUPPORTLIB_DIR)/support-arm.S
-ARMSUPPORTLIB_OBJ := $(call c2obj, $(ARMSUPPORTLIB_SRC))
-ARMSUPPORTLIB := $(BUILDDIR)/lib/libarm_support.a
+# RBCODEC_BLD is defined in the calling Makefile
+RBCODECLIB_DIR := $(ROOTDIR)/lib/rbcodec
+RBCODECLIB_SRC := $(call preprocess, $(RBCODECLIB_DIR)/SOURCES)
+RBCODECLIB_OBJ := $(call c2obj, $(RBCODECLIB_SRC))
+RBCODECLIB := $(BUILDDIR)/lib/librbcodec.a
 
-OTHER_SRC += $(ARMSUPPORTLIB_SRC)
-# both core and plugins link this
-CORE_LIBS += $(ARMSUPPORTLIB)
-PLUGIN_LIBS += $(ARMSUPPORTLIB)
+INCLUDES += -I$(RBCODECLIB_DIR) -I$(RBCODECLIB_DIR)/dsp -I$(RBCODECLIB_DIR)/metadata
+OTHER_SRC += $(RBCODECLIB_SRC)
+CORE_LIBS += $(RBCODECLIB)
 
-$(ARMSUPPORTLIB): $(ARMSUPPORTLIB_OBJ)
-	$(SILENT)$(shell rm -f $@)
+$(RBCODECLIB): $(RBCODECLIB_OBJ)
 	$(call PRINTS,AR $(@F))$(AR) rcs $@ $^ >/dev/null

@@ -92,7 +92,8 @@ static int bookmark_menu_callback(int action,
                                   const struct menu_item_ex *this_item);
 MENUITEM_FUNCTION(bookmark_create_menu_item, 0,
                   ID2P(LANG_BOOKMARK_MENU_CREATE),
-                  bookmark_create_menu, NULL, NULL, Icon_Bookmark);
+                  bookmark_create_menu, NULL,
+                  bookmark_menu_callback, Icon_Bookmark);
 MENUITEM_FUNCTION(bookmark_load_menu_item, 0,
                   ID2P(LANG_BOOKMARK_MENU_LIST),
                   bookmark_load_menu, NULL,
@@ -106,13 +107,20 @@ static int bookmark_menu_callback(int action,
     switch (action)
     {
         case ACTION_REQUEST_MENUITEM:
-            if (this_item == &bookmark_load_menu_item)
+            /* hide create bookmark option if bookmarking isn't currently possible (no track playing, queued tracks...) */
+            if (this_item == &bookmark_create_menu_item)
+            {
+                if (!bookmark_is_bookmarkable_state())
+                    return ACTION_EXIT_MENUITEM;
+            }
+            /* hide loading bookmarks menu if no bookmarks exist */
+            else if (this_item == &bookmark_load_menu_item)
             {
                 if (!bookmark_exists())
                     return ACTION_EXIT_MENUITEM;
             }
-            /* hide the bookmark menu if there is no playback */
-            else if ((audio_status() & AUDIO_STATUS_PLAY) == 0)
+            /* hide the bookmark menu if bookmarks can't be loaded or created */
+            else if (!bookmark_is_bookmarkable_state() && !bookmark_exists())
                 return ACTION_EXIT_MENUITEM;
             break;
 #ifdef HAVE_LCD_CHARCELLS
@@ -957,7 +965,7 @@ MENUITEM_RETURNVALUE(pictureflow_item, ID2P(LANG_ONPLAY_PICTUREFLOW),
 MENUITEM_RETURNVALUE(lyrics_item, ID2P(LANG_ONPLAY_LYRICS), 
                   GO_TO_LYRICS, NULL, Icon_NOICON); 
 /* in main_menu.c */
-extern const struct menu_item_ex sleep_timer_call;
+extern const struct menu_item_ex sleeptimer_toggle;
 static bool view_cue(void)
 {
     struct mp3entry* id3 = audio_current_track();
@@ -1184,7 +1192,7 @@ MAKE_ONPLAYMENU( wps_onplay_menu, ID2P(LANG_ONPLAY_MENU_TITLE),
            &pictureflow_item,
 #endif           
            &browse_id3_item, &list_viewers_item,
-	   &sleep_timer_call,
+	   &sleeptimer_toggle,
            &delete_file_item, &view_cue_item,
 #ifdef HAVE_PITCHSCREEN
            &pitch_screen_item,

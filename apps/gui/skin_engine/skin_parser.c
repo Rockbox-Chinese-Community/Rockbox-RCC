@@ -33,6 +33,7 @@
 #include "viewport.h"
 
 #include "skin_buffer.h"
+#include "skin_debug.h"
 #include "skin_parser.h"
 #include "tag_table.h"
 
@@ -638,6 +639,51 @@ static int parse_viewporttextstyle(struct skin_element *element,
     return 0;
 }
 
+static int parse_drawrectangle( struct skin_element *element,
+                                struct wps_token *token,
+                                struct wps_data *wps_data)
+{
+    (void)wps_data;
+    struct draw_rectangle *rect =
+            (struct draw_rectangle *)skin_buffer_alloc(sizeof(struct draw_rectangle));
+
+    if (!rect)
+        return -1;
+
+    rect->x = get_param(element, 0)->data.number;
+    rect->y = get_param(element, 1)->data.number;
+
+    if (isdefault(get_param(element, 2)))
+        rect->width = curr_vp->vp.width - rect->x;
+    else
+        rect->width = get_param(element, 2)->data.number;
+        
+    if (isdefault(get_param(element, 3)))
+        rect->height = curr_vp->vp.height - rect->y;
+    else
+        rect->height = get_param(element, 3)->data.number;
+
+    rect->start_colour = curr_vp->vp.fg_pattern;
+    rect->end_colour = curr_vp->vp.fg_pattern;
+
+    if (element->params_count > 4)
+    {
+        if (!parse_color(curr_screen, get_param_text(element, 4),
+                    &rect->start_colour))
+            return -1;
+        rect->end_colour = rect->start_colour;
+    }
+    if (element->params_count > 5)
+    {
+        if (!parse_color(curr_screen, get_param_text(element, 5),
+                    &rect->end_colour))
+            return -1;
+    }
+    token->value.data = PTRTOSKINOFFSET(skin_buffer, rect);
+
+    return 0;
+}
+        
 static int parse_viewportcolour(struct skin_element *element,
                                 struct wps_token *token,
                                 struct wps_data *wps_data)
@@ -1287,7 +1333,10 @@ static const struct touchaction touchactions[] = {
     {"browse", ACTION_WPS_BROWSE },
     {"play", ACTION_WPS_PLAY },         {"stop", ACTION_WPS_STOP },
     {"shuffle", ACTION_TOUCH_SHUFFLE }, {"repmode", ACTION_TOUCH_REPMODE },
-    {"pitch", ACTION_WPS_PITCHSCREEN},  {"playlist", ACTION_WPS_VIEW_PLAYLIST }, 
+    {"pitch", ACTION_WPS_PITCHSCREEN},  {"trackinfo", ACTION_WPS_ID3SCREEN },
+    {"playlist", ACTION_WPS_VIEW_PLAYLIST },
+    {"listbookmarks", ACTION_WPS_LIST_BOOKMARKS },
+    {"createbookmark", ACTION_WPS_CREATE_BOOKMARK },
 
 #if CONFIG_TUNER    
     /* FM screen actions */
@@ -2011,6 +2060,11 @@ static int skin_element_callback(struct skin_element* element, void* data)
 #endif
                     break;
 #endif
+#if (LCD_DEPTH > 1) || (defined(HAVE_REMOTE_LCD) && (LCD_REMOTE_DEPTH > 1))
+                case SKIN_TOKEN_DRAWRECTANGLE:
+                    function = parse_drawrectangle;
+                    break;
+#endif
                 case SKIN_TOKEN_FILE_DIRECTORY:
                     token->value.i = get_param(element, 0)->data.number;
                     break;
@@ -2242,6 +2296,10 @@ bool skin_data_load(enum screen_type screen, struct wps_data *wps_data,
     struct skin_element *tree = skin_parse(wps_buffer, skin_element_callback, wps_data);
     wps_data->tree = PTRTOSKINOFFSET(skin_buffer, tree);
     if (!SKINOFFSETTOPTR(skin_buffer, wps_data->tree)) {
+#ifdef DEBUG_SKIN_ENGINE
+        if (isfile && debug_wps)
+            skin_error_format_message();
+#endif
         skin_data_reset(wps_data);
         return false;
     }
@@ -2295,10 +2353,6 @@ bool skin_data_load(enum screen_type screen, struct wps_data *wps_data,
     }
 #else
     wps_data->wps_loaded = wps_data->tree >= 0;
-#endif
-#ifdef DEBUG_SKIN_ENGINE
- //   if (isfile && debug_wps)
- //       debug_skin_usage();
 #endif
     return true;
 }

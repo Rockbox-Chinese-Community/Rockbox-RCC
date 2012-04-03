@@ -97,80 +97,151 @@ static int eq_setting_callback(int action, const struct menu_item_ex *this_item)
 MENUITEM_SETTING(eq_enable, &global_settings.eq_enabled, eq_setting_callback);
 MENUITEM_SETTING(eq_precut, &global_settings.eq_precut, eq_setting_callback);
 
-MENUITEM_SETTING(cutoff_0, &global_settings.eq_band0_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_1, &global_settings.eq_band1_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_2, &global_settings.eq_band2_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_3, &global_settings.eq_band3_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_4, &global_settings.eq_band4_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_5, &global_settings.eq_band5_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_6, &global_settings.eq_band6_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_7, &global_settings.eq_band7_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_8, &global_settings.eq_band8_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_9, &global_settings.eq_band9_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_10, &global_settings.eq_band10_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_11, &global_settings.eq_band11_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_12, &global_settings.eq_band12_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_13, &global_settings.eq_band13_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_14, &global_settings.eq_band14_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_15, &global_settings.eq_band15_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_16, &global_settings.eq_band16_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_17, &global_settings.eq_band17_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_18, &global_settings.eq_band18_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_19, &global_settings.eq_band19_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_20, &global_settings.eq_band20_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_21, &global_settings.eq_band21_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_22, &global_settings.eq_band22_cutoff, eq_setting_callback);
-MENUITEM_SETTING(cutoff_23, &global_settings.eq_band23_cutoff, eq_setting_callback);
+MENUITEM_SETTING(cutoff_0, &global_settings.eq_band_settings[0].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_1, &global_settings.eq_band_settings[1].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_2, &global_settings.eq_band_settings[2].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_3, &global_settings.eq_band_settings[3].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_4, &global_settings.eq_band_settings[4].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_5, &global_settings.eq_band_settings[5].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_6, &global_settings.eq_band_settings[6].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_7, &global_settings.eq_band_settings[7].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_8, &global_settings.eq_band_settings[8].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_9, &global_settings.eq_band_settings[9].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_10, &global_settings.eq_band_settings[10].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_11, &global_settings.eq_band_settings[11].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_12, &global_settings.eq_band_settings[12].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_13, &global_settings.eq_band_settings[13].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_14, &global_settings.eq_band_settings[14].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_15, &global_settings.eq_band_settings[15].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_16, &global_settings.eq_band_settings[16].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_17, &global_settings.eq_band_settings[17].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_18, &global_settings.eq_band_settings[18].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_19, &global_settings.eq_band_settings[19].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_20, &global_settings.eq_band_settings[20].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_21, &global_settings.eq_band_settings[21].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_22, &global_settings.eq_band_settings[22].cutoff,
+                 eq_setting_callback);
+MENUITEM_SETTING(cutoff_23, &global_settings.eq_band_settings[23].cutoff,
+                 eq_setting_callback);
 
-MENUITEM_SETTING(q_0, &global_settings.eq_band0_q, eq_setting_callback);
-MENUITEM_SETTING(q_1, &global_settings.eq_band1_q, eq_setting_callback);
-MENUITEM_SETTING(q_2, &global_settings.eq_band2_q, eq_setting_callback);
-MENUITEM_SETTING(q_3, &global_settings.eq_band3_q, eq_setting_callback);
-MENUITEM_SETTING(q_4, &global_settings.eq_band4_q, eq_setting_callback);
-MENUITEM_SETTING(q_5, &global_settings.eq_band5_q, eq_setting_callback);
-MENUITEM_SETTING(q_6, &global_settings.eq_band6_q, eq_setting_callback);
-MENUITEM_SETTING(q_7, &global_settings.eq_band7_q, eq_setting_callback);
-MENUITEM_SETTING(q_8, &global_settings.eq_band8_q, eq_setting_callback);
-MENUITEM_SETTING(q_9, &global_settings.eq_band9_q, eq_setting_callback);
-MENUITEM_SETTING(q_10, &global_settings.eq_band10_q, eq_setting_callback);
-MENUITEM_SETTING(q_11, &global_settings.eq_band11_q, eq_setting_callback);
-MENUITEM_SETTING(q_12, &global_settings.eq_band12_q, eq_setting_callback);
-MENUITEM_SETTING(q_13, &global_settings.eq_band13_q, eq_setting_callback);
-MENUITEM_SETTING(q_14, &global_settings.eq_band14_q, eq_setting_callback);
-MENUITEM_SETTING(q_15, &global_settings.eq_band15_q, eq_setting_callback);
-MENUITEM_SETTING(q_16, &global_settings.eq_band16_q, eq_setting_callback);
-MENUITEM_SETTING(q_17, &global_settings.eq_band17_q, eq_setting_callback);
-MENUITEM_SETTING(q_18, &global_settings.eq_band18_q, eq_setting_callback);
-MENUITEM_SETTING(q_19, &global_settings.eq_band19_q, eq_setting_callback);
-MENUITEM_SETTING(q_20, &global_settings.eq_band20_q, eq_setting_callback);
-MENUITEM_SETTING(q_21, &global_settings.eq_band21_q, eq_setting_callback);
-MENUITEM_SETTING(q_22, &global_settings.eq_band22_q, eq_setting_callback);
-MENUITEM_SETTING(q_23, &global_settings.eq_band23_q, eq_setting_callback);
-
-MENUITEM_SETTING(gain_0, &global_settings.eq_band0_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_1, &global_settings.eq_band1_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_2, &global_settings.eq_band2_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_3, &global_settings.eq_band3_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_4, &global_settings.eq_band4_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_5, &global_settings.eq_band5_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_6, &global_settings.eq_band6_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_7, &global_settings.eq_band7_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_8, &global_settings.eq_band8_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_9, &global_settings.eq_band9_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_10, &global_settings.eq_band10_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_11, &global_settings.eq_band11_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_12, &global_settings.eq_band12_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_13, &global_settings.eq_band13_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_14, &global_settings.eq_band14_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_15, &global_settings.eq_band15_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_16, &global_settings.eq_band16_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_17, &global_settings.eq_band17_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_18, &global_settings.eq_band18_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_19, &global_settings.eq_band19_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_20, &global_settings.eq_band20_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_21, &global_settings.eq_band21_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_22, &global_settings.eq_band22_gain, eq_setting_callback);
-MENUITEM_SETTING(gain_23, &global_settings.eq_band23_gain, eq_setting_callback);
+MENUITEM_SETTING(q_0, &global_settings.eq_band_settings[0].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_1, &global_settings.eq_band_settings[1].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_2, &global_settings.eq_band_settings[2].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_3, &global_settings.eq_band_settings[3].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_4, &global_settings.eq_band_settings[4].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_5, &global_settings.eq_band_settings[5].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_6, &global_settings.eq_band_settings[6].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_7, &global_settings.eq_band_settings[7].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_8, &global_settings.eq_band_settings[8].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_9, &global_settings.eq_band_settings[9].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_10, &global_settings.eq_band_settings[10].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_11, &global_settings.eq_band_settings[11].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_12, &global_settings.eq_band_settings[12].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_13, &global_settings.eq_band_settings[13].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_14, &global_settings.eq_band_settings[14].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_15, &global_settings.eq_band_settings[15].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_16, &global_settings.eq_band_settings[16].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_17, &global_settings.eq_band_settings[17].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_18, &global_settings.eq_band_settings[18].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_19, &global_settings.eq_band_settings[19].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_20, &global_settings.eq_band_settings[20].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_21, &global_settings.eq_band_settings[21].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_22, &global_settings.eq_band_settings[22].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(q_23, &global_settings.eq_band_settings[23].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_0, &global_settings.eq_band_settings[0].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_1, &global_settings.eq_band_settings[1].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_2, &global_settings.eq_band_settings[2].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_3, &global_settings.eq_band_settings[3].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_4, &global_settings.eq_band_settings[4].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_5, &global_settings.eq_band_settings[5].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_6, &global_settings.eq_band_settings[6].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_7, &global_settings.eq_band_settings[7].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_8, &global_settings.eq_band_settings[8].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_9, &global_settings.eq_band_settings[9].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_10, &global_settings.eq_band_settings[10].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_11, &global_settings.eq_band_settings[11].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_12, &global_settings.eq_band_settings[12].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_13, &global_settings.eq_band_settings[13].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_14, &global_settings.eq_band_settings[14].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_15, &global_settings.eq_band_settings[15].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_16, &global_settings.eq_band_settings[16].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_17, &global_settings.eq_band_settings[17].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_18, &global_settings.eq_band_settings[18].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_19, &global_settings.eq_band_settings[19].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_20, &global_settings.eq_band_settings[20].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_21, &global_settings.eq_band_settings[21].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_22, &global_settings.eq_band_settings[22].q,
+                 eq_setting_callback);
+MENUITEM_SETTING(gain_23, &global_settings.eq_band_settings[23].q,
+                 eq_setting_callback);
 
 static char* gainitem_get_name(int selected_item, void * data, char *buffer)
 {
@@ -202,99 +273,123 @@ static int do_option(void * param)
 MENUITEM_FUNCTION_DYNTEXT(gain_item_0, MENU_FUNC_USEPARAM,
                           do_option, (void*)&gain_0, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band0_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[0].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_1, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_1,
+                          do_option, (void*)&gain_1, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band1_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[1].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_2, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_2,
+                          do_option, (void*)&gain_2, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band2_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[2].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_3, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_3,
+                          do_option, (void*)&gain_3, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band3_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[3].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_4, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_4,
+                          do_option, (void*)&gain_4, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band4_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[4].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_5, MENU_FUNC_USEPARAM,
                           do_option, (void*)&gain_5, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band5_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[5].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_6, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_6,
+                          do_option, (void*)&gain_6, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band6_cutoff, NULL, Icon_NOICON);
-MENUITEM_FUNCTION_DYNTEXT(gain_item_7, MENU_FUNC_USEPARAM,                                                                                      
-                          do_option, (void*)&gain_7,                                                                                            
-                          gainitem_get_name, gainitem_speak_item,                                                                               
-                          &global_settings.eq_band7_cutoff, NULL, Icon_NOICON);                                                                 
-MENUITEM_FUNCTION_DYNTEXT(gain_item_8, MENU_FUNC_USEPARAM,                                                                                      
-                          do_option, (void*)&gain_8,                                                                                            
-                          gainitem_get_name, gainitem_speak_item,                                                                               
-                          &global_settings.eq_band8_cutoff, NULL, Icon_NOICON);                                                                 
-MENUITEM_FUNCTION_DYNTEXT(gain_item_9, MENU_FUNC_USEPARAM,                                                                                      
-                          do_option, (void*)&gain_9,                                                                                            
-                          gainitem_get_name, gainitem_speak_item,                                                                               
-                          &global_settings.eq_band9_cutoff, NULL, Icon_NOICON);                                                                 
+                          &global_settings.eq_band_settings[6].cutoff,
+                          NULL, Icon_NOICON);
+MENUITEM_FUNCTION_DYNTEXT(gain_item_7, MENU_FUNC_USEPARAM,
+                          do_option, (void*)&gain_7, 
+                          gainitem_get_name, gainitem_speak_item,
+                          &global_settings.eq_band_settings[7].cutoff,
+                          NULL, Icon_NOICON);
+MENUITEM_FUNCTION_DYNTEXT(gain_item_8, MENU_FUNC_USEPARAM,
+                          do_option, (void*)&gain_8, 
+                          gainitem_get_name, gainitem_speak_item,
+                          &global_settings.eq_band_settings[8].cutoff,
+                          NULL, Icon_NOICON);
+MENUITEM_FUNCTION_DYNTEXT(gain_item_9, MENU_FUNC_USEPARAM,
+                          do_option, (void*)&gain_9, 
+                          gainitem_get_name, gainitem_speak_item,
+                          &global_settings.eq_band_settings[9].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_10, MENU_FUNC_USEPARAM,
                           do_option, (void*)&gain_10, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band10_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[10].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_11, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_11,
+                          do_option, (void*)&gain_11, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band11_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[11].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_12, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_12,
+                          do_option, (void*)&gain_12, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band12_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[12].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_13, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_13,
+                          do_option, (void*)&gain_13, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band13_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[13].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_14, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_14,
+                          do_option, (void*)&gain_14, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band14_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[14].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_15, MENU_FUNC_USEPARAM,
                           do_option, (void*)&gain_15, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band15_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[15].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_16, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_16,
+                          do_option, (void*)&gain_16, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band16_cutoff, NULL, Icon_NOICON);
-MENUITEM_FUNCTION_DYNTEXT(gain_item_17, MENU_FUNC_USEPARAM,                                                                                      
-                          do_option, (void*)&gain_17,                                                                                            
-                          gainitem_get_name, gainitem_speak_item,                                                                               
-                          &global_settings.eq_band17_cutoff, NULL, Icon_NOICON);                                                                 
-MENUITEM_FUNCTION_DYNTEXT(gain_item_18, MENU_FUNC_USEPARAM,                                                                                      
-                          do_option, (void*)&gain_18,                                                                                            
-                          gainitem_get_name, gainitem_speak_item,                                                                               
-                          &global_settings.eq_band18_cutoff, NULL, Icon_NOICON);                                                                 
-MENUITEM_FUNCTION_DYNTEXT(gain_item_19, MENU_FUNC_USEPARAM,                                                                                      
-                          do_option, (void*)&gain_19,                                                                                            
-                          gainitem_get_name, gainitem_speak_item,                                                                               
-                          &global_settings.eq_band19_cutoff, NULL, Icon_NOICON);                                                                 
+                          &global_settings.eq_band_settings[16].cutoff,
+                          NULL, Icon_NOICON);
+MENUITEM_FUNCTION_DYNTEXT(gain_item_17, MENU_FUNC_USEPARAM,
+                          do_option, (void*)&gain_17, 
+                          gainitem_get_name, gainitem_speak_item,
+                          &global_settings.eq_band_settings[17].cutoff,
+                          NULL, Icon_NOICON);
+MENUITEM_FUNCTION_DYNTEXT(gain_item_18, MENU_FUNC_USEPARAM,
+                          do_option, (void*)&gain_18, 
+                          gainitem_get_name, gainitem_speak_item,
+                          &global_settings.eq_band_settings[18].cutoff,
+                          NULL, Icon_NOICON);
+MENUITEM_FUNCTION_DYNTEXT(gain_item_19, MENU_FUNC_USEPARAM,
+                          do_option, (void*)&gain_19, 
+                          gainitem_get_name, gainitem_speak_item,
+                          &global_settings.eq_band_settings[19].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_20, MENU_FUNC_USEPARAM,
                           do_option, (void*)&gain_20, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band20_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[20].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_21, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_21,
+                          do_option, (void*)&gain_21, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band21_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[21].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_22, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_22,
+                          do_option, (void*)&gain_22, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band22_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[22].cutoff,
+                          NULL, Icon_NOICON);
 MENUITEM_FUNCTION_DYNTEXT(gain_item_23, MENU_FUNC_USEPARAM,
-                          do_option, (void*)&gain_23,
+                          do_option, (void*)&gain_23, 
                           gainitem_get_name, gainitem_speak_item,
-                          &global_settings.eq_band23_cutoff, NULL, Icon_NOICON);
+                          &global_settings.eq_band_settings[23].cutoff,
+                          NULL, Icon_NOICON);
                                                                                                                                                 
 MAKE_MENU(gain_menu, ID2P(LANG_EQUALIZER_GAIN), NULL, Icon_NOICON, &gain_item_0,                                                                
             &gain_item_1, &gain_item_2, &gain_item_3, &gain_item_4, &gain_item_5, &gain_item_6, &gain_item_7, &gain_item_8, &gain_item_9, &gain_item_10, &gain_item_11, &gain_item_12, &gain_item_13, &gain_item_14, &gain_item_15, &gain_item_16, &gain_item_17, &gain_item_18, &gain_item_19, &gain_item_20, &gain_item_21, &gain_item_22, &gain_item_23);      
@@ -577,15 +672,14 @@ static void draw_eq_sliders(struct screen * screen, int x, int y,
                             int nb_eq_sliders, int start_item,
                             int current_band, enum eq_slider_mode mode)
 {
-    int i, gain, q, cutoff;
     int height = y;
-    int *setting = &global_settings.eq_band0_cutoff;
 
     start_item = MIN(start_item, 24-nb_eq_sliders);
-    for (i=0; i<24; i++) {
-        cutoff = *setting++;
-        q = *setting++;
-        gain = *setting++;
+    for (int i = 0; i < 24; i++) {
+        struct eq_band_setting *setting = &global_settings.eq_band_settings[i];
+        int cutoff = setting->cutoff;
+        int q      = setting->q;
+        int gain   = setting->gain;
 
         if (i == start_item + nb_eq_sliders)
             break;
@@ -663,8 +757,7 @@ bool eq_menu_graphical(void)
             /* Set pointer to the band data currently editable */
             if (mode == GAIN) {
                 /* gain */
-                setting = &global_settings.eq_band0_gain;
-                setting += current_band * 3;
+                setting = &global_settings.eq_band_settings[current_band].gain;
 
                 step = EQ_GAIN_STEP;
                 fast_step = EQ_GAIN_FAST_STEP;
@@ -677,8 +770,7 @@ bool eq_menu_graphical(void)
                 screens[i].putsxy(0, 0, buf);
             } else if (mode == CUTOFF) {
                 /* cutoff */
-                setting = &global_settings.eq_band0_cutoff;
-                setting += current_band * 3;
+                setting = &global_settings.eq_band_settings[current_band].cutoff;
 
                 step = EQ_CUTOFF_STEP;
                 fast_step = EQ_CUTOFF_FAST_STEP;
@@ -691,8 +783,7 @@ bool eq_menu_graphical(void)
                 screens[i].putsxy(0, 0, buf);
             } else {
                 /* Q */
-                setting = &global_settings.eq_band0_q;
-                setting += current_band * 3;
+                setting = &global_settings.eq_band_settings[current_band].q;
 
                 step = EQ_Q_STEP;
                 fast_step = EQ_Q_FAST_STEP;
@@ -830,30 +921,30 @@ static bool eq_save_preset(void)
 /* Allows browsing of preset files */
 static void eq_reset_gain(void)
 {
-    global_settings.eq_band0_gain = 0;
-    global_settings.eq_band1_gain = 0;
-    global_settings.eq_band2_gain = 0;
-    global_settings.eq_band3_gain = 0;
-    global_settings.eq_band4_gain = 0;
-    global_settings.eq_band5_gain = 0;
-    global_settings.eq_band6_gain = 0;
-    global_settings.eq_band7_gain = 0;
-    global_settings.eq_band8_gain = 0;
-    global_settings.eq_band9_gain = 0;
-    global_settings.eq_band10_gain = 0;
-    global_settings.eq_band11_gain = 0;
-    global_settings.eq_band12_gain = 0;
-    global_settings.eq_band13_gain = 0;
-    global_settings.eq_band14_gain = 0;
-    global_settings.eq_band15_gain = 0;
-    global_settings.eq_band16_gain = 0;
-    global_settings.eq_band17_gain = 0;
-    global_settings.eq_band18_gain = 0;
-    global_settings.eq_band19_gain = 0;
-    global_settings.eq_band20_gain = 0;
-    global_settings.eq_band21_gain = 0;
-    global_settings.eq_band22_gain = 0;
-    global_settings.eq_band23_gain = 0;
+    global_settings.eq_band_settings[0].gain = 0;
+    global_settings.eq_band_settings[1].gain = 0;
+    global_settings.eq_band_settings[2].gain = 0;
+    global_settings.eq_band_settings[3].gain = 0;
+    global_settings.eq_band_settings[4].gain = 0;
+    global_settings.eq_band_settings[5].gain = 0;
+    global_settings.eq_band_settings[6].gain = 0;
+    global_settings.eq_band_settings[7].gain = 0;
+    global_settings.eq_band_settings[8].gain = 0;
+    global_settings.eq_band_settings[9].gain = 0;
+    global_settings.eq_band_settings[10].gain = 0;
+    global_settings.eq_band_settings[11].gain = 0;
+    global_settings.eq_band_settings[12].gain = 0;
+    global_settings.eq_band_settings[13].gain = 0;
+    global_settings.eq_band_settings[14].gain = 0;
+    global_settings.eq_band_settings[15].gain = 0;
+    global_settings.eq_band_settings[16].gain = 0;
+    global_settings.eq_band_settings[17].gain = 0;
+    global_settings.eq_band_settings[18].gain = 0;
+    global_settings.eq_band_settings[19].gain = 0;
+    global_settings.eq_band_settings[20].gain = 0;
+    global_settings.eq_band_settings[21].gain = 0;
+    global_settings.eq_band_settings[22].gain = 0;
+    global_settings.eq_band_settings[23].gain = 0;
     return eq_apply();
 }
 

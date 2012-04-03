@@ -14,12 +14,12 @@ OTHER_SRC += $(CODECS_SRC)
 CODECS := $(CODECS_SRC:.c=.codec)
 CODECS := $(subst $(ROOTDIR),$(BUILDDIR),$(CODECS))
 
-# TLSF memory allocator library
-include $(APPSDIR)/codecs/lib/tlsf/libtlsf.make
-
 # the codec helper library
 include $(APPSDIR)/codecs/lib/libcodec.make
 OTHER_INC += -I$(APPSDIR)/codecs/lib
+
+# extra libraries
+CODEC_LIBS := $(EXTRA_LIBS) $(CODECLIB)
 
 # the codec libraries
 include $(APPSDIR)/codecs/demac/libdemac.make
@@ -88,7 +88,7 @@ $(WMAPROLIB) : CODECFLAGS += -O1
 $(WMAVOICELIB) : CODECFLAGS += -O1
 
 # fine-tuning of CODECFLAGS per cpu arch
-ifeq ($(ARCH),arm)
+ifeq ($(ARCH),arch_arm)
   # redo per arm generation
   $(ALACLIB) : CODECFLAGS += -O2
   $(AYLIB) : CODECFLAGS +=  -O1
@@ -100,7 +100,7 @@ ifeq ($(ARCH),arm)
   $(VGMLIB) : CODECFLAGS +=  -O1
   $(EMU2413LIB) : CODECFLAGS +=  -O3
   $(WAVPACKLIB) : CODECFLAGS += -O3
-else ifeq ($(ARCH),m68k)
+else ifeq ($(ARCH),arch_m68k)
   $(A52LIB) : CODECFLAGS += -O2
   $(ASFLIB) : CODECFLAGS += -O3
   $(ATRACLIB) : CODECFLAGS += -O2
@@ -135,7 +135,7 @@ $(CODECDIR)/spc.codec : $(CODECDIR)/libspc.a
 $(CODECDIR)/mpa.codec : $(CODECDIR)/libmad.a
 $(CODECDIR)/a52.codec : $(CODECDIR)/liba52.a
 $(CODECDIR)/flac.codec : $(CODECDIR)/libffmpegFLAC.a
-$(CODECDIR)/vorbis.codec : $(CODECDIR)/libtremor.a $(TLSFLIB)
+$(CODECDIR)/vorbis.codec : $(CODECDIR)/libtremor.a
 $(CODECDIR)/speex.codec : $(CODECDIR)/libspeex.a
 $(CODECDIR)/mpc.codec : $(CODECDIR)/libmusepack.a
 $(CODECDIR)/wavpack.codec : $(CODECDIR)/libwavpack.a
@@ -168,10 +168,7 @@ $(CODECDIR)/sgc.codec : $(CODECDIR)/libsgc.a $(CODECDIR)/libemu2413.a
 $(CODECDIR)/vgm.codec : $(CODECDIR)/libvgm.a $(CODECDIR)/libemu2413.a
 $(CODECDIR)/kss.codec : $(CODECDIR)/libkss.a $(CODECDIR)/libemu2413.a
 
-$(CODECS): $(CODECLIB) # this must be last in codec dependency list
-
-# libfaad and libmusepack both contain a huffman.h file, with different
-# content. So we compile them with special command lines:
+$(CODECS): $(CODEC_LIBS) # this must be last in codec dependency list
 
 # pattern rule for compiling codecs
 $(CODECDIR)/%.o: $(ROOTDIR)/apps/codecs/%.c
@@ -194,14 +191,13 @@ else
 endif
 CODECLDFLAGS += $(GLOBAL_LDOPTS)
 
-$(CODECDIR)/%-pre.map: $(CODEC_CRT0) $(CODECLINK_LDS) $(CODECDIR)/%.o $(CODECLIB)
+$(CODECDIR)/%-pre.map: $(CODEC_CRT0) $(CODECLINK_LDS) $(CODECDIR)/%.o $(CODECS_LIBS)
 	$(call PRINTS,LD $(@F))$(CC) $(CODECFLAGS) -o $(CODECDIR)/$*-pre.elf \
 		$(filter %.o, $^) \
-		$(filter-out $(CODECLIB),$(filter %.a, $+)) \
-		$(CODECLIB) \
+		$(filter-out $(CODECLIB),$(filter %.a, $+)) $(CODECLIB) \
 		-lgcc $(subst .map,-pre.map,$(CODECLDFLAGS))
 
-$(CODECDIR)/%.codec: $(CODECDIR)/%.o $(LIBSETJMP) $(LIBARMSUPPORT)
+$(CODECDIR)/%.codec: $(CODECDIR)/%.o
 	$(call PRINTS,LD $(@F))$(CC) $(CODECFLAGS) -o $(CODECDIR)/$*.elf \
 		$(filter %.o, $^) \
 		$(filter %.a, $+) \

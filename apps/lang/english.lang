@@ -12962,7 +12962,7 @@
 </phrase>
 <phrase>
   id: LANG_SLEEP_TIMER_DURATION
-  desc: default sleep timer duration in minutes (unused in UI)
+  desc: default sleep timer duration in minutes
   user: core
   <source>
     *: "Default Sleep Timer Duration"
@@ -13180,6 +13180,51 @@
   </dest>
   <voice>
     *: "Restart Sleep Timer On Keypress"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CONSTRAIN_NEXT_FOLDER
+  desc: in settings_menu. Whether LANG_NEXT_FOLDER should be constrained to directories within LANG_SET_AS_START_DIR
+  user: core
+  <source>
+    *: "Constrain Auto-Change"
+  </source>
+  <dest>
+    *: "Constrain Auto-Change"
+  </dest>
+  <voice>
+    *: "Constrain Auto-Change"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_USE_SHORTCUTS_INSTEAD_OF_QS
+  desc: in settings_menu.
+  user: core
+  <source>
+    *: none
+    quickscreen: "Use Shortcuts Menu Instead of Quick Screen"
+  </source>
+  <dest>
+    *: none
+    quickscreen: "Use Shortcuts Menu Instead of Quick Screen"
+  </dest>
+  <voice>
+    *: none
+    quickscreen: "Use Shortcuts Menu Instead of Quick Screen"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SLEEP_TIMER_START_CURRENT
+  desc: shown when a sleep timer isn't running
+  user: core
+  <source>
+    *: "Start Sleep Timer"
+  </source>
+  <dest>
+    *: "Start Sleep Timer"
+  </dest>
+  <voice>
+    *: "Start Sleep Timer"
   </voice>
 </phrase>
 <phrase>

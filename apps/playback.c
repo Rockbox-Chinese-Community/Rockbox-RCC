@@ -855,7 +855,8 @@ static int shrink_callback(int handle, unsigned hints, void* start, size_t old_s
 
     /* TODO: Do it without stopping playback, if possible */
     long offset = audio_current_track()->offset;
-    bool playing = (audio_status() & AUDIO_STATUS_PLAY) == AUDIO_STATUS_PLAY;
+    /* resume if playing */
+    bool playing = (audio_status() == AUDIO_STATUS_PLAY);
     /* There's one problem with stoping and resuming: If it happens in a too
      * frequent fashion, the codecs lose the resume postion and playback
      * begins from the beginning.
@@ -2644,8 +2645,17 @@ static void audio_on_skip(void)
     skip_pending = TRACK_SKIP_NONE;
 
     /* Update the playlist current track now */
-    while (playlist_next(playlist_delta) < 0)
+    int pl_retval;
+    while ((pl_retval = playlist_next(playlist_delta)) < 0)
     {
+        if (pl_retval < -1)
+        {
+            /* Some variety of fatal error while updating playlist */
+            filling = STATE_ENDED;
+            audio_stop_playback();
+            return;
+        }
+
         /* Manual skip out of range (because the playlist wasn't updated
            yet by us and so the check in audio_skip returned 'ok') - bring
            back into range */

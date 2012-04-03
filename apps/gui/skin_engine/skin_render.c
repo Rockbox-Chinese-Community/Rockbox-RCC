@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core_alloc.h"
 #include "kernel.h"
+#include "appevents.h"
 #ifdef HAVE_ALBUMART
 #include "albumart.h"
 #endif
@@ -176,8 +177,33 @@ static bool do_non_text_tags(struct gui_wps *gwps, struct skin_draw_info *info,
             if (do_refresh)
                 draw_peakmeters(gwps, info->line_number, vp);
             break;
+        case SKIN_TOKEN_DRAWRECTANGLE:
+            if (do_refresh)
+            {
+                struct draw_rectangle *rect =
+                        SKINOFFSETTOPTR(skin_buffer, token->value.data);
+#ifdef HAVE_LCD_COLOR
+                if (rect->start_colour != rect->end_colour &&
+                        gwps->display->screen_type == SCREEN_MAIN)
+                {
+                    gwps->display->gradient_fillrect(rect->x, rect->y, rect->width,
+                            rect->height, rect->start_colour, rect->end_colour);
+                }
+                else
 #endif
-#ifdef HAVE_LCD_BITMAP
+                {
+#if LCD_DEPTH > 1
+                    unsigned backup = vp->fg_pattern;
+                    vp->fg_pattern = rect->start_colour;
+#endif
+                    gwps->display->fillrect(rect->x, rect->y, rect->width,
+                            rect->height);
+#if LCD_DEPTH > 1
+                    vp->fg_pattern = backup;
+#endif
+                }
+            }
+            break;
         case SKIN_TOKEN_PEAKMETER_LEFTBAR:
         case SKIN_TOKEN_PEAKMETER_RIGHTBAR:
             data->peak_meter_enabled = true;
@@ -754,7 +780,7 @@ void skin_render_viewport(struct skin_element* viewport, struct gui_wps *gwps,
         /* only update if the line needs to be, and there is something to write */
         if (refresh_type && needs_update)
         {
-            if (!info.force_redraw)
+            if (info.force_redraw)
                 display->scroll_stop_line(&skin_viewport->vp, info.line_number);
             write_line(display, align, info.line_number,
                     info.line_scrolls, info.text_style);
@@ -859,6 +885,13 @@ void skin_render(struct gui_wps *gwps, unsigned refresh_mode)
     display->set_framebuffer(NULL);
     skin_backdrop_show(data->backdrop_id);
 #endif
+
+    if (((refresh_mode&SKIN_REFRESH_ALL) == SKIN_REFRESH_ALL))
+    {
+        /* If this is the UI viewport then let the UI know
+         * to redraw itself */
+        send_event(GUI_EVENT_NEED_UI_UPDATE, NULL);
+    }
     /* Restore the default viewport */
     display->set_viewport(NULL);
     display->update();

@@ -347,33 +347,12 @@ struct user_settings
     bool eq_enabled;            /* Enable equalizer */
     unsigned int eq_precut;     /* dB */
 
-    /* Order is important here, must be cutoff, q, then gain for each band.
-       See dsp_set_eq_coefs in dsp.c for why. */
-
-    /* Band 0 settings */
-    int eq_band0_cutoff;        /* Hz */
-    int eq_band0_q;
-    int eq_band0_gain;          /* +/- dB */
-
-    /* Band 1 settings */
-    int eq_band1_cutoff;        /* Hz */
-    int eq_band1_q;
-    int eq_band1_gain;          /* +/- dB */
-
-    /* Band 2 settings */
-    int eq_band2_cutoff;        /* Hz */
-    int eq_band2_q;
-    int eq_band2_gain;          /* +/- dB */
-
-    /* Band 3 settings */
-    int eq_band3_cutoff;        /* Hz */
-    int eq_band3_q;
-    int eq_band3_gain;          /* +/- dB */
-
-    /* Band 4 settings */
-    int eq_band4_cutoff;        /* Hz */
-    int eq_band4_q;
-    int eq_band4_gain;          /* +/- dB */
+    struct eq_band_setting
+    {
+        int cutoff;        /* Hz */
+        int q;
+        int gain;          /* +/- dB */
+    } eq_band_settings[5];
 
     /* Band 5 settings */
     int eq_band5_cutoff;        /* Hz */
@@ -717,6 +696,8 @@ struct user_settings
     /* playlist/playback settings */
     int  repeat_mode; /* 0=off 1=repeat all 2=repeat one 3=shuffle 4=ab */
     int  next_folder; /* move to next folder */
+    bool constrain_next_folder; /* whether next_folder is constrained to
+                                   directories within start_directory */
     int  recursive_dir_insert; /* should directories be inserted recursively */
     bool fade_on_stop; /* fade on pause/unpause/stop */
     bool playlist_shuffle;
@@ -950,8 +931,11 @@ struct user_settings
 #endif
 
     char start_directory[MAX_PATHNAME+1];
-    /* status setting for the root menu customisability. 0 = default, 1 = loaded from cfg */
-    int root_menu;
+    /* Has the root been customized from the .cfg file? false = no, true = loaded from cfg */
+    bool root_menu_customized;
+#ifdef HAVE_QUICKSCREEN
+    bool shortcuts_replaces_qs;
+#endif
 };
 
 /** global variables **/

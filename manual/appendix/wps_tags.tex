@@ -100,6 +100,13 @@ show the information for the next song to be played.
       \config{\%Fl('id',filename)} & See section \ref{ref:multifont}.\\
     \end{tagmap}
 
+  \section{Misc Coloring Tags}
+    \begin{tagmap}
+      \config{\%dr(x,y,width,height,[color1,color2])} & Color a rectangle. \\
+    \end{tagmap}
+      width and height can be - to fill the viewport. If no color is
+      specified the viewports foreground color will be used. If two
+      colors are specified it will do a gradient fill.
 }
 
 \section{Power Related Information}
@@ -275,7 +282,7 @@ Example: \config{\%?mp<Stop|Play|Pause|Ffwd|Rew|Rec|Rec pause|FM|FM pause>}
 
 \section{Current Screen}
   \begin{tagmap}
-    \config{\%cs} & The current screen, 1-18, in the order shown below\\
+    \config{\%cs} & The current screen, 1-20, in the order shown below\\
   \end{tagmap}
 
 \begin{table}
@@ -300,6 +307,7 @@ Example: \config{\%?mp<Stop|Play|Pause|Ffwd|Rew|Rec|Rec pause|FM|FM pause>}
     17 & Time and Date Screen \\
     18 & Bookmark browser \\
     19 & Shortcuts menu \\
+    20 & Track Info screen \\
   \end{rbtabular}
 \end{table}
 
@@ -381,7 +389,7 @@ Examples:
           \config{filename}: file name relative to \fname{/.rockbox/} and including ``.bmp''\newline
             If the filename is ``\_\_list\_icons\_\_'' the list icon bitmap will be used instead\newline
           \config{x}: x coordinate (defaults to 0 if both x and y are not specified)\newline
-          \config{y}: y coordinate. (defaults to 0 if both x and y are not specified)\\
+          \config{y}: y coordinate. (defaults to 0 if both x and y are not specified)\newline
           \config{nimages}: (optional) number of sub-images (tiled vertically, of the same height)
           contained in the bitmap. Default is 1.\\
     \config{\%xd(n[i] [,tag] [,offset])} & Display a preloaded image.
@@ -649,6 +657,7 @@ display cycling round the defined sublines. See
   Possible actions are:
 
   \begin{description}
+    \item[none] -- Do nothing.
     \item[play] -- Play/pause playback.
     \item[stop] -- Stop playback and exit the WPS.
     \item[prev] -- Previous track/item.
@@ -657,31 +666,40 @@ display cycling round the defined sublines. See
     \item[wps\_next] -- Next track.
     \item[ffwd] -- Seek forwards in the track.
     \item[rwd] -- Seek backwards in the track.
-    \item[menu] -- Go to the main menu.
-    \item[browse] -- Go back to the file browser or database.
+    \item[progressbar] -- Seek to the appropriate position in the track based on the touch.
     \item[shuffle] -- Toggle shuffle mode.
     \item[repmode] -- Cycle through the repeat modes.
-    \item[quickscreen] -- Go to the quickscreen.
-    \item[contextmenu] -- Open the context menu.
-    \item[playlist] -- Go to the playlist viewer.
-    \item[progressbar] -- Seek to the appropriate position in the track based on the touch.
     \item[volume] -- Set the volume to the appropriate level based on the touch.
-    \item[pitch] -- Open the pitchscreen.
     \item[voldown] -- Decrease the volume by one step.
     \item[volup] -- Increase the volume by one step.
     \item[mute] -- Un/Mute playback.
+    \item[createbookmark] -- Create a bookmark in the currently-playing track.
+    \item[hotkey] -- Performs the action assigned to the hotkey (see Hotkeys section).
+    \item[menu] -- Go to the main menu.
+    \item[browse] -- Go back to the file browser or database.
+    \item[resumeplayback] -- Go back to the last music screen (WPS or radio screen).
+    \item[quickscreen] -- Go to the quickscreen.
+    \item[contextmenu] -- Open the context menu.
+    \item[playlist] -- Go to the playlist viewer.
+    \item[listbookmarks] -- List the bookmarks for the currently-playing directory or playlist.
+    \item[trackinfo] -- Open the track info viewer.
+    \item[pitch] -- Open the pitchscreen.
     \item[setting\_inc] -- Increment the subsequently specified setting (e.g
-      \config{\%T(0,0, setting\_inc, volume)} increases the volume by one step).
+      \config{\%T(0,0,32,32, setting\_inc, volume)} increases the volume by one step).
     \item[setting\_dec] -- Decrement the subsequently specified setting (e.g
-      \config{\%T(0,0, setting\_dec, volume)} decreases the volume by one step).
+      \config{\%T(0,0,32,32, setting\_dec, volume)} decreases the volume by one step).
+    \item[setting\_set] -- Set the subsequently specified setting to a specific value (e.g
+      \config{\%T(0,0,32,32, setting\_set, volume, 0)} sets the volume to 0).
+    \item[lock] -- Soft locks the touchscreen.  All touch areas are disabled except for
+        areas with the lock action or ones that have the allow_while_locked option (see below).
   \end{description}
   Any (or muliple) of the following options can be used after the action is specified
   \subsection{Options}
   \begin{description}
-    \item[repeat_press] -- This region will trigger mulitple times when held (i.e for seeking)
-    \item[long_press] -- This region will trigger once after it is held for a long press
-    \item[reverse_bar] -- Reverse the bars touch direction (i.e seek right to left)
-    \item[allow_while_locked] -- Allows the region to be pressable when the 
+    \item[repeat\_press] -- This area will trigger mulitple times when held (i.e for seeking)
+    \item[long\_press] -- This area will trigger once after it is held for a long press
+    \item[reverse\_bar] -- Reverse the bars touch direction (i.e seek right to left)
+    \item[allow\_while\_locked] -- Allows the area to be pressable when the
         skin is locked by the lock touch action
   \end{description}
 
@@ -748,7 +766,7 @@ a horizontal progressbar which doesn't fill and draws the image
 \end{tagmap}
     Use this tag to get a substring from another tag.
 \begin{description}
-    \item[start] -- first character to take (0 being the start of the string)
+    \item[start] -- first character to take (0 being the start of the string, negative means from the end of the string)
     \item[length] -- length of the substring to return (- for the rest of the string)
     \item[tag] -- tag to get
     \item[number] -- OPTIONAL. if this is present it will assume the

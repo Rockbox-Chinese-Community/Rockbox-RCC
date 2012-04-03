@@ -113,7 +113,7 @@ $releasenotes="/wiki/ReleaseNotes310";
     },
     'ipodnano2g' => {
         name => 'iPod Nano 2nd gen',
-        status => 3,
+        status => 2,
     },
     'ipodvideo' => {
         name => 'iPod Video',
@@ -223,7 +223,7 @@ $releasenotes="/wiki/ReleaseNotes310";
     },
     'sansac200v2' => {
         name => 'SanDisk Sansa c200 v2',
-        status => 2,
+        status => 3,
         icon => 'sansac200',
     },
     'sansaclip' => {
@@ -304,7 +304,7 @@ $releasenotes="/wiki/ReleaseNotes310";
     },
     'mpiohd300' => {
         name => 'MPIO HD300',
-        status => 2,
+        status => 3,
     },
 );
 
