@@ -12895,6 +12895,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_SLEEP_TIMER_START_CURRENT
+  desc: shown when a sleep timer isn't running
+  user: core
+  <source>
+    *: "Start Sleep Timer"
+  </source>
+  <dest>
+    *: "开始睡眠定时"
+  </dest>
+  <voice>
+    *: "开始睡眠定时器的计时"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_ID3_PLAYCOUNT
   desc: in tag viewer
   user: core
