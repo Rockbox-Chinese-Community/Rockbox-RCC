@@ -106,6 +106,7 @@ else ifeq ($(ARCH),arch_m68k)
   $(ATRACLIB) : CODECFLAGS += -O2
   $(COOKLIB): CODECFLAGS += -O2
   $(DEMACLIB) : CODECFLAGS += -O2
+  $(SPCLIB) : CODECFLAGS +=  -O3
   $(WMAPROLIB) : CODECFLAGS += -O3
   $(WMAVOICELIB) : CODECFLAGS += -O2
 endif
@@ -202,10 +203,4 @@ $(CODECDIR)/%.codec: $(CODECDIR)/%.o
 		$(filter %.o, $^) \
 		$(filter %.a, $+) \
 		-lgcc $(CODECLDFLAGS)
-ifndef APP_TYPE
-	$(SILENT)$(OC) -O binary $(CODECDIR)/$*.elf $@ # objcopy native
-else ifeq (,$(findstring sdl-sim,$(APP_TYPE)))
-	$(SILENT)$(OC) -S -x $(CODECDIR)/$*.elf $@	   # objcopy hosted
-else
-	$(SILENT)cp $(CODECDIR)/$*.elf $@			   # no objcopy, keep debug symbols
-endif
+	$(SILENT)$(call objcopy,$(CODECDIR)/$*.elf,$@)
