@@ -42,14 +42,14 @@
 _vectors:
 
 #if defined(SHORT_VECTORS) /* Use relative branch vectors (64 MB limit) */
-   b        _start                  /* Reset Vector            */
-   b        _undefined_instruction  /* Undefined instruction   */
-   b        _software_interrupt     /* Software Vector         */
-   b        _prefetch_abort         /* Prefetch Abort          */
-   b        _data_abort             /* Data Abort              */
-   b        _dead_loop              /* Reserved/Unused         */
-   b        irq_handler             /* IRQ vector              */
-   b        fiq_handler             /* FIQ vector              */
+   b        _start                    /* Reset Vector            */
+   b        undef_instr_handler       /* Undefined instruction   */
+   b        software_int_handler      /* Software Vector         */
+   b        prefetch_abort_handler    /* Prefetch Abort          */
+   b        data_abort_handler        /* Data Abort              */
+   b        reserved_handler          /* Reserved/Unused         */
+   b        irq_handler               /* IRQ vector              */
+   b        fiq_handler               /* FIQ vector              */
 #else
 #if defined(LONG_VECTORS)
    /* Load the PC with the word values stored below */
@@ -64,11 +64,11 @@ _vectors:
    
    /* Addresses of the handlers */
    .word    _start
-   .word    _undefined_instruction
-   .word    _software_interrupt
-   .word    _prefetch_abort
-   .word    _data_abort
-   .word    _dead_loop
+   .word    undef_instr_handler
+   .word    software_int_handler
+   .word    prefetch_abort_handler
+   .word    data_abort_handler
+   .word    reserved_handler
    .word    irq_handler
    .word    fiq_handler
 #else
@@ -290,51 +290,6 @@ _delay_cycles:
     bx      lr
 .ltorg  
 .size       _delay_cycles, .-_delay_cycles
-
-/******************************************************************************
- *  Unused exception vectors.  These call the UIE function.                   *
- *  Arguements are:                                                           *
- *      r0: PC of exception                                                   *
- *      r1: Exception number.                                                 *
- *  Exception numbers are as defined:                                         *
- *      0: Undefined Instruction                                              *
- *      1: Prefetch Abort                                                     *
- *      2: Data Abort                                                         *
- *      3: DIV0                                                               *
- *      4: SWI                                                                *
- *  The exceptions return operations are documented in section A2.6 of the    *
- *  ARM Architecture Reference Manual.                                        *
- ******************************************************************************/
-
-/* A2.6.3: Undefined Instruction Exception - LR=PC of next instruction */
-_undefined_instruction:
-    sub    r0, lr, #4
-    mov    r1, #0
-    bl     UIE
-
-/* A2.6.4: Software Interrupt exception - These should not happen in Rockbox,
- * make it illegal
- */
-_software_interrupt:
-    sub    r0, lr, #4
-    mov    r1, #4
-    bl     UIE
-
-/* A2.6.5 Prefetch Abort - This is also the BKPT instruction since this is a
- * v5 target.  Pass it on to UIE since it is not currently used.
- */
-_prefetch_abort:
-    sub    r0, lr, #4
-    mov    r1, #1
-    bl     UIE
-
-/* A2.6.6 Data Abort - There was a memory abort, can return after fixing cause
- * with the LR address.
- */
-_data_abort:
-    sub    r0, lr, #8 
-    mov    r1, #2
-    bl     UIE
 
 /******************************************************************************
  * _dead_loop: Something really unexpected happened (like a reserved          *
