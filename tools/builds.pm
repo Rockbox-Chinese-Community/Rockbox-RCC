@@ -1,8 +1,8 @@
-$publicrelease="3.11";
-$manualrelease="3.11";
-$voicerelease="3.11";
-$releasedate="March 31, 2012";
-$releasenotes="/wiki/ReleaseNotes311";
+$publicrelease="3.11.2";
+$manualrelease="3.11.2";
+$voicerelease="3.11.2";
+$releasedate="April 12, 2012";
+$releasenotes="/wiki/ReleaseNotes3112";
 
 %builds = (
     'archosav300' => {
@@ -63,6 +63,14 @@ $releasenotes="/wiki/ReleaseNotes311";
     },
     'gogearsa9200' => {
         name => 'Philips GoGear SA9200',
+        status => 2,
+    },
+    'hifimanhm60x' => {
+        name => 'HiFiMAN HM-60x',
+        status => 2,
+    },
+    'hifimanhm801' => {
+        name => 'HiFiMAN HM-801',
         status => 2,
     },
     'iaudio7' => {
@@ -191,6 +199,10 @@ $releasenotes="/wiki/ReleaseNotes311";
     },
     'ondavx777' => {
         name => 'Onda VX777',
+        status => 1,
+    },
+    'rk27generic' => {
+        name => 'Rockchip rk27xx',
         status => 1,
     },
     'samsungyh820' => {

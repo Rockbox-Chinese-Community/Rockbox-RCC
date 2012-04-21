@@ -722,7 +722,7 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
     short x, y;
     int action, adj_y, line, line_height, list_start_item;
     bool recurse;
-    static int last_y;
+    static int last_y = -1;
     
     screen = SCREEN_MAIN;
     parent = list->parent[screen];
@@ -732,10 +732,6 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
     action = action_get_touchscreen_press(&x, &y);
     adj_y = y - parent->y;
 
-    /* selection needs to be corrected if items are only partially visible */
-    line = (adj_y - y_offset) / line_height;
-    if (list_display_title(list, screen))
-        line -= 1; /* adjust for the list title */
 
     /* some defaults before running the state machine */
     recurse = false;
@@ -745,9 +741,7 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
     {
         case SCROLL_NONE:
         {
-            list->selected_item = list_start_item+line;
-            gui_synclist_speak_item(list);
-            if (!last_y)
+            if (last_y == -1)
             {   /* first run. register adj_y and re-run (will then take the else case) */
                 last_y = adj_y;
                 recurse = true;
@@ -755,6 +749,16 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
             else
             {
                 int click_loc = get_click_location(list, x, y);
+                line = 0; /* silence gcc 'used uninitialized' warning */
+                if (click_loc & LIST)
+                {
+                    /* selection needs to be corrected if items are only partially visible */
+                    line = (adj_y - y_offset) / line_height;
+                    if (list_display_title(list, screen))
+                        line -= 1; /* adjust for the list title */
+                    list->selected_item = list_start_item+line;
+                    gui_synclist_speak_item(list);
+                }
                 if (action == BUTTON_TOUCHSCREEN)
                 {
                     /* if not scrolling, the user is trying to select */
@@ -764,7 +768,8 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
                     else if (click_loc & SCROLLBAR)
                         scroll_mode = SCROLL_BAR;
 
-                    hide_selection = click_loc & SCROLLBAR;
+                    /* only show selection bar if clicking the list */
+                    hide_selection = click_loc & (SCROLLBAR|TITLE);
                 }
                 else if (action == BUTTON_REPEAT)
                 {
@@ -774,13 +779,13 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
                         gui_synclist_select_item(list, list_start_item + line);
                         /* don't sent context repeatedly */
                         action_wait_for_release();
-                        last_y = 0;
+                        last_y = -1;
                         return ACTION_STD_CONTEXT;
                     }
                 }
                 else if (action & BUTTON_REL)
                 {
-                    last_y = 0;
+                    last_y = -1;
                     if (click_loc & LIST)
                     {   /* release on list item enters it */
                         gui_synclist_select_item(list, list_start_item + line);
@@ -819,7 +824,7 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
                 scroll_mode = SCROLL_NONE;
 
             if (scroll_mode == SCROLL_NONE)
-                last_y = 0;
+                last_y = -1;
             break;
         }
         case SCROLL_KINETIC:
@@ -830,7 +835,10 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
             if (!is_kinetic_over())
             {   /* a) the user touched the screen (manual cancellation) */
                 kinetic_force_stop();
-                scroll_mode = SCROLL_SWIPE;
+                if (get_click_location(list, x, y) & SCROLLBAR)
+                    scroll_mode = SCROLL_BAR;
+                else
+                    scroll_mode = SCROLL_SWIPE;
             }
             else
             {   /* b) kinetic scrolling stopped on its own */
@@ -852,8 +860,8 @@ unsigned gui_synclist_do_touchscreen(struct gui_synclist * list)
         }
     }
 
-    /* register y position unless forcefully reset to 0 */
-    if (last_y)
+    /* register y position unless forcefully reset to 1- */
+    if (last_y >= 0)
         last_y = adj_y;
 
     return recurse ? gui_synclist_do_touchscreen(list) : ACTION_REDRAW;

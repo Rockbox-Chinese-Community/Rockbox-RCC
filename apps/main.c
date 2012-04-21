@@ -373,6 +373,9 @@ static void init(void)
 #ifdef DEBUG
     debug_init();
 #endif
+#if CONFIG_TUNER
+    radio_init();
+#endif
     /* Keep the order of this 3 (viewportmanager handles statusbars)
      * Must be done before any code uses the multi-screen API */
     gui_syncstatusbar_init(&statusbars);
@@ -389,7 +392,6 @@ static void init(void)
 #ifdef HAVE_TAGCACHE
     init_tagcache();
 #endif
-    sleep(HZ/2);
     tree_mem_init();
     filetype_init();
     playlist_init();

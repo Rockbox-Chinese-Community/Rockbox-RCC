@@ -349,6 +349,18 @@
 #define LABEL_MENU   "Menu"
 #define LABEL_VOLUME "Up/Down"
 
+#elif (CONFIG_KEYPAD == HM60X_PAD) || \
+    (CONFIG_KEYPAD == HM801_PAD)
+#define VUMETER_QUIT       BUTTON_POWER
+#define VUMETER_HELP       BUTTON_RIGHT
+#define VUMETER_MENU       BUTTON_LEFT
+#define VUMETER_UP         BUTTON_UP
+#define VUMETER_DOWN       BUTTON_DOWN
+#define LABEL_HELP "RIGHT"
+#define LABEL_QUIT "POWER"
+#define LABEL_MENU "LEFT"
+#define LABEL_VOLUME "UP/DOWN"
+
 #else
 /*#error No keymap defined!*/
 #endif
