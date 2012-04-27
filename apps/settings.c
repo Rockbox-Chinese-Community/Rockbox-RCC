@@ -781,9 +781,6 @@ void settings_apply(bool read_disk)
 #ifdef HAVE_LCD_BITMAP
     int rc;
 #endif
-#if CONFIG_CODEC == SWCODEC
-    int i;
-#endif
     sound_settings_apply();
 
 #ifdef HAVE_DISK_STORAGE
@@ -996,8 +993,11 @@ void settings_apply(bool read_disk)
     /* Configure software equalizer, hardware eq is handled in audio_init() */
     dsp_set_eq(global_settings.eq_enabled);
     dsp_set_eq_precut(global_settings.eq_precut);
-    for(i = 0; i < 24; i++) {
-        dsp_set_eq_coefs(i);
+
+    for(int i = 0; i < 24; i++) {
+        dsp_set_eq_coefs(i, global_settings.eq_band_settings[i].cutoff,
+                         global_settings.eq_band_settings[i].q,
+                         global_settings.eq_band_settings[i].gain);
     }
 
     dsp_dither_enable(global_settings.dithering_enabled);
@@ -1006,7 +1006,7 @@ void settings_apply(bool read_disk)
 #ifdef HAVE_PITCHSCREEN
     dsp_timestretch_enable(global_settings.timestretch_enabled);
 #endif
-    dsp_set_compressor();
+    dsp_set_compressor(&global_settings.compressor_settings);
 #endif
 
 #ifdef HAVE_SPDIF_POWER

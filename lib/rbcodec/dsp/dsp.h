@@ -114,7 +114,7 @@ void dsp_set_space80(bool enable);
 void dsp_set_space80_params(long decay, long freq, long gain, long mix);
 void dsp_set_eq(bool enable);
 void dsp_set_eq_precut(int precut);
-void dsp_set_eq_coefs(int band);
+void dsp_set_eq_coefs(int band, int cutoff, int q, int gain);
 void dsp_dither_enable(bool enable);
 void dsp_surround_enable(bool enable);
 void dsp_aatube_enable(bool enable);
@@ -125,6 +125,7 @@ int32_t sound_get_pitch(void);
 void dsp_set_timestretch(int32_t percent);
 int32_t dsp_get_timestretch(void);
 int dsp_callback(int msg, intptr_t param);
-void dsp_set_compressor(void);
+struct compressor_settings;
+void dsp_set_compressor(const struct compressor_settings *settings);
 
 #endif
