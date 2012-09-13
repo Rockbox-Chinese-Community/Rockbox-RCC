@@ -1,6 +1,7 @@
 /* For all targets */
 shortcuts
 text_viewer
+fft
 
 /* For various targets... */
 

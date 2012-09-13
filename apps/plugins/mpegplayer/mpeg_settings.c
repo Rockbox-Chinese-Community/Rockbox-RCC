@@ -265,7 +265,7 @@ struct mpeg_settings settings;
 #define MPEG_START_TIME_EXIT        BUTTON_POWER
 
 #else
-#error No keymap defined!
+/* #error No keymap defined! */
 #endif
 
 #ifdef HAVE_TOUCHSCREEN
