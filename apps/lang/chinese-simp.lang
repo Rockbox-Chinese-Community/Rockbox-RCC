@@ -77,6 +77,91 @@
     *: "Color of Line Separator"
 </voice>
 </phrase>
+ <phrase>
+  id: LANG_SPACE80
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Space'80 Reverb"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Space'80混响效果"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Space 80 混响效果"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_DECAY
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Decay"
+  </source>
+  <dest>
+    *: none
+    swcodec: "衰减"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "回声的衰减百分比"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_FREQ
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Frequency Compensation"
+  </source>
+  <dest>
+    *: none
+    swcodec: "频率补偿"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "频率补偿"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_GAIN
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Gain"
+  </source>
+  <dest>
+    *: none
+    swcodec: "增益"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "增益百分比"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_MIX
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Dry / Wet Mix"
+  </source>
+  <dest>
+    *: none
+    swcodec: "干湿度混合"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "干湿度混合"
+  </voice>
+</phrase>
 #------
 <phrase>
   id: LANG_SET_BOOL_YES
