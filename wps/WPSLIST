@@ -19,6 +19,10 @@
 #
 # All sections should list what font and status bar setting they "like".
 
+# Touchscreen: whether to show line separators or not
+list separator: yes
+list separator color: 808080
+
 <theme>
 Name: rockbox_default_icons
 Author: Rockbox team
