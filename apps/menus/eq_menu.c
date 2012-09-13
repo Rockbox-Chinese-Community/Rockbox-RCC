@@ -260,7 +260,7 @@ enum eq_type {
 };
 
 /* Size of just the slider/srollbar */
-#define SCROLLBAR_SIZE 6
+#define SCROLLBAR_SIZE 18
 
 /* Draw the UI for a whole EQ band */
 static int draw_eq_slider(struct screen * screen, int x, int y,
@@ -401,6 +401,11 @@ static void draw_eq_sliders(struct screen * screen, int x, int y,
 /* Provides a graphical means of editing the EQ settings */
 bool eq_menu_graphical(void)
 {
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+    touchscreen_set_mode(TOUCHSCREEN_BUTTON);
+#endif
+#endif
     bool exit_request = false;
     bool result = true;
     bool has_changed = false;
@@ -416,7 +421,7 @@ bool eq_menu_graphical(void)
 
     FOR_NB_SCREENS(i) {
         screens[i].set_viewport(NULL);
-        screens[i].setfont(FONT_SYSFIXED);
+        screens[i].setfont(FONT_UI);
         screens[i].clear_display();
 
         /* Figure out how many sliders can be drawn on the screen */
@@ -590,6 +595,11 @@ bool eq_menu_graphical(void)
         screens[i].clear_display();
         screens[i].set_viewport(NULL);
         viewportmanager_theme_undo(i, false);
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID)
+#ifdef HAVE_TOUCHSCREEN
+        touchscreen_set_mode(TOUCHSCREEN_POINT);
+#endif
+#endif
     }
     return result;
 }

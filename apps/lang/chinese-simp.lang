@@ -7751,7 +7751,7 @@
   </source>
   <dest>
     *: none
-    swcodec: "编辑模式: %s %s"
+    swcodec: "%s %s"
   </dest>
   <voice>
     *: none
