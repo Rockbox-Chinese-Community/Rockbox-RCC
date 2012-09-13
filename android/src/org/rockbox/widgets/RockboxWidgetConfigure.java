@@ -52,10 +52,10 @@ public class RockboxWidgetConfigure extends Activity
         setContentView(R.layout.appwidget_configure);
 
         ((CheckBox)findViewById(R.id.enable_aa)).setChecked(true);
-        ((CheckBox)findViewById(R.id.enable_prev)).setChecked(false);
-        ((CheckBox)findViewById(R.id.enable_stop)).setChecked(true);
+        ((CheckBox)findViewById(R.id.enable_prev)).setChecked(true);
+        ((CheckBox)findViewById(R.id.enable_stop)).setChecked(false);
         ((CheckBox)findViewById(R.id.enable_playpause)).setChecked(true);
-        ((CheckBox)findViewById(R.id.enable_next)).setChecked(false);
+        ((CheckBox)findViewById(R.id.enable_next)).setChecked(true);
 
         findViewById(R.id.confirm).setOnClickListener(mCreateWidget);
 
