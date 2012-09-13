@@ -20,6 +20,64 @@
 # - Harry Tu
 # - Jun Gu
 # - Purling Nayuki
+#ext_lang
+ <phrase>
+  id: LANG_ONPLAY_LYRICS
+  desc: Onplay snclrc/lycplayer
+  user: core
+  <source>
+    *: "Lyric"
+  </source>
+  <dest>
+    *: "Lyric"
+  </dest>
+  <voice>
+    *: "View lyrics"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_QUIT_ROCKBOX
+  desc: Quit Rockbox item in root menu
+  user: core
+  <source>
+    *: "Quit Rockbox"
+  </source>
+  <dest>
+    *: "退出"
+  </dest>
+  <voice>
+    *: "Quit Rockbox"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_SEPARATOR
+  desc: line between lines in lists
+  user: core
+  <source>
+    *: "Line Separator"
+  </source>
+  <dest>
+    *: "行分隔线"
+  </dest>
+  <voice>
+    *: "Line Separator"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_SEPARATOR_COLOR
+  desc: line between lines in lists
+  user: core
+  <source>
+    *: "Color of Line Separator"
+  </source>
+  <dest>
+    *: "行分隔线颜色"
+  </dest>
+  <voice>
+    *: "Color of Line Separator"
+</voice>
+</phrase>
+#------
 <phrase>
   id: LANG_SET_BOOL_YES
   desc: bool true representation
