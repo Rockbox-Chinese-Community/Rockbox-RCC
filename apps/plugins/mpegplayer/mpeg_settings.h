@@ -34,6 +34,7 @@ enum mpeg_audio_option_id
     MPEG_AUDIO_TONE_CONTROLS,
     MPEG_AUDIO_CHANNEL_MODES,
     MPEG_AUDIO_CROSSFEED,
+    MPEG_AUDIO_SPACE80,
     MPEG_AUDIO_EQUALIZER,
     MPEG_AUDIO_DITHERING,
 };
@@ -89,6 +90,7 @@ struct mpeg_settings {
     int tone_controls;
     int channel_modes;
     int crossfeed;
+    int space80;
     int equalizer;
     int dithering;
     /* Backlight options */

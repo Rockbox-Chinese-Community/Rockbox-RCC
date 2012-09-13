@@ -25,6 +25,7 @@
 #include "channel_mode.h"
 #include "compressor.h"
 #include "crossfeed.h"
+#include "emu10k_space80.h"
 #include "dsp_misc.h"
 #include "eq.h"
 #include "pga.h"

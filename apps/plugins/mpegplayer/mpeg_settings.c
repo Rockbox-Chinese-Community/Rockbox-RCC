@@ -313,6 +313,7 @@ static struct configdata config[] =
     {TYPE_INT, 0, 2, { .int_p = &settings.channel_modes }, "Channel modes",
      NULL},
     {TYPE_INT, 0, 2, { .int_p = &settings.crossfeed }, "Crossfeed", NULL},
+    {TYPE_INT, 0, 2, { .int_p = &settings.space80 },   "Space'80",   NULL},
     {TYPE_INT, 0, 2, { .int_p = &settings.equalizer }, "Equalizer", NULL},
     {TYPE_INT, 0, 2, { .int_p = &settings.dithering }, "Dithering", NULL},
     {TYPE_INT, 0, 2, { .int_p = &settings.play_mode }, "Play mode", NULL},
@@ -462,6 +463,11 @@ static void sync_audio_setting(int setting, bool global)
                                    CROSSFEED_TYPE_NONE);
         break;
 
+    case MPEG_AUDIO_SPACE80:
+        rb->dsp_set_space80_enable((global || settings.space80) ?
+                                   rb->global_settings->space80 :false);
+        break;
+
     case MPEG_AUDIO_EQUALIZER:
         rb->dsp_eq_enable((global || settings.equalizer) ?
                           rb->global_settings->eq_enabled : false);
@@ -482,6 +488,7 @@ static void sync_audio_settings(bool global)
         MPEG_AUDIO_TONE_CONTROLS,
         MPEG_AUDIO_CHANNEL_MODES,
         MPEG_AUDIO_CROSSFEED,
+        MPEG_AUDIO_SPACE80,
         MPEG_AUDIO_EQUALIZER,
         MPEG_AUDIO_DITHERING,
     };
@@ -1108,7 +1115,7 @@ static void audio_options(void)
 
     MENUITEM_STRINGLIST(menu, "Audio Options", mpeg_sysevent_callback,
                         "Tone Controls", "Channel Modes", "Crossfeed",
-                        "Equalizer", "Dithering");
+                        "Space'80", "Equalizer", "Dithering");
 
     rb->button_clear_queue();
 
@@ -1133,6 +1140,12 @@ static void audio_options(void)
 
         case MPEG_AUDIO_CROSSFEED:
             mpeg_set_option("Crossfeed", &settings.crossfeed, INT,
+                            globaloff, 2, NULL);
+            sync_audio_setting(result, false);
+            break;
+
+        case MPEG_AUDIO_SPACE80:
+            mpeg_set_option("Space'80", &settings.space80, INT,
                             globaloff, 2, NULL);
             sync_audio_setting(result, false);
             break;
@@ -1257,6 +1270,7 @@ void init_settings(const char* filename)
     settings.tone_controls = false;
     settings.channel_modes = false;
     settings.crossfeed = false;
+    settings.space80   = false;
     settings.equalizer = false;
     settings.dithering = false;
 

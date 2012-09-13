@@ -683,6 +683,7 @@ struct plugin_api {
     void (*audio_set_input_source)(int source, unsigned flags);
 #endif
     void (*dsp_set_crossfeed_type)(int type);
+    void (*dsp_set_space80_enable)(bool enable);
     void (*dsp_eq_enable)(bool enable);
     void (*dsp_dither_enable)(bool enable);
 #ifdef HAVE_PITCHCONTROL

@@ -6,6 +6,8 @@ metadata/mp3data.c
 dsp/channel_mode.c
 dsp/compressor.c
 dsp/crossfeed.c
+dsp/emu10k_core.c
+dsp/emu10k_space80.c
 dsp/dsp_core.c
 dsp/dsp_filter.c
 dsp/dsp_misc.c

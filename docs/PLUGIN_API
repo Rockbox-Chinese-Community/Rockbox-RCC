@@ -569,6 +569,12 @@ void dsp_set_crossfeed(bool enable)
     \param enable
     \description
 
+void dsp_set_space80(bool enable)
+    \group sound
+    \conditions (CONFIG_CODEC == SWCODEC)
+    \param enable
+    \description
+
 void dsp_set_eq(bool enable)
     \group sound
     \conditions (CONFIG_CODEC == SWCODEC)
