@@ -499,6 +499,7 @@ static struct menu_table menu_table[] = {
 #endif
     { "wps", &wps_item },
     { "settings", &menu_ }, 
+    { "shortcuts", &shortcut_menu },
 #ifdef HAVE_RECORDING
     { "recording", &rec }, 
 #endif
@@ -511,7 +512,6 @@ static struct menu_table menu_table[] = {
 #if (CONFIG_KEYPAD == PLAYER_PAD) || (CONFIG_PLATFORM&PLATFORM_ANDROID)
     { "shutdown", &do_shutdown_item },
 #endif
-    { "shortcuts", &shortcut_menu },
 };
 #define MAX_MENU_ITEMS (sizeof(menu_table) / sizeof(struct menu_table))
 static struct menu_item_ex *root_menu__[MAX_MENU_ITEMS];

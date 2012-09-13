@@ -1182,7 +1182,7 @@ static int onplaymenu_callback(int action,const struct menu_item_ex *this_item);
 MAKE_ONPLAYMENU( wps_onplay_menu, ID2P(LANG_ONPLAY_MENU_TITLE),
            onplaymenu_callback, Icon_Audio,
            &wps_playlist_menu, &cat_playlist_menu,
-           &sound_settings, &playback_settings,
+           &sound_settings, &playback_settings, &lyrics_item,
 #ifdef HAVE_TAGCACHE
            &rating_item,
 #endif
@@ -1190,7 +1190,6 @@ MAKE_ONPLAYMENU( wps_onplay_menu, ID2P(LANG_ONPLAY_MENU_TITLE),
 #ifdef HAVE_PICTUREFLOW_INTEGRATION
            &pictureflow_item,
 #endif           
-           &lyrics_item,
 	   &browse_id3_item, &list_viewers_item,
            &delete_file_item, &view_cue_item,
 #ifdef HAVE_PITCHCONTROL
