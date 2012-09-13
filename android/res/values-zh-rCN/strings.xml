@@ -1,4 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+<string name="app_name">Rockbox</string>
+<string name="notification">Rockbox</string>
+<string name="OK">确定</string>
+<string name="Cancel">取消</string>
+<string name="KbdInputTitle">Rockbox</string>
+<string name="Yes">是</string>
+<string name="No">否</string>
+<string name="error_extraction">解压过程出现错误。</string>
+<string name="rockbox_extracting">Rockbox正在加载，请等待...</string>
+
+<!-- Rockbox initial configuration values -->
 	<string name="rockbox_language_file">chinese-simp.lng</string>
+
+<!-- Widget -->
+<string name="appwidget_label_4x1">Rockbox (4X1)</string>
+<string name="appwidget_label_2x2">Rockbox (2X2)</string>
+<string name="appwidget_label_3x3">Rockbox (3X3)</string>
+<string name="appwidget_infoDisplay">轻触以播放音乐</string>
+
+<!-- Widget configuration -->
+<string name="appwidget_configure_instructions">请选择要显示的元素。</string>
+<string name="appwidget_configure_albumart">艺术家封面</string>
+<string name="appwidget_configure_prev">上一曲按钮</string>
+<string name="appwidget_configure_stop">停止按钮</string>
+<string name="appwidget_configure_playpause">播放/暂停按钮</string>
+<string name="appwidget_configure_next">下一曲按钮</string>
+<string name="appwidget_configure_confirm">创建</string>
+
 </resources>
