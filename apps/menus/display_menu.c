@@ -530,7 +530,9 @@ MENUITEM_SETTING(codepage_setting, &global_settings.default_codepage, NULL);
 
 MAKE_MENU(display_menu, ID2P(LANG_DISPLAY),
             NULL, Icon_Display_menu,
+#if CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
             &lcd_settings,
+#endif
 #ifdef HAVE_REMOTE_LCD
             &lcd_remote_settings,
 #endif
