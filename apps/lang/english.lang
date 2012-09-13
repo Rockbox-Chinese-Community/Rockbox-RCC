@@ -100,7 +100,23 @@
 # GoGear SA9200     gogearsa9200
 # Samsung
 # YH820/YH920/YH925 samsungyh*
-
+#ext_lang
+ <phrase>
+  id: LANG_ONPLAY_LYRICS
+  desc: Onplay snclrc/lycplayer
+  user: core
+  <source>
+    *: "Lyric"
+  </source>
+  <dest>
+    *: "Lyric"
+  </dest>
+  <voice>
+    *: "View lyrics"
+  </voice>
+</phrase>
+#------
+<phrase>
 <phrase>
   id: LANG_SET_BOOL_YES
   desc: bool true representation
