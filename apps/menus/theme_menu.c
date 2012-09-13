@@ -81,7 +81,9 @@ static struct colour_info
     [COLOR_LSS] = {&global_settings.lss_color, LANG_SELECTOR_START_COLOR},
     [COLOR_LSE] = {&global_settings.lse_color, LANG_SELECTOR_END_COLOR},
     [COLOR_LST] = {&global_settings.lst_color, LANG_SELECTOR_TEXT_COLOR},
+#ifdef HAVE_TOUCHSCREEN
     [COLOR_SEP] = {&global_settings.list_separator_color, LANG_LIST_SEPARATOR_COLOR},
+#endif
 };
 
 /**
@@ -115,7 +117,9 @@ static int reset_color(void)
     global_settings.lss_color = LCD_DEFAULT_LS;
     global_settings.lse_color = LCD_DEFAULT_BG;
     global_settings.lst_color = LCD_DEFAULT_FG;
+#ifdef HAVE_TOUCHSCREEN
     global_settings.list_separator_color = LCD_DARKGRAY;
+#endif
     
     settings_save();
     settings_apply(false);
