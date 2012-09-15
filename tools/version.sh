@@ -38,11 +38,10 @@ gitversion() {
 
     # This verifies we are in a git directory
     if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
-
+	
 	# Get the svn revision of the most recent git-svn commit
 	version=`git log --pretty=format:'%b' --grep='git-svn-id: svn' -1 | tail -n 1 | perl -ne 'm/@(\d*)/; print "r" . $1;'`
 	mod=""
-	manufacturer="Rockbox中文社区"
 	# Is this a git-svn commit?
 	if ! git log -1 --pretty=format:"%b" | grep -q "git-svn-id: svn" ; then
 	#   version="$head"
@@ -51,9 +50,9 @@ gitversion() {
 	# Are there uncommitted changes?
 	export GIT_WORK_TREE="$1"
 	if git diff --name-only HEAD | read dummy; then
-	    mod="TESTBUILD"
+	    mod=" TESTBUILD"
 	elif git diff --name-only --cached HEAD | read dummy; then
-	    mod="TESTBUILD"
+	    mod=" TESTBUILD"
 	fi
 
 	echo "${version}${mod}"
@@ -86,8 +85,9 @@ if [ -z $VERSION ]; then
         fi
     fi
 
+manufacturer="Rockbox中文社区"
 gitver=`git rev-parse --verify --short HEAD`
-VERSION=$gitver-`date -u +%y%m%d`-$mod
+VERSION=$manufacturer-$gitver-`date -u +%y%m%d`$mod
 fi
 echo $VERSION
 
