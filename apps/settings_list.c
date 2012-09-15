@@ -1447,7 +1447,7 @@ const struct settings_list settings[] = {
 
     /* space80 */
     OFFON_SETTING(F_SOUNDSETTING, space80, LANG_SPACE80, false,
-                  "space80 enabled", NULL),
+                  "space80 enabled", dsp_set_space80_enable),
     INT_SETTING_NOWRAP(F_SOUNDSETTING, space80_decay,
                        LANG_SPACE80_DECAY, 40,
                        "space80 decay", UNIT_PERCENT, 0, 100,

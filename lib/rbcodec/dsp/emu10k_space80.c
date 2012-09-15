@@ -85,8 +85,8 @@ static void space80_flush(void)
 
 void dsp_set_space80_enable(bool enable)
 {
-    if (enable == space80_enable)
-        return; /* No change */
+  /*  if (enable == space80_enable)
+        return;  No change */
 
     space80_enable = enable;
 
