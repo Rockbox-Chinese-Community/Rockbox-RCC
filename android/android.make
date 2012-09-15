@@ -158,6 +158,9 @@ $(DIRS):
 dirs: $(DIRS)
 
 apk: $(APK)
+	$(SILENT)mv ./rockbox.apk ./rockbox-rcc-`git rev-parse --verify --short HEAD`\
+	-$(LCD_WIDTH)x$(LCD_HEIGHT).apk
+     
 
 install: apk
 	$(SILENT)$(ADB) install -r $(APK)

@@ -51,9 +51,9 @@ gitversion() {
 	# Are there uncommitted changes?
 	export GIT_WORK_TREE="$1"
 	if git diff --name-only HEAD | read dummy; then
-	    mod="M"
+	    mod="TESTBUILD"
 	elif git diff --name-only --cached HEAD | read dummy; then
-	    mod="M"
+	    mod="TESTBUILD"
 	fi
 
 	echo "${version}${mod}"
@@ -85,7 +85,9 @@ if [ -z $VERSION ]; then
 	    fi
         fi
     fi
-VERSION=$VER-`date -u +%y%m%d`
+
+gitver=`git rev-parse --verify --short HEAD`
+VERSION=$gitver-`date -u +%y%m%d`-$mod
 fi
 echo $VERSION
 
