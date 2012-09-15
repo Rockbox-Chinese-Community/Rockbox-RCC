@@ -163,7 +163,8 @@ apk: $(APK)
      
 
 install: apk
-	$(SILENT)$(ADB) install -r $(APK)
+	$(SILENT)$(ADB) install -r rockbox-rcc-`git rev-parse --verify --short HEAD`\
+	-$(LCD_WIDTH)x$(LCD_HEIGHT).apk
 
 launch:
 	$(SILENT)echo 'am start -a android.intent.action.MAIN -n org.rockbox/.RockboxActivity; exit' | $(ADB) shell >/dev/null
