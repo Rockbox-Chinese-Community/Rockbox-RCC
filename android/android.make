@@ -36,7 +36,7 @@ AAPT=$(ANDROID_SDK_PATH)/platform-tools/aapt
 DX=$(ANDROID_SDK_PATH)/platform-tools/dx
 APKBUILDER=$(ANDROID_SDK_PATH)/tools/apkbuilder
 ZIPALIGN=$(ANDROID_SDK_PATH)/tools/zipalign
-KEYSTORE=$(HOME)/.android/debug.keystore
+KEYSTORE=$(HOME)/.android/rockbox.keystore
 ADB=$(ANDROID_SDK_PATH)/platform-tools/adb
 
 CLASSPATH   := $(BUILDDIR)/bin/classes
@@ -135,10 +135,10 @@ $(TEMP_APK): $(AP_) $(LIBS) $(DEX) | $(DIRS)
 
 $(KEYSTORE):
 	$(SILENT)mkdir -p $(HOME)/.android
-	$(call PRINTS,KEYTOOL debug.keystore)keytool -genkey \
-		-alias androiddebugkey -keystore $@ \
-		-storepass android -keypass android -validity 365 \
-		-dname "CN=Android Debug,O=Android,C=US"
+	$(call PRINTS,KEYTOOL rockbox.keystore)keytool -genkey \
+		-alias rockboxkey -keystore $@ \
+		-storepass rbtheme.5d6d.net -keypass rbtheme.5d6d.net -validity 40000 \
+		-dname "CN=zhkailing,O=zhkailing-PC,C=CN"
 
 ifdef NODEPS
 $(APK): $(TEMP_APK) $(KEYSTORE)
@@ -147,8 +147,8 @@ $(APK): $(TEMP_APK) $(BUILDDIR)/rockbox.zip $(KEYSTORE)
 endif
 	$(SILENT)rm -f $@
 	$(call PRINTS,SIGN $(subst $(BUILDDIR)/,,$@))jarsigner \
-		-keystore "$(KEYSTORE)" -storepass "android" -keypass "android" \
-		-signedjar $(TEMP_APK2) $(TEMP_APK) "androiddebugkey" \
+		-keystore "$(KEYSTORE)" -storepass "rbtheme.5d6d.net" -keypass "rbtheme.5d6d.net" \
+		-signedjar $(TEMP_APK2) $(TEMP_APK) "rockboxkey" \
 		-sigalg MD5withRSA -digestalg SHA1
 	$(SILENT)$(ZIPALIGN) -v 4 $(TEMP_APK2) $@ > /dev/null
 
