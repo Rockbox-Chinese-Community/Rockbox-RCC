@@ -680,6 +680,7 @@ bool eq_menu_graphical(void)
         touchscreen_set_mode(TOUCHSCREEN_POINT);
 #endif
 #endif
+	settings_save_config(SETTINGS_SAVE_EQPRESET);
     }
     return result;
 }
@@ -698,16 +699,33 @@ static bool eq_save_preset(void)
 }
 
 /* Allows browsing of preset files */
-static struct browse_folder_info eqs = { EQS_DIR, SHOW_CFG };
+static void eq_reset_gain(void)
+{
+    global_settings.eq_band_settings[5].gain = 0;
+    global_settings.eq_band_settings[6].gain = 0;
+    global_settings.eq_band_settings[7].gain = 0;
+    global_settings.eq_band_settings[8].gain = 0;
+    global_settings.eq_band_settings[9].gain = 0;
+    return eq_apply();
+}
+
+static bool eq_browse_preset(void)
+{
+    static struct browse_folder_info eqs = { EQS_DIR, SHOW_CFG };
+
+    /*Reset all the bands gain before loding presets*/
+    eq_reset_gain();
+    return browse_folder((void*)&eqs);
+}
 
 MENUITEM_FUNCTION(eq_graphical, 0, ID2P(LANG_EQUALIZER_GRAPHICAL),
                     (int(*)(void))eq_menu_graphical, NULL, lowlatency_callback, 
                     Icon_EQ);
 MENUITEM_FUNCTION(eq_save, 0, ID2P(LANG_EQUALIZER_SAVE),
                     (int(*)(void))eq_save_preset, NULL, NULL, Icon_NOICON);
-MENUITEM_FUNCTION(eq_browse, MENU_FUNC_USEPARAM, ID2P(LANG_EQUALIZER_BROWSE),
-                    browse_folder, (void*)&eqs, lowlatency_callback,
-                    Icon_NOICON);
+MENUITEM_FUNCTION(eq_browse, 0, ID2P(LANG_EQUALIZER_BROWSE),
+                    (int(*)(void))eq_browse_preset, NULL, NULL,
+		    Icon_NOICON);
 
 MAKE_MENU(equalizer_menu, ID2P(LANG_EQUALIZER), NULL, Icon_EQ,
         &eq_enable, &eq_graphical, &eq_precut, &gain_menu, 

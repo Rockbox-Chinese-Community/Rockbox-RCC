@@ -29,7 +29,7 @@
     *: "Lyric"
   </source>
   <dest>
-    *: "Lyric"
+    *: "歌词"
   </dest>
   <voice>
     *: "View lyrics"
