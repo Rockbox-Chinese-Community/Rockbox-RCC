@@ -171,7 +171,7 @@
     *: "Yes"
   </source>
   <dest>
-    *: "√"
+    *: "是"
   </dest>
   <voice>
     *: "是"
@@ -185,7 +185,7 @@
     *: "No"
   </source>
   <dest>
-    *: "×"
+    *: "否"
   </dest>
   <voice>
     *: "否"
@@ -345,7 +345,7 @@
     *: "General Settings"
   </source>
   <dest>
-    *: "一般设置"
+    *: "常规设置"
   </dest>
   <voice>
     *: "一般设置"
@@ -8873,7 +8873,7 @@
     *: "Main Menu"
   </source>
   <dest>
-    *: "主选单"
+    *: "主菜单"
   </dest>
   <voice>
     *: "主选单"
@@ -9516,7 +9516,7 @@
     *: "Context Menu"
   </source>
   <dest>
-    *: "相关选单"
+    *: "相关菜单"
   </dest>
   <voice>
     *: "相关选单"
