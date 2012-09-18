@@ -13146,3 +13146,31 @@
     *: "开机即启动睡眠计时器"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_SELECT_FOLDER
+  desc: in settings_menu
+  user: core
+  <source>
+    *: "Select one or more directories"
+  </source>
+  <dest>
+    *: "请选择一个或多个文件夹："
+  </dest>
+  <voice>
+    *: "Select one or more directories"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SELECT_DATABASE_DIRS
+  desc: in settings_menu
+  user: core
+  <source>
+    *: "Select directories to scan"
+  </source>
+  <dest>
+    *: "扫描指定文件夹音乐"
+  </dest>
+  <voice>
+    *: "Select directories to scan"
+  </voice>
+</phrase>
