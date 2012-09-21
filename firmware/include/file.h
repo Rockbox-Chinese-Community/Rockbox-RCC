@@ -33,7 +33,12 @@
 
 
 #undef MAX_PATH /* this avoids problems when building simulator */
+#if (CONFIG_PLATFORM & PLATFORM_ANDROID)
+/*The default MAX_PATH is too small to suit for Android 4.X. */
+#define MAX_PATH 520
+#else
 #define MAX_PATH 260
+#endif
 #define MAX_OPEN_FILES 11
 
 #if !defined(PLUGIN) && !defined(CODEC)
