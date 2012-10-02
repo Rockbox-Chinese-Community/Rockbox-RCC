@@ -42,6 +42,8 @@ DSP_PROC_DB_START
 #endif
     DSP_PROC_DB_ITEM(RESAMPLE)      /* resampler providing NATIVE_FREQUENCY */
     DSP_PROC_DB_ITEM(CROSSFEED)     /* stereo crossfeed */
+    DSP_PROC_DB_ITEM(SURROUND) 
+    DSP_PROC_DB_ITEM(AATUBE) 
     DSP_PROC_DB_ITEM(SPACE80)        /* space80 */
     DSP_PROC_DB_ITEM(EQUALIZER)     /* n-band equalizer */
 #ifdef HAVE_SW_TONE_CONTROLS
