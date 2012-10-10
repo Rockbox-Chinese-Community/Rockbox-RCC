@@ -87,12 +87,20 @@ void InstallTalkWindow::change()
 
 void InstallTalkWindow::accept()
 {
+    saveSettings();
+    QStringList foldersToTalk
+        = RbSettings::value(RbSettings::TalkFolders).toStringList();
+    if(foldersToTalk.size() == 0) {
+        QMessageBox::information(this, tr("Empty selection"),
+                tr("No files or folders selected. Please select files or "
+                    "folders first."));
+        return;
+    }
+
     logger = new ProgressLoggerGui(this);
 
-    saveSettings();
     connect(logger,SIGNAL(closed()),this,SLOT(close()));
     logger->show();
-    saveSettings();
 
     talkcreator->setMountPoint(RbSettings::value(RbSettings::Mountpoint).toString());
 
@@ -108,8 +116,6 @@ void InstallTalkWindow::accept()
     connect(talkcreator, SIGNAL(logProgress(int, int)), logger, SLOT(setProgress(int, int)));
     connect(logger,SIGNAL(aborted()),talkcreator,SLOT(abort()));
 
-    QStringList foldersToTalk
-        = RbSettings::value(RbSettings::TalkFolders).toStringList();
     for(int i = 0; i < foldersToTalk.size(); i++) {
         qDebug() << "[InstallTalkWindow] creating talk files for folder"
                  << foldersToTalk.at(i);
@@ -124,6 +130,12 @@ void InstallTalkWindow::updateSettings(void)
     QString mp = RbSettings::value(RbSettings::Mountpoint).toString();
     QString ttsName = RbSettings::value(RbSettings::Tts).toString();
     TTSBase* tts = TTSBase::getTTS(this,ttsName);
+    if(!tts)
+    {
+        QMessageBox::critical(this, tr("TTS error"),
+            tr("The selected TTS failed to initialize. You can't use this TTS."));
+        return;
+    }
     if(tts->configOk())
         ui.labelTtsProfile->setText(QString("<b>%1</b>")
             .arg(TTSBase::getTTSName(ttsName)));
