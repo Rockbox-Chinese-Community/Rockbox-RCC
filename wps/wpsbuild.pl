@@ -610,8 +610,8 @@ while(<WPS>) {
         }
         foreach my $i ($font, $remotefont) {
             if (defined($i) && $i ne "-") {
-                copythemefont($font);
-                $i = "$rbdir/fonts/$font";
+                copythemefont($i);
+                $i = "$rbdir/fonts/$i";
             }
         }
         buildcfg();
