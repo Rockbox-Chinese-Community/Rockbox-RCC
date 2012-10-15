@@ -55,7 +55,7 @@
     swcodec: ""
   </voice>
 </phrase>
- <phrase>
+<phrase>
   id: LANG_ONPLAY_LYRICS
   desc: Onplay snclrc/lycplayer
   user: core
@@ -306,10 +306,10 @@
     *: "Shutting down..."
   </source>
   <dest>
-    *: "关机中..."
+    *: "关闭中..."
   </dest>
   <voice>
-    *: "关机中"
+    *: "关闭中"
   </voice>
 </phrase>
 <phrase>
@@ -3772,11 +3772,11 @@
   </source>
   <dest>
     *: none
-    battery_types: "锂镁氢"
+    battery_types: "镍氢"
   </dest>
   <voice>
     *: none
-    battery_types: "锂镁氢"
+    battery_types: "镍氢"
   </voice>
 </phrase>
 <phrase>
@@ -11542,11 +11542,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "柔和度"
+    swcodec: "拐点"
   </dest>
   <voice>
     *: none
-    swcodec: "柔和度"
+    swcodec: "拐点"
   </voice>
 </phrase>
 <phrase>
@@ -11590,11 +11590,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "柔和"
+    swcodec: "软拐点"
   </dest>
   <voice>
     *: none
-    swcodec: "柔和"
+    swcodec: "软拐点"
   </voice>
 </phrase>
 <phrase>
@@ -11655,11 +11655,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "锐利"
+    swcodec: "硬拐点"
   </dest>
   <voice>
     *: none
-    swcodec: "锐利"
+    swcodec: "硬拐点"
   </voice>
 </phrase>
 <phrase>
@@ -12065,11 +12065,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "音调/音速"
+    swcodec: "时间伸缩"
   </dest>
   <voice>
     *: none
-    swcodec: "音调/音速"
+    swcodec: "时间伸缩"
   </voice>
 </phrase>
 <phrase>
