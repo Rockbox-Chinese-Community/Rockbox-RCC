@@ -146,10 +146,12 @@ else
 $(APK): $(TEMP_APK) $(BUILDDIR)/rockbox.zip $(KEYSTORE)
 endif
 	$(SILENT)rm -f $@
-	$(call PRINTS,SIGN $(subst $(BUILDDIR)/,,$@))jarsigner \
+	$(SILENT)echo "SIGN rockbox-rcc-`git rev-parse --verify --short HEAD`-$(LCD_WIDTH)x$(LCD_HEIGHT).apk"
 		-keystore "$(KEYSTORE)" -storepass "rbtheme.5d6d.net" -keypass "rbtheme.5d6d.net" \
+        $(SILENT)jarsigner \
 		-signedjar $(TEMP_APK2) $(TEMP_APK) "rockboxkey" \
 		-sigalg MD5withRSA -digestalg SHA1
+	$(SILENT)echo "ZIPALIGN rockbox-rcc-`git rev-parse --verify --short HEAD`-$(LCD_WIDTH)x$(LCD_HEIGHT).apk"
 	$(SILENT)$(ZIPALIGN) -v 4 $(TEMP_APK2) $@ > /dev/null
 
 $(DIRS):
