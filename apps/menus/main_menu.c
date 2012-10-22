@@ -143,8 +143,10 @@ struct info_data
 enum infoscreenorder
 {
     INFO_BATTERY = 0,
+#if CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
     INFO_DISK1, /* capacity or internal capacity/free on hotswap */
     INFO_DISK2, /* free space or external capacity/free on hotswap */
+#endif
     INFO_BUFFER,
     INFO_VERSION,
     INFO_COUNT
@@ -212,6 +214,7 @@ static const char* info_getname(int selected_item, void *data,
             else
                 return "Battery n/a"; /* translating worth it? */
             break;
+#if CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
         case INFO_DISK1: /* disk usage 1 */
 #ifdef HAVE_MULTIVOLUME
             output_dyn_value(s1, sizeof s1, info->free, kbyte_units, true);
@@ -242,6 +245,7 @@ static const char* info_getname(int selected_item, void *data,
             snprintf(buffer, buffer_len, SIZE_FMT, str(LANG_DISK_SIZE_INFO), s1);
 #endif
             break;
+#endif
     }
     return buffer;
 }
@@ -249,6 +253,9 @@ static const char* info_getname(int selected_item, void *data,
 static int info_speak_item(int selected_item, void * data)
 {
     struct info_data *info = (struct info_data*)data;
+#if CONFIG_PLATFORM==(PLATFORM_HOSTED|PLATFORM_ANDROID)
+    info = NULL;
+#endif
 
     switch (selected_item)
     {
@@ -297,6 +304,7 @@ static int info_speak_item(int selected_item, void * data)
             }
             else talk_id(VOICE_BLANK, false);
             break;
+#if CONFIG_PLATFORM!=(PLATFORM_HOSTED|PLATFORM_ANDROID)
         case INFO_DISK1: /* disk 1 */
 #ifdef HAVE_MULTIVOLUME
             talk_ids(false, LANG_DISK_NAME_INTERNAL, LANG_DISK_FREE_INFO);
@@ -325,6 +333,7 @@ static int info_speak_item(int selected_item, void * data)
 #endif
             break;
             
+#endif
     }
     return 0;
 }
