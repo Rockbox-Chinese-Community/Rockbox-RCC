@@ -52,6 +52,7 @@ unsigned multimedia_to_button(int keyboard_key)
 {
     switch (keyboard_key)
     {
+        case KEYCODE_HEADSETHOOK:
         case KEYCODE_MEDIA_PLAY_PAUSE:
             return BUTTON_MULTIMEDIA_PLAYPAUSE;
         case KEYCODE_MEDIA_STOP:
