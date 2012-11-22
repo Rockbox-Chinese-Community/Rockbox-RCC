@@ -27,28 +27,28 @@ public class RunForegroundManager
     private Handler mServiceHandler;
     private Intent mWidgetUpdate;
     private int iconheight;
+    public static Service gService;
 
     public RunForegroundManager(Service service)
     {
         mCurrentService = service;
+        gService = service;
         mNM = (NotificationManager)
                         service.getSystemService(Service.NOTIFICATION_SERVICE);
-        RemoteViews views = new RemoteViews(service.getPackageName(), R.layout.statusbar);
         /* create Intent for clicking on the expanded notifcation area */
         Intent intent = new Intent(service, RockboxActivity.class);
         intent = intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent contentIntent = PendingIntent.getActivity(service, 0, intent, 0);
 
         /* retrieve height of launcher icon. Used to scale down album art. */
         Resources resources = service.getResources();
         Drawable draw = resources.getDrawable(R.drawable.launcher);
         iconheight = draw.getIntrinsicHeight();
 
-        mNotification = new Notification();
-        mNotification.tickerText = service.getString(R.string.notification);
+        mNotification = new Notification(R.drawable.launcher, service.getString(R.string.notification), System.currentTimeMillis());
         mNotification.icon = R.drawable.notification;
-        mNotification.contentView = views;
         mNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-        mNotification.contentIntent = PendingIntent.getActivity(service, 0, intent, 0);
+        mNotification.setLatestEventInfo(service, "Rockbox", "Now playing...", contentIntent);
 
         try {
             api = new NewForegroundApi(R.string.notification, mNotification);
@@ -111,6 +111,12 @@ public class RunForegroundManager
                     mNotification.tickerText = title;
                 else
                     mNotification.tickerText = title+" - "+artist;
+                /* update Notification LatestEventInfo */
+                Intent intent = new Intent(gService, RockboxActivity.class);
+                intent = intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                PendingIntent contentIntent = PendingIntent.getActivity(gService, 0, intent, 0);
+                mNotification.setLatestEventInfo(gService, title, artist, contentIntent);
+                Logger.i("Now playing:"+title);
 
                 if (albumart != null) {
                     /* The notification area doesn't have permissions to access the SD card.

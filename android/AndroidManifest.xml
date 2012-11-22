@@ -17,7 +17,11 @@
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
-		</activity>		
+		</activity>
+
+		<activity android:name="com.umeng.fb.ui.SendFeedback" android:windowSoftInputMode="adjustResize" />
+		<activity android:name="com.umeng.fb.ui.FeedbackConversations" />
+		<activity android:name="com.umeng.fb.ui.FeedbackConversation" android:configChanges="keyboard" />		
 
 		<service android:name=".RockboxService">
 			<intent-filter>
@@ -30,7 +34,7 @@
 		<receiver android:name=".Helper.MediaButtonReceiver$MediaReceiver"
 			android:enabled="true"
 			android:exported="true">
-			<intent-filter>
+			<intent-filter android:priority="2147483647">
 				<action android:name="android.intent.action.MEDIA_BUTTON" />
 			</intent-filter>
 		</receiver>
@@ -77,10 +81,15 @@
         <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
       </intent-filter>
     </activity>
-	
+	<meta-data android:name="UMENG_APPKEY" android:value="50acdebf52701533d6000040" />
+	<meta-data android:name="UMENG_CHANNEL" android:value="Rockbox中文社区" />
 	</application>
 
 	<uses-sdk android:minSdkVersion="5" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 	<uses-permission android:name="android.permission.READ_PHONE_STATE"></uses-permission>
+	<uses-permission android:name="android.permission.INTERNET"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 </manifest> 

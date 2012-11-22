@@ -28,9 +28,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
+
+import com.umeng.analytics.MobclickAgent;
+import com.umeng.fb.NotificationType;
+import com.umeng.fb.UMFeedbackService;
 
 public class RockboxActivity extends Activity 
 {
@@ -39,6 +45,7 @@ public class RockboxActivity extends Activity
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
+        UMFeedbackService.enableNewReplyNotification(this, NotificationType.AlertDialog);
 	Toast.makeText(this, "Rockbox中文社区精心定制", Toast.LENGTH_LONG).show();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -90,7 +97,7 @@ public class RockboxActivity extends Activity
                         setServiceActivity(true);
                         break;
                     case RockboxService.RESULT_ERROR_OCCURED:
-                        Toast.makeText(RockboxActivity.this, resultData.getString("error"), Toast.LENGTH_LONG);
+                        Toast.makeText(RockboxActivity.this, resultData.getString("error"), Toast.LENGTH_LONG).show();
                         break;
                     case RockboxService.RESULT_ROCKBOX_EXIT:
                         finish();
@@ -100,6 +107,28 @@ public class RockboxActivity extends Activity
         });
         startService(intent);
     }
+
+    public boolean onCreateOptionsMenu(Menu menu)
+   {
+        menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
+        menu.add(0, 1, 0,R.string.rockbox_exit);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case 0:
+            UMFeedbackService.setGoBackButtonVisible();
+            UMFeedbackService.openUmengFeedbackSDK(this);
+            case 1:
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
+            default:
+         }
+        return true;
+     }
 
     private void setServiceActivity(boolean set)
     {
@@ -111,6 +140,7 @@ public class RockboxActivity extends Activity
     public void onResume()
     {
         super.onResume();
+        MobclickAgent.onResume(this);
         setVisible(true);
     }
     
@@ -121,6 +151,7 @@ public class RockboxActivity extends Activity
     protected void onPause() 
     {
         super.onPause();
+        MobclickAgent.onPause(this);
         /* this will cause the framebuffer's Surface to be destroyed, enabling
          * us to disable drawing */
         setVisible(false);

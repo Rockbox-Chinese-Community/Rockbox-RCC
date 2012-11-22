@@ -10,6 +10,7 @@
 <string name="No">No</string>
 <string name="error_extraction">Error occured during extraction!</string>
 <string name="rockbox_extracting">Rockbox is loading. Please wait...</string>
+<string name="rockbox_exit">quit Rockbox</string>
 
 <!-- Rockbox initial configuration values -->
 <string name="rockbox_language_file">english.lng</string>

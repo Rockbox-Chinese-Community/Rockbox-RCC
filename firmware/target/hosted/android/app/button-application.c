@@ -35,8 +35,8 @@ int key_to_button(int keyboard_key)
     {
         case KEYCODE_BACK:
             return ignore_back_button ? BUTTON_NONE : BUTTON_BACK;
-        case KEYCODE_MENU:
-            return BUTTON_MENU;
+        //case KEYCODE_MENU:
+        //    return BUTTON_MENU;
         case KEYCODE_DPAD_CENTER:
             return BUTTON_DPAD_CENTER;
         case KEYCODE_VOLUME_UP:
@@ -52,6 +52,7 @@ unsigned multimedia_to_button(int keyboard_key)
 {
     switch (keyboard_key)
     {
+        case KEYCODE_HEADSETHOOK:
         case KEYCODE_MEDIA_PLAY_PAUSE:
             return BUTTON_MULTIMEDIA_PLAYPAUSE;
         case KEYCODE_MEDIA_STOP:

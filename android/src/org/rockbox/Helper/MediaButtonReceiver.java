@@ -85,15 +85,18 @@ public class MediaButtonReceiver
         {
             if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction()))
             {
+                Logger.d("Receive MediaButton Broadcast");
+                this.abortBroadcast();
                 KeyEvent key = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                 if (key.getAction() == KeyEvent.ACTION_UP)
                 {   /* pass the pressed key to Rockbox, starting it if needed */
                     RockboxService s = RockboxService.getInstance();
                     if (s == null || !s.isRockboxRunning())
                         startService(context, intent);
-                    else if (RockboxFramebuffer.buttonHandler(key.getKeyCode(), false))
-                        abortBroadcast();
                 }
+                //if(key.getKeyCode() == KeyEvent.KEYCODE_HEADSETHOOK)
+                //{
+                //}
             }
         }
     }
@@ -162,7 +165,7 @@ public class MediaButtonReceiver
         private Context context;
         OldApi(Context c)
         {
-            filter.setPriority(1); /* 1 higher than the built-in media player */
+            filter.setPriority(2147483647); /* 1 higher than the built-in media player ----> really? */
             receiver = new MediaReceiver();
             context = c;
         }
