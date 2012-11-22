@@ -1153,11 +1153,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "低通滤波器"
+    swcodec: "低架滤波器"
   </dest>
   <voice>
     *: none
-    swcodec: "低通滤波器"
+    swcodec: "低架滤波器"
   </voice>
 </phrase>
 <phrase>
@@ -1187,11 +1187,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "高通滤波器"
+    swcodec: "高架滤波器"
   </dest>
   <voice>
     *: none
-    swcodec: "高通滤波器"
+    swcodec: "高架滤波器"
   </voice>
 </phrase>
 <phrase>
