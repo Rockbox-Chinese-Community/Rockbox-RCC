@@ -76,9 +76,12 @@ DIRS		+= $(CLASSPATH)
 
 RES		:= $(wildcard $(ANDROID_DIR)/res/*/*)
 
+#UMENGSDKPATH
+UMENGSDKPATH		:= $(ROOTDIR)/android/UMENG_SDK
+
 CLEANOBJS += bin gen libs data
 
-JAVAC_OPTS += -source 1.6 -target 1.6 -implicit:none -classpath $(ANDROID_PLATFORM)/android.jar:$(CLASSPATH)
+JAVAC_OPTS += -source 1.6 -target 1.6 -implicit:none -classpath $(ANDROID_PLATFORM)/android.jar:$(UMENGSDKPATH)/umeng_sdk.jar:$(UMENGSDKPATH)/annotations.jar:$(CLASSPATH)
 
 .PHONY:
 $(MANIFEST): $(MANIFEST_SRC) $(DIRS)
@@ -87,7 +90,8 @@ $(MANIFEST): $(MANIFEST_SRC) $(DIRS)
 $(R_JAVA) $(AP_): $(MANIFEST) $(RES) | $(DIRS)
 	$(call PRINTS,AAPT $(subst $(BUILDDIR)/,,$@))$(AAPT) package -f -m \
 		-J $(BUILDDIR)/gen -M $(MANIFEST) -S $(ANDROID_DIR)/res \
-		-I $(ANDROID_PLATFORM)/android.jar -F $(AP_)
+		-I $(ANDROID_PLATFORM)/android.jar -F $(AP_) \
+		-I $(UMENGSDKPATH)/umeng_sdk.jar
 
 $(CLASSPATH)/$(PACKAGE_PATH)/R.class: $(R_JAVA)
 	$(call PRINTS,JAVAC $(subst $(ROOTDIR)/,,$<))javac -d $(BUILDDIR)/bin \
@@ -107,7 +111,10 @@ jar: $(JAR)
 $(DEX): $(JAR)
 	@echo "Checking for deleted class files" && $(foreach obj,$(JAVA_OBJ) $(R_OBJ), \
 		(test -f $(obj) || (echo "$(obj) is missing. Run 'make classes' to fix." && false)) && ) true
-	$(call PRINTS,DX $(subst $(BUILDDIR)/,,$@))$(DX) --dex --output=$@ $<
+#	$(call PRINTS,DX $(subst $(BUILDDIR)/,,$@))$(DX) --dex --output=$@ $<
+	@echo "=============================================================================="
+	@echo "注意：如果出现错误，请将Eclipse编译的classes.dex复制到工作目录的bin文件夹后重新执行make apk"
+	@echo "=============================================================================="
 
 dex: $(DEX)
 
