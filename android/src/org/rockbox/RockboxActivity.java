@@ -31,6 +31,7 @@ import android.os.ResultReceiver;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.umeng.analytics.MobclickAgent;
