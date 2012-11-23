@@ -122,10 +122,12 @@ public class RockboxActivity extends Activity
             case 0:
             UMFeedbackService.setGoBackButtonVisible();
             UMFeedbackService.openUmengFeedbackSDK(this);
+            break;
             case 1:
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(0);
             default:
+            break;
          }
         return true;
      }
