@@ -1571,13 +1571,13 @@ static void display_state(void)
     const char *str = NULL;
 
     if (AUDIO_STOP)
-        str = "Audio Stopped";
+        str = "播放停止";
     else if (current.found_lrc)
     {
         if (!current.loaded_lrc)
-            str = "Loading lrc";
+            str = "加载歌词";
         else if (!current.ll_head)
-            str = "No lyrics";
+            str = "歌词不存在";
     }
 
 #ifdef HAVE_LCD_BITMAP
@@ -1914,8 +1914,10 @@ static void display_lrcs(void)
             ypos = display_lrc_line(lrc_line, ypos, i);
             lrc_line = lrc_line->next;
         }
-        if (!lrc_line && ypos < vp_lyrics[i].height)
+// No need to display
+/*        if (!lrc_line && ypos < vp_lyrics[i].height)
             display->putsxy(0, ypos, "[end]");
+*/
 #else /* HAVE_LCD_CHARCELLS */
         struct lrc_line *lrc_line = lrc_center;
         struct lrc_brpos *lrc_brpos = calc_brpos(lrc_line, i);
