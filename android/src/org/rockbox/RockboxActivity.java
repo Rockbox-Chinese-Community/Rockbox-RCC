@@ -22,11 +22,15 @@
 package org.rockbox;
 
 
+import org.rockbox.Helper.Logger;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,6 +44,9 @@ import com.umeng.fb.UMFeedbackService;
 
 public class RockboxActivity extends Activity 
 {
+	/* Initialize RockboxWakeLock status */
+    private PowerManager.WakeLock RockboxWakeLock = null;
+    private boolean RockboxWakeLockStatus = false;
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -107,14 +114,20 @@ public class RockboxActivity extends Activity
         });
         startService(intent);
     }
-
-    public boolean onCreateOptionsMenu(Menu menu)
-   {
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+        if (RockboxWakeLockStatus == false)
+        menu.add(0, 2, 0, R.string.rockbox_wakelock_on);
+        if (RockboxWakeLockStatus == true)
+        menu.add(0, 3, 0, R.string.rockbox_wakelock_off);
         menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
         menu.add(0, 1, 0,R.string.rockbox_exit);
         return true;
     }
 
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
@@ -126,12 +139,44 @@ public class RockboxActivity extends Activity
             case 1:
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(0);
-            default:
+            break;
+            case 2:
+            RockboxWakeLockStatus = true;
+            Toast.makeText(this, R.string.rockbox_wakelock_on_toast, Toast.LENGTH_LONG).show();
+            break;
+            case 3:
+            RockboxWakeLockStatus = false;
+            Toast.makeText(this, R.string.rockbox_wakelock_off_toast, Toast.LENGTH_LONG).show();
             break;
          }
         return true;
      }
-
+    
+    /* Acquire WakeLock */
+    private void acquireWakeLock()
+    {
+    	if (RockboxWakeLockStatus == true) {
+            if (RockboxWakeLock == null) {
+            Logger.d("Rockbox is acquiring wake lock");
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            RockboxWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService");
+            RockboxWakeLock.acquire();
+            }
+    	}
+    }
+    
+    /* Release WakeLock */
+    private void releaseWakeLock()
+    {
+    	if (RockboxWakeLockStatus == true) {
+            if (RockboxWakeLock != null && RockboxWakeLock.isHeld()) {
+            Logger.d("Rockbox is releasing wake lock");
+            RockboxWakeLock.release();
+            RockboxWakeLock =null;
+            }
+    	}
+    }
+    
     private void setServiceActivity(boolean set)
     {
         RockboxService s = RockboxService.getInstance();
@@ -142,6 +187,7 @@ public class RockboxActivity extends Activity
     public void onResume()
     {
         super.onResume();
+        releaseWakeLock();
         MobclickAgent.onResume(this);
         setVisible(true);
     }
@@ -153,6 +199,7 @@ public class RockboxActivity extends Activity
     protected void onPause() 
     {
         super.onPause();
+        acquireWakeLock();
         MobclickAgent.onPause(this);
         /* this will cause the framebuffer's Surface to be destroyed, enabling
          * us to disable drawing */
