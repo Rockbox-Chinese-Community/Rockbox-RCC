@@ -499,16 +499,16 @@ static struct menu_table menu_table[] = {
 #endif
     { "wps", &wps_item },
     { "settings", &menu_ }, 
-    { "shortcuts", &shortcut_menu },
+//    { "shortcuts", &shortcut_menu },
 #ifdef HAVE_RECORDING
     { "recording", &rec }, 
 #endif
 #if CONFIG_TUNER
     { "radio", &fm },
 #endif
-    { "playlists", &playlists },
-    { "plugins", &rocks_browser },
-    { "system_menu", &system_menu_ },
+//    { "playlists", &playlists },
+//    { "plugins", &rocks_browser },
+//    { "system_menu", &system_menu_ },
 #if (CONFIG_KEYPAD == PLAYER_PAD) || (CONFIG_PLATFORM&PLATFORM_ANDROID)
     { "shutdown", &do_shutdown_item },
 #endif
