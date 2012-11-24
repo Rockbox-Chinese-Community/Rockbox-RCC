@@ -28,15 +28,20 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.umeng.analytics.MobclickAgent;
@@ -45,14 +50,21 @@ import com.umeng.fb.UMFeedbackService;
 
 public class RockboxActivity extends Activity 
 {
-	/* Initialize RockboxWakeLock status */
+    private static final String VolLock_KEY = "VolLockKey";
+    private static final String VolLock_KEY_STAT = "VolLockKeyStat";
+    /* Initialize status */
     private PowerManager.WakeLock RockboxWakeLock = null;
-    private boolean RockboxWakeLockStatus = false;
+    private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
+    private boolean RockboxVolLockStatus = false; //初始化音量锁定状态
+    private int vol=0; //初始化锁定音量
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
+        /* Volume Lock Func */
+        ReadVolLock();
+        SetVolLock();
         UMFeedbackService.enableNewReplyNotification(this, NotificationType.AlertDialog);
 	Toast.makeText(this, "Rockbox中文社区精心定制", Toast.LENGTH_LONG).show();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -123,15 +135,24 @@ public class RockboxActivity extends Activity
         menu.add(0, 2, 0, R.string.rockbox_wakelock_on);
         if (RockboxWakeLockStatus == true)
         menu.add(0, 3, 0, R.string.rockbox_wakelock_off);
+        menu.add(0, 5, 0, R.string.rockbox_vollock_on);
+        if (RockboxVolLockStatus == true)
+        menu.add(0, 6, 0, R.string.rockbox_vollock_off);
         menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
         menu.add(0, 4, 0, R.string.rockbox_about);
-        menu.add(0, 1, 0,R.string.rockbox_exit);
+        menu.add(0, 1, 0, R.string.rockbox_exit);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
+        final EditText InputVol=new EditText(this);
+        InputVol.setInputType(InputType.TYPE_CLASS_NUMBER);
+        if (RockboxVolLockStatus == true)
+        InputVol.setHint("当前值："+Integer.toString(vol));
+        else
+        InputVol.setHint("当前值："+Integer.toString(vol)+"（未启用）");
         switch (item.getItemId())
         {
             case 0:
@@ -157,6 +178,28 @@ public class RockboxActivity extends Activity
             	                .setPositiveButton(R.string.OK, null)
             	                .show();
                 break;
+            case 5:
+                new AlertDialog.Builder(this)
+            	                .setTitle(R.string.rockbox_vollock_info)
+            	                .setView(InputVol)
+            	                .setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                    	if (InputVol.getText().toString()!= null) {
+                                            int voltmp=Integer.parseInt(InputVol.getText().toString());
+                                            RockboxVolLockStatus = true;
+                                            SaveVolLock(voltmp);
+                                            vol=voltmp;
+                                    	    }
+                                        }
+                                    })
+                                .setNegativeButton(R.string.Cancel, null)
+                                .show();
+                break;
+            case 6:
+            	RockboxVolLockStatus = false;
+            	SaveVolLock(-1);
+            	Toast.makeText(this, R.string.rockbox_vollock_off_toast, Toast.LENGTH_LONG).show();
+            	break;
          }
         return true;
      }
@@ -184,6 +227,44 @@ public class RockboxActivity extends Activity
             RockboxWakeLock =null;
             }
     	}
+    }
+    
+    /*Set Volume Lock*/
+    private void SetVolLock()
+    {
+    	if (RockboxVolLockStatus == true) {
+        AudioManager audiomanager;
+        int streamtype = AudioManager.STREAM_MUSIC;
+        audiomanager =
+                (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
+        int maxstreamvolume = audiomanager.getStreamMaxVolume(streamtype);
+        int VolSet;
+        VolSet = maxstreamvolume*vol/15;
+        audiomanager.setStreamVolume(streamtype, VolSet, 0);
+        }
+    }
+    
+    /*Save Volume Lock Setting, -1 means to only save VolLock_KEY_STAT*/
+    private void SaveVolLock(int vollock)
+    {
+        String prefName = "Rockbox";
+        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        if (vollock != -1)
+        editor.putInt(VolLock_KEY, vollock);
+        editor.putBoolean(VolLock_KEY_STAT, RockboxVolLockStatus);
+        editor.commit();
+        if (vollock != -1)
+        Toast.makeText(this,R.string.rockbox_vollock_toast, Toast.LENGTH_LONG).show();
+    }
+    
+    /*Read Volume Lock Setting*/
+    private void ReadVolLock()
+    {
+        String prefName = "Rockbox";
+        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
+        vol = prefs.getInt(VolLock_KEY, 0);
+        RockboxVolLockStatus = prefs.getBoolean(VolLock_KEY_STAT, false);
     }
     
     private void setServiceActivity(boolean set)
