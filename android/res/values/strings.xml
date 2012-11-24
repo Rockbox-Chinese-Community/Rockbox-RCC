@@ -10,11 +10,14 @@
 <string name="No">No</string>
 <string name="error_extraction">Error occured during extraction!</string>
 <string name="rockbox_extracting">Rockbox is loading. Please wait...</string>
-<string name="rockbox_exit">quit Rockbox</string>
+<string name="rockbox_exit">Exit</string>
 <string name="rockbox_wakelock_on">Acquire WakeLock</string>
 <string name="rockbox_wakelock_on_toast">Acquire WakeLock, only for some devices which are not able to play music background</string>
 <string name="rockbox_wakelock_off">Release WakeLock</string>
 <string name="rockbox_wakelock_off_toast">Release WakeLock</string>
+<string name="rockbox_about">About</string>
+<string name="rockbox_about_title">About Rockbox</string>
+<string name="rockbox_about_message"><Data><![CDATA[Rockbox compiled by RCC\nRockbox-Chinese-Community\nhttp://rbtheme.5d6d.net\n\n*Reproduced indicate the Source & Author*]]></Data></string>
 
 <!-- Rockbox initial configuration values -->
 <string name="rockbox_language_file">english.lng</string>

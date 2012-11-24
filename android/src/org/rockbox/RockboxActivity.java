@@ -25,6 +25,7 @@ package org.rockbox;
 import org.rockbox.Helper.Logger;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -123,6 +124,7 @@ public class RockboxActivity extends Activity
         if (RockboxWakeLockStatus == true)
         menu.add(0, 3, 0, R.string.rockbox_wakelock_off);
         menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
+        menu.add(0, 4, 0, R.string.rockbox_about);
         menu.add(0, 1, 0,R.string.rockbox_exit);
         return true;
     }
@@ -133,20 +135,27 @@ public class RockboxActivity extends Activity
         switch (item.getItemId())
         {
             case 0:
-            UMFeedbackService.setGoBackButtonVisible();
-            UMFeedbackService.openUmengFeedbackSDK(this);
-            break;
+                UMFeedbackService.setGoBackButtonVisible();
+                UMFeedbackService.openUmengFeedbackSDK(this);
+                break;
             case 1:
-            android.os.Process.killProcess(android.os.Process.myPid());
-            System.exit(0);
-            break;
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(0);
+                break;
             case 2:
-            RockboxWakeLockStatus = true;
-            Toast.makeText(this, R.string.rockbox_wakelock_on_toast, Toast.LENGTH_LONG).show();
-            break;
+                RockboxWakeLockStatus = true;
+                Toast.makeText(this, R.string.rockbox_wakelock_on_toast, Toast.LENGTH_LONG).show();
+                break;
             case 3:
-            RockboxWakeLockStatus = false;
-            Toast.makeText(this, R.string.rockbox_wakelock_off_toast, Toast.LENGTH_LONG).show();
+                RockboxWakeLockStatus = false;
+                Toast.makeText(this, R.string.rockbox_wakelock_off_toast, Toast.LENGTH_LONG).show();
+                break;
+            case 4:
+                new AlertDialog.Builder(this)
+            	                .setTitle(R.string.rockbox_about_title)
+            	                .setMessage(R.string.rockbox_about_message)
+            	                .setPositiveButton(R.string.OK, null)
+            	                .show();
             break;
          }
         return true;
