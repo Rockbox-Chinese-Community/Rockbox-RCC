@@ -156,7 +156,7 @@ public class RockboxActivity extends Activity
             	                .setMessage(R.string.rockbox_about_message)
             	                .setPositiveButton(R.string.OK, null)
             	                .show();
-            break;
+                break;
          }
         return true;
      }
