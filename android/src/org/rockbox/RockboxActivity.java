@@ -184,11 +184,13 @@ public class RockboxActivity extends Activity
             	                .setView(InputVol)
             	                .setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int whichButton) {
-                                    	if (InputVol.getText().toString()!= null) {
+                                    	try{
                                             int voltmp=Integer.parseInt(InputVol.getText().toString());
                                             RockboxVolLockStatus = true;
                                             SaveVolLock(voltmp);
                                             vol=voltmp;
+                                    	    }catch (Exception e){
+                                    		    Logger.d("Volume-Lock input error!");
                                     	    }
                                         }
                                     })
