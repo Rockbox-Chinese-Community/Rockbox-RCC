@@ -3,7 +3,7 @@
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent" android:background="#E0E0E0">
 	<RelativeLayout android:layout_width="fill_parent"
-		android:layout_height="50dip" android:background="@drawable/umeng_fb_bar_bg">
+		android:layout_height="50dip" android:background="@drawable/top_background">
 				
 		<TextView android:id="@+id/umeng_fb_conversation_title"
 			android:layout_width="fill_parent" android:textColor="#565656"

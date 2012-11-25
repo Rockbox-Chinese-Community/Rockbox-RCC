@@ -6,7 +6,7 @@
 		android:layout_width="fill_parent" android:textColor="#565656"
 		android:layout_height="50dip" android:layout_gravity="center"
 		android:gravity="center" android:text="@string/UMFeedbackConversationTitle" android:textSize="22dip"
-		android:background="@drawable/umeng_fb_bar_bg" />
+		android:background="@drawable/top_background" />
 
 	<com.umeng.fb.ui.ThreadView android:id="@+id/android:list"
 		android:layout_gravity="top" android:layout_width="fill_parent"
