@@ -10,6 +10,22 @@
 <string name="No">No</string>
 <string name="error_extraction">Error occured during extraction!</string>
 <string name="rockbox_extracting">Rockbox is loading. Please wait...</string>
+<string name="rockbox_exit">Exit</string>
+<string name="rockbox_wakelock_on">Acquire WakeLock</string>
+<string name="rockbox_wakelock_on_toast">Acquire WakeLock, only for some devices which are not able to play music background</string>
+<string name="rockbox_wakelock_off">Release WakeLock</string>
+<string name="rockbox_wakelock_off_toast">Release WakeLock</string>
+<string name="rockbox_about">About</string>
+<string name="rockbox_about_title">About Rockbox</string>
+<string name="rockbox_about_message"><Data><![CDATA[Rockbox compiled by RCC\nRockbox-Chinese-Community\nhttp://rbtheme.5d6d.net\n\n*Reproduced indicate the Source & Author*]]></Data></string>
+<string name="rockbox_vollock_on">Lock Volume</string>
+<string name="rockbox_vollock_info">Input the lock-Volume (0-15)</string>
+<string name="rockbox_vollock_hint1">Current value:</string>
+<string name="rockbox_vollock_hint2">(Not enabled)</string>
+<string name="rockbox_vollock_inputerror">Input can not be empty</string>
+<string name="rockbox_vollock_toast">Only for some devices with large volume when launch the app, take effect after restart</string>
+<string name="rockbox_vollock_off">Clear Lock Volume</string>
+<string name="rockbox_vollock_off_toast">Lock Volume cleared</string>
 
 <!-- Rockbox initial configuration values -->
 <string name="rockbox_language_file">english.lng</string>

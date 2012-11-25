@@ -31,7 +31,7 @@
   </source>
   <dest>
     *: none
-    swcodec: "差分环绕"
+    swcodec: "差分环绕（Beta）"
   </dest>
   <voice>
     *: none

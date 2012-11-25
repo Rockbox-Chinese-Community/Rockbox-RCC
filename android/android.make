@@ -63,6 +63,7 @@ LIBS 		+= $(addprefix $(BINLIB_DIR)/lib,$(patsubst %.codec,%.so,$(notdir $(CODEC
 TEMP_APK	:= $(BUILDDIR)/bin/_rockbox.apk
 TEMP_APK2	:= $(BUILDDIR)/bin/__rockbox.apk
 DEX		:= $(BUILDDIR)/bin/classes.dex
+#TMPJAR		:= $(BUILDDIR)/bin/classes_tmp.jar
 JAR		:= $(BUILDDIR)/bin/classes.jar
 AP_		:= $(BUILDDIR)/bin/resources.ap_
 APK		:= $(BUILDDIR)/rockbox.apk
@@ -76,9 +77,12 @@ DIRS		+= $(CLASSPATH)
 
 RES		:= $(wildcard $(ANDROID_DIR)/res/*/*)
 
+#UMENGSDK
+UMENGSDKPATH		:= $(ROOTDIR)/android/UMENG_SDK
+
 CLEANOBJS += bin gen libs data
 
-JAVAC_OPTS += -source 1.6 -target 1.6 -implicit:none -classpath $(ANDROID_PLATFORM)/android.jar:$(CLASSPATH)
+JAVAC_OPTS += -source 1.6 -target 1.6 -implicit:none -classpath $(ANDROID_PLATFORM)/android.jar:$(UMENGSDKPATH)/umeng_sdk.jar:$(UMENGSDKPATH)/annotations.jar:$(CLASSPATH)
 
 .PHONY:
 $(MANIFEST): $(MANIFEST_SRC) $(DIRS)
@@ -87,7 +91,9 @@ $(MANIFEST): $(MANIFEST_SRC) $(DIRS)
 $(R_JAVA) $(AP_): $(MANIFEST) $(RES) | $(DIRS)
 	$(call PRINTS,AAPT $(subst $(BUILDDIR)/,,$@))$(AAPT) package -f -m \
 		-J $(BUILDDIR)/gen -M $(MANIFEST) -S $(ANDROID_DIR)/res \
-		-I $(ANDROID_PLATFORM)/android.jar -F $(AP_)
+		-I $(ANDROID_PLATFORM)/android.jar -F $(AP_) \
+		-I $(UMENGSDKPATH)/umeng_sdk.jar \
+		-I $(UMENGSDKPATH)/annotations.jar #注释@override
 
 $(CLASSPATH)/$(PACKAGE_PATH)/R.class: $(R_JAVA)
 	$(call PRINTS,JAVAC $(subst $(ROOTDIR)/,,$<))javac -d $(BUILDDIR)/bin \
@@ -101,13 +107,14 @@ $(JAR): $(JAVA_SRC) $(R_JAVA)
 	$(call PRINTS,JAVAC $(subst $(ROOTDIR)/,,$?))javac -d $(CLASSPATH) \
 		$(JAVAC_OPTS) -sourcepath $(ANDROID_DIR)/src:$(ANDROID_DIR)/gen $?
 	$(call PRINTS,JAR $(subst $(BUILDDIR)/,,$@))jar cf $(JAR) -C $(CLASSPATH) org
+#代码混淆用	$(SILENT)$(ANDROID_SDK_PATH)/tools/proguard/bin/proguard.sh -injars $(TMPJAR) -outjars $(JAR) -libraryjars /home/zhkailing/android-sdk-linux_x86/platforms/android-15/android.jar -libraryjars /home/zhkailing/rockbox/android/UMENG_SDK/umeng_sdk.jar @$(ANDROID_DIR)/proguard.cfg
 
 jar: $(JAR)
 
 $(DEX): $(JAR)
 	@echo "Checking for deleted class files" && $(foreach obj,$(JAVA_OBJ) $(R_OBJ), \
 		(test -f $(obj) || (echo "$(obj) is missing. Run 'make classes' to fix." && false)) && ) true
-	$(call PRINTS,DX $(subst $(BUILDDIR)/,,$@))$(DX) --dex --output=$@ $<
+	$(call PRINTS,DX $(subst $(BUILDDIR)/,,$@))$(DX) --dex --no-optimize --output=$@ $(UMENGSDKPATH)/umeng_sdk.jar $(UMENGSDKPATH)/annotations.jar $<
 
 dex: $(DEX)
 
