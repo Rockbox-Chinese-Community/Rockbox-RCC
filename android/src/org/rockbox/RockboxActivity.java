@@ -150,9 +150,9 @@ public class RockboxActivity extends Activity
         final EditText InputVol=new EditText(this);
         InputVol.setInputType(InputType.TYPE_CLASS_NUMBER);
         if (RockboxVolLockStatus == true)
-        InputVol.setHint("当前值："+Integer.toString(vol));
+        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(vol));
         else
-        InputVol.setHint("当前值："+Integer.toString(vol)+"（未启用）");
+        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(vol)+getResources().getString(R.string.rockbox_vollock_hint2));
         switch (item.getItemId())
         {
             case 0:
@@ -190,7 +190,8 @@ public class RockboxActivity extends Activity
                                             SaveVolLock(voltmp);
                                             vol=voltmp;
                                     	    }catch (Exception e){
-                                    		    Logger.d("Volume-Lock input error!");
+                                    	        Logger.d("Volume-Lock input error!");
+                                    	        Toast.makeText(getApplicationContext(), R.string.rockbox_vollock_inputerror, Toast.LENGTH_LONG).show();
                                     	    }
                                         }
                                     })

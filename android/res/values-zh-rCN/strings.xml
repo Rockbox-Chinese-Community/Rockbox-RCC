@@ -19,6 +19,9 @@
 <string name="rockbox_about_message">Rockbox-RCC\nRockbox中文社区精心定制\nhttp://rbtheme.5d6d.net\n\n*转载注明出处*</string>
 <string name="rockbox_vollock_on">设置锁定音量</string>
 <string name="rockbox_vollock_info">请输入锁定音量值（范围：0-15）</string>
+<string name="rockbox_vollock_hint1">当前值：</string>
+<string name="rockbox_vollock_hint2">（未启用）</string>
+<string name="rockbox_vollock_inputerror">输入不能为空，请重新输入</string>
 <string name="rockbox_vollock_toast">适用于某些启动Rockbox后音量很大的机型，重启生效</string>
 <string name="rockbox_vollock_off">清除锁定音量</string>
 <string name="rockbox_vollock_off_toast">锁定音量已清除</string>
