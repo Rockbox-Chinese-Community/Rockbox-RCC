@@ -1,4 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="rockbox_language_file">chinese-trad.lng</string>
+<string name="app_name">Rockbox</string>
+<string name="notification">Rockbox</string>
+<string name="OK">確認</string>
+<string name="Cancel">取消</string>
+<string name="KbdInputTitle">Rockbox</string>
+<string name="Yes">是</string>
+<string name="No">否</string>
+<string name="error_extraction">歸檔解壓錯誤。</string>
+<string name="rockbox_extracting">Rockbox正在加載，請等待..</string>
+<string name="rockbox_exit">退出</string>
+<string name="rockbox_wakelock_on">開啟強制待機播放</string>
+<string name="rockbox_wakelock_on_toast">鎖定螢幕后繼續播放，適合于某些待機播放不正常的型號。</string>
+<string name="rockbox_wakelock_off">關閉強制待機播放</string>
+<string name="rockbox_wakelock_off_toast">關閉待機后強制繼續播放功能</string>
+<string name="rockbox_about">關於韌體</string>
+<string name="rockbox_about_title">关于 Rockbox</string>
+<string name="rockbox_about_message">Rockbox-RCC\nRockbox中文社區精心定制\nhttp://rbtheme.5d6d.net\n\n*轉載請注明出處*</string>
+<string name="rockbox_vollock_on">設定音量鎖定</string>
+<string name="rockbox_vollock_info">請鍵入鎖定音量值（範圍：0-15）</string>
+<string name="rockbox_vollock_hint1">目前值：</string>
+<string name="rockbox_vollock_hint2">（沒有開啟）</string>
+<string name="rockbox_vollock_inputerror">音量值不能為空，請重新鍵入</string>
+<string name="rockbox_vollock_toast">適合于某些啟動Rockbox后音量很大的型號，重新打開后生效</string>
+<string name="rockbox_vollock_off">清除音量鎖定</string>
+<string name="rockbox_vollock_off_toast">清除音量已經鎖定</string>
+
+<!-- Rockbox initial configuration values -->
+	<string name="rockbox_language_file">chinese-simp.lng</string>
+
+<!-- Widget -->
+<string name="appwidget_label_4x1">Rockbox (4X1)</string>
+<string name="appwidget_label_2x2">Rockbox (2X2)</string>
+<string name="appwidget_label_3x3">Rockbox (3X3)</string>
+<string name="appwidget_infoDisplay">輕觸以播放樂曲</string>
+
+<!-- Widget configuration -->
+<string name="appwidget_configure_instructions">請選擇要顯示的元素。</string>
+<string name="appwidget_configure_albumart">藝術家封面</string>
+<string name="appwidget_configure_prev">上一曲</string>
+<string name="appwidget_configure_stop">停止</string>
+<string name="appwidget_configure_playpause">播放/暫停</string>
+<string name="appwidget_configure_next">下一曲/string>
+<string name="appwidget_configure_confirm">創建小部件</string>
+
 </resources>

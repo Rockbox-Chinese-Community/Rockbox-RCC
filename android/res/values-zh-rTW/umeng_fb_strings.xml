@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="UMEmptyFbNotAllowed">請鍵入您的反饋</string>
+	<string name="UMContentTooLong">超過140字了，再簡短些吧</string>
+	<string name="UMFbList_ListItem_State_ReSend">失敗，輕觸以重新傳送</string>
+	<string name="UMFbList_ListItem_State_Sending">正在傳送…</string>
+	<string name="UMFbList_ListItem_State_Resending">重新傳送</string>
+	<string name="UMFbList_ListItem_State_Fail">傳送失敗</string>
+	<string name="UMFb_Atom_State_Fail">傳送失敗</string>
+	<string name="UMFb_Atom_State_Sending">正在傳送…</string>
+	<string name="UMFb_Atom_State_Resending">傳送失敗，輕觸以重新傳送</string>
+	<string name="UMFeedbackUmengTitle">反饋意見</string>
+	<string name="UMFeedbackListTitle">我的反饋</string>
+	<string name="UMFeedbackConversationTitle">反饋問題</string>
+	<string name="UMFeedbackTitle">每條建議都將幫助我們做得更好。</string>
+	<string name="UMFeedbackContent">感謝您對Rockbox中文社區的支持，請輸入您的反饋和意見</string>
+	<string name="UMFeedbackSummit">傳送</string>
+	<string name="UMFeedbackGoBack">反饋</string>
+	
+	<string name="UMFeedbackGotIt">知道了</string>
+	<string name="UMFeedbackSeeDetail">去看看</string>
+	
+	<string-array name="UMageList">
+		<item>年紀</item>
+		<item>18歲以下</item>
+		<item>18-24歲</item>
+		<item>25-30歲</item>
+		<item>31-35歲</item>
+		<item>36-40歲</item>
+		<item>41-50歲</item>
+		<item>51-59歲</item>
+		<item>60歲及以上</item>
+	</string-array>
+	<string-array name="UMgenderList">
+		<item>性別</item>
+		<item>男</item>
+		<item>女</item>
+	</string-array>
+	<string name="UMViewThread">檢視反饋</string>
+	<string name="UMNewReplyAlertTitle">您的反饋收到了回覆</string>
+	<string name="UMDeleteThread">消除反饋</string>
+	<string name="UMViewFeedback">檢視反饋</string>
+	<string name="UMDeleteFeedback">消除反饋</string>
+	<string name="UMResendFeedback">重傳反饋</string>
+	<string name="UMDeleteMsg">消除信息</string>
+	<string name="UMNewReplyFlick">有新的回覆</string>
+	<string name="UMNewReplyTitle">有新的回覆</string>
+	<string name="UMNewReplyHint">輕觸以檢視</string>
+</resources>
