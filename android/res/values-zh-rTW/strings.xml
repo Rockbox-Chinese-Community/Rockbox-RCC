@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
 <string name="app_name">Rockbox</string>
 <string name="notification">Rockbox</string>
 <string name="OK">確認</string>
@@ -41,7 +42,7 @@
 <string name="appwidget_configure_prev">上一曲</string>
 <string name="appwidget_configure_stop">停止</string>
 <string name="appwidget_configure_playpause">播放/暫停</string>
-<string name="appwidget_configure_next">下一曲/string>
+<string name="appwidget_configure_next">下一曲</string>
 <string name="appwidget_configure_confirm">創建小部件</string>
 
 </resources>

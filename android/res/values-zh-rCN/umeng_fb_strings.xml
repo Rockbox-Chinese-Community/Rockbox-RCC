@@ -8,7 +8,7 @@
 	<string name="UMFbList_ListItem_State_Fail">发送失败</string>
 	<string name="UMFb_Atom_State_Fail">发送失败</string>
 	<string name="UMFb_Atom_State_Sending">发送中…</string>
-	<string name="UMFb_Atom_State_Resending">发送失败,轻触以重发</string>
+	<string name="UMFb_Atom_State_Resend">发送失败,轻触以重发</string>
 	<string name="UMFeedbackUmengTitle">反馈意见</string>
 	<string name="UMFeedbackListTitle">我的反馈</string>
 	<string name="UMFeedbackConversationTitle">反馈问题</string>

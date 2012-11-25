@@ -8,7 +8,7 @@
 	<string name="UMFbList_ListItem_State_Fail">傳送失敗</string>
 	<string name="UMFb_Atom_State_Fail">傳送失敗</string>
 	<string name="UMFb_Atom_State_Sending">正在傳送…</string>
-	<string name="UMFb_Atom_State_Resending">傳送失敗，輕觸以重新傳送</string>
+	<string name="UMFb_Atom_State_Resend">傳送失敗，輕觸以重新傳送</string>
 	<string name="UMFeedbackUmengTitle">反饋意見</string>
 	<string name="UMFeedbackListTitle">我的反饋</string>
 	<string name="UMFeedbackConversationTitle">反饋問題</string>
