@@ -55,8 +55,8 @@ public class RockboxActivity extends Activity
     /* Initialize status */
     private PowerManager.WakeLock RockboxWakeLock = null;
     private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
-    private boolean RockboxVolLockStatus = false; //初始化音量锁定状态
-    private int vol=0; //初始化锁定音量
+    public static boolean RockboxVolLockStatus = false; //初始化音量锁定状态
+    public static int vol=1; //初始化锁定音量
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -186,6 +186,10 @@ public class RockboxActivity extends Activity
                                     public void onClick(DialogInterface dialog, int whichButton) {
                                     	try{
                                             int voltmp=Integer.parseInt(InputVol.getText().toString());
+                                            if (voltmp <= 0)
+                                            voltmp = 1;
+                                            if (voltmp >= 101)
+                                            voltmp = 100;
                                             RockboxVolLockStatus = true;
                                             SaveVolLock(voltmp);
                                             vol=voltmp;
@@ -242,8 +246,12 @@ public class RockboxActivity extends Activity
                 (AudioManager) this.getSystemService(Context.AUDIO_SERVICE);
         int maxstreamvolume = audiomanager.getStreamMaxVolume(streamtype);
         int VolSet;
-        VolSet = maxstreamvolume*vol/15;
-        audiomanager.setStreamVolume(streamtype, VolSet, 0);
+        VolSet = maxstreamvolume*(vol-1)/99;
+        try{
+            audiomanager.setStreamVolume(streamtype, VolSet, 0);
+            }catch (Exception e){
+                Logger.d("setStreamVolume error!");
+            }
         }
     }
     

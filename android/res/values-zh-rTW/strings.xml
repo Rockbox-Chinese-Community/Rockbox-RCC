@@ -19,7 +19,7 @@
 <string name="rockbox_about_title">关于 Rockbox</string>
 <string name="rockbox_about_message">Rockbox-RCC\nRockbox中文社區精心定制\nhttp://rbtheme.5d6d.net\n\n*轉載請注明出處*</string>
 <string name="rockbox_vollock_on">設定音量鎖定</string>
-<string name="rockbox_vollock_info">請鍵入鎖定音量值（範圍：0-15）</string>
+<string name="rockbox_vollock_info">請鍵入鎖定音量值（範圍：1-100）</string>
 <string name="rockbox_vollock_hint1">目前值：</string>
 <string name="rockbox_vollock_hint2">（沒有開啟）</string>
 <string name="rockbox_vollock_inputerror">音量值不能為空，請重新鍵入</string>

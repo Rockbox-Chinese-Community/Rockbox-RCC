@@ -204,6 +204,9 @@ public class RockboxPCM extends AudioTrack
 
     private void set_volume(int volume)
     {
+        /*启动rockbox后会读取保存在data的音量数据，判断是否锁定音量 */
+        if (RockboxActivity.RockboxVolLockStatus == true)
+        volume = (RockboxActivity.vol-100)*10;
         Logger.d("java:set_volume("+volume+")");
         /* Rockbox 'volume' is 0..-990 deci-dB attenuation.
            Android streams have rather low resolution volume control,

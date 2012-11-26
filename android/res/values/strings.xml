@@ -19,7 +19,7 @@
 <string name="rockbox_about_title">About Rockbox</string>
 <string name="rockbox_about_message"><Data><![CDATA[Rockbox compiled by RCC\nRockbox-Chinese-Community\nhttp://rbtheme.5d6d.net\n\n*Reproduced indicate the Source & Author*]]></Data></string>
 <string name="rockbox_vollock_on">Lock Volume</string>
-<string name="rockbox_vollock_info">Input the lock-Volume (0-15)</string>
+<string name="rockbox_vollock_info">Input the lock-Volume (1-100)</string>
 <string name="rockbox_vollock_hint1">Current value:</string>
 <string name="rockbox_vollock_hint2">(Not enabled)</string>
 <string name="rockbox_vollock_inputerror">Input can not be empty</string>
