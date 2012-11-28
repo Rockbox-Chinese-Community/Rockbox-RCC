@@ -23,12 +23,14 @@ package org.rockbox.Helper;
 
 import org.rockbox.RockboxFramebuffer;
 import org.rockbox.RockboxService;
+
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.view.KeyEvent;
 
 public class MediaButtonReceiver
@@ -75,29 +77,83 @@ public class MediaButtonReceiver
     /* helper class for the manifest */
     public static class MediaReceiver extends BroadcastReceiver
     {
+        private static long mLastClickTime = 0;
         private void startService(Context c, Intent baseIntent)
         {
             baseIntent.setClass(c, RockboxService.class);
             c.startService(baseIntent);
         }
+        private Intent KeyIntent(Context context, int keycode)
+        {
+            /* 使用Intent发送keyCode到Service，达到控制播放的目的 */
+            Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON, Uri.EMPTY,
+                                       context, RockboxService.class);
+            intent.putExtra(Intent.EXTRA_KEY_EVENT,
+                            new KeyEvent(KeyEvent.ACTION_UP, keycode));
+            return intent;
+        }
+        
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction()))
+            boolean isActionMediaButton = Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction());
+            if(!isActionMediaButton) return;
+            KeyEvent key = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+            if(key==null) return;
+            boolean isActionUp = (key.getAction()==KeyEvent.ACTION_UP);
+            //boolean isActionDown = (key.getAction()==KeyEvent.ACTION_DOWN);
+            if(!isActionUp) return;
+            //if (!isActionDown){
+            int keyCode = key.getKeyCode();
+            long mEventTime = key.getEventTime();
+            long pressTime = mEventTime-key.getDownTime();//按键长按时长
+            boolean isLongPressPre = (pressTime>500); //长按大于500ms上一曲
+            RockboxService s = RockboxService.getInstance();
+            boolean isHeadsetPress = false;
+            if (s == null || !s.isRockboxRunning()) //先启动服务
+            	startService(context, intent);
+            else
             {
-                Logger.d("Receive MediaButton Broadcast");
-                this.abortBroadcast();
-                KeyEvent key = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                if (key.getAction() == KeyEvent.ACTION_UP)
-                {   /* pass the pressed key to Rockbox, starting it if needed */
-                    RockboxService s = RockboxService.getInstance();
-                    if (s == null || !s.isRockboxRunning())
-                        startService(context, intent);
+                switch (keyCode) {
+                case KeyEvent.KEYCODE_HEADSETHOOK://播放或暂停
+                case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                	if (isLongPressPre) {
+                        startService(context,
+                	    	KeyIntent(context,KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+                	}else{
+                		isHeadsetPress = true;
+                		startService(context,
+                    	    	KeyIntent(context,KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+                	}
+                    break;
+                case KeyEvent.KEYCODE_MEDIA_NEXT:
+                	startService(context,
+                            KeyIntent(context,KeyEvent.KEYCODE_MEDIA_NEXT));
+                	break;
+                case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                	startService(context,
+                            KeyIntent(context,KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+            	    break;
+                default:
+                	Logger.d("少侠，你的按键我不认识。");
+                	break;
                 }
-                //if(key.getKeyCode() == KeyEvent.KEYCODE_HEADSETHOOK)
-                //{
-                //}
             }
+            /* single quick press: pause/resume.
+             * double press: next track
+             * long press: previous track */
+            if (isHeadsetPress) {
+            	isHeadsetPress = false; //貌似没必要
+            	/* 用两次单键抵消影响 目前只能这样子了
+            	 * 用mLastClickTime记录上次键击 */
+            	if (mEventTime - mLastClickTime < 300 && keyCode == KeyEvent.KEYCODE_HEADSETHOOK)
+                {
+    				startService(context,
+                            KeyIntent(context,KeyEvent.KEYCODE_MEDIA_NEXT));
+    			}
+            	mLastClickTime = key.getEventTime();
+            }
+            this.abortBroadcast(); //终止广播(免受其他播放器干扰)
         }
     }
     
