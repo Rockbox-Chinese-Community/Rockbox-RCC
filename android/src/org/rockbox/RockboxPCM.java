@@ -57,6 +57,7 @@ public class RockboxPCM extends AudioTrack
     private float minpcmvolume;
     private float curpcmvolume = 0;
     private float pcmrange;
+    private RockboxApp VolumeLock = RockboxApp.getInstance();
 
     public RockboxPCM()
     {
@@ -205,8 +206,8 @@ public class RockboxPCM extends AudioTrack
     private void set_volume(int volume)
     {
         /*启动rockbox后会读取保存在data的音量数据，判断是否锁定音量 */
-        if (RockboxActivity.RockboxVolLockStatus == true)
-        volume = (RockboxActivity.vol-100)*10;
+        if (VolumeLock.getRockboxVolLockStatus() == true)
+        volume = (VolumeLock.getVol()-100)*10;
         Logger.d("java:set_volume("+volume+")");
         /* Rockbox 'volume' is 0..-990 deci-dB attenuation.
            Android streams have rather low resolution volume control,
@@ -228,6 +229,7 @@ public class RockboxPCM extends AudioTrack
         int oldstreamvolume = audiomanager.getStreamVolume(streamtype);
         if (streamvolume != oldstreamvolume) {
             Logger.d("java:setStreamVolume("+streamvolume+")");
+            if (VolumeLock.getRockboxVolLockStatus() == false)
             setstreamvolume = streamvolume;
             audiomanager.setStreamVolume(streamtype, streamvolume, 0);
         }
