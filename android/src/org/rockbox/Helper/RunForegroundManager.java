@@ -27,7 +27,7 @@ public class RunForegroundManager
     private Handler mServiceHandler;
     private Intent mWidgetUpdate;
     private int iconheight;
-    public static Service gService;
+    private Service gService;
 
     public RunForegroundManager(Service service)
     {

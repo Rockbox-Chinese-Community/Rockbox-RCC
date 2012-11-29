@@ -32,6 +32,7 @@ import java.util.zip.ZipFile;
 import org.rockbox.Helper.Logger;
 import org.rockbox.Helper.MediaButtonReceiver;
 import org.rockbox.Helper.RunForegroundManager;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
@@ -147,7 +148,7 @@ public class RockboxService extends Service
         if (intent == null)
             intent = new Intent("org.rockbox.ServiceRestarted");
         doStart(intent);
-        return START_STICKY;
+        return START_NOT_STICKY; //感觉没必要重启
     }
 
     private void startService()
@@ -155,6 +156,7 @@ public class RockboxService extends Service
         final Object lock = new Object();
         Thread rb = new Thread(new Runnable()
         {
+            @SuppressLint("SdCardPath")
             public void run()
             {
                 final int BUFFER = 8*1024;

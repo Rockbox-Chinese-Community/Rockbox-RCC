@@ -153,6 +153,7 @@ public class RockboxActivity extends Activity
                 break;
             case 1:
                 System.runFinalization();
+                android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(0);
                 break;
             case 2:
