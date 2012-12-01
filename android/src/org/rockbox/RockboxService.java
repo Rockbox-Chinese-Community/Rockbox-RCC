@@ -32,7 +32,6 @@ import java.util.zip.ZipFile;
 import org.rockbox.Helper.Logger;
 import org.rockbox.Helper.MediaButtonReceiver;
 import org.rockbox.Helper.RunForegroundManager;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
@@ -156,13 +155,12 @@ public class RockboxService extends Service
         final Object lock = new Object();
         Thread rb = new Thread(new Runnable()
         {
-            @SuppressLint("SdCardPath")
             public void run()
             {
                 final int BUFFER = 8*1024;
                 String rockboxDirPath = "/data/data/org.rockbox/app_rockbox/rockbox";
                 String rockboxCreditsPath = "/data/data/org.rockbox/app_rockbox/rockbox/rocks/viewers";
-                String rockboxSdDirPath = "/sdcard/rockbox";
+                String rockboxSdDirPath = Environment.getExternalStorageDirectory().getPath()+"/rockbox";
 
                 /* the following block unzips libmisc.so, which contains the files 
                  * we ship, such as themes. It's needed to put it into a .so file

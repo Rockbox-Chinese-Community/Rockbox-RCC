@@ -3,6 +3,7 @@ package org.rockbox.Helper;
 import java.lang.reflect.Method;
 import org.rockbox.R;
 import org.rockbox.RockboxActivity;
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -12,8 +13,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Handler;
-import android.widget.RemoteViews;
 
 public class RunForegroundManager
 {
@@ -101,12 +102,10 @@ public class RunForegroundManager
          */
         mServiceHandler.post(new Runnable()
         {
+            @TargetApi(Build.VERSION_CODES.HONEYCOMB)
             @Override
             public void run()
             {
-                final RemoteViews views = mNotification.contentView;
-                views.setTextViewText(R.id.title, title);
-                views.setTextViewText(R.id.content, artist+"\n"+album);
                 if (artist.equals(""))
                     mNotification.tickerText = title;
                 else
@@ -117,25 +116,28 @@ public class RunForegroundManager
                 PendingIntent contentIntent = PendingIntent.getActivity(gService, 0, intent, 0);
                 mNotification.setLatestEventInfo(gService, title, artist, contentIntent);
                 Logger.i("Now playing:"+title);
-
-                if (albumart != null) {
-                    /* The notification area doesn't have permissions to access the SD card.
-                     * Push the data as Bitmap instead of Uri. Scale down to size of
-                     * launcher icon -- broadcasting the unscaled image may yield in
-                     * too much data, causing UI hangs of Rockbox. */
-                    Bitmap b = BitmapFactory.decodeFile(albumart);
-                    if(b != null) {
-                        /* scale width to keep aspect ratio -- height is the constraint */
-                        int scaledwidth = Math.round(iconheight*((float)b.getWidth()/b.getHeight()));
-                        views.setImageViewBitmap(R.id.artwork,
-                            Bitmap.createScaledBitmap(b, scaledwidth, iconheight, false));
+                
+                try {
+                    if (albumart != null) {
+                        /* The notification area doesn't have permissions to access the SD card.
+                         * Push the data as Bitmap instead of Uri. Scale down to size of
+                         * launcher icon -- broadcasting the unscaled image may yield in
+                         * too much data, causing UI hangs of Rockbox. */
+                        Bitmap b = BitmapFactory.decodeFile(albumart);
+                        if(b != null) {
+                            /* scale width to keep aspect ratio -- height is the constraint */
+                            int scaledwidth = Math.round(iconheight*((float)b.getWidth()/b.getHeight()));
+                            mNotification.largeIcon = Bitmap.createScaledBitmap(b, scaledwidth, iconheight, false);
+                        }
+                        else {
+                            mNotification.largeIcon = BitmapFactory.decodeResource(gService.getResources(), R.drawable.launcher);
+                        }
                     }
                     else {
-                        views.setImageViewResource(R.id.artwork, R.drawable.launcher);
+                        mNotification.largeIcon = BitmapFactory.decodeResource(gService.getResources(), R.drawable.launcher);
                     }
-                }
-                else {
-                    views.setImageViewResource(R.id.artwork, R.drawable.launcher);
+                } catch (Throwable t) {
+                    Logger.e("Only API level >11 can show albumart");
                 }
                 mWidgetUpdate = new Intent("org.rockbox.TrackUpdateInfo");
                 mWidgetUpdate.putExtra("title", title);
