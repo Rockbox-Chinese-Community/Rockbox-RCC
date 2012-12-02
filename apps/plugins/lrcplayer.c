@@ -2790,11 +2790,21 @@ static int handle_button(void)
             rb->sound_set(SOUND_VOLUME, rb->global_settings->volume);
             break;
         case ACTION_WPS_CONTEXT:
-            ret = LRC_GOTO_EDITOR;
-            break;
-        case ACTION_WPS_MENU:
+#ifdef ANDROID
             ret = LRC_GOTO_MENU;
             break;
+#else
+            ret = LRC_GOTO_EDITOR;
+            break;
+#endif
+        case ACTION_WPS_MENU:
+#ifdef ANDROID
+            ret = LRC_GOTO_EDITOR;
+            break;
+#else
+            ret = LRC_GOTO_MENU;
+            break;
+#endif
         default:
             if(rb->default_event_handler(button) == SYS_USB_CONNECTED)
                 ret = PLUGIN_USB_CONNECTED;

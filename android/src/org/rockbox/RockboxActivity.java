@@ -128,6 +128,7 @@ public class RockboxActivity extends Activity
         menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
         menu.add(0, 4, 0, R.string.rockbox_about);
         menu.add(0, 1, 0, R.string.rockbox_exit);
+        menu.add(0, 7, 0, R.string.rockbox_simulatebutton);
         return true;
     }
 
@@ -198,6 +199,17 @@ public class RockboxActivity extends Activity
             	RockboxAppSetting.SaveSetting(1, false, true, false, false);
             	Toast.makeText(this, R.string.rockbox_vollock_off_toast, Toast.LENGTH_LONG).show();
             	break;
+            case 7:
+                RockboxFramebuffer.buttonHandler(0, true); //press
+                try {
+                    Thread.sleep(400); //线程阻塞400ms，模拟长按菜单键（WPS_MENU），小于300ms即为WPS_CONTEXT。
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    Logger.e("Thread blocked!");
+                    }
+                RockboxFramebuffer.buttonHandler(0, false); //release
+                break;
          }
         return true;
      }
