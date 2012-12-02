@@ -145,6 +145,7 @@ $(KEYSTORE):
 	$(call PRINTS,KEYTOOL rockbox.keystore)keytool -genkey \
 		-alias rockboxkey -keystore $@ \
 		-storepass rbtheme.5d6d.net -keypass rbtheme.5d6d.net -validity 40000 \
+		-sigalg MD5withRSA -keyalg RSA -keysize 1024 \
 		-dname "CN=zhkailing,O=zhkailing-PC,C=CN"
 
 ifdef NODEPS
