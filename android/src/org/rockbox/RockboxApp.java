@@ -29,14 +29,18 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.os.PowerManager;
 
 public class RockboxApp extends Application {
-    private static RockboxApp instance; //static For Audiorack ...
+    private static RockboxApp instance; //static For Audiotrack ...
     private static final String VolLock_KEY = "VolLockKey";
     private static final String VolLock_KEY_STAT = "VolLockKeyStat";
+    private static final String WakeLock_KEY_STAT = "WakeLockKeyStat";
     /* Initialize status */
     private boolean RockboxVolLockStatus = false; //初始化音量锁定状态
     private int vol=1; //初始化锁定音量
+    private PowerManager.WakeLock RockboxWakeLock = null;
+    private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
     
     public static RockboxApp getInstance() {
         return instance;
@@ -50,8 +54,16 @@ public class RockboxApp extends Application {
         return RockboxVolLockStatus;
     }
     
-    public void setRockboxVolLockStatus(boolean s){
-        RockboxVolLockStatus = s;
+    public void setRockboxVolLockStatus(boolean b){
+        RockboxVolLockStatus = b;
+    }
+    
+    public boolean getRockboxWakeLockStatus(){
+        return RockboxWakeLockStatus;
+    }
+    
+    public void setRockboxWakeLockStatus(boolean b){
+    	RockboxWakeLockStatus = b;
     }
     
     public void setVol(int s){
@@ -59,7 +71,7 @@ public class RockboxApp extends Application {
     }
     
     /*Set Volume Lock*/
-    private void SetVolLock()
+    private void EnableStreamVolumeSetting()
     {
     	if (RockboxVolLockStatus == true) {
         AudioManager audiomanager;
@@ -77,28 +89,56 @@ public class RockboxApp extends Application {
         }
     }
     
-    /*Save Volume Lock Setting, -1 means to only save VolLock_KEY_STAT*/
-    public void SaveVolLock(int vollock)
+    /*Save Volume Lock Setting and Wake Lock Setting*/
+    public void SaveSetting(int vollock, boolean vollockstat, boolean isvolseton, boolean wakelockstat, boolean iswakeseton)
     {
         String prefName = "Rockbox";
         SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        if (vollock != -1)
+        if (isvolseton)
         {
             editor.putInt(VolLock_KEY, vollock);
             Logger.d("Set the Volume-Lock:"+(vollock-100)+"db");
+            editor.putBoolean(VolLock_KEY_STAT, vollockstat);
         }
-        editor.putBoolean(VolLock_KEY_STAT, RockboxVolLockStatus);
+        if (iswakeseton)
+        	editor.putBoolean(WakeLock_KEY_STAT, wakelockstat);
         editor.commit();
     }
     
-    /*Read Volume Lock Setting*/
-    private void ReadVolLock()
+    /*Read Setting*/
+    private void ReadSetting()
     {
         String prefName = "Rockbox";
         SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
         vol = prefs.getInt(VolLock_KEY, 0);
         RockboxVolLockStatus = prefs.getBoolean(VolLock_KEY_STAT, false);
+        RockboxWakeLockStatus = prefs.getBoolean(WakeLock_KEY_STAT, false);
+    }
+    
+    /* Acquire WakeLock */
+    public void acquireWakeLock()
+    {
+    	if (RockboxWakeLockStatus) {
+            if (RockboxWakeLock == null) {
+            Logger.d("Rockbox is acquiring wake lock");
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            RockboxWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService");
+            RockboxWakeLock.acquire();
+            }
+    	}
+    }
+    
+    /* Release WakeLock */
+    public void releaseWakeLock()
+    {
+    	if (RockboxWakeLockStatus) {
+            if (RockboxWakeLock != null && RockboxWakeLock.isHeld()) {
+            Logger.d("Rockbox is releasing wake lock");
+            RockboxWakeLock.release();
+            RockboxWakeLock =null;
+            }
+    	}
     }
     
     @Override
@@ -106,8 +146,8 @@ public class RockboxApp extends Application {
         // TODO Auto-generated method stub
         super.onCreate();
         instance = this; //主要方便RockboxPCM获取Application
-        ReadVolLock();
-        SetVolLock(); //增加自定义Application，可以在桌面插件启动前锁定音量
+        ReadSetting();
+        EnableStreamVolumeSetting(); //增加自定义Application，可以在桌面插件启动前锁定音量
     }
 }
 

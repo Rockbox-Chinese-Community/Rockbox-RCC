@@ -27,12 +27,10 @@ import org.rockbox.Helper.Logger;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.text.InputType;
 import android.view.Menu;
@@ -48,10 +46,7 @@ import com.umeng.fb.UMFeedbackService;
 
 public class RockboxActivity extends Activity 
 {
-    /* Initialize status */
-    private PowerManager.WakeLock RockboxWakeLock = null;
-    private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
-    private RockboxApp VolumeLock = RockboxApp.getInstance();
+    private RockboxApp RockboxAppSetting = RockboxApp.getInstance();
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -123,12 +118,12 @@ public class RockboxActivity extends Activity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
-        if (RockboxWakeLockStatus == false)
+        if (!RockboxAppSetting.getRockboxWakeLockStatus())
         menu.add(0, 2, 0, R.string.rockbox_wakelock_on);
-        if (RockboxWakeLockStatus == true)
+        if (RockboxAppSetting.getRockboxWakeLockStatus())
         menu.add(0, 3, 0, R.string.rockbox_wakelock_off);
         menu.add(0, 5, 0, R.string.rockbox_vollock_on);
-        if (VolumeLock.getRockboxVolLockStatus() == true)
+        if (RockboxAppSetting.getRockboxVolLockStatus())
         menu.add(0, 6, 0, R.string.rockbox_vollock_off);
         menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
         menu.add(0, 4, 0, R.string.rockbox_about);
@@ -141,10 +136,10 @@ public class RockboxActivity extends Activity
     {
         final EditText InputVol=new EditText(this);
         InputVol.setInputType(InputType.TYPE_CLASS_NUMBER);
-        if (VolumeLock.getRockboxVolLockStatus() == true)
-        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(VolumeLock.getVol()));
+        if (RockboxAppSetting.getRockboxVolLockStatus())
+        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(RockboxAppSetting.getVol()));
         else
-        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(VolumeLock.getVol())+getResources().getString(R.string.rockbox_vollock_hint2));
+        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(RockboxAppSetting.getVol())+getResources().getString(R.string.rockbox_vollock_hint2));
         switch (item.getItemId())
         {
             case 0:
@@ -157,11 +152,13 @@ public class RockboxActivity extends Activity
                 System.exit(0);
                 break;
             case 2:
-                RockboxWakeLockStatus = true;
+                RockboxAppSetting.setRockboxWakeLockStatus(true);
+                RockboxAppSetting.SaveSetting(1, false, false, true, true);
                 Toast.makeText(this, R.string.rockbox_wakelock_on_toast, Toast.LENGTH_LONG).show();
                 break;
             case 3:
-                RockboxWakeLockStatus = false;
+                RockboxAppSetting.setRockboxWakeLockStatus(false);
+                RockboxAppSetting.SaveSetting(1, false, false, false, true);
                 Toast.makeText(this, R.string.rockbox_wakelock_off_toast, Toast.LENGTH_LONG).show();
                 break;
             case 4:
@@ -183,9 +180,9 @@ public class RockboxActivity extends Activity
                                             voltmp = 1;
                                             if (voltmp >= 101)
                                             voltmp = 100;
-                                            VolumeLock.setRockboxVolLockStatus(true);
-                                            VolumeLock.SaveVolLock(voltmp);
-                                            VolumeLock.setVol(voltmp);
+                                            RockboxAppSetting.setRockboxVolLockStatus(true);
+                                            RockboxAppSetting.SaveSetting(voltmp, true, true, false, false);
+                                            RockboxAppSetting.setVol(voltmp);
                                             Toast.makeText(RockboxActivity.this,R.string.rockbox_vollock_toast, Toast.LENGTH_LONG).show();
                                     	    }catch (Exception e){
                                     	        Logger.d("Volume-Lock input error!");
@@ -197,39 +194,14 @@ public class RockboxActivity extends Activity
                                 .show();
                 break;
             case 6:
-            	VolumeLock.setRockboxVolLockStatus(false);
-            	VolumeLock.SaveVolLock(-1);
+            	RockboxAppSetting.setRockboxVolLockStatus(false);
+            	RockboxAppSetting.SaveSetting(1, false, true, false, false);
             	Toast.makeText(this, R.string.rockbox_vollock_off_toast, Toast.LENGTH_LONG).show();
             	break;
          }
         return true;
      }
-    
-    /* Acquire WakeLock */
-    private void acquireWakeLock()
-    {
-    	if (RockboxWakeLockStatus == true) {
-            if (RockboxWakeLock == null) {
-            Logger.d("Rockbox is acquiring wake lock");
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            RockboxWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "RockboxService");
-            RockboxWakeLock.acquire();
-            }
-    	}
-    }
-    
-    /* Release WakeLock */
-    private void releaseWakeLock()
-    {
-    	if (RockboxWakeLockStatus == true) {
-            if (RockboxWakeLock != null && RockboxWakeLock.isHeld()) {
-            Logger.d("Rockbox is releasing wake lock");
-            RockboxWakeLock.release();
-            RockboxWakeLock =null;
-            }
-    	}
-    }
-    
+
     private void setServiceActivity(boolean set)
     {
         RockboxService s = RockboxService.getInstance();
@@ -240,7 +212,7 @@ public class RockboxActivity extends Activity
     public void onResume()
     {
         super.onResume();
-        releaseWakeLock();
+        RockboxAppSetting.releaseWakeLock();
         MobclickAgent.onResume(this);
         setVisible(true);
     }
@@ -252,7 +224,7 @@ public class RockboxActivity extends Activity
     protected void onPause() 
     {
         super.onPause();
-        acquireWakeLock();
+        RockboxAppSetting.acquireWakeLock();
         MobclickAgent.onPause(this);
         /* this will cause the framebuffer's Surface to be destroyed, enabling
          * us to disable drawing */
