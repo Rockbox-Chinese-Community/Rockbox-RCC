@@ -3,7 +3,7 @@ package org.rockbox.Helper;
 import java.lang.reflect.Method;
 import org.rockbox.R;
 import org.rockbox.RockboxActivity;
-import android.annotation.TargetApi;
+import org.rockbox.RockboxService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,8 +13,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Handler;
+import android.view.KeyEvent;
+import android.widget.RemoteViews;
 
 public class RunForegroundManager
 {
@@ -28,28 +30,28 @@ public class RunForegroundManager
     private Handler mServiceHandler;
     private Intent mWidgetUpdate;
     private int iconheight;
-    private Service gService;
 
     public RunForegroundManager(Service service)
     {
         mCurrentService = service;
-        gService = service;
         mNM = (NotificationManager)
                         service.getSystemService(Service.NOTIFICATION_SERVICE);
+        RemoteViews views = new RemoteViews(service.getPackageName(), R.layout.statusbar);
         /* create Intent for clicking on the expanded notifcation area */
         Intent intent = new Intent(service, RockboxActivity.class);
         intent = intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        PendingIntent contentIntent = PendingIntent.getActivity(service, 0, intent, 0);
 
         /* retrieve height of launcher icon. Used to scale down album art. */
         Resources resources = service.getResources();
         Drawable draw = resources.getDrawable(R.drawable.launcher);
         iconheight = draw.getIntrinsicHeight();
 
-        mNotification = new Notification(R.drawable.launcher, service.getString(R.string.notification), System.currentTimeMillis());
+        mNotification = new Notification();
+        mNotification.tickerText = service.getString(R.string.notification);
         mNotification.icon = R.drawable.notification;
+        mNotification.contentView = views;
         mNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-        mNotification.setLatestEventInfo(service, "Rockbox", "Now playing...", contentIntent);
+        mNotification.contentIntent = PendingIntent.getActivity(service, 0, intent, 0);
 
         try {
             api = new NewForegroundApi(R.string.notification, mNotification);
@@ -102,42 +104,41 @@ public class RunForegroundManager
          */
         mServiceHandler.post(new Runnable()
         {
-            @TargetApi(Build.VERSION_CODES.HONEYCOMB)
             @Override
             public void run()
             {
+                final RemoteViews views = mNotification.contentView;
+                views.setTextViewText(R.id.title, title);
+                views.setTextViewText(R.id.content, artist+"\n"+album);
+                views.setOnClickPendingIntent(R.id.noti_playpause, ButtonControl(mCurrentService,
+                          KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+                views.setOnClickPendingIntent(R.id.noti_previous, ButtonControl(mCurrentService,
+                          KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+                views.setOnClickPendingIntent(R.id.noti_next, ButtonControl(mCurrentService,
+                          KeyEvent.KEYCODE_MEDIA_NEXT));
                 if (artist.equals(""))
                     mNotification.tickerText = title;
                 else
                     mNotification.tickerText = title+" - "+artist;
-                /* update Notification LatestEventInfo */
-                Intent intent = new Intent(gService, RockboxActivity.class);
-                intent = intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                PendingIntent contentIntent = PendingIntent.getActivity(gService, 0, intent, 0);
-                mNotification.setLatestEventInfo(gService, title, artist, contentIntent);
-                Logger.i("Now playing:"+title);
-                
-                try {
-                    if (albumart != null) {
-                        /* The notification area doesn't have permissions to access the SD card.
-                         * Push the data as Bitmap instead of Uri. Scale down to size of
-                         * launcher icon -- broadcasting the unscaled image may yield in
-                         * too much data, causing UI hangs of Rockbox. */
-                        Bitmap b = BitmapFactory.decodeFile(albumart);
-                        if(b != null) {
-                            /* scale width to keep aspect ratio -- height is the constraint */
-                            int scaledwidth = Math.round(iconheight*((float)b.getWidth()/b.getHeight()));
-                            mNotification.largeIcon = Bitmap.createScaledBitmap(b, scaledwidth, iconheight, false);
-                        }
-                        else {
-                            mNotification.largeIcon = BitmapFactory.decodeResource(gService.getResources(), R.drawable.launcher);
-                        }
+
+                if (albumart != null) {
+                    /* The notification area doesn't have permissions to access the SD card.
+                     * Push the data as Bitmap instead of Uri. Scale down to size of
+                     * launcher icon -- broadcasting the unscaled image may yield in
+                     * too much data, causing UI hangs of Rockbox. */
+                    Bitmap b = BitmapFactory.decodeFile(albumart);
+                    if(b != null) {
+                        /* scale width to keep aspect ratio -- height is the constraint */
+                        int scaledwidth = Math.round(iconheight*((float)b.getWidth()/b.getHeight()));
+                        views.setImageViewBitmap(R.id.artwork,
+                            Bitmap.createScaledBitmap(b, scaledwidth, iconheight, false));
                     }
                     else {
-                        mNotification.largeIcon = BitmapFactory.decodeResource(gService.getResources(), R.drawable.launcher);
+                        views.setImageViewResource(R.id.artwork, R.drawable.launcher);
                     }
-                } catch (Throwable t) {
-                    Logger.e("Only API level >11 can show albumart");
+                }
+                else {
+                    views.setImageViewResource(R.id.artwork, R.drawable.launcher);
                 }
                 mWidgetUpdate = new Intent("org.rockbox.TrackUpdateInfo");
                 mWidgetUpdate.putExtra("title", title);
@@ -149,6 +150,15 @@ public class RunForegroundManager
                 /* notify in this runnable to make sure the notification
                  * has the correct albumart */
                 mNM.notify(R.string.notification, mNotification); 
+            }
+            
+            /* Control Notification button*/
+            private PendingIntent ButtonControl(Service service, int keycode)
+            {
+                Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON, Uri.EMPTY,
+	            		service, RockboxService.class);
+                intent.putExtra(Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP, keycode));
+                return PendingIntent.getService(service, keycode, intent, 0);
             }
         });       
     }
