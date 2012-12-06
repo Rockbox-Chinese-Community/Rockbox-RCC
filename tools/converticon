@@ -1,0 +1,245 @@
+#!/bin/bash
+echo ""
+echo "-=Rockbox图标转化工具1.0=-"
+echo "  -=zhkailing@163.com=-"
+echo ""
+iconlist="
+audio-x-generic
+folder
+format-indent-more
+media-playback-start-green
+preferences-desktop-wallpaper
+media-flash
+preferences-desktop-font
+preferences-desktop-locale
+preferences-system
+software-update-available
+bookmark-new
+start-here
+go-jump
+go-next
+input-keyboard
+go-previous
+help-browser
+document-properties
+applications-other
+list-add
+preferences-system
+media-record
+face-shout
+preferences-desktop
+emblem-system
+media-playback-start
+video-display
+network-receive
+network-wireless
+system-file-manager
+utilities-system-monitor
+rockbox-clef
+"
+iconlist_viewers="
+applications-graphics            # bmp
+applications-multimedia          # mpeg
+applications-other               # ch8,tap,sna,tzx,z80
+audio-x-generic                  # mp3,mid,rmi,wav
+format-justify-left              # txt,nfo
+text-x-generic-template          # ss
+applications-games               # gb,gbc
+image-x-generic                  # jpg,jpe,jpeg
+format-indent-more               # m3u
+gnome-glchess                    # pgn
+dialog-information               # zzz
+"
+
+print_iconlist() {
+  echo "请按照以下格式命名图标文件，扩展名不限"
+  echo ""
+  cat <<EOF
+=====ICON（请全部小写命名-具体可以参考默认图标）======
+audio-x-generic                  #音乐
+folder                           #文件夹
+format-indent-more               #播放列表
+media-playback-start-green       #光标指示器
+preferences-desktop-wallpaper    #主题设置
+media-flash                      #flash存储器
+preferences-desktop-font         #字体
+preferences-desktop-locale       #语言
+preferences-system               #设置
+software-update-available        #插件
+bookmark-new                     #书签
+start-here                       #这个没见过--脚印图标
+go-jump                          #跳转
+go-next                          #下一个
+input-keyboard                   #键盘
+go-previous                      #上一个
+help-browser                     #帮助
+document-properties              #设置-子菜单
+applications-other               #设置-其他功能
+list-add                         #列表-增加
+preferences-system               #设置
+media-record                     #录音
+face-shout                       #这个没见过--笑脸图标
+preferences-desktop              #常规设置
+emblem-system                    #系统
+media-playback-start             #正在播放
+video-display                    #显示设置
+network-receive                  #远程显示
+network-wireless                 #无线
+system-file-manager              #文件管理
+utilities-system-monitor         #EQ
+rockbox-clef                     #Rockbox
+=====ICON-viewers（请全部小写命名）======
+applications-graphics            # bmp
+applications-multimedia          # mpeg
+applications-other               # ch8,tap,sna,tzx,z80
+audio-x-generic                  # mp3,mid,rmi,wav
+format-justify-left              # txt,nfo
+text-x-generic-template          # ss
+applications-games               # gb,gbc
+image-x-generic                  # jpg,jpe,jpeg
+format-indent-more               # m3u
+gnome-glchess                    # pgn
+dialog-information               # zzz
+EOF
+exit
+}
+
+print_help() {
+  echo "    注意：请在工作目录按照（-l|--list）命令所示的格式命名源文件，源文件请务必保持长宽比例的一致性，同时建议源文件使用透明图层。"
+  echo "          如果不想使用内建的命名格式，请使用'-w'命令。"
+  echo ""
+  cat <<EOF
+  用法：converticon [OPTION]...
+  选项:
+    -h --help       显示帮助
+    -l --list       图标名称列表
+    -v --viewers    输出viewers图标
+    -w              不使用内建文件列表名称，而是按照文件名顺序遍历文件夹内图片文件
+    --sizew=Num     设置输出尺寸-宽
+                    (除svg外其他文件将按照原长宽比例输出，以宽度为基准，所以请务必保持源文件的长宽比例一致性）
+    --sizeh=Num     设置输出尺寸-高
+    --format=Ext    设置源文件格式
+                   （仅支持三个字符的小写扩展名 eg:png svg...）
+    --workdir=Path  设置源文件路径
+    --name=Name     设置输出图标名称
+  依赖：inkscape convert Ubuntu默认均已安装
+  例如：
+    [converticon  -v --sizew=32 --sizeh=32 --format=svg --workdir=/home/myicon --name=RCC]
+
+EOF
+exit
+}
+
+
+output_viewers() {
+iconlist=$iconlist_viewers
+viewers="-viewers"
+}
+
+if [ -z $1 ] ;then
+echo "[错误] 请输入参数"
+echo "-h | --help 显示帮助"
+exit
+fi
+
+for arg in "$@"; do
+	case "$arg" in
+        --sizew=*)   sizew=`echo "$arg" | cut -d = -f 2`;;
+        --sizeh=*)   sizeh=`echo "$arg" | cut -d = -f 2`;;
+        --format=*)   format=`echo "$arg" | cut -d = -f 2`;;
+        --workdir=*)   workdir=`echo "$arg" | cut -d = -f 2`;;
+        --name=*)   name=`echo "$arg" | cut -d = -f 2`;;
+        -h|--help)  print_help;;
+        -l|--list)  print_iconlist;;
+        -v|--viewers)  output_viewers;;
+        -w)  without_internal_list=1;;
+        *)          echo "[错误] 无法识别选项 '$arg'" && echo "-h | --help 显示帮助" && exit;;
+    esac
+done
+
+if [ -z $sizew ] || [ $sizew -le "0" ]
+then
+    echo "[错误] 请设置 SIZE ，必须为正值。"
+exit
+fi
+
+if [ -z $sizeh ] || [ $sizeh -le "0" ]
+then
+    echo "[错误] 请设置 SIZE ，必须为正值。"
+exit
+fi
+
+if [ -z $format ]
+then
+    echo "[错误] 请设置源文件格式。"
+exit
+fi
+
+if [ -z $workdir ]
+then
+    echo "[错误] 请设置源文件目录。"
+exit
+fi
+
+if [ "$without_internal_list" = "1" ]
+then
+    iconlist=`ls "$workdir"`
+    iconlist=`echo $iconlist | sed 's/.... / /g'`
+    iconlist=`echo $iconlist | sed 's/....$//g'`
+fi
+#创建空白bmp
+#for img1 in $iconlist
+#do
+#if [ -e "$workdir/$img1.$format" ]
+#then
+#convert -resize 0X0 "$workdir/$img1.$format" "$workdir/temp.bmp"
+#break
+#fi
+#done
+#echo convert -resize 0X0 "$workdir/audio-x-generic.$format" "$workdir/temp.bmp
+#convert -resize 0X0 $workdir/audio-x-generic.$format $workdir/temp.bmp
+#echo "" > $workdir/temp.bmp
+var=0
+for img in $iconlist
+do
+if [ -e "$workdir/$img.$format" ]
+then
+echo 正在处理：$workdir/$img.$format
+let "var+=1"
+if [ "$format" = "svg" ] ;then
+inkscape --without-gui --export-png="$workdir/temp_$img.png" --export-width=$sizew --export-height=$sizeh "$workdir/$img.$format" >/dev/null
+else
+convert -sample ${sizew}x${sizeh} "$workdir/$img.$format" "$workdir/temp_$img.png"
+fi
+#convert -resize $size xc:"#ff00ff" -alpha transparent $workdir/$img.$format temp_$img.bmp
+if [ "$var" = "1" ]; then
+convert "$workdir/temp_$img.png" "$workdir/temp.bmp"
+else
+convert -append "$workdir/temp.bmp" "$workdir/temp_$img.png" "$workdir/temp.bmp"
+fi
+rm "$workdir/temp_$img.png"
+fi
+done
+if [ -e "$workdir/temp.bmp" ];then
+cp "$workdir/temp.bmp" "$workdir/Icon-$name-${sizew}x${sizeh}$viewers.bmp"
+rm "$workdir/temp.bmp"
+else
+echo "[错误] 没有找到对应的$format图形"
+fi
+echo ""
+echo "输出图形：$var个"
+if [ -z $viewers ]; then
+if [ "$var" != "32" ] ;then
+echo "警告：输出图标$var个，默认应为的32个，请按照'-l|--list'检查源文件"
+fi
+else
+if [ "$var" != "11" ] ;then
+echo "警告：输出图标$var个，默认应为11个，请按照'-l|--list'检查源文件"
+fi
+fi
+echo 输出大小：$sizew x $sizeh
+echo 源文件格式：$format
+echo 源文件目录：$workdir
+echo "转化完成，输出：$workdir/Icon-$name-${sizew}x${sizeh}$viewers.bmp"
+ 
+
