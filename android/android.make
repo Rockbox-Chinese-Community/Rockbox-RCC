@@ -33,6 +33,7 @@ ANDROID_PLATFORM=$(ANDROID_SDK_PATH)/platforms/android-$(ANDROID_PLATFORM_VERSIO
 
 # android tools
 AAPT=$(ANDROID_SDK_PATH)/platform-tools/aapt
+AIDL=$(ANDROID_SDK_PATH)/platform-tools/aidl
 DX=$(ANDROID_SDK_PATH)/platform-tools/dx
 APKBUILDER=$(ANDROID_SDK_PATH)/tools/apkbuilder
 ZIPALIGN=$(ANDROID_SDK_PATH)/tools/zipalign
@@ -45,12 +46,15 @@ MANIFEST	:= $(BUILDDIR)/bin/AndroidManifest.xml
 MANIFEST_SRC	:= $(ANDROID_DIR)/AndroidManifest.xml
 
 R_JAVA		:= $(BUILDDIR)/gen/$(PACKAGE_PATH)/R.java
+R_JAVA		+= $(BUILDDIR)/gen/com.android.internal.telephony/ITelephony.java
 R_OBJ		:= $(CLASSPATH)/$(PACKAGE_PATH)/R.class
 
 JAVA_SRC	:= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/Helper/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/widgets/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/monitors/*.java)
+
+AIDL_SRC	:= $(wildcard $(ANDROID_DIR)/aidl)
 
 java2class = $(addsuffix .class,$(basename $(subst $(ANDROID_DIR)/src,$(CLASSPATH),$(1))))
 
@@ -89,7 +93,12 @@ $(MANIFEST): $(MANIFEST_SRC) $(DIRS)
 	$(call PRINTS,MANIFEST $(@F))sed -e 's/versionName="1.0"/versionName="$(SVNVERSION)"/;s/screenOrientation="portrait"/screenOrientation="$(LCDORIENTATION)"/' $(MANIFEST_SRC) > $(MANIFEST)
 
 $(R_JAVA) $(AP_): $(MANIFEST) $(RES) | $(DIRS)
-	$(call PRINTS,AAPT $(subst $(BUILDDIR)/,,$@))$(AAPT) package -f -m \
+	$(call PRINTS,AIDL ITelephony.aidl)$(AIDL) \
+		-p$(ANDROID_PLATFORM)/framework.aidl \
+		-I$(AIDL_SRC) \
+		$(AIDL_SRC)/com/android/internal/telephony/ITelephony.aidl \
+		$(BUILDDIR)/gen/com.android.internal.telephony/ITelephony.java
+	$(call PRINTS,AAPT resources.ap_)$(AAPT) package -f -m \
 		-J $(BUILDDIR)/gen -M $(MANIFEST) -S $(ANDROID_DIR)/res \
 		-I $(ANDROID_PLATFORM)/android.jar -F $(AP_) \
 		-I $(UMENGSDKPATH)/umeng_sdk.jar \

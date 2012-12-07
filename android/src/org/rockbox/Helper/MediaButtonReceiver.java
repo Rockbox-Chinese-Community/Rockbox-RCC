@@ -21,8 +21,12 @@
 
 package org.rockbox.Helper;
 
+import java.lang.reflect.Method;
+
 import org.rockbox.RockboxFramebuffer;
 import org.rockbox.RockboxService;
+
+import com.android.internal.telephony.ITelephony;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -31,6 +35,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.IBinder;
 import android.view.KeyEvent;
 
 public class MediaButtonReceiver
@@ -93,6 +98,34 @@ public class MediaButtonReceiver
             return intent;
         }
         
+        private boolean phoneIsInUse()
+        {
+            /* 检测是否处于通话状态，防止rockbox影响到线控接听电话
+             * 此处需要获取控制电话的API
+             * 此API属于android的内建接口，并未暴露
+             * 需要使用android源代码，通过AIDL及反射机制,使用隐藏API
+             * 应该优于监听器吧～～～
+             * PS：拦截来电需要此API */
+            boolean phoneInUse = false;
+            Method method;
+            IBinder binder;
+            try {
+                method = Class.forName("android.os.ServiceManager")
+                             .getMethod("getService", String.class);
+                binder = (IBinder) method.invoke(null,
+                             new Object[] { Context.TELEPHONY_SERVICE });
+                ITelephony phone = ITelephony.Stub.asInterface(binder);
+                //phone.dial("13800138000");
+                if (phone.isIdle())
+                    phoneInUse = false;
+                else
+                    phoneInUse = true;
+            } catch (Exception e) {
+                  e.printStackTrace();
+              }
+            return phoneInUse;
+       }
+        
         @Override
         public void onReceive(Context context, Intent intent)
         {
@@ -117,7 +150,7 @@ public class MediaButtonReceiver
                 switch (keyCode) {
                 case KeyEvent.KEYCODE_HEADSETHOOK://播放或暂停
                 case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-                	if (isLongPressPre) {
+                	if (isLongPressPre && keyCode == KeyEvent.KEYCODE_HEADSETHOOK) {
                         startService(context,
                 	    	KeyIntent(context,KeyEvent.KEYCODE_MEDIA_PREVIOUS));
                 	}else{
@@ -153,7 +186,12 @@ public class MediaButtonReceiver
     			}
             	mLastClickTime = key.getEventTime();
             }
-            this.abortBroadcast(); //终止广播(免受其他播放器干扰)
+            if (!phoneIsInUse())
+            {
+            	this.abortBroadcast(); //终止广播(免受其他播放器干扰)
+            }else{
+            	Logger.i("检测到处于通话状态，不拦截线控广播。");
+            }
         }
     }
     
