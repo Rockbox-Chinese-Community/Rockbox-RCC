@@ -53,7 +53,7 @@ public class RockboxWidgetConfigure extends Activity
 
         ((CheckBox)findViewById(R.id.enable_aa)).setChecked(true);
         ((CheckBox)findViewById(R.id.enable_prev)).setChecked(true);
-        ((CheckBox)findViewById(R.id.enable_stop)).setChecked(false);
+        //((CheckBox)findViewById(R.id.enable_stop)).setChecked(false);
         ((CheckBox)findViewById(R.id.enable_playpause)).setChecked(true);
         ((CheckBox)findViewById(R.id.enable_next)).setChecked(true);
 
@@ -77,7 +77,7 @@ public class RockboxWidgetConfigure extends Activity
             WidgetPref state = new WidgetPref();
             state.enableAA   = ((CheckBox)findViewById(R.id.enable_aa)).isChecked();
             state.enablePrev = ((CheckBox)findViewById(R.id.enable_prev)).isChecked();
-            state.enableStop = ((CheckBox)findViewById(R.id.enable_stop)).isChecked();
+            //state.enableStop = ((CheckBox)findViewById(R.id.enable_stop)).isChecked();
             state.enablePlayPause = ((CheckBox)findViewById(R.id.enable_playpause)).isChecked();
             state.enableNext = ((CheckBox)findViewById(R.id.enable_next)).isChecked();
             saveWidgetPref(context, mAppWidgetId, state);
@@ -101,7 +101,7 @@ public class RockboxWidgetConfigure extends Activity
     {
         public boolean enableAA = true;
         public boolean enablePrev = true;
-        public boolean enableStop = true;
+        //public boolean enableStop = true;
         public boolean enablePlayPause = true;
         public boolean enableNext = true;
     }
@@ -111,7 +111,7 @@ public class RockboxWidgetConfigure extends Activity
         SharedPreferences.Editor prefs = context.getSharedPreferences("org.rockbox.RockboxWidgetConfigure", 0).edit();
         prefs.putBoolean("albumart"+appWidgetId, state.enableAA);
         prefs.putBoolean("prev"+appWidgetId, state.enablePrev);
-        prefs.putBoolean("stop"+appWidgetId, state.enableStop);
+        //prefs.putBoolean("stop"+appWidgetId, state.enableStop);
         prefs.putBoolean("playpause"+appWidgetId, state.enablePlayPause);
         prefs.putBoolean("next"+appWidgetId, state.enableNext);
         prefs.commit();
@@ -123,7 +123,7 @@ public class RockboxWidgetConfigure extends Activity
         WidgetPref state = new WidgetPref();
         state.enableAA   = prefs.getBoolean("albumart"+appWidgetId, true);
         state.enablePrev = prefs.getBoolean("prev"+appWidgetId, true);
-        state.enableStop = prefs.getBoolean("stop"+appWidgetId, true);
+        //state.enableStop = prefs.getBoolean("stop"+appWidgetId, true);
         state.enablePlayPause = prefs.getBoolean("playpause"+appWidgetId, true);
         state.enableNext = prefs.getBoolean("next"+appWidgetId, true);
         return state;

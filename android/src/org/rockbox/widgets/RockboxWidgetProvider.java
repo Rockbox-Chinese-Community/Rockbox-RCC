@@ -144,7 +144,7 @@ public class RockboxWidgetProvider extends AppWidgetProvider
         else
             views.setViewVisibility(R.id.next, View.GONE);
 
-        /* enable/disable STOP */
+        /* enable/disable STOP
         if (state.enableStop)
         {
             views.setOnClickPendingIntent(R.id.stop, 
@@ -152,7 +152,7 @@ public class RockboxWidgetProvider extends AppWidgetProvider
                                             KeyEvent.KEYCODE_MEDIA_STOP));
         }
         else
-            views.setViewVisibility(R.id.stop, View.GONE);
+            views.setViewVisibility(R.id.stop, View.GONE); */
 
         if (!state.enableAA)
             views.setViewVisibility(R.id.logo, View.GONE);
