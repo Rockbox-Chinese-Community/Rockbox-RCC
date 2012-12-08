@@ -26,7 +26,7 @@
 <string name="rockbox_vollock_toast">Only for some devices with large volume when launch the app, take effect after restart</string>
 <string name="rockbox_vollock_off">Clear Lock Volume</string>
 <string name="rockbox_vollock_off_toast">Lock Volume cleared</string>
-<string name="rockbox_simulatebutton">Simulate Menu Button</string>
+<string name="rockbox_simulatebutton">Rockbox Menu</string>
 
 <!-- Rockbox initial configuration values -->
 <string name="rockbox_language_file">english.lng</string>

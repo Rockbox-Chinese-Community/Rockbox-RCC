@@ -118,6 +118,7 @@ public class RockboxActivity extends Activity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
+        menu.add(0, 7, 0, R.string.rockbox_simulatebutton);
         if (!RockboxAppSetting.getRockboxWakeLockStatus())
         menu.add(0, 2, 0, R.string.rockbox_wakelock_on);
         if (RockboxAppSetting.getRockboxWakeLockStatus())
@@ -128,7 +129,6 @@ public class RockboxActivity extends Activity
         menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
         menu.add(0, 4, 0, R.string.rockbox_about);
         menu.add(0, 1, 0, R.string.rockbox_exit);
-        menu.add(0, 7, 0, R.string.rockbox_simulatebutton);
         return true;
     }
 
