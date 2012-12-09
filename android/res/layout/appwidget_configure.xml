@@ -10,7 +10,7 @@
 
   <ImageView android:id="@+id/logo"
              android:layout_width="fill_parent"
-             android:layout_height="wrap_content"
+             android:layout_height="104dp"
              android:scaleType="centerInside"
              android:src="@drawable/rockbox" />
 
@@ -26,10 +26,10 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/appwidget_configure_prev"/>
-  <CheckBox android:id="@+id/enable_stop"
+<!--  <CheckBox android:id="@+id/enable_stop"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/appwidget_configure_stop"/>
+            android:text="@string/appwidget_configure_stop"/>-->
   <CheckBox android:id="@+id/enable_playpause"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -40,7 +40,7 @@
             android:text="@string/appwidget_configure_next"/>
 
   <Button android:id="@+id/confirm"
-          android:layout_width="fill_parent"
+          android:layout_width="480dp"
           android:layout_height="wrap_content"
           android:text="@string/appwidget_configure_confirm"/>
 </LinearLayout>
