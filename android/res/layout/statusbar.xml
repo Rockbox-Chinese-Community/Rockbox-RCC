@@ -16,10 +16,10 @@
 		android:layout_width="wrap_content"
 		android:layout_height="fill_parent">
 	</ImageView>
-    <LinearLayout android:layout_width="150dp" 
+    <LinearLayout android:layout_width="match_parent" 
     	android:layout_height="wrap_content" 
     	android:orientation="vertical">
-    	<LinearLayout android:layout_width="150dp"
+    	<LinearLayout android:layout_width="match_parent"
 	    	android:layout_height="wrap_content"
 	    	android:orientation="horizontal">
 		    
@@ -36,7 +36,7 @@
 			  android:paddingLeft="6dp"/>
     	</LinearLayout>
 
-	<LinearLayout android:layout_width="150dp" 
+	<LinearLayout android:layout_width="wrap_content" 
 	    	android:layout_height="wrap_content"
 	    	android:paddingLeft="3dp"
 	        android:orientation="horizontal">
@@ -50,28 +50,4 @@
 			  android:textAppearance="?android:attr/textAppearanceSmallInverse"/>
 		</LinearLayout>
     </LinearLayout>
-    <ImageButton
-                android:id="@+id/noti_previous"
-                android:layout_width="40dip"
-                android:layout_height="wrap_content"
-                android:src="@drawable/imgbtn_selector_noti_previous"
-                android:layout_gravity="center_vertical"
-                android:paddingRight="0dp" 
-                android:background="#00ffffff"/>
-    <ImageButton
-                android:id="@+id/noti_playpause"
-                android:layout_width="40dip"
-                android:layout_height="wrap_content"
-                android:src="@drawable/imgbtn_selector_noti_pause"
-                android:layout_gravity="center_vertical"
-                android:paddingRight="0dp" 
-                android:background="#00ffffff"/>
-    <ImageButton
-                android:id="@+id/noti_next"
-                android:layout_width="40dip"
-                android:layout_height="wrap_content"
-                android:src="@drawable/imgbtn_selector_noti_next"
-                android:layout_gravity="center_vertical"
-                android:paddingRight="0dp" 
-                android:background="#00ffffff"/>
 </LinearLayout>

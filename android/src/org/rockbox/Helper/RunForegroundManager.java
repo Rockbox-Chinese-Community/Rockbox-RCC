@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.RemoteViews;
 
 public class RunForegroundManager
@@ -30,6 +31,7 @@ public class RunForegroundManager
     private Handler mServiceHandler;
     private Intent mWidgetUpdate;
     private int iconheight;
+    private int SDKAPILEVEL=android.os.Build.VERSION.SDK_INT;
 
     public RunForegroundManager(Service service)
     {
@@ -110,12 +112,15 @@ public class RunForegroundManager
                 final RemoteViews views = mNotification.contentView;
                 views.setTextViewText(R.id.title, title);
                 views.setTextViewText(R.id.content, artist+"\n"+album);
-                views.setOnClickPendingIntent(R.id.noti_playpause, ButtonControl(mCurrentService,
-                          KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
-                views.setOnClickPendingIntent(R.id.noti_previous, ButtonControl(mCurrentService,
-                          KeyEvent.KEYCODE_MEDIA_PREVIOUS));
-                views.setOnClickPendingIntent(R.id.noti_next, ButtonControl(mCurrentService,
-                          KeyEvent.KEYCODE_MEDIA_NEXT));
+                if (SDKAPILEVEL>10)
+                {
+                    views.setOnClickPendingIntent(R.id.noti_playpause, ButtonControl(mCurrentService,
+                              KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE));
+                    views.setOnClickPendingIntent(R.id.noti_previous, ButtonControl(mCurrentService,
+                              KeyEvent.KEYCODE_MEDIA_PREVIOUS));
+                    views.setOnClickPendingIntent(R.id.noti_next, ButtonControl(mCurrentService,
+                              KeyEvent.KEYCODE_MEDIA_NEXT));
+                }
                 if (artist.equals(""))
                     mNotification.tickerText = title;
                 else
