@@ -54,7 +54,7 @@ JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/Helper/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/widgets/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/monitors/*.java)
 
-AIDL_SRC	:= $(wildcard $(ANDROID_DIR)/aidl)
+AIDL_SRC	:= $(wildcard $(ANDROID_DIR)/src)
 
 java2class = $(addsuffix .class,$(basename $(subst $(ANDROID_DIR)/src,$(CLASSPATH),$(1))))
 
