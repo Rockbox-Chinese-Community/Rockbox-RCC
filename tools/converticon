@@ -64,7 +64,6 @@ preferences-desktop-wallpaper    #主题设置
 media-flash                      #flash存储器
 preferences-desktop-font         #字体
 preferences-desktop-locale       #语言
-preferences-system               #设置
 software-update-available        #插件
 bookmark-new                     #书签
 start-here                       #这个没见过--脚印图标
@@ -105,7 +104,7 @@ exit
 }
 
 print_help() {
-  echo "    注意：请在工作目录按照（-l|--list）命令所示的格式命名源文件，源文件请务必保持长宽比例的一致性，同时建议源文件使用透明图层。"
+  echo "    注意：请在工作目录按照（-l|--list）命令所示的格式命名源文件，建议源文件使用透明图层。"
   echo "          如果不想使用内建的命名格式，请使用'-w'命令。"
   echo ""
   cat <<EOF
@@ -116,7 +115,6 @@ print_help() {
     -v --viewers    输出viewers图标
     -w              不使用内建文件列表名称，而是按照文件名顺序遍历文件夹内图片文件
     --sizew=Num     设置输出尺寸-宽
-                    (除svg外其他文件将按照原长宽比例输出，以宽度为基准，所以请务必保持源文件的长宽比例一致性）
     --sizeh=Num     设置输出尺寸-高
     --format=Ext    设置源文件格式
                    （仅支持三个字符的小写扩展名 eg:png svg...）
@@ -167,6 +165,8 @@ if [ -z $sizeh ] || [ $sizeh -le "0" ]
 then
     echo "[错误] 请设置 SIZE ，必须为正值。"
 exit
+else
+let "sizehh=sizeh+1"
 fi
 
 if [ -z $format ]
@@ -206,26 +206,29 @@ if [ -e "$workdir/$img.$format" ]
 then
 echo 正在处理：$workdir/$img.$format
 let "var+=1"
-if [ "$format" = "svg" ] ;then
-inkscape --without-gui --export-png="$workdir/temp_$img.png" --export-width=$sizew --export-height=$sizeh "$workdir/$img.$format" >/dev/null
-else
-convert -sample ${sizew}x${sizeh} "$workdir/$img.$format" "$workdir/temp_$img.png"
-fi
+#if [ "$format" = "png" ] ;then
+echo 如有选择提示，请选择嵌入，正在处理第$var个图片。
+inkscape -z --export-png="$workdir/temp_$img.png" --export-width=$sizew --export-height=$sizeh "$workdir/$img.$format" >/dev/null
+#else
+#inkscape -g --export-png="$workdir/temp_$img.png" --export-width=$sizew --export-height=$sizeh "$workdir/$img.$format" >/dev/null
+#convert "$workdir/$img.$format" -rotate 90 "$workdir/temp_rotatetmp_$img.$format"
+#convert -sample ${sizeh} "$workdir/temp_rotatetmp_$img.$format" "$workdir/temp_rotate_$img.png"
+#convert "$workdir/temp_rotate_$img.png" -rotate -90 "$workdir/temp_$img.png"
+#fi
 #convert -resize $size xc:"#ff00ff" -alpha transparent $workdir/$img.$format temp_$img.bmp
 if [ "$var" = "1" ]; then
 convert "$workdir/temp_$img.png" "$workdir/temp.bmp"
 else
-convert -append "$workdir/temp.bmp" "$workdir/temp_$img.png" "$workdir/temp.bmp"
+convert -append "$workdir/temp.bmp" "$workdir/temp_$img.png" "$workdir/temp.bmp" 
 fi
 rm "$workdir/temp_$img.png"
+#rm "$workdir/temp_rotatetmp_$img.$format"
+#rm "$workdir/temp_rotate_$img.png"
 fi
 done
 if [ -e "$workdir/temp.bmp" ];then
 cp "$workdir/temp.bmp" "$workdir/Icon-$name-${sizew}x${sizeh}$viewers.bmp"
 rm "$workdir/temp.bmp"
-else
-echo "[错误] 没有找到对应的$format图形"
-fi
 echo ""
 echo "输出图形：$var个"
 if [ -z $viewers ]; then
@@ -241,5 +244,7 @@ echo 输出大小：$sizew x $sizeh
 echo 源文件格式：$format
 echo 源文件目录：$workdir
 echo "转化完成，输出：$workdir/Icon-$name-${sizew}x${sizeh}$viewers.bmp"
- 
+else
+echo "[错误] 没有找到对应的$format图形"
+fi
 
