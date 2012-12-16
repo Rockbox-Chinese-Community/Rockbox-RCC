@@ -36,8 +36,10 @@ public class RockboxApp extends Application {
     private static final String VolLock_KEY = "VolLockKey";
     private static final String VolLock_KEY_STAT = "VolLockKeyStat";
     private static final String WakeLock_KEY_STAT = "WakeLockKeyStat";
+    private static final String RUN_KEY_STAT = "isFirstRun";
     /* Initialize status */
     private boolean RockboxVolLockStatus = false; //初始化音量锁定状态
+    private boolean isFirstRunStatus = true;
     private int vol=1; //初始化锁定音量
     private PowerManager.WakeLock RockboxWakeLock = null;
     private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
@@ -68,6 +70,10 @@ public class RockboxApp extends Application {
     
     public void setVol(int s){
         vol = s;
+    }
+    
+    public boolean getRunStatus(){
+        return isFirstRunStatus;
     }
     
     /*Set Volume Lock*/
@@ -114,6 +120,7 @@ public class RockboxApp extends Application {
         vol = prefs.getInt(VolLock_KEY, 0);
         RockboxVolLockStatus = prefs.getBoolean(VolLock_KEY_STAT, false);
         RockboxWakeLockStatus = prefs.getBoolean(WakeLock_KEY_STAT, false);
+        isFirstRunStatus = prefs.getBoolean(RUN_KEY_STAT, true);
     }
     
     /* Acquire WakeLock */
@@ -141,12 +148,22 @@ public class RockboxApp extends Application {
     	}
     }
     
+    private void firstrun()
+    {
+        String prefName = "Rockbox";
+        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(RUN_KEY_STAT, false);
+        editor.commit();
+    }
+    
     @Override
     public void onCreate() {
         // TODO Auto-generated method stub
         super.onCreate();
         instance = this; //主要方便RockboxPCM获取Application
         ReadSetting();
+        firstrun();
         EnableStreamVolumeSetting(); //增加自定义Application，可以在桌面插件启动前锁定音量
     }
 }

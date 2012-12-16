@@ -113,6 +113,14 @@ public class RockboxActivity extends Activity
             }
         });
         startService(intent);
+        if (RockboxAppSetting.getRunStatus())
+        {
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.rockbox_firstrun_title)
+                .setMessage(R.string.rockbox_firstrun_message)
+                .setPositiveButton(R.string.OK, null)
+                .show();
+        }
     }
     
     @Override
