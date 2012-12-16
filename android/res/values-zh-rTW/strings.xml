@@ -28,7 +28,7 @@
 <string name="rockbox_vollock_off_toast">清除音量已經鎖定</string>
 <string name="rockbox_simulatebutton">Rockbox選單</string>
 <string name="rockbox_firstrun_title">首次使用 Rockbox</string>
-<string name="rockbox_firstrun_message">首次使用須知\n\n1.如果出現“字體太小”、“字體無法顯示”、“播放界面不正常”等問題均屬於主題安裝問題，請下載正確的數據包。\n2.對應Android4.0以上OS，如果出現啟動後白屏退出或者無法播放音樂，請關閉媒體庫的自動更新及記錄音樂播放記錄功能（長按媒體庫選單可見）。\n\nPS:如無法在應用程式界面修改，請用文本編輯器打開\&quot;/sdcard/rockbox/config.cfg\&quot;文件，然後將內容裡的：\&quot;gather runtime data: on\&quot;這一行刪去。</string>
+<string name="rockbox_firstrun_message">首次使用須知\n\n1.如果出現“字體太小”、“字體無法顯示”、“播放界面不正常”等問題均屬於主題安裝問題，請前往Rockbox中文社區下載對應分辨率的數據包或主題。\n2.對應Android4.0以上OS，如果出現啟動後白屏退出或者無法播放音樂，請關閉媒體庫的自動更新及記錄音樂播放記錄功能（長按媒體庫選單可見）。\n\nPS:如無法在應用程式界面修改，請用文本編輯器打開\&quot;/sdcard/rockbox/config.cfg\&quot;文件，然後將內容裡的：\&quot;gather runtime data: on\&quot;這一行刪去。</string>
 
 <!-- Rockbox initial configuration values -->
 	<string name="rockbox_language_file">chinese-simp.lng</string>
