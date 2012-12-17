@@ -15,5 +15,6 @@
     <item name="android:background">@drawable/appwidget_infodisplay_background</item>
   </style>
   <style name="Theme.rockbox" parent="@android:style/Theme.NoTitleBar.Fullscreen" />
+  <style name="Theme.rockbox.preference" parent="@android:style/Theme.NoTitleBar" />
 </resources>
 

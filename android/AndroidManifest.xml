@@ -20,6 +20,7 @@
 			</intent-filter>
 		</activity>
 
+		<activity android:theme="@style/Theme.rockbox.preference" android:name=".RockboxPref" android:label="@string/rockbox_preference" />
 		<activity android:name="com.umeng.fb.ui.SendFeedback" android:windowSoftInputMode="adjustResize" />
 		<activity android:name="com.umeng.fb.ui.FeedbackConversations" />
 		<activity android:name="com.umeng.fb.ui.FeedbackConversation" android:configChanges="keyboard" />		

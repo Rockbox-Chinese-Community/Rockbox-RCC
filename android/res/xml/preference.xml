@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:key="screen_list"
+  android:title="@string/pre_rockbox_preference_title"
+  >
+    <PreferenceCategory android:title="@string/pre_rockbox_volume_control_title">
+        <CheckBoxPreference android:key="volume_lock"
+            android:summary="@string/pre_rockbox_volume_lock_summary" android:title="@string/pre_rockbox_volume_lock_title">
+        </CheckBoxPreference>
+        <org.rockbox.RockboxSeekBarPreference  android:key="volume_lock_value" android:dependency="volume_lock" android:title="@string/pre_rockbox_volume_lock_value_title"
+   android:persistent="true"  />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pre_rockbox_power_title">
+        <CheckBoxPreference android:key="wake_lock"
+            android:summary="@string/pre_rockbox_wake_lock_summary" android:title="@string/pre_rockbox_wake_lock_title"> 
+        </CheckBoxPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pre_rockbox_wire_setting_title">
+        <CheckBoxPreference android:key="drive_by_wire"
+            android:summary="@string/pre_rockbox_drive_by_wire_summary" android:title="@string/pre_rockbox_drive_by_wire_title">
+        </CheckBoxPreference>
+        <CheckBoxPreference android:summary="@string/pre_rockbox_drive_by_wire_exchange_summary"
+            android:title="@string/pre_rockbox_drive_by_wire_exchange_title" android:dependency="drive_by_wire"
+            android:key="drive_by_wire_exchange">
+        </CheckBoxPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pre_rockbox_about_title">
+        <PreferenceScreen android:title="@string/pre_rockbox_feedback_title" >
+           <intent android:action="android.intent.action.MAIN" android:targetPackage="org.rockbox"
+android:targetClass="com.umeng.fb.ui.SendFeedback" />
+        </PreferenceScreen>
+        <PreferenceScreen android:title="@string/pre_rockbox_rcc_title" android:summary="@string/pre_rockbox_rcc_summary">
+            <intent android:action="android.intent.action.VIEW" android:data="http://rbtheme.5d6d.net" />
+        </PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>
+
+
