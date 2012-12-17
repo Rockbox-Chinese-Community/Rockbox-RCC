@@ -18,12 +18,13 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pre_rockbox_wire_setting_title">
         <CheckBoxPreference android:key="drive_by_wire"
-            android:summary="@string/pre_rockbox_drive_by_wire_summary" android:title="@string/pre_rockbox_drive_by_wire_title">
+            android:summary="@string/pre_rockbox_drive_by_wire_summary" android:title="@string/pre_rockbox_drive_by_wire_title" android:defaultValue="true">
         </CheckBoxPreference>
         <CheckBoxPreference android:summary="@string/pre_rockbox_drive_by_wire_exchange_summary"
             android:title="@string/pre_rockbox_drive_by_wire_exchange_title" android:dependency="drive_by_wire"
             android:key="drive_by_wire_exchange">
         </CheckBoxPreference>
+        <Preference android:enabled="false" android:title="@string/pre_rockbox_wire_title" android:summary="@string/pre_rockbox_wire_summary" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pre_rockbox_about_title">
         <PreferenceScreen android:title="@string/pre_rockbox_feedback_title" >

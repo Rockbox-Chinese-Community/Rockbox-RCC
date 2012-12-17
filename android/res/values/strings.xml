@@ -43,6 +43,8 @@
 <string name="pre_rockbox_drive_by_wire_summary">Enable Wire Control</string>
 <string name="pre_rockbox_drive_by_wire_exchange_title">Exchange Wire Control</string>
 <string name="pre_rockbox_drive_by_wire_exchange_summary">Exchange the prev and next function on headset hook key</string>
+<string name="pre_rockbox_wire_title">Default Headset Hook Key:</string>
+<string name="pre_rockbox_wire_summary">[single quick press: pause/resume][double press: next track][long press: previous track]</string>
 <string name="pre_rockbox_about_title">About</string>
 <string name="pre_rockbox_feedback_title">Feedback</string>
 <string name="pre_rockbox_rcc_title">Rockbox-Chinese-Community</string>

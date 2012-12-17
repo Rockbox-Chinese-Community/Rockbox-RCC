@@ -50,9 +50,9 @@ public class RockboxPref extends PreferenceActivity implements OnPreferenceChang
 		else if(preference.getKey().equals(wakelockKey))
 			RockboxAppSetting.changeRockboxWakeLockStatus();
 		else if(preference.getKey().equals(drivebywireKey))
-			return true;
+			RockboxAppSetting.changeRockboxWireStatus();
 		else if(preference.getKey().equals(drivebywireexchangeKey))
-			return true;
+			RockboxAppSetting.changeRockboxWireExchange();
 		else
 			return false; 
 		return true;

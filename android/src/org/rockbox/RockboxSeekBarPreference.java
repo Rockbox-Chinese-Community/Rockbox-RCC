@@ -13,13 +13,11 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
-public class RockboxSeekBarPreference extends Preference implements
-
-    OnSeekBarChangeListener {
+public class RockboxSeekBarPreference extends Preference implements OnSeekBarChangeListener {
 
     public static int maximum = 100; // 最大音量100
     public static int interval = 1; // 按照1递增
-    private float oldValue = 1; //默认1
+    private float oldValue = 0; //默认最左端
     private TextView view;
     private RockboxApp RockboxAppSetting = RockboxApp.getInstance();
 
@@ -49,8 +47,10 @@ public class RockboxSeekBarPreference extends Preference implements
         bar.setMax(maximum);
         bar.setProgress((int) this.oldValue);
         bar.setOnSeekBarChangeListener(this);
-  
-        view.setText(getTitle()+":"+Integer.toString(bar.getProgress()));
+        if (bar.getProgress()==0) 
+            view.setText(getTitle()+":"+Integer.toString(bar.getProgress()+1));
+        else
+            view.setText(getTitle()+":"+Integer.toString(bar.getProgress()));
 
         layout.addView(view);
         layout.addView(bar);
@@ -61,9 +61,9 @@ public class RockboxSeekBarPreference extends Preference implements
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
         progress = Math.round(((float) progress) / interval) * interval;
+        seekBar.setProgress(progress); //视觉上0-100
         if (progress < 1)
             progress = 1; //设置范围1-100
-        seekBar.setProgress(progress);
         view.setText(getTitle()+":"+Integer.toString(progress));
         this.oldValue = progress;
         updatePreference(progress);
@@ -78,13 +78,13 @@ public class RockboxSeekBarPreference extends Preference implements
 
     @Override
     protected Object onGetDefaultValue(TypedArray ta, int index) {
-        int dValue = (int) ta.getInt(index, 50);
+        int dValue = (int) ta.getInt(index, 1);
         return validateValue(dValue);
     }
 
     @Override
     protected void onSetInitialValue(boolean restoreValue, Object defaultValue) {
-        int temp = restoreValue ? getPersistedInt(50) : (Integer) defaultValue;
+        int temp = restoreValue ? getPersistedInt(1) : (Integer) defaultValue;
         if (!restoreValue)
             persistInt(temp);
         this.oldValue = temp;
@@ -105,6 +105,7 @@ public class RockboxSeekBarPreference extends Preference implements
         editor.putInt(getKey(), newValue);
         editor.commit();
         RockboxAppSetting.setVol();
+        RockboxAppSetting.EnableStreamVolumeSetting();
     }
 
 }

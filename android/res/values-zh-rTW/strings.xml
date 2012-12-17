@@ -43,6 +43,8 @@
 <string name="pre_rockbox_drive_by_wire_summary">啟用線控</string>
 <string name="pre_rockbox_drive_by_wire_exchange_title">線控反向</string>
 <string name="pre_rockbox_drive_by_wire_exchange_summary">互換線控的上一曲、下一曲功能（單鍵線控）</string>
+<string name="pre_rockbox_wire_title">默認:</string>
+<string name="pre_rockbox_wire_summary">[單擊：播放/暫停][雙擊：下一曲][長按：上一曲]</string>
 <string name="pre_rockbox_about_title">關於</string>
 <string name="pre_rockbox_feedback_title">反饋意見</string>
 <string name="pre_rockbox_rcc_title">Rockbox中文社區</string>

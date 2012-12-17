@@ -38,6 +38,8 @@ public class RockboxApp extends Application {
     /* Initialize status */
     private boolean RockboxVolLockStatus = false; //初始化音量锁定状态
     private boolean isFirstRunStatus = true;
+    private boolean RockboxWireStatus = true;
+    private boolean isRockboxWireExchange = false;
     private int vol=1; //初始化锁定音量
     private PowerManager.WakeLock RockboxWakeLock = null;
     private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
@@ -48,6 +50,14 @@ public class RockboxApp extends Application {
     
     public int getVol(){
         return vol;
+    }
+    
+    public boolean getWireStatus(){
+        return RockboxWireStatus;
+    }
+    
+    public boolean isRockboxWireExchange(){
+        return isRockboxWireExchange;
     }
     
     public void setVol(){
@@ -71,12 +81,20 @@ public class RockboxApp extends Application {
     	RockboxWakeLockStatus = !RockboxWakeLockStatus;
     }
     
+    public void changeRockboxWireStatus(){
+    	RockboxWireStatus = !RockboxWireStatus;
+    }
+    
+    public void changeRockboxWireExchange(){
+    	isRockboxWireExchange = !isRockboxWireExchange;
+    }
+    
     public boolean getRunStatus(){
         return isFirstRunStatus;
     }
     
     /*Set Volume Lock*/
-    private void EnableStreamVolumeSetting()
+    public void EnableStreamVolumeSetting()
     {
     	if (RockboxVolLockStatus == true) {
         AudioManager audiomanager;
@@ -102,6 +120,8 @@ public class RockboxApp extends Application {
         RockboxVolLockStatus = prefs.getBoolean("volume_lock", false);
         RockboxWakeLockStatus = prefs.getBoolean("wake_lock", false);
         isFirstRunStatus = prefs.getBoolean(RUN_KEY_STAT, true);
+        RockboxWireStatus = prefs.getBoolean("drive_by_wire", true);
+        isRockboxWireExchange = prefs.getBoolean("drive_by_wire_exchange", false);
     }
     
     /* Acquire WakeLock */
