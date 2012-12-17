@@ -17,7 +17,7 @@
 <string name="rockbox_wakelock_off_toast">Release WakeLock</string>
 <string name="rockbox_about">About</string>
 <string name="rockbox_about_title">About Rockbox</string>
-<string name="rockbox_about_message"><Data><![CDATA[Rockbox compiled by RCC\nRockbox-Chinese-Community\nhttp://rbtheme.5d6d.net\n\n*Reproduced indicate the Source & Author*]]></Data></string>
+<string name="rockbox_about_message"><Data><![CDATA[Rockbox compiled by RCC\nRockbox-Chinese-Community\nhttp://rbtheme.5d6d.net\n\n*Reproduced only indicating the Source & Author*]]></Data></string>
 <string name="rockbox_vollock_on">Lock Volume</string>
 <string name="rockbox_vollock_info">Input the lock-Volume (1-100)</string>
 <string name="rockbox_vollock_hint1">Current value:</string>
@@ -27,8 +27,8 @@
 <string name="rockbox_vollock_off">Clear Lock Volume</string>
 <string name="rockbox_vollock_off_toast">Lock Volume cleared</string>
 <string name="rockbox_simulatebutton">Rockbox Menu</string>
-<string name="rockbox_firstrun_title">First run</string>
-<string name="rockbox_firstrun_message">First run help\n\n1.The issue such as \&quot;the font is too small\&quot;, \&quot;the font can not display\&quot; or \&quot;the WPS interface is abnormal\&quot; you\&apos;ve seen is theme installation problem, please download the correct theme files.(http://rbtheme.5d6d.net)\n2 If you have problem such as \&quot;exit with white panic screen after startup\&quot; or \&quot;unable to play music\&quot; on ICS （and above）device, please close \&quot;database auto update\&quot;(long press database menu--Auto Upate--No) and colse \&quot;gather runtime data\&quot;(long press database menu--Gather Runtime Date--No).\n\nPS: If you are not able to modify settings in the application interface, please open \&quot;/sdcard/rockbox/config.cfg\&quot; file with text editor, and delete \&quot;gather runtime data: on\&quot;.</string>
+<string name="rockbox_firstrun_title">First Startup</string>
+<string name="rockbox_firstrun_message">First Startup Help\n\n1.Issues on much too small fonts, displaying fonts and While-Playing-Screen(WPS) is related to uncorrect theme installation. Please download correct themes( View http://rbtheme.5d6d.net/ for more).\n2.If Rockbox exits with white panic screen after every startup or be unable to play music on ICS (and above) device, please switch off Database Auto Update feature (long press Database--Auto Upate--No) and Gather Runtime Data (long press Database--Gather Runtime Date--No).\n\nPS: If you are unable to modify settings through application interface, please edit /sdcard/rockbox/config.cfg with text editor, delete \'gather runtime data: on.\'</string>
 <string name="rockbox_preference">Preferences</string>
 <string name="pre_rockbox_preference_title">Rockbox Preferences</string>
 <string name="pre_rockbox_volume_control_title">Volume Control</string>
@@ -41,7 +41,7 @@
 <string name="pre_rockbox_wire_setting_title">Cable Remote Control Setting</string>
 <string name="pre_rockbox_drive_by_wire_title">Cable Remote Control</string>
 <string name="pre_rockbox_drive_by_wire_summary">Enable Cable Remote Control</string>
-<string name="pre_rockbox_drive_by_wire_exchange_title">Reverse Cable Remote Control Keyset</string>
+<string name="pre_rockbox_drive_by_wire_exchange_title">Swap Cable Remote Control Keyset</string>
 <string name="pre_rockbox_drive_by_wire_exchange_summary">Exchange the prev and next function on headset hook key</string>
 <string name="pre_rockbox_wire_title">Default Headset Hook Key:</string>
 <string name="pre_rockbox_wire_summary">[single quick press: pause/resume][double press: next track][long press: previous track]</string>
