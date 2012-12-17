@@ -27,12 +27,10 @@ import org.rockbox.Helper.Logger;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -113,93 +111,44 @@ public class RockboxActivity extends Activity
             }
         });
         startService(intent);
+        if (RockboxAppSetting.getRunStatus())
+        {
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.rockbox_firstrun_title)
+                .setMessage(R.string.rockbox_firstrun_message)
+                .setPositiveButton(R.string.OK, null)
+                .show();
+        }
     }
     
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
-        menu.add(0, 7, 0, R.string.rockbox_simulatebutton);
-        if (!RockboxAppSetting.getRockboxWakeLockStatus())
-        menu.add(0, 2, 0, R.string.rockbox_wakelock_on);
-        if (RockboxAppSetting.getRockboxWakeLockStatus())
-        menu.add(0, 3, 0, R.string.rockbox_wakelock_off);
-        menu.add(0, 5, 0, R.string.rockbox_vollock_on);
-        if (RockboxAppSetting.getRockboxVolLockStatus())
-        menu.add(0, 6, 0, R.string.rockbox_vollock_off);
-        menu.add(0, 0, 0, R.string.UMFeedbackUmengTitle);
-        menu.add(0, 4, 0, R.string.rockbox_about);
-        menu.add(0, 1, 0, R.string.rockbox_exit);
+        menu.add(0, 0, 0, R.string.rockbox_simulatebutton);
+        menu.add(0, 1, 0, R.string.rockbox_preference);
+        menu.add(0, 2, 0, R.string.rockbox_about);
+        menu.add(0, 3, 0, R.string.rockbox_exit);        
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        final EditText InputVol=new EditText(this);
-        InputVol.setInputType(InputType.TYPE_CLASS_NUMBER);
-        if (RockboxAppSetting.getRockboxVolLockStatus())
-        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(RockboxAppSetting.getVol()));
-        else
-        InputVol.setHint(getResources().getString(R.string.rockbox_vollock_hint1)+Integer.toString(RockboxAppSetting.getVol())+getResources().getString(R.string.rockbox_vollock_hint2));
         switch (item.getItemId())
         {
-            case 0:
-                UMFeedbackService.setGoBackButtonVisible();
-                UMFeedbackService.openUmengFeedbackSDK(this);
-                break;
-            case 1:
+           case 3:
                 System.runFinalization();
                 android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(0);
                 break;
             case 2:
-                RockboxAppSetting.setRockboxWakeLockStatus(true);
-                RockboxAppSetting.SaveSetting(1, false, false, true, true);
-                Toast.makeText(this, R.string.rockbox_wakelock_on_toast, Toast.LENGTH_LONG).show();
-                break;
-            case 3:
-                RockboxAppSetting.setRockboxWakeLockStatus(false);
-                RockboxAppSetting.SaveSetting(1, false, false, false, true);
-                Toast.makeText(this, R.string.rockbox_wakelock_off_toast, Toast.LENGTH_LONG).show();
-                break;
-            case 4:
                 new AlertDialog.Builder(this)
             	                .setTitle(R.string.rockbox_about_title)
             	                .setMessage(R.string.rockbox_about_message)
             	                .setPositiveButton(R.string.OK, null)
             	                .show();
                 break;
-            case 5:
-                new AlertDialog.Builder(this)
-            	                .setTitle(R.string.rockbox_vollock_info)
-            	                .setView(InputVol)
-            	                .setPositiveButton(R.string.OK, new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int whichButton) {
-                                    	try{
-                                            int voltmp=Integer.parseInt(InputVol.getText().toString());
-                                            if (voltmp <= 0)
-                                            voltmp = 1;
-                                            if (voltmp >= 101)
-                                            voltmp = 100;
-                                            RockboxAppSetting.setRockboxVolLockStatus(true);
-                                            RockboxAppSetting.SaveSetting(voltmp, true, true, false, false);
-                                            RockboxAppSetting.setVol(voltmp);
-                                            Toast.makeText(RockboxActivity.this,R.string.rockbox_vollock_toast, Toast.LENGTH_LONG).show();
-                                    	    }catch (Exception e){
-                                    	        Logger.d("Volume-Lock input error!");
-                                    	        Toast.makeText(RockboxActivity.this, R.string.rockbox_vollock_inputerror, Toast.LENGTH_LONG).show();
-                                    	    }
-                                        }
-                                    })
-                                .setNegativeButton(R.string.Cancel, null)
-                                .show();
-                break;
-            case 6:
-            	RockboxAppSetting.setRockboxVolLockStatus(false);
-            	RockboxAppSetting.SaveSetting(1, false, true, false, false);
-            	Toast.makeText(this, R.string.rockbox_vollock_off_toast, Toast.LENGTH_LONG).show();
-            	break;
-            case 7:
+            case 0:
                 RockboxFramebuffer.buttonHandler(0, true); //press
                 try {
                     Thread.sleep(400); //线程阻塞400ms，模拟长按菜单键（WPS_MENU），小于300ms即为WPS_CONTEXT。
@@ -210,6 +159,12 @@ public class RockboxActivity extends Activity
                     }
                 RockboxFramebuffer.buttonHandler(0, false); //release
                 break;
+            case 1:
+                Intent intent = new Intent();  
+                intent.setClass(RockboxActivity.this, RockboxPref.class);  
+                 /* 调用一个新的Activity */ 
+                startActivity(intent);  
+            	break;
          }
         return true;
      }

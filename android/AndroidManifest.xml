@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="org.rockbox"
-	android:versionCode="1"
+	android:versionCode="2"
 	android:versionName="1.0"
 	android:installLocation="auto">
 	<application android:theme="@style/Theme.rockbox" 
@@ -20,6 +20,7 @@
 			</intent-filter>
 		</activity>
 
+		<activity android:theme="@style/Theme.rockbox.preference" android:name=".RockboxPref" android:label="@string/rockbox_preference" />
 		<activity android:name="com.umeng.fb.ui.SendFeedback" android:windowSoftInputMode="adjustResize" />
 		<activity android:name="com.umeng.fb.ui.FeedbackConversations" />
 		<activity android:name="com.umeng.fb.ui.FeedbackConversation" android:configChanges="keyboard" />		

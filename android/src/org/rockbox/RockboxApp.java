@@ -30,14 +30,16 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 
 public class RockboxApp extends Application {
     private static RockboxApp instance; //static For Audiotrack ...
-    private static final String VolLock_KEY = "VolLockKey";
-    private static final String VolLock_KEY_STAT = "VolLockKeyStat";
-    private static final String WakeLock_KEY_STAT = "WakeLockKeyStat";
+    private static final String RUN_KEY_STAT = "isFirstRun";
     /* Initialize status */
     private boolean RockboxVolLockStatus = false; //初始化音量锁定状态
+    private boolean isFirstRunStatus = true;
+    private boolean RockboxWireStatus = true;
+    private boolean isRockboxWireExchange = false;
     private int vol=1; //初始化锁定音量
     private PowerManager.WakeLock RockboxWakeLock = null;
     private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
@@ -50,28 +52,49 @@ public class RockboxApp extends Application {
         return vol;
     }
     
+    public boolean getWireStatus(){
+        return RockboxWireStatus;
+    }
+    
+    public boolean isRockboxWireExchange(){
+        return isRockboxWireExchange;
+    }
+    
+    public void setVol(){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        vol = prefs.getInt("volume_lock_value", 1);
+    }
+    
     public boolean getRockboxVolLockStatus(){
         return RockboxVolLockStatus;
     }
     
-    public void setRockboxVolLockStatus(boolean b){
-        RockboxVolLockStatus = b;
+    public void changeRockboxVolLockStatus(){
+        RockboxVolLockStatus = !RockboxVolLockStatus;
     }
     
     public boolean getRockboxWakeLockStatus(){
         return RockboxWakeLockStatus;
     }
     
-    public void setRockboxWakeLockStatus(boolean b){
-    	RockboxWakeLockStatus = b;
+    public void changeRockboxWakeLockStatus(){
+    	RockboxWakeLockStatus = !RockboxWakeLockStatus;
     }
     
-    public void setVol(int s){
-        vol = s;
+    public void changeRockboxWireStatus(){
+    	RockboxWireStatus = !RockboxWireStatus;
+    }
+    
+    public void changeRockboxWireExchange(){
+    	isRockboxWireExchange = !isRockboxWireExchange;
+    }
+    
+    public boolean getRunStatus(){
+        return isFirstRunStatus;
     }
     
     /*Set Volume Lock*/
-    private void EnableStreamVolumeSetting()
+    public void EnableStreamVolumeSetting()
     {
     	if (RockboxVolLockStatus == true) {
         AudioManager audiomanager;
@@ -89,31 +112,16 @@ public class RockboxApp extends Application {
         }
     }
     
-    /*Save Volume Lock Setting and Wake Lock Setting*/
-    public void SaveSetting(int vollock, boolean vollockstat, boolean isvolseton, boolean wakelockstat, boolean iswakeseton)
-    {
-        String prefName = "Rockbox";
-        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        if (isvolseton)
-        {
-            editor.putInt(VolLock_KEY, vollock);
-            Logger.d("Set the Volume-Lock:"+(vollock-100)+"db");
-            editor.putBoolean(VolLock_KEY_STAT, vollockstat);
-        }
-        if (iswakeseton)
-        	editor.putBoolean(WakeLock_KEY_STAT, wakelockstat);
-        editor.commit();
-    }
-    
     /*Read Setting*/
     private void ReadSetting()
     {
-        String prefName = "Rockbox";
-        SharedPreferences prefs = getSharedPreferences(prefName, MODE_PRIVATE);
-        vol = prefs.getInt(VolLock_KEY, 0);
-        RockboxVolLockStatus = prefs.getBoolean(VolLock_KEY_STAT, false);
-        RockboxWakeLockStatus = prefs.getBoolean(WakeLock_KEY_STAT, false);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        vol = prefs.getInt("volume_lock_value", 0);
+        RockboxVolLockStatus = prefs.getBoolean("volume_lock", false);
+        RockboxWakeLockStatus = prefs.getBoolean("wake_lock", false);
+        isFirstRunStatus = prefs.getBoolean(RUN_KEY_STAT, true);
+        RockboxWireStatus = prefs.getBoolean("drive_by_wire", true);
+        isRockboxWireExchange = prefs.getBoolean("drive_by_wire_exchange", false);
     }
     
     /* Acquire WakeLock */
@@ -141,12 +149,21 @@ public class RockboxApp extends Application {
     	}
     }
     
+    private void firstrun()
+    {
+    	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(RUN_KEY_STAT, false);
+        editor.commit();
+    }
+    
     @Override
     public void onCreate() {
         // TODO Auto-generated method stub
         super.onCreate();
         instance = this; //主要方便RockboxPCM获取Application
         ReadSetting();
+        firstrun();
         EnableStreamVolumeSetting(); //增加自定义Application，可以在桌面插件启动前锁定音量
     }
 }

@@ -4,5 +4,6 @@
     <style name="Theme.rockbox" parent="@android:style/Theme.Holo.Light.NoActionBar" />
     <style name="NotificationText" parent="android:TextAppearance.StatusBar.EventContent"/>
     <style name="NotificationTitle" parent="android:TextAppearance.StatusBar.EventContent.Title"/>
+    <style name="Theme.rockbox.preference" parent="@android:style/Theme.Holo.Light" />
 </resources>
 
