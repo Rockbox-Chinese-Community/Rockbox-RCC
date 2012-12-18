@@ -9299,7 +9299,7 @@
 </phrase>
 <phrase>
   id: LANG_CATALOG
-  desc: in main menu and onplay menu
+  desc: in onplay menu
   user: core
   <source>
     *: "Playlist Catalogue"
@@ -10008,7 +10008,7 @@
 </phrase>
 <phrase>
   id: LANG_PLAYLISTS
-  desc: in the file view setting
+  desc: in main menu and the file view setting
   user: core
   <source>
     *: "Playlists"
