@@ -11,7 +11,6 @@ lua
 imageviewer
 text_viewer
 fft
-mpegplayer
 #if CONFIG_CODEC == SWCODEC && PLUGIN_BUFFER_SIZE > 0x20000
 fft
 #endif
@@ -29,6 +28,7 @@ pictureflow
 
 #if MEMORYSIZE > 2 /* we need a lot of RAM for instruments */
 mikmod
+mpegplayer
 #endif
 
 #endif /* CONFIG_CODEC == SWCODEC */
