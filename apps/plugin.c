@@ -800,7 +800,6 @@ static const struct plugin_api rockbox_api = {
     lcd_set_viewport,
     viewport_set_fullscreen,
     lcd_set_framebuffer,
-    lcd_bmp_part,
 #endif
 };
 
