@@ -264,8 +264,11 @@ struct mpeg_settings settings;
 #define MPEG_START_TIME_DOWN        BUTTON_DOWN
 #define MPEG_START_TIME_EXIT        BUTTON_POWER
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+#define MPEG_START_TIME_EXIT  BUTTON_BACK
+
 #else
-/* #error No keymap defined! */
+#error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

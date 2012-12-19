@@ -11,6 +11,7 @@ lua
 imageviewer
 text_viewer
 fft
+mpegplayer
 #if CONFIG_CODEC == SWCODEC && PLUGIN_BUFFER_SIZE > 0x20000
 fft
 #endif

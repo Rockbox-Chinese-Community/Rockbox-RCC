@@ -451,8 +451,11 @@
 #define OSCILLOSCOPE_VOL_DOWN        BUTTON_LEFT
 /* Need GRAPHMODE */
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+#define OSCILLOSCOPE_QUIT  BUTTON_BACK
+
 #else
-/* #error No keymap defined!*/
+#error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

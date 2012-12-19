@@ -361,13 +361,19 @@
 #define LABEL_MENU "LEFT"
 #define LABEL_VOLUME "UP/DOWN"
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+
 #else
-/*#error No keymap defined!*/
+#error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN
 #ifndef VUMETER_QUIT
+#ifdef ANDROID
+#define VUMETER_QUIT      BUTTON_BACK
+#else
 #define VUMETER_QUIT      BUTTON_TOPLEFT
+#endif
 #define LABEL_QUIT        "TOPLEFT"
 #endif
 #ifndef VUMETER_HELP

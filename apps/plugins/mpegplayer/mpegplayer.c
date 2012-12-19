@@ -389,8 +389,11 @@ CONFIG_KEYPAD == SANSA_M200_PAD
 #define MPEG_RW         BUTTON_PREV
 #define MPEG_FF         BUTTON_NEXT
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+#define MPEG_STOP  BUTTON_BACK
+
 #else
-/* #error No keymap defined! */
+#error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

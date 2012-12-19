@@ -415,8 +415,11 @@
 #define IMGVIEW_MENU        BUTTON_SELECT
 #define IMGVIEW_QUIT        BUTTON_POWER
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+#define IMGVIEW_QUIT  BUTTON_BACK
+
 #else
-/* #error No keymap defined! */
+#error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

@@ -288,8 +288,11 @@ GREY_INFO_STRUCT
 #   define FFT_WINDOW       BUTTON_PLAY
 #   define FFT_QUIT         BUTTON_POWER
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+#   define define FFT_QUIT  BUTTON_BACK
+
 #elif !defined(HAVE_TOUCHSCREEN)
-/*#error No keymap defined!*/
+#error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

@@ -472,8 +472,11 @@
 #define TV_AUTOSCROLL   BUTTON_NEXT
 #define TV_BOOKMARK     BUTTON_SELECT
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+#define TV_QUIT  BUTTON_BACK
+
 #else
-/* #error No keymap defined! */
+#error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN

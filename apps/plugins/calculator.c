@@ -465,6 +465,9 @@ F3: equal to "="
 #define CALCULATOR_CALC  BUTTON_PLAY
 #define CALCULATOR_CLEAR BUTTON_PREV
 
+#elif (CONFIG_KEYPAD == ANDROID_PAD)
+#define CALCULATOR_QUIT  BUTTON_BACK
+
 #else
 #error No keymap defined!
 #endif
