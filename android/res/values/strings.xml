@@ -49,6 +49,16 @@
 <string name="pre_rockbox_feedback_title">Feedback</string>
 <string name="pre_rockbox_rcc_title">Rockbox-Chinese-Community</string>
 <string name="pre_rockbox_rcc_summary">Visit Rockbox-Chinese-Community</string>
+<string name="pre_rockbox_config">Rockbox Profile</string>
+<string name="pre_rockbox_backup">Backup/Restore</string>
+<string name="pre_rockbox_backup_dialogMessage">Please select backup or restore</string>
+<string name="pre_rockbox_backup_dialogTitle">Rockbox Profile</string>
+<string name="pre_rockbox_backup_summary">Backup and restore the config.cfg file</string>
+<string name="pre_rockbox_backup_backup">Backup</string>
+<string name="pre_rockbox_backup_restore">Restore</string>
+<string name="rockbox_sdcard_notfound">Sdcard does not exist</string>
+<string name="rockbox_backupfile_notfound">The backup file does not exist</string>
+<string name="rockbox_backup_success">Backup is complete</string>
 
 <!-- Rockbox initial configuration values -->
 <string name="rockbox_language_file">english.lng</string>
