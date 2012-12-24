@@ -1,4 +1,4 @@
-package org.rockbox;
+package org.rockbox.preference;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,7 +13,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
-public class RockboxSeekBarPreference extends Preference implements OnSeekBarChangeListener {
+public class RockboxVolumeLockSeekBar extends Preference implements OnSeekBarChangeListener {
 
     public static int maximum = 100; // 最大音量100
     public static int interval = 1; // 按照1递增
@@ -21,15 +21,15 @@ public class RockboxSeekBarPreference extends Preference implements OnSeekBarCha
     private TextView view;
     private RockboxApp RockboxAppSetting = RockboxApp.getInstance();
 
-    public RockboxSeekBarPreference(Context context) {
+    public RockboxVolumeLockSeekBar(Context context) {
         super(context);
     }
 
-    public RockboxSeekBarPreference(Context context, AttributeSet attrs) {
+    public RockboxVolumeLockSeekBar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public RockboxSeekBarPreference(Context context, AttributeSet attrs, int defStyle) {
+    public RockboxVolumeLockSeekBar(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 

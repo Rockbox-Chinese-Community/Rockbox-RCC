@@ -1,4 +1,4 @@
-package org.rockbox;
+package org.rockbox.preference;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,7 +18,7 @@ import android.view.KeyEvent;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-public class RockboxDialogPreference extends DialogPreference {
+public class RockboxBackupDialog extends DialogPreference {
     private Context context;
     private LinearLayout layout = null;
     private String rockboxSdDirPath = Environment.getExternalStorageDirectory().getPath()+"/rockbox";
@@ -34,7 +34,7 @@ public class RockboxDialogPreference extends DialogPreference {
     private boolean isunmount = false;
     private boolean isbackupfilenotfound = false;
         
-    public RockboxDialogPreference(Context context, AttributeSet attrs) {
+    public RockboxBackupDialog(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
     }

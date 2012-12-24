@@ -8,7 +8,7 @@
         <CheckBoxPreference android:key="volume_lock"
             android:summary="@string/pre_rockbox_volume_lock_summary" android:title="@string/pre_rockbox_volume_lock_title">
         </CheckBoxPreference>
-        <org.rockbox.RockboxSeekBarPreference  android:key="volume_lock_value" android:dependency="volume_lock" android:title="@string/pre_rockbox_volume_lock_value_title"
+        <org.rockbox.preference.RockboxVolumeLockSeekBar  android:key="volume_lock_value" android:dependency="volume_lock" android:title="@string/pre_rockbox_volume_lock_value_title"
    android:persistent="true"  />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pre_rockbox_power_title">
@@ -27,7 +27,7 @@
         <Preference android:enabled="false" android:title="@string/pre_rockbox_wire_title" android:summary="@string/pre_rockbox_wire_summary" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pre_rockbox_config">
-        <org.rockbox.RockboxDialogPreference android:title="@string/pre_rockbox_backup" android:summary="@string/pre_rockbox_backup_summary" android:dialogMessage="@string/pre_rockbox_backup_dialogMessage" android:dialogTitle="@string/pre_rockbox_backup_dialogTitle" android:positiveButtonText="@string/pre_rockbox_backup_backup" android:negativeButtonText="@string/pre_rockbox_backup_restore" />
+        <org.rockbox.preference.RockboxBackupDialog android:title="@string/pre_rockbox_backup" android:summary="@string/pre_rockbox_backup_summary" android:dialogMessage="@string/pre_rockbox_backup_dialogMessage" android:dialogTitle="@string/pre_rockbox_backup_dialogTitle" android:positiveButtonText="@string/pre_rockbox_backup_backup" android:negativeButtonText="@string/pre_rockbox_backup_restore" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pre_rockbox_about_title">
         <PreferenceScreen android:title="@string/pre_rockbox_feedback_title" >
