@@ -1,5 +1,7 @@
 package org.rockbox.preference;
 
+import org.rockbox.RockboxApp;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
