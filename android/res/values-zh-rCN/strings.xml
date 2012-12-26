@@ -48,10 +48,10 @@
 <string name="pre_rockbox_feedback_title">反馈意见</string>
 <string name="pre_rockbox_rcc_title">Rockbox中文社区</string>
 <string name="pre_rockbox_rcc_summary">访问 Rockbox中文社区</string>
-<string name="pre_rockbox_config">Rockbox 配置文件管理</string>
+<string name="pre_rockbox_config">配置管理</string>
 <string name="pre_rockbox_backup">备份恢复</string>
 <string name="pre_rockbox_backup_dialogMessage">请选择 备份/恢复 操作：</string>
-<string name="pre_rockbox_backup_dialogTitle">配置管理</string>
+<string name="pre_rockbox_backup_dialogTitle">Rockbox 配置文件</string>
 <string name="pre_rockbox_backup_summary">备份/恢复 Rockbox的配置文件（包含主题，音效设置等）</string>
 <string name="pre_rockbox_backup_backup">备份</string>
 <string name="pre_rockbox_backup_restore">恢复</string>
