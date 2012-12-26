@@ -43,6 +43,7 @@ public class RockboxApp extends Application {
     private int vol=1; //初始化锁定音量
     private PowerManager.WakeLock RockboxWakeLock = null;
     private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
+    private boolean Rockboxhastitlebar = false;
     
     public static RockboxApp getInstance() {
         return instance;
@@ -56,6 +57,10 @@ public class RockboxApp extends Application {
         return RockboxWireStatus;
     }
     
+    public boolean getTitlebarStatus(){
+        return Rockboxhastitlebar;
+    }
+
     public boolean isRockboxWireExchange(){
         return isRockboxWireExchange;
     }
@@ -122,6 +127,7 @@ public class RockboxApp extends Application {
         isFirstRunStatus = prefs.getBoolean(RUN_KEY_STAT, true);
         RockboxWireStatus = prefs.getBoolean("drive_by_wire", true);
         isRockboxWireExchange = prefs.getBoolean("drive_by_wire_exchange", false);
+        Rockboxhastitlebar = !prefs.getBoolean("show_title_bar", true);
     }
     
     /* Acquire WakeLock */

@@ -56,6 +56,9 @@
 <string name="pre_rockbox_backup_summary">Backup and restore the config.cfg file</string>
 <string name="pre_rockbox_backup_backup">Backup</string>
 <string name="pre_rockbox_backup_restore">Restore</string>
+<string name="pre_rockbox_display">Main Interface</string>
+<string name="pre_rockbox_show_titlebar">display System Title bar</string>
+<string name="pre_rockbox_show_titlebar_summary">Need Restart</string>
 <string name="rockbox_sdcard_notfound">Sdcard does not exist</string>
 <string name="rockbox_backupfile_notfound">The backup file does not exist</string>
 <string name="rockbox_backup_success">Backup is complete</string>

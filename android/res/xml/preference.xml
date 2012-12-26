@@ -26,6 +26,11 @@
         </CheckBoxPreference>
         <Preference android:enabled="false" android:title="@string/pre_rockbox_wire_title" android:summary="@string/pre_rockbox_wire_summary" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pre_rockbox_display">
+        <CheckBoxPreference android:key="show_title_bar"
+            android:summary="@string/pre_rockbox_show_titlebar_summary" android:title="@string/pre_rockbox_show_titlebar" android:defaultValue="true"> 
+        </CheckBoxPreference>
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/pre_rockbox_config">
         <org.rockbox.preference.RockboxBackupDialog android:title="@string/pre_rockbox_backup" android:summary="@string/pre_rockbox_backup_summary" android:dialogMessage="@string/pre_rockbox_backup_dialogMessage" android:dialogTitle="@string/pre_rockbox_backup_dialogTitle" android:positiveButtonText="@string/pre_rockbox_backup_backup" android:negativeButtonText="@string/pre_rockbox_backup_restore" />
     </PreferenceCategory>

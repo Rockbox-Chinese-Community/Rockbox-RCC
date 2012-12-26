@@ -35,7 +35,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import com.umeng.analytics.MobclickAgent;
@@ -53,8 +52,11 @@ public class RockboxActivity extends Activity
         UMFeedbackService.enableNewReplyNotification(this, NotificationType.AlertDialog);
 	Toast.makeText(this, "Rockbox中文社区精心定制", Toast.LENGTH_LONG).show();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        if (RockboxAppSetting.getTitlebarStatus())
+        {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
         Intent intent = new Intent(this, RockboxService.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.putExtra("callback", new ResultReceiver(new Handler(getMainLooper())) {

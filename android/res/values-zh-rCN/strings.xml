@@ -51,10 +51,13 @@
 <string name="pre_rockbox_config">Rockbox 配置文件管理</string>
 <string name="pre_rockbox_backup">备份恢复</string>
 <string name="pre_rockbox_backup_dialogMessage">请选择 备份/恢复 操作：</string>
-<string name="pre_rockbox_backup_dialogTitle">Rockbox 配置文件</string>
+<string name="pre_rockbox_backup_dialogTitle">配置管理</string>
 <string name="pre_rockbox_backup_summary">备份/恢复 Rockbox的配置文件（包含主题，音效设置等）</string>
 <string name="pre_rockbox_backup_backup">备份</string>
 <string name="pre_rockbox_backup_restore">恢复</string>
+<string name="pre_rockbox_display">界面设置</string>
+<string name="pre_rockbox_show_titlebar">显示系统状态栏</string>
+<string name="pre_rockbox_show_titlebar_summary">下次进入生效</string>
 <string name="rockbox_sdcard_notfound">SD卡不存在或未挂载</string>
 <string name="rockbox_backupfile_notfound">备份文件不存在</string>
 <string name="rockbox_backup_success">备份完成</string>
