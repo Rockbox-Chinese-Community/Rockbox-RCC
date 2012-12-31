@@ -29,6 +29,11 @@
 #include "pinctrl-imx233.h"
 #include "dcp-imx233.h"
 #include "logf.h"
+#ifndef BOOTLOADER
+#include "button.h"
+#include "font.h"
+#include "action.h"
+#endif
 
 #ifdef HAVE_LCD_ENABLE
 static bool lcd_on;
@@ -205,6 +210,7 @@ static uint32_t i80_read_register(uint32_t data_out)
 static void lcd_write_reg(uint32_t reg, uint32_t data)
 {
     uint32_t old_reg = reg;
+    imx233_lcdif_wait_ready();
     /* get back to 18-bit word length */
     imx233_lcdif_set_word_length(HW_LCDIF_CTRL__WORD_LENGTH_18_BIT);
     reg = encode_16_to_18(reg);
@@ -498,6 +504,22 @@ void lcd_enable(bool enable)
 }
 #endif
 
+#ifdef HAVE_LCD_INVERT
+void lcd_set_invert_display(bool yesno)
+{
+    /* same for both kinds */
+    lcd_write_reg(0x61, yesno ? 0 : 1);
+}
+#endif
+
+#ifdef HAVE_LCD_FLIP
+void lcd_set_flip(bool yesno)
+{
+    /* same for both kinds */
+    lcd_write_reg(3, yesno ? 0x1000 : 0x1030);
+}
+#endif
+
 void lcd_update(void)
 {
     lcd_update_rect(0, 0, LCD_WIDTH, LCD_HEIGHT);
@@ -762,3 +784,36 @@ void lcd_blit_yuv(unsigned char * const src[3],
     lcd_update_rect(LCD_WIDTH - y - height, x, height, width);
     #endif
 }
+
+#ifndef BOOTLOADER
+bool lcd_debug_screen(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+
+    while(1)
+    {
+        int button = get_action(CONTEXT_STD, HZ / 10);
+        switch(button)
+        {
+            case ACTION_STD_NEXT:
+            case ACTION_STD_PREV:
+            case ACTION_STD_OK:
+            case ACTION_STD_MENU:
+                lcd_setfont(FONT_UI);
+                return true;
+            case ACTION_STD_CANCEL:
+                lcd_setfont(FONT_UI);
+                return false;
+        }
+
+        lcd_clear_display();
+        lcd_putsf(0, 0, "lcd kind: %s",
+            lcd_kind == LCD_KIND_7783 ? "st7783" :
+            lcd_kind == LCD_KIND_9325 ? "ili9325" : "unknown");
+        lcd_update();
+        yield();
+    }
+
+    return true;
+}
+#endif

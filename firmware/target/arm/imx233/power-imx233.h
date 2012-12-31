@@ -31,6 +31,8 @@
 #define HW_POWER_CTRL__ENIRQ_VBUS_VALID     (1 << 3)
 #define HW_POWER_CTRL__VBUSVALID_IRQ        (1 << 4)
 #define HW_POWER_CTRL__POLARITY_VBUSVALID   (1 << 5)
+#define HW_POWER_CTRL__ENIRQ_DC_OK          (1 << 14)
+#define HW_POWER_CTRL__DC_OK_IRQ            (1 << 15)
 
 #define HW_POWER_5VCTRL         (*(volatile uint32_t *)(HW_POWER_BASE + 0x10))
 #define HW_POWER_5VCTRL__ENABLE_DCDC        (1 << 0)
@@ -175,6 +177,8 @@
 #define HW_POWER_RESET__UNLOCK  0x3E770000
 #define HW_POWER_RESET__PWD     0x1
 
+void imx233_power_init(void);
+
 void imx233_power_set_charge_current(unsigned current); /* in mA */
 void imx233_power_set_stop_current(unsigned current); /* in mA */
 void imx233_power_enable_batadj(bool enable);
@@ -191,6 +195,7 @@ enum imx233_regulator_t
 void imx233_power_get_regulator(enum imx233_regulator_t reg, unsigned *target_mv,
     unsigned *brownout_mv);
 
+// WARNING this call will block until voltage is stable
 void imx233_power_set_regulator(enum imx233_regulator_t reg, unsigned target_mv,
     unsigned brownout_mv);
 

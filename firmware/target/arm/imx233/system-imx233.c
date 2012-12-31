@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2011 by amaury Pouly
+ * Copyright (C) 2011 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -101,6 +101,10 @@ void memory_init(void)
 
 void system_init(void)
 {
+    /* NOTE: don't use anything here that might require tick task !
+     * It is initialized by kernel_init *after* system_init().
+     * The main() will naturally set cpu speed to normal after kernel_init()
+     * so don't bother if the cpu is running at 24MHz here. */
     imx233_clkctrl_enable_clock(CLK_PLL, true);
     imx233_rtc_init();
     imx233_icoll_init();
@@ -111,11 +115,9 @@ void system_init(void)
     imx233_dcp_init();
     imx233_pwm_init();
     imx233_lradc_init();
+    imx233_power_init();
     imx233_i2c_init();
-#if !defined(BOOTLOADER) &&(defined(SANSA_FUZEPLUS) || \
-    defined(CREATIVE_ZENXFI3) || defined(CREATIVE_ZENXFI2))
-    fmradio_i2c_init();
-#endif
+
     imx233_clkctrl_enable_auto_slow_monitor(AS_CPU_INSTR, true);
     imx233_clkctrl_enable_auto_slow_monitor(AS_CPU_DATA, true);
     imx233_clkctrl_enable_auto_slow_monitor(AS_TRAFFIC, true);
@@ -124,6 +126,11 @@ void system_init(void)
     imx233_clkctrl_enable_auto_slow_monitor(AS_APBHDMA, true);
     imx233_clkctrl_set_auto_slow_divisor(AS_DIV_8);
     imx233_clkctrl_enable_auto_slow(true);
+
+#if !defined(BOOTLOADER) &&(defined(SANSA_FUZEPLUS) || \
+    defined(CREATIVE_ZENXFI3) || defined(CREATIVE_ZENXFI2))
+    fmradio_i2c_init();
+#endif
 }
 
 bool imx233_us_elapsed(uint32_t ref, unsigned us_delay)
@@ -158,16 +165,32 @@ void udelay(unsigned us)
 #ifdef HAVE_ADJUSTABLE_CPU_FREQ
 void set_cpu_frequency(long frequency)
 {
-    (void) frequency;
+    /* don't change the frequency if it is useless (changes are expensive) */
+    if(cpu_frequency == frequency)
+        return;
+    
+    cpu_frequency = frequency;
+    /* disable auto-slow (enable back afterwards) */
+    bool as = imx233_clkctrl_is_auto_slow_enabled();
+    imx233_clkctrl_enable_auto_slow(false);
+    /* go back to a known state in safe way:
+     * clk_p@24 MHz
+     * clk_h@6 MHz
+     * WARNING: we must absolutely avoid that clk_h be too low or too high
+     * during the change. We first change the clk_p/clk_h ratio to 4 so
+     * that it cannot be too high (480/4=120 MHz max) or too low
+     * (24/4=6 MHz min). Then we switch clk_p to bypass. We chose a ratio of 4
+     * which is greater than all clk_p/clk_h ratios used below so that further
+     * changes are safe too */
+    imx233_clkctrl_set_clock_divisor(CLK_HBUS, 4);
+    imx233_clkctrl_set_bypass_pll(CLK_CPU, true);
+
     switch(frequency)
     {
         case IMX233_CPUFREQ_454_MHz:
-            /* go back to a known state: everything at 24MHz ! */
-            imx233_clkctrl_set_bypass_pll(CLK_CPU, true);
-            imx233_clkctrl_set_clock_divisor(CLK_HBUS, 1);
             /* set VDDD to 1.550 mV (brownout at 1.450 mV) */
             imx233_power_set_regulator(REGULATOR_VDDD, 1550, 1450);
-            /* clk_h@clk_p/2 */
+            /* clk_h@clk_p/3 */
             imx233_clkctrl_set_clock_divisor(CLK_HBUS, 3);
             /* clk_p@ref_cpu/1*18/19 */
             imx233_clkctrl_set_fractional_divisor(CLK_CPU, 19);
@@ -180,9 +203,6 @@ void set_cpu_frequency(long frequency)
              * clk_h@130.91 MHz */
             break;
         case IMX233_CPUFREQ_261_MHz:
-            /* go back to a known state: everything at 24MHz ! */
-            imx233_clkctrl_set_bypass_pll(CLK_CPU, true);
-            imx233_clkctrl_set_clock_divisor(CLK_HBUS, 1);
             /* set VDDD to 1.275 mV (brownout at 1.175 mV) */
             imx233_power_set_regulator(REGULATOR_VDDD, 1275, 1175);
             /* clk_h@clk_p/2 */
@@ -200,6 +220,9 @@ void set_cpu_frequency(long frequency)
         default:
             break;
     }
+
+    /* enable auto slow again */
+    imx233_clkctrl_enable_auto_slow(as);
 }
 #endif
 
