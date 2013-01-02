@@ -137,9 +137,9 @@ bool Autodetection::detect()
     int n;
     // try ipodpatcher
     // initialize sector buffer. Needed.
-    ipod_sectorbuf = NULL;
-    ipod_alloc_buffer(&ipod_sectorbuf, BUFFER_SIZE);
     struct ipod_t ipod;
+    ipod.sectorbuf = NULL;
+    ipod_alloc_buffer(&ipod, BUFFER_SIZE);
     n = ipod_scan(&ipod);
     if(n == 1) {
         qDebug() << "[Autodetect] Ipod found:" << ipod.modelstr << "at" << ipod.diskname;
@@ -162,14 +162,12 @@ bool Autodetection::detect()
     else {
         qDebug() << "[Autodetect] ipodpatcher: no Ipod found." << n;
     }
-    free(ipod_sectorbuf);
-    ipod_sectorbuf = NULL;
+    ipod_dealloc_buffer(&ipod);
 
     // try sansapatcher
     // initialize sector buffer. Needed.
-    sansa_sectorbuf = NULL;
-    sansa_alloc_buffer(&sansa_sectorbuf, BUFFER_SIZE);
     struct sansa_t sansa;
+    sansa_alloc_buffer(&sansa, BUFFER_SIZE);
     n = sansa_scan(&sansa);
     if(n == 1) {
         qDebug() << "[Autodetect] Sansa found:" << sansa.targetname << "at" << sansa.diskname;
@@ -187,8 +185,7 @@ bool Autodetection::detect()
     else {
         qDebug() << "[Autodetect] sansapatcher: no Sansa found." << n;
     }
-    free(sansa_sectorbuf);
-    sansa_sectorbuf = NULL;
+    sansa_dealloc_buffer(&sansa);
 
     if(m_mountpoint.isEmpty() && m_device.isEmpty()
             && m_errdev.isEmpty() && m_incompat.isEmpty())

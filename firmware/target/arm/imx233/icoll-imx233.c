@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2012 by amaury Pouly
+ * Copyright (C) 2012 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -105,7 +105,7 @@ static isr_t isr_table[INT_SRC_NR_SOURCES] =
 };
 
 #define IRQ_STORM_DELAY         100 /* ms */
-#define IRQ_STORM_THRESHOLD     10000 /* allows irq / delay */
+#define IRQ_STORM_THRESHOLD     100000 /* allows irq / delay */
 
 static uint32_t irq_count_old[INT_SRC_NR_SOURCES];
 static uint32_t irq_count[INT_SRC_NR_SOURCES];

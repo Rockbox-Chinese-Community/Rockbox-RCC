@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2011 by amaury Pouly
+ * Copyright (C) 2011 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -101,6 +101,10 @@ void memory_init(void)
 
 void system_init(void)
 {
+    /* NOTE: don't use anything here that might require tick task !
+     * It is initialized by kernel_init *after* system_init().
+     * The main() will naturally set cpu speed to normal after kernel_init()
+     * so don't bother if the cpu is running at 24MHz here. */
     imx233_clkctrl_enable_clock(CLK_PLL, true);
     imx233_rtc_init();
     imx233_icoll_init();
@@ -111,11 +115,9 @@ void system_init(void)
     imx233_dcp_init();
     imx233_pwm_init();
     imx233_lradc_init();
+    imx233_power_init();
     imx233_i2c_init();
-#if !defined(BOOTLOADER) &&(defined(SANSA_FUZEPLUS) || \
-    defined(CREATIVE_ZENXFI3) || defined(CREATIVE_ZENXFI2))
-    fmradio_i2c_init();
-#endif
+
     imx233_clkctrl_enable_auto_slow_monitor(AS_CPU_INSTR, true);
     imx233_clkctrl_enable_auto_slow_monitor(AS_CPU_DATA, true);
     imx233_clkctrl_enable_auto_slow_monitor(AS_TRAFFIC, true);
@@ -124,6 +126,11 @@ void system_init(void)
     imx233_clkctrl_enable_auto_slow_monitor(AS_APBHDMA, true);
     imx233_clkctrl_set_auto_slow_divisor(AS_DIV_8);
     imx233_clkctrl_enable_auto_slow(true);
+
+#if !defined(BOOTLOADER) &&(defined(SANSA_FUZEPLUS) || \
+    defined(CREATIVE_ZENXFI3) || defined(CREATIVE_ZENXFI2))
+    fmradio_i2c_init();
+#endif
 }
 
 bool imx233_us_elapsed(uint32_t ref, unsigned us_delay)
@@ -164,6 +171,7 @@ void set_cpu_frequency(long frequency)
     
     cpu_frequency = frequency;
     /* disable auto-slow (enable back afterwards) */
+    bool as = imx233_clkctrl_is_auto_slow_enabled();
     imx233_clkctrl_enable_auto_slow(false);
     /* go back to a known state in safe way:
      * clk_p@24 MHz
@@ -214,7 +222,7 @@ void set_cpu_frequency(long frequency)
     }
 
     /* enable auto slow again */
-    imx233_clkctrl_enable_auto_slow(true);
+    imx233_clkctrl_enable_auto_slow(as);
 }
 #endif
 
