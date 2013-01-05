@@ -105,7 +105,7 @@ enum codec_status codec_run(void)
     Vgm_start_track(&vgm_emu); 
 
     /* for REPEAT_ONE we disable track limits */
-    if (!ci->loop_track()) {
+    if (!ci->loop_track() && ci->id3->length>30000) {
         Track_set_fade(&vgm_emu, ci->id3->length - 4000, 4000);
     }
     
@@ -125,7 +125,9 @@ enum codec_status codec_run(void)
             ci->seek_complete();
             
             /* Set fade again in case we seek to start of song */
-            Track_set_fade(&vgm_emu, ci->id3->length - 4000, 4000);
+            if (ci->id3->length>30000) {
+                Track_set_fade(&vgm_emu, ci->id3->length - 4000, 4000);
+            }
         }
 
         /* Generate audio buffer */
