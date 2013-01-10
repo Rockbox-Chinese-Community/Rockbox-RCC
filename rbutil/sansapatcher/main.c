@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (sansa_alloc_buffer(&sansa_sectorbuf,BUFFER_SIZE) < 0) {
+    if (sansa_alloc_buffer(&sansa, BUFFER_SIZE) < 0) {
         fprintf(stderr,"Failed to allocate memory buffer\n");
     }
 
@@ -404,6 +404,7 @@ int main(int argc, char* argv[])
     }
 
     sansa_close(&sansa);
+    sansa_dealloc_buffer(&sansa);
 
     if (action==INTERACTIVE) {
         printf("Press ENTER to exit sansapatcher :");
