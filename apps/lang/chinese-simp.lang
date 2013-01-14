@@ -1683,10 +1683,10 @@
     *: "Gather Runtime Data"
   </source>
   <dest>
-    *: "记录音乐播放记录"
+    *: "记录音乐播放历史"
   </dest>
   <voice>
-    *: "记录音乐播放记录"
+    *: "记录音乐播放历史"
   </voice>
 </phrase>
 <phrase>
@@ -7878,10 +7878,10 @@
     *: "Export Modifications"
   </source>
   <dest>
-    *: "导出修改"
+    *: "导出媒体库"
   </dest>
   <voice>
-    *: "导出修改"
+    *: "导出媒体库"
   </voice>
 </phrase>
 <phrase>
@@ -8277,10 +8277,10 @@
     *: "Import Modifications"
   </source>
   <dest>
-    *: "导入更改"
+    *: "导入媒体库"
   </dest>
   <voice>
-    *: "导入更改"
+    *: "导入媒体库"
   </voice>
 </phrase>
 <phrase>
@@ -9637,10 +9637,10 @@
     *: "Show Filename Extensions"
   </source>
   <dest>
-    *: "显示文件名后缀"
+    *: "显示后缀名"
   </dest>
   <voice>
-    *: "显示文件名后缀"
+    *: "显示后缀名"
   </voice>
 </phrase>
 <phrase>
@@ -13202,7 +13202,7 @@
     *: "Select directories to scan"
   </source>
   <dest>
-    *: "扫描指定文件夹音乐"
+    *: "仅扫描指定文件夹"
   </dest>
   <voice>
     *: "Select directories to scan"
