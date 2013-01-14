@@ -35,7 +35,7 @@ void pcm_play_lock(void)
     if (++locked == 1)
     {
         int old = disable_irq_save();
-        INTC_IMR &= ~(1<<12); /* mask HDMA interrupt */ 
+        INTC_IMR &= ~IRQ_ARM_HDMA; /* mask HDMA interrupt */ 
         restore_irq(old);
     }
 }
@@ -46,7 +46,7 @@ void pcm_play_unlock(void)
     if(--locked == 0)
     {
         int old = disable_irq_save();
-        INTC_IMR |= (1<<12); /* unmask HDMA interrupt */
+        INTC_IMR |= IRQ_ARM_HDMA; /* unmask HDMA interrupt */
         restore_irq(old);
     }
 }
@@ -61,7 +61,7 @@ void pcm_play_dma_stop(void)
 
 static void hdma_i2s_transfer(const void *addr, size_t size)
 {
-    SCU_CLKCFG &= ~(1<<3); /* enable HDMA clock */
+    SCU_CLKCFG &= ~CLKCFG_HDMA; /* enable HDMA clock */
 
     commit_discard_dcache_range(addr, size);
 
@@ -117,12 +117,12 @@ void pcm_play_dma_pause(bool pause)
 {
     if(pause)
     {
-        SCU_CLKCFG |= (1<<3);
+        SCU_CLKCFG |= CLKCFG_HDMA;
         locked = 1;
     }
     else
     {
-        SCU_CLKCFG &= ~(1<<3);
+        SCU_CLKCFG &= ~CLKCFG_HDMA;
         locked = 0;
     }
 }
@@ -148,8 +148,7 @@ static void i2s_init(void)
 #endif
 
     /* enable i2s clocks */
-    SCU_CLKCFG &= ~((1<<17) | /* i2s_pclk */
-                    (1<<16)); /* i2s_clk */
+    SCU_CLKCFG &= ~(CLKCFG_PCLK_I2S | CLKCFG_I2S);
     
     /* configure I2S module */
     I2S_IER = 0; /* disable all i2s interrupts */
@@ -242,8 +241,8 @@ static void set_codec_freq(unsigned int freq)
 void pcm_play_dma_init(void)
 {
     /* unmask HDMA interrupt in INTC */
-    INTC_IMR |= (1<<12);
-    INTC_IECR |= (1<<12);
+    INTC_IMR |= IRQ_ARM_HDMA;
+    INTC_IECR |= IRQ_ARM_HDMA;
 
     audiohw_preinit();
     

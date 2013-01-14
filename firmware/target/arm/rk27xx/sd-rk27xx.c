@@ -393,17 +393,17 @@ static void sd_thread(void)
 static void init_controller(void)
 {
     /* reset SD module */
-    SCU_RSTCFG |= (1<<9);
+    SCU_RSTCFG |= RSTCFG_SD;
     sleep(1);
-    SCU_RSTCFG &= ~(1<<9);
+    SCU_RSTCFG &= ~RSTCFG_SD;
 
     /* set pins functions as SD signals */
     SCU_IOMUXA_CON |= IOMUX_SD;
 
     /* enable and unmask SD interrupts in interrupt controller */
-    SCU_CLKCFG &= ~(1<<22);
-    INTC_IMR |= (1<<10);
-    INTC_IECR |= (1<<10);
+    SCU_CLKCFG &= ~CLKCFG_SD;
+    INTC_IMR |= IRQ_ARM_SD;
+    INTC_IECR |= IRQ_ARM_SD;
 
     SD_CTRL = SD_PWR_CPU | SD_DETECT_MECH | SD_CLOCK_EN | 0x7D;
     SD_INT = CMD_RES_INT_EN | DATA_XFER_INT_EN;
@@ -729,12 +729,12 @@ void sd_enable(bool on)
     /* enable or disable clock signal for SD module */
     if (on)
     {
-        SCU_CLKCFG &= ~(1<<22);
+        SCU_CLKCFG &= ~CLKCFG_SD;
         led(true);
     }
     else
     {
-        SCU_CLKCFG |= (1<<22);
+        SCU_CLKCFG |= CLKCFG_SD;
         led(false);
     }
 }

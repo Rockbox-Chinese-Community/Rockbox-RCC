@@ -65,7 +65,7 @@ default_interrupt(INT_SW_INT1);
 default_interrupt(INT_SW_INT2);
 default_interrupt(INT_SW_INT3);
 
-static void (* const irqvector[])(void) =
+static void (* const irqvector[])(void) USED_ATTR =
 {
     INT_UART0,INT_UART1,INT_TIMER0,INT_TIMER1,INT_TIMER2,INT_GPIO0,INT_SW_INT0,INT_AHB0_MAILBOX,
     INT_RTC,INT_SCU,INT_SD,INT_SPI,INT_HDMA,INT_A2A_BRIDGE,INT_I2C,INT_I2S,
@@ -89,23 +89,18 @@ static void UIRQ(void)
 
 void irq_handler(void)
 {
-    /*
-     * Based on: linux/arch/arm/kernel/entry-armv.S and system-meg-fx.c
-     */
-
-    asm volatile(   "stmfd sp!, {r0-r7, ip, lr} \n"   /* Store context */
-                    "sub   sp, sp, #8           \n"); /* Reserve stack */
-
-    int irq_no = INTC_ISR & 0x1f;
-
-    irqvector[irq_no]();
-
-    /* clear interrupt */
-    INTC_ICCR = (1 << irq_no);
-
-    asm volatile(   "add   sp, sp, #8           \n"   /* Cleanup stack   */
-                    "ldmfd sp!, {r0-r7, ip, lr} \n"   /* Restore context */
-                    "subs  pc, lr, #4           \n"); /* Return from IRQ */
+    asm volatile("stmfd sp!, {r0-r5, ip, lr} \n" /* store context */
+                 "ldr   r4, =0x18080000      \n" /* INTC base */        
+                 "ldr   r5, [r4, #0x104]     \n" /* INTC_ISR */
+                 "and   r5, r5, #0x1f        \n" /* irq_no = INTC_ISR & 0x1f */
+                 "ldr   r3, =irqvector       \n"  
+                 "ldr   r3,[r3, r5, lsl #2]  \n"
+                 "blx   r3                   \n" /* irqvector[irq_no]() */
+                 "mov   r3, #1               \n"
+                 "lsl   r5, r3, r5           \n" /* clear interrupt */
+                 "str   r5, [r4, #0x118]     \n" /* INTC_ICCR = (1<<irq_no) */
+                 "ldmfd sp!, {r0-r5, ip, lr} \n" /* restore context */
+                 "subs  pc, lr, #4           \n");
 }
 
 void fiq_dummy(void)
@@ -130,20 +125,20 @@ void system_init(void)
     MCSDR_T_RCD = 1;               /* active to RD/WR delay */
 
     /* turn off clock for unused modules */
-    SCU_CLKCFG |= (1<<31) |        /* WDT pclk */
-                  (1<<30) |        /* RTC pclk */
-                  (1<<26) |        /* HS_ADC clock */
-                  (1<<25) |        /* HS_ADC HCLK */
-                  (1<<21) |        /* SPI clock */
-                  (1<<19) |        /* UART1 clock */
-                  (1<<18) |        /* UART0 clock */
-                  (1<<15) |        /* VIP clock */
-                  (1<<14) |        /* VIP HCLK */
-                  (1<<13) |        /* LCDC clock */
-                   (1<<9) |        /* NAND HCLK */
-                   (1<<5) |        /* USB host HCLK */
-                   (1<<1) |        /* DSP clock */
-                   (1<<0);         /* OTP clock (dunno what it is */
+    SCU_CLKCFG |= CLKCFG_WDT        |        /* WDT pclk */
+                  CLKCFG_RTC        |        /* RTC pclk */
+                  CLKCFG_HSADC      |        /* HS_ADC clock */
+                  CLKCFG_HCLK_HSADC |        /* HS_ADC HCLK */
+                  CLKCFG_SPI        |        /* SPI clock */
+                  CLKCFG_UART1      |        /* UART1 clock */
+                  CLKCFG_UART0      |        /* UART0 clock */
+                  CLKCFG_VIP        |        /* VIP clock */
+                  CLKCFG_HCLK_VIP   |        /* VIP HCLK */
+                  CLKCFG_LCDC       |        /* LCDC clock */
+                  CLKCFG_NAND       |        /* NAND HCLK */
+                  CLKCFG_UHC        |        /* USB host HCLK */
+                  CLKCFG_DSP        |        /* DSP clock */
+                  CLKCFG_OTP;                /* OTP clock (dunno what it is */
 
     /* turn off DSP pll */
     SCU_PLLCON2 |= (1<<22);
@@ -157,7 +152,7 @@ void system_init(void)
 void system_reboot(void)
 {
     /* use Watchdog to reset */
-    SCU_CLKCFG &= ~(1<<31);
+    SCU_CLKCFG &= ~CLKCFG_WDT;
     WDTLR = 1;
     WDTCON = (1<<4) | (1<<3);
 
@@ -223,18 +218,17 @@ void commit_discard_dcache (void) __attribute__((alias("commit_discard_idcache")
 
 void commit_discard_dcache_range (const void *base, unsigned int size)
 {
-    int cnt = size + ((unsigned long)base & 0x1f);
-    unsigned long opcode = ((unsigned long)base & 0xffffffe0) | 0x01;
+    /* 0x01 is opcode for cache line commit discard */
+    uint32_t end_opcode = (uint32_t)((uintptr_t)base + size) | 0x01;
+    uint32_t opcode = (uint32_t)((uintptr_t)base & 0xffffffe0) | 0x01;
 
     int old_irq = disable_irq_save();
 
-    while (cnt > 0)
+    while (opcode <= end_opcode)
     {
-        CACHEOP = opcode;
-
         while (CACHEOP & 0x03);
 
-        cnt -= 32;
+        CACHEOP = opcode;
         opcode += 32;
     }
 

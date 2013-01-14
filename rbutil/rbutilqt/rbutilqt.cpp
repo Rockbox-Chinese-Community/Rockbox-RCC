@@ -210,10 +210,7 @@ void RbUtilQt::downloadInfo()
     daily = new HttpGet(this);
     connect(daily, SIGNAL(done(bool)), this, SLOT(downloadDone(bool)));
     connect(qApp, SIGNAL(lastWindowClosed()), daily, SLOT(abort()));
-    if(RbSettings::value(RbSettings::CacheOffline).toBool())
-        daily->setCache(true);
-    else
-        daily->setCache(false);
+    daily->setCache(false);
     ui.statusbar->showMessage(tr("Downloading build information, please wait ..."));
     qDebug() << "[RbUtil] downloading build info";
     daily->setFile(&buildInfo);
@@ -224,7 +221,7 @@ void RbUtilQt::downloadInfo()
 void RbUtilQt::downloadDone(bool error)
 {
     if(error) {
-        qDebug() << "[RbUtil] network error:" << daily->error();
+        qDebug() << "[RbUtil] network error:" << daily->errorString();
         ui.statusbar->showMessage(tr("Can't get version information!"));
         QMessageBox::critical(this, tr("Network error"),
                 tr("Can't get version information.\n"
@@ -232,7 +229,7 @@ void RbUtilQt::downloadDone(bool error)
                     .arg(daily->errorString()));
         return;
     }
-    qDebug() << "[RbUtil] network status:" << daily->error();
+    qDebug() << "[RbUtil] network status:" << daily->errorString();
 
     // read info into ServerInfo object
     buildInfo.open();
@@ -311,7 +308,6 @@ void RbUtilQt::updateSettings()
     manual->updateManual();
     HttpGet::setGlobalProxy(proxy());
     HttpGet::setGlobalCache(RbSettings::value(RbSettings::CachePath).toString());
-    HttpGet::setGlobalDumbCache(RbSettings::value(RbSettings::CacheOffline).toBool());
 
     if(RbSettings::value(RbSettings::RbutilVersion) != PUREVERSION) {
         QApplication::processEvents();
@@ -645,8 +641,6 @@ void RbUtilQt::checkUpdate(void)
     update = new HttpGet(this);
     connect(update, SIGNAL(done(bool)), this, SLOT(downloadUpdateDone(bool)));
     connect(qApp, SIGNAL(lastWindowClosed()), update, SLOT(abort()));
-    if(RbSettings::value(RbSettings::CacheOffline).toBool())
-        update->setCache(true);
 
     ui.statusbar->showMessage(tr("Checking for update ..."));
     update->getFile(QUrl(url));
@@ -655,7 +649,7 @@ void RbUtilQt::checkUpdate(void)
 void RbUtilQt::downloadUpdateDone(bool error)
 {
     if(error) {
-        qDebug() << "[RbUtil] network error:" << update->error();
+        qDebug() << "[RbUtil] network error:" << update->errorString();
     }
     else {
         QString toParse(update->readAll());
