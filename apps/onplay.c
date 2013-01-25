@@ -37,6 +37,7 @@
 #include "mp3data.h"
 #include "metadata.h"
 #include "screens.h"
+#include "time.h"
 #include "tree.h"
 #include "settings.h"
 #include "playlist_viewer.h"
@@ -965,6 +966,9 @@ MENUITEM_RETURNVALUE(pictureflow_item, ID2P(LANG_ONPLAY_PICTUREFLOW),
 MENUITEM_RETURNVALUE(lyrics_item, ID2P(LANG_ONPLAY_LYRICS),
                   GO_TO_LYRICS, NULL, Icon_NOICON);
 
+/* in settings_menu.c */
+extern const struct menu_item_ex sleeptimer_toggle;
+
 static bool view_cue(void)
 {
     struct mp3entry* id3 = audio_current_track();
@@ -1186,7 +1190,7 @@ MAKE_ONPLAYMENU( wps_onplay_menu, ID2P(LANG_ONPLAY_MENU_TITLE),
 #ifdef HAVE_TAGCACHE
            &rating_item,
 #endif
-           &bookmark_menu, 
+           &bookmark_menu, &sleeptimer_toggle,
 #ifdef HAVE_PICTUREFLOW_INTEGRATION
            &pictureflow_item,
 #endif           
@@ -1311,6 +1315,9 @@ static struct hotkey_assignment hotkey_items[] = {
     { HOTKEY_LYRICS, LANG_ONPLAY_LYRICS,
             HOTKEY_FUNC(NULL, NULL),
             ONPLAY_LYRICS },
+    { HOTKEY_SLEEP_TIMER, LANG_SLEEP_TIMER,
+            HOTKEY_FUNC(NULL, NULL),
+            ONPLAY_SLEEP_TIMER },
 };
 
 /* Return the language ID for this action */
@@ -1402,6 +1409,8 @@ int onplay(char* file, int attr, int from, bool hotkey)
         case GO_TO_LYRICS:
             return ONPLAY_LYRICS;
 #endif
+	case GO_TO_SLEEP_TIMER:
+            return ONPLAY_SLEEP_TIMER;
         default:
             return onplay_result;
     }

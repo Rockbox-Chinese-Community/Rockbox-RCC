@@ -828,7 +828,10 @@ void root_menu(void)
 #endif
             case GO_TO_LYRICS:
                 next_screen = load_plugin_screen(PLUGIN_APPS_DIR "/lrcplayer.rock");
-		break;                
+		break;
+            case GO_TO_SLEEP_TIMER:
+                next_screen = GO_TO_SLEEP_TIMER;
+                break;
             default:
                 if (next_screen == GO_TO_FILEBROWSER
 #ifdef HAVE_TAGCACHE

@@ -31,6 +31,7 @@ enum {
     ONPLAY_PLAYLIST,
     ONPLAY_PICTUREFLOW,
     ONPLAY_LYRICS,
+    ONPLAY_SLEEP_TIMER,
 };
 
 #ifdef HAVE_HOTKEY
@@ -47,6 +48,7 @@ enum hotkey_action {
     HOTKEY_INSERT_SHUFFLED,
     HOTKEY_PICTUREFLOW,
     HOTKEY_LYRICS,
+    HOTKEY_SLEEP_TIMER,
 };
 #endif
 
