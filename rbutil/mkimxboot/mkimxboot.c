@@ -76,6 +76,7 @@ static const char *imx_fw_variant[] =
     [VARIANT_ZENXFI2_RECOVERY] = "ZEN X-Fi2 Recovery",
     [VARIANT_ZENXFI2_NAND] = "ZEN X-Fi2 NAND",
     [VARIANT_ZENXFI2_SD] = "ZEN X-Fi2 eMMC/SD",
+    [VARIANT_ZENXFISTYLE_RECOVERY] = "ZEN X-Fi Style Recovery",
 };
 
 static const struct imx_md5sum_t imx_sums[] =
@@ -92,9 +93,10 @@ static const struct imx_md5sum_t imx_sums[] =
     {
         /* Version 1.23.01e */
         MODEL_ZENXFI2, "2beff2168212d332f13cfc36ca46989d", "1.23.01e",
-        { [VARIANT_ZENXFI2_RECOVERY] = { 0x93010, 684192},
-          [VARIANT_ZENXFI2_NAND] = { 0x13a0b0, 42410704 },
-          [VARIANT_ZENXFI2_SD] = { 0x29ac380, 42304208 }
+        {
+            [VARIANT_ZENXFI2_RECOVERY] = { 0x93010, 684192},
+            [VARIANT_ZENXFI2_NAND] = { 0x13a0b0, 42410704 },
+            [VARIANT_ZENXFI2_SD] = { 0x29ac380, 42304208 }
         }
     },
     {
@@ -106,6 +108,22 @@ static const struct imx_md5sum_t imx_sums[] =
         /* Version 1.00.22e */
         MODEL_ZENXFI3, "a5114cd45ea4554ec221f51a71083862", "1.00.22e",
         { [VARIANT_DEFAULT] = {0, 18110576} }
+    },
+    {
+        /* Version 1.03.04e */
+        MODEL_ZENXFISTYLE, "32a731b7f714e9f99a95991003759c98", "1.03.04",
+        {
+            [VARIANT_DEFAULT] = {842960, 29876944},
+            [VARIANT_ZENXFISTYLE_RECOVERY] = {610272, 232688},
+        }
+    },
+    {
+        /* Version 1.03.04e */
+        MODEL_ZENXFISTYLE, "2c7ee52d9984d85dd39aa49b3331e66c", "1.03.04e",
+        {
+            [VARIANT_DEFAULT] = {842960, 29876944},
+            [VARIANT_ZENXFISTYLE_RECOVERY] = {610272, 232688},
+        }
     },
 };
 
@@ -122,6 +140,8 @@ static const struct imx_model_desc_t imx_models[] =
     [MODEL_ZENXFI2] = {"Zen X-Fi2", dualboot_zenxfi2, sizeof(dualboot_zenxfi2), "zxf2", 82,
                        1, &zero_key, 0, 0x40000000 },
     [MODEL_ZENXFI3] = {"Zen X-Fi3", dualboot_zenxfi3, sizeof(dualboot_zenxfi3), "zxf3", 83,
+                       1, &zero_key, 0, 0x40000000 },
+    [MODEL_ZENXFISTYLE] = {"Zen X-Fi Style", NULL, 0, "", -1,
                        1, &zero_key, 0, 0x40000000 },
 };
 
@@ -390,7 +410,10 @@ enum imx_error_t mkimxboot(const char *infile, const char *bootfile,
             {
                 byte a, b;
                 if(convxdigit(imx_sums[i].md5sum[2 * j], &a) || convxdigit(imx_sums[i].md5sum[2 * j + 1], &b))
-                    return false;
+                {
+                    printf("[ERR][INTERNAL] Bad checksum format: %s\n", imx_sums[i].md5sum);
+                    return IMX_ERROR;
+                }
                 md5[j] = (a << 4) | b;
             }
             if(memcmp(file_md5sum, md5, 16) == 0)
@@ -490,5 +513,108 @@ enum imx_error_t mkimxboot(const char *infile, const char *bootfile,
     clear_keys();
     free(boot);
     sb_free(sb_file);
+    return ret;
+}
+
+enum imx_error_t extract_firmware(const char *infile,
+    enum imx_firmware_variant_t fw_variant, const char *outfile)
+{
+    /* Dump tables */
+    if(fw_variant > VARIANT_COUNT) {
+        return IMX_ERROR;
+    }
+    dump_imx_dev_info("[INFO] ");
+    /* compute MD5 sum of the file */
+    uint8_t file_md5sum[16];
+    FILE *f = fopen(infile, "rb");
+    if(f == NULL)
+    {
+        printf("[ERR] Cannot open input file\n");
+        return IMX_OPEN_ERROR;
+    }
+    fseek(f, 0, SEEK_END);
+    size_t sz = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    void *buf = xmalloc(sz);
+    if(fread(buf, sz, 1, f) != 1)
+    {
+        fclose(f);
+        free(buf);
+        printf("[ERR] Cannot read file\n");
+        return IMX_READ_ERROR;
+    }
+    md5_context ctx;
+    md5_starts(&ctx);
+    md5_update(&ctx, buf, sz);
+    md5_finish(&ctx, file_md5sum);
+    fclose(f);
+    
+    printf("[INFO] MD5 sum of the file: ");
+    print_hex(file_md5sum, 16, true);
+    /* find model */
+    enum imx_model_t model;
+    int md5_idx;
+    do
+    {
+        int i = 0;
+        while(i < NR_IMX_SUMS)
+        {
+            uint8_t md5[20];
+            if(strlen(imx_sums[i].md5sum) != 32)
+            {
+                printf("[INFO] Invalid MD5 sum in imx_sums\n");
+                return IMX_ERROR;
+            }
+            for(int j = 0; j < 16; j++)
+            {
+                byte a, b;
+                if(convxdigit(imx_sums[i].md5sum[2 * j], &a) || convxdigit(imx_sums[i].md5sum[2 * j + 1], &b))
+                {
+                    printf("[ERR][INTERNAL] Bad checksum format: %s\n", imx_sums[i].md5sum);
+                    free(buf);
+                    return IMX_ERROR;
+                }
+                md5[j] = (a << 4) | b;
+            }
+            if(memcmp(file_md5sum, md5, 16) == 0)
+                break;
+            i++;
+        }
+        if(i == NR_IMX_SUMS)
+        {
+            printf("[ERR] MD5 sum doesn't match any known file\n");
+            return IMX_NO_MATCH;
+        }
+        model = imx_sums[i].model;
+        md5_idx = i;
+    }while(0);
+    printf("[INFO] File is for model %d (%s, version %s)\n", model,
+        imx_models[model].model_name, imx_sums[md5_idx].version);
+
+    if(imx_sums[md5_idx].fw_variants[fw_variant].size == 0)
+    {
+        printf("[ERR] Input file does not contain variant '%s'\n", imx_fw_variant[fw_variant]);
+        free(buf);
+        return IMX_VARIANT_MISMATCH;
+    }
+
+    f = fopen(outfile, "wb");
+    if(f == NULL)
+    {
+        printf("[ERR] Cannot open input file\n");
+        free(buf);
+        return IMX_OPEN_ERROR;
+    }
+    enum imx_error_t ret = IMX_SUCCESS;
+
+    if(fwrite(buf + imx_sums[md5_idx].fw_variants[fw_variant].offset,
+            imx_sums[md5_idx].fw_variants[fw_variant].size, 1, f) != 1)
+    {
+        printf("[ERR] Cannot write file\n");
+        ret = IMX_ERROR;
+    }
+    fclose(f);
+    free(buf);
+
     return ret;
 }

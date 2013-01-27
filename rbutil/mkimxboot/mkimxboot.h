@@ -58,6 +58,7 @@ enum imx_model_t
     MODEL_FUZEPLUS = 0,
     MODEL_ZENXFI2 = 1,
     MODEL_ZENXFI3 = 2,
+    MODEL_ZENXFISTYLE = 3,
     /* new models go here */
 
     NUM_MODELS
@@ -71,6 +72,8 @@ enum imx_firmware_variant_t
     VARIANT_ZENXFI2_NAND,
     VARIANT_ZENXFI2_SD,
     VARIANT_ZENXFI2_RECOVERY,
+    /* For the Creative X-Fi Style */
+    VARIANT_ZENXFISTYLE_RECOVERY,
     /* Last */
     VARIANT_COUNT
 };
@@ -85,6 +88,8 @@ struct imx_option_t
 void dump_imx_dev_info(const char *prefix);
 enum imx_error_t mkimxboot(const char *infile, const char *bootfile,
     const char *outfile, struct imx_option_t opt);
+enum imx_error_t extract_firmware(const char *infile,
+    enum imx_firmware_variant_t fw_variant, const char *outfile);
 
 #ifdef __cplusplus
 }

@@ -37,6 +37,7 @@ struct imx_variant_t imx_variants[] =
     { "zenxfi2-recovery", VARIANT_ZENXFI2_RECOVERY },
     { "zenxfi2-nand", VARIANT_ZENXFI2_NAND },
     { "zenxfi2-sd", VARIANT_ZENXFI2_SD },
+    { "zenxfistyle-recovery", VARIANT_ZENXFISTYLE_RECOVERY },
 };
 
 #define NR_VARIANTS sizeof(imx_variants) / sizeof(imx_variants[0])
@@ -53,6 +54,7 @@ static void usage(void)
     printf("  -t <type>\tSet type (dualboot, singleboot, recovery)\n");
     printf("  -v <v>\tSet variant\n");
     printf("  -x\t\tDump device informations\n");
+    printf("  -w\tExtract the original firmware\n");
     printf("Supported variants: (default is standard)\n");
     printf("  ");
     for(size_t i = 0; i < NR_VARIANTS; i++)
@@ -74,6 +76,7 @@ int main(int argc, char *argv[])
     enum imx_firmware_variant_t variant = VARIANT_DEFAULT;
     enum imx_output_type_t type = IMX_DUALBOOT;
     bool debug = false;
+    bool extract_of = false;
 
     if(argc == 1)
         usage();
@@ -93,7 +96,7 @@ int main(int argc, char *argv[])
             {0, 0, 0, 0}
         };
 
-        int c = getopt_long(argc, argv, "?di:o:b:t:v:x", long_options, NULL);
+        int c = getopt_long(argc, argv, "?di:o:b:t:v:xw", long_options, NULL);
         if(c == -1)
             break;
         switch(c)
@@ -150,6 +153,9 @@ int main(int argc, char *argv[])
                 for(int i = 0; i < sizeof(imx_variants) / sizeof(imx_variants[0]); i++)
                     printf("  %s -> variant=%d\n", imx_variants[i].name, imx_variants[i].variant);
                 break;
+            case 'w':
+                extract_of = true;
+                break;
             default:
                 abort();
         }
@@ -165,7 +171,7 @@ int main(int argc, char *argv[])
         printf("You must specify an output file\n");
         return 1;
     }
-    if(!bootfile)
+    if(!bootfile && !extract_of)
     {
         printf("You must specify an boot file\n");
         return 1;
@@ -174,6 +180,13 @@ int main(int argc, char *argv[])
     {
         printf("Extra arguments on command line\n");
         return 1;
+    }
+
+    if(extract_of)
+    {
+        enum imx_error_t err = extract_firmware(infile, variant, outfile);
+        printf("Result: %d\n", err);
+        return 0;
     }
 
     struct imx_option_t opt;
