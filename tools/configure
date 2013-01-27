@@ -88,6 +88,23 @@ app_set_paths () {
     fi
 }
 
+app_set_eq_num_bands () {
+    echo "Enter the number of the EQ bands (10 or 24 , default: 24)"
+    #while (($app_eq_num_bands != "24" || $app_eq_num_bands != "10"))
+    app_eq_num_bands=0;
+    while [ $app_eq_num_bands -ne 24 -a $app_eq_num_bands -ne 10 ]
+    do
+        echo "Please enter 10 or 24"
+        app_eq_num_bands=`input`
+        if [ -z "$app_eq_num_bands" ]; then app_eq_num_bands="24";fi
+    done
+    if [ $app_eq_num_bands -eq 24 ]; then
+        app_eq_num_bands="#define MORE_EQ_BANDS_24"
+    else
+        app_eq_num_bands=""
+    fi
+}
+
 # Set the application LCD size according to the following priorities:
 # 1) If --lcdwidth and --lcdheight are set, use them
 # 2) If a size is passed to the app_set_lcd_size() function, use that
@@ -3226,6 +3243,7 @@ fi
     target="ANDROID"
     app_type="android"
     app_set_lcd_size
+    app_set_eq_num_bands
     sharedir="/data/data/org.rockbox/app_rockbox/rockbox"
     bindir="/data/data/org.rockbox/lib"
     libdir="/data/data/org.rockbox/app_rockbox"
@@ -3910,6 +3928,9 @@ ${have_rtc_alarm}
 /* lcd dimensions for application builds from configure */
 ${app_lcd_width}
 ${app_lcd_height}
+
+/* NUM of EQ BANDS */
+${app_eq_num_bands}
 
 /* root of Rockbox */
 #define ROCKBOX_DIR "${rbdir}"
