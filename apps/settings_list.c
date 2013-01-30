@@ -1647,7 +1647,7 @@ const struct settings_list settings[] = {
     INT_SETTING_NOWRAP(F_EQSETTING, eq_band_settings[0].q, LANG_EQUALIZER_BAND_Q, 7,
                        "eq band 0 q", UNIT_INT, EQ_Q_MIN, EQ_Q_MAX, EQ_Q_STEP,
                        eq_q_format, get_dec_talkid, NULL),
-    INT_SETTING_NOWRAP(F_EQSETTING, eq_band_settings[1].q, LANG_EQUALIZER_BAND_Q, 10,
+    INT_SETTING_NOWRAP(F_EQSETTING, eq_band_settings[1].q, LANG_EQUALIZER_BAND_Q, 7,
                        "eq band 1 q", UNIT_INT, EQ_Q_MIN, EQ_Q_MAX, EQ_Q_STEP,
                        eq_q_format, get_dec_talkid, NULL),
     INT_SETTING_NOWRAP(F_EQSETTING, eq_band_settings[2].q, LANG_EQUALIZER_BAND_Q, 10,
