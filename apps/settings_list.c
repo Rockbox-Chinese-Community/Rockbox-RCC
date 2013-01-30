@@ -1520,7 +1520,6 @@ const struct settings_list settings[] = {
     INT_SETTING_NOWRAP(F_EQSETTING, eq_band_settings[4].gain, LANG_GAIN, 0,
                        "eq band 4 gain", UNIT_DB, EQ_GAIN_MIN, EQ_GAIN_MAX,
                        EQ_GAIN_STEP, db_format, get_dec_talkid, NULL),
-
     /* dithering */
     OFFON_SETTING(F_SOUNDSETTING, dithering_enabled, LANG_DITHERING, false,
                   "dithering enabled", dsp_dither_enable),
