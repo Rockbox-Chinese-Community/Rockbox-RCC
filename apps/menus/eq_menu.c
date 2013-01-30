@@ -680,7 +680,6 @@ bool eq_menu_graphical(void)
         touchscreen_set_mode(TOUCHSCREEN_POINT);
 #endif
 #endif
-	settings_save_config(SETTINGS_SAVE_EQPRESET);
     }
     return result;
 }
