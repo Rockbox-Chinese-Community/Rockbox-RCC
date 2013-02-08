@@ -164,8 +164,10 @@
 
 #elif defined(GIGABEAT_S)
 #define UI_TITLE                    "Toshiba Gigabeat"
-#define UI_WIDTH                    450 /* width of GUI window */
-#define UI_HEIGHT                   688 /* height of GUI window */
+#define UI_WIDTH                    1024 /* width of GUI window */
+#define UI_HEIGHT                   768 /* height of GUI window */
+//#define UI_WIDTH                    450 /* width of GUI window */
+//#define UI_HEIGHT                   688 /* height of GUI window */
 #define UI_LCD_POSX                 96 /* x position of lcd */
 #define UI_LCD_POSY                 90 /* y position of lcd */
 

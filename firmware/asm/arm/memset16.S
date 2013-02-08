@@ -1,82 +1,67 @@
-/***************************************************************************
- *             __________               __   ___.
- *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
- *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
- *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
- *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
- *                     \/            \/     \/    \/            \/
- * $Id$
- *
- * Copyright (C) 2006 by Thom Johansen
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
- * KIND, either express or implied.
- *
- ****************************************************************************/
-#include "config.h"
-
-    .section    .icode,"ax",%progbits
-
-    .align      2
-
-/*  The following code is based on code from the Linux kernel version 2.6.15.3,
- *  linux/arch/arm/lib/memset.S
- *
- *  Copyright (C) 1995-2000 Russell King
- */
-
-        .global     memset16
-        .type       memset16,%function
+	.arch armv7-a
+	.eabi_attribute 27, 3
+	.fpu neon
+	.eabi_attribute 23, 1
+	.eabi_attribute 24, 1
+	.eabi_attribute 25, 1
+	.eabi_attribute 26, 2
+	.eabi_attribute 30, 2
+	.eabi_attribute 34, 1
+	.eabi_attribute 18, 4
+	.file	"d.c"
+	.text
+	.align	2
+	.global	memset16
+	.type	memset16, %function
 memset16:
-        tst     r0, #2                  @ unaligned?
-        cmpne   r2, #0
-        strneh  r1, [r0], #2            @ store one halfword to align
-        subne   r2, r2, #1
-
-/*
- * we know that the pointer in r0 is aligned to a word boundary.
- */
-        orr     r1, r1, r1, lsl #16
-        mov     r3, r1
-        cmp     r2, #8
-        blt     4f
-/*
- * We need an extra register for this loop - save the return address and
- * use the LR
- */
-        str     lr, [sp, #-4]!
-        mov     ip, r1
-        mov     lr, r1
-
-2:      subs    r2, r2, #32
-        stmgeia r0!, {r1, r3, ip, lr}   @ 64 bytes at a time.
-        stmgeia r0!, {r1, r3, ip, lr}
-        stmgeia r0!, {r1, r3, ip, lr}
-        stmgeia r0!, {r1, r3, ip, lr}
-        bgt     2b
-        ldrpc   cond=eq                 @ Now <64 bytes to go.
-/*
- * No need to correct the count; we're only testing bits from now on
- */
-        tst     r2, #16
-        stmneia r0!, {r1, r3, ip, lr}
-        stmneia r0!, {r1, r3, ip, lr}
-        tst     r2, #8
-        stmneia r0!, {r1, r3, ip, lr}
-        ldr     lr, [sp], #4
-
-4:      tst     r2, #4
-        stmneia r0!, {r1, r3}
-        tst     r2, #2
-        strne   r1, [r0], #4
-
-        tst     r2, #1
-        strneh  r1, [r0], #2
-        bx      lr
-.end:
-        .size   memset16,.end-memset16
+	@ args = 0, pretend = 0, frame = 0
+	@ frame_needed = 0, uses_anonymous_args = 0
+	@ link register save eliminated.
+	stmfd	sp!, {r4, r5}
+	ands	r4, r2, #7
+	beq	.L2
+	mov	ip, r0
+	mov	r3, #0
+.L4:
+	add	r3, r3, #1
+	strh	r1, [ip], #2	@ movhi
+	cmp	r4, r3
+	bhi	.L4
+	add	r0, r0, r4, asl #1
+.L2:
+	movs	r4, r2, lsr #2
+	beq	.L1
+	mov	r2, r2, lsr #3
+	cmp	r2, #0
+	cmpne	r4, #1
+	mov	r5, r2, asl #1
+	movhi	r3, #0
+	movls	r3, #1
+	bls	.L13
+	vdup.16	q8, r1
+	mov	ip, r0
+.L8:
+	add	r3, r3, #1
+	vst1.16	{q8}, [ip]!
+	cmp	r2, r3
+	bhi	.L8
+	cmp	r4, r5
+	mov	r3, r5
+	add	r0, r0, r5, asl #3
+	beq	.L1
+.L10:
+	vdup.16	d16, r1
+.L16:
+	add	r3, r3, #1
+	vst1.16	{d16}, [r0]!
+	cmp	r4, r3
+	bgt	.L16
+.L1:
+	ldmfd	sp!, {r4, r5}
+	bx	lr
+.L13:
+	mov	r3, #0
+	b	.L10
+	.size	memset16, .-memset16
+	.ident	"GCC: (Chomper-4.7.2) 4.7.2"
+	.section	.note.GNU-stack,"",%progbits

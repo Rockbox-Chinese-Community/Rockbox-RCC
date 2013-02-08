@@ -44,8 +44,8 @@
 #define HAVE_VOLUME_IN_LIST
 
 /* LCD dimensions */
-#define LCD_WIDTH  240
-#define LCD_HEIGHT 320
+#define LCD_WIDTH  640
+#define LCD_HEIGHT 480
 #define LCD_DEPTH  16   /* 65k colours */
 #define LCD_PIXELFORMAT RGB565 /* rgb565 */
 

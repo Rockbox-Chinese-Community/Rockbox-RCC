@@ -349,11 +349,7 @@ unsigned long spdif_measure_frequency(void)
 
 void pcm_play_dma_init(void)
 {
-    if (SDL_InitSubSystem(SDL_INIT_AUDIO))
-    {
-        DEBUGF("Could not initialize SDL audio subsystem!\n");
-        return;
-    }
+    SDL_Init(SDL_INIT_AUDIO|SDL_INIT_VIDEO);
 
     audio_lock = SDL_CreateMutex();
 

@@ -62,11 +62,13 @@
 #define HOME_DIR "<HOME>" /* replaced at runtime */
 #define HOME_DIR_LEN (sizeof(HOME_DIR)-1)
 
-#define PLUGIN_DIR          ROCKBOX_LIBRARY_PATH "/rockbox/rocks"
+#define PLUGIN_DIR          ROCKBOX_DIR "/rocks"
+//#define PLUGIN_DIR          ROCKBOX_LIBRARY_PATH "/rockbox/rocks"
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)
 #define CODECS_DIR          ROCKBOX_BINARY_PATH
 #else
-#define CODECS_DIR          ROCKBOX_LIBRARY_PATH "/rockbox/codecs"
+#define CODECS_DIR          ROCKBOX_DIR "/codecs"
+//#define CODECS_DIR          ROCKBOX_LIBRARY_PATH "/rockbox/codecs"
 #endif
 
 extern void paths_init(void);

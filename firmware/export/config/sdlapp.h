@@ -93,4 +93,4 @@
 /* Define this if a programmable hotkey is mapped */
 #define HAVE_HOTKEY
 
-#define BOOTDIR "/.rockbox"
+#define BOOTDIR "/media/internal/.rockbox"

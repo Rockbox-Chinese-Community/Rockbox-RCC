@@ -177,11 +177,15 @@ void lcd_init_device(void)
                                        SIM_LCD_WIDTH * display_zoom,
                                        SIM_LCD_HEIGHT * display_zoom,
                                        LCD_DEPTH, 0, 0, 0, 0);
+    if(!lcd_surface)
+	    printf("create lcd_surface failed...\n");
 #elif LCD_DEPTH <= 8
     lcd_surface = SDL_CreateRGBSurface(SDL_SWSURFACE,
                                        SIM_LCD_WIDTH * display_zoom,
                                        SIM_LCD_HEIGHT * display_zoom,
                                        8, 0, 0, 0, 0);
+    if(!lcd_surface)
+	    printf("create lcd_surface failed...\n");
 
 #ifdef HAVE_BACKLIGHT
     sdl_set_gradient(lcd_surface, &lcd_bl_color_dark,

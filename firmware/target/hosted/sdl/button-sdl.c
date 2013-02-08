@@ -56,6 +56,8 @@ static int mouse_coords = 0;
 #define USB_KEY SDLK_u
 #endif
 
+static float device_width = 0.0;
+static float  device_height = 0.0;
 #if defined(IRIVER_H100_SERIES) || defined (IRIVER_H300_SERIES)
 int _remote_type=REMOTETYPE_H100_LCD;
 
@@ -217,7 +219,10 @@ static void mouse_event(SDL_MouseButtonEvent *event, bool button_up)
 static bool event_handler(SDL_Event *event)
 {
     SDLKey ev_key;
-
+    	SDL_MouseButtonEvent *m = &event->button;
+    	SDL_MouseMotionEvent *mo = &event->motion;
+    	float mx;
+    	float my;
     switch(event->type)
     {
     case SDL_ACTIVEEVENT:
@@ -259,21 +264,24 @@ static bool event_handler(SDL_Event *event)
 #ifdef HAVE_TOUCHSCREEN
     case SDL_MOUSEMOTION:
         if (event->motion.state & SDL_BUTTON(1))
-        {
-            int x = event->motion.x / display_zoom;
-            int y = event->motion.y / display_zoom;
-            touchscreen_event(x, y);
-        }
+	{
+		mx = mo->x / device_width * LCD_WIDTH;
+		my = mo->y / device_height * LCD_HEIGHT;
+		mo->y = mx;
+		mo->y = my;
+            touchscreen_event(mo->x, mo->y);
+	}
         break;
 #endif
 
     case SDL_MOUSEBUTTONUP:
     case SDL_MOUSEBUTTONDOWN:
     {
-        SDL_MouseButtonEvent *mev = &event->button;
-        mev->x /= display_zoom;
-        mev->y /= display_zoom;
-        mouse_event(mev, event->type == SDL_MOUSEBUTTONUP);
+	mx = m->x / device_width * LCD_WIDTH;
+	my = m->y / device_height * LCD_HEIGHT;
+	m->x = mx;
+	m->y = my;
+        mouse_event(m, event->type == SDL_MOUSEBUTTONUP);
         break;
     }
     case SDL_QUIT:
@@ -299,6 +307,7 @@ void gui_message_loop(void)
             printf("SDL_WaitEvent() error\n");
             return; /* error, out of here */
         }
+
 
         sim_enter_irq_handler();
         quit = event_handler(&event);
@@ -460,6 +469,10 @@ int button_read_device(void)
 }
 
 void button_init_device(void)
-{
+{	
+	SDL_VideoInfo *vi = SDL_GetVideoInfo();
+	device_width = vi->current_w;
+	device_height = vi->current_h;
+
     SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 }

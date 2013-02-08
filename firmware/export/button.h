@@ -113,7 +113,7 @@ int touchscreen_last_touch(void);
  || !defined(BUTTON_CENTER) || !defined(BUTTON_MIDRIGHT) \
  || !defined(BUTTON_BOTTOMLEFT) || !defined(BUTTON_BOTTOMMIDDLE) \
  || !defined(BUTTON_BOTTOMRIGHT)) && !defined(__PCTOOL__)
-#error Touchscreen button mode BUTTON_* defines not set up correctly
+//#error Touchscreen button mode BUTTON_* defines not set up correctly
 #endif
 
 #include "touchscreen.h"

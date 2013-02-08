@@ -21,6 +21,7 @@
 
 #include <SDL.h>
 #include <SDL_thread.h>
+#include <SDL/SDL_opengles.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
@@ -81,15 +82,13 @@ int wps_verbose_level = 3;
  **/
 static int sdl_event_thread(void * param)
 {
-    SDL_InitSubSystem(SDL_INIT_VIDEO);
-
+    SDL_Init(SDL_INIT_VIDEO);
 #if (CONFIG_PLATFORM & PLATFORM_MAEMO)
     SDL_sem *wait_for_maemo_startup;
 #endif
     SDL_Surface *picture_surface = NULL;
     int width, height;
     int depth;
-    Uint32 flags;
 
     /* Try and load the background image. If it fails go without */
     if (background) {
@@ -126,15 +125,10 @@ static int sdl_event_thread(void * param)
     if (depth < 8)
         depth = 16;
 
-    flags = SDL_HWSURFACE|SDL_DOUBLEBUF;
-#if (CONFIG_PLATFORM & (PLATFORM_MAEMO|PLATFORM_PANDORA))
-    /* Fullscreen mode for maemo app */
-    flags |= SDL_FULLSCREEN;
-#endif
-
-    SDL_WM_SetCaption(UI_TITLE, NULL);
-
-    if ((gui_surface = SDL_SetVideoMode(width * display_zoom, height * display_zoom, depth, flags)) == NULL) {
+    //if ((gui_surface = SDL_SetVideoMode(width * display_zoom, height * display_zoom, depth, SDL_SWSURFACE)) == NULL) {
+    PDL_Init(0);
+    gui_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, LCD_WIDTH, LCD_HEIGHT, 16, 0, 0, 0, 0);
+    if (gui_surface == NULL) {
         panicf("%s", SDL_GetError());
     }
 
@@ -146,8 +140,6 @@ static int sdl_event_thread(void * param)
     uint8_t hiddenCursorData = 0;
     SDL_Cursor *hiddenCursor = SDL_CreateCursor(&hiddenCursorData, &hiddenCursorData, 8, 1, 0, 0);
 
-    SDL_ShowCursor(SDL_ENABLE);
-    SDL_SetCursor(hiddenCursor);
 #endif
 
     if (background && picture_surface != NULL)
@@ -226,6 +218,7 @@ void sim_do_exit()
     sim_kernel_shutdown();
 
     SDL_Quit();
+    PDL_Quit();
     exit(EXIT_SUCCESS);
 }
 
@@ -243,7 +236,7 @@ void system_init(void)
     g_type_init();
 #endif
 
-    if (SDL_Init(SDL_INIT_TIMER))
+    if (SDL_Init(SDL_INIT_TIMER|SDL_INIT_VIDEO))
         panicf("%s", SDL_GetError());
 
     s = SDL_CreateSemaphore(0); /* 0-count so it blocks */

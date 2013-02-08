@@ -8,7 +8,7 @@
 #
 
 # global CC options for all platforms
-CCOPTS="-W -Wall -Wundef -O -nostdlib -ffreestanding -Wstrict-prototypes -pipe -std=gnu99"
+CCOPTS=" -w -nostdlib -ffreestanding -Wstrict-prototypes -pipe -std=gnu99"
 
 # LD options for the core
 LDOPTS=""
@@ -22,7 +22,8 @@ use_logf_serial="#undef LOGF_SERIAL"
 
 scriptver=`echo '$Revision$' | sed -e 's:\\$::g' -e 's/Revision: //'`
 
-rbdir="/.rockbox"
+##bingding /media/internal/.rockbox for webos 
+rbdir="/media/internal/.rockbox"
 bindir=
 libdir=
 sharedir=
@@ -132,6 +133,11 @@ findarmgcc() {
   gccchoice="4.4.4"
 }
 
+findwebosgcc() {
+	prefixtools arm-linux-gnueabi-
+	gccchoice="4.7.2"
+}
+
 # scan the $PATH for the given command
 findtool(){
   file="$1"
@@ -220,6 +226,7 @@ simcc () {
 
  # default tool setup for native building
  prefixtools "$CROSS_COMPILE"
+ prefixtools "arm-linux-gnueabi-"
  ARG_ARM_THUMB=0 # can't use thumb in native builds
 
  # unset arch if already set shcc() and friends
@@ -230,9 +237,10 @@ simcc () {
  winbuild=""
  GCCOPTS=`echo $CCOPTS | sed -e s/-ffreestanding// -e s/-nostdlib// -e s/-Wundef//`
 
- GCCOPTS="$GCCOPTS -fno-builtin -g"
+ GCCOPTS="$GCCOPTS -O3"
  GCCOPTIMIZE=''
- LDOPTS="$LDOPTS -lm" # button-sdl.c uses sqrt()
+	## add lib for webos 
+ LDOPTS="$LDOPTS -lm -Wl,--allow-shlib-undefined -lGLESv2 -lpdl"
  sigaltstack=""
  fibers=""
  endian="" # endianess of the dap doesnt matter here
@@ -485,6 +493,12 @@ arm1136jfscc () {
  endian="little"
 }
 
+weboscc () {
+ findwebosgcc
+ GCCOPTS="$CCOPTS -std=gnu99 -march=armv7-a -mfpu=neon"
+ GCCOPTIMIZE="-fomit-frame-pointer"
+ endian="little"
+}
 arm1176jzscc () {
  findarmgcc
  GCCOPTS="$CCOPTS -mcpu=arm1176jz-s"
@@ -635,6 +649,28 @@ pandoracc () {
  GCCOPTS="$GCCOPTS -O2 -fno-strict-aliasing"
  GCCOPTS="$GCCOPTS -march=armv7-a -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp"
  GCCOPTS="$GCCOPTS -ffast-math -fsingle-precision-constant"
+}
+
+weboscc () {
+ # Note: The new "Ivanovic" pandora toolchain is not able to compile rockbox.
+ #       You have to use the sebt3 toolchain:
+ #       http://www.gp32x.com/board/index.php?/topic/58490-yactfeau/
+
+ arch="arm"
+ arch_version="32"
+ gccchoice="4.7.1"
+
+ WEBOSSDK="/root/CC"
+ prefixtools "$WEBOSSDK/bin/arm-linux-gnueabi-"
+
+ # Detect SDL
+ LDOPTS="$LDOPTS -L$WEBOSSDK/arm-linux-gnueabi/lib -I$WEBOSSDK/arm-linux-gnueabi/include"
+
+ # Compiler options
+ GCCOPTS="$GCCOPTS -O2 -fno-strict-aliasing"
+ GCCOPTS="$GCCOPTS -march=armv7-a -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp"
+ GCCOPTS="$GCCOPTS -ffast-math -fsingle-precision-constant"
+ endian="little"
 }
 
 ypr0cc () {
@@ -1323,6 +1359,7 @@ cat <<EOF
  204) Pandora                                    191) HM-801
  205) Samsung YP-R0
  206) Android MIPS
+ 207) WebOS
 EOF
 
   buildfor=`input`;
@@ -3213,6 +3250,7 @@ fi
     t_manufacturer="sdl"
     t_model="app"
     ;;
+  
 
    201|android)
     application="yes"
@@ -3374,6 +3412,28 @@ fi
     t_model="app"
     ;;
 
+   207|WebOS)
+    target_id=126
+    modelname="gigabeats"
+    target="GIGABEAT_S"
+    app_type="sdl-app"
+    memory=128
+    weboscc
+    tool="$rootdir/tools/scramble -add=gigs"
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    output="rockbox.gigabeat"
+    appextra="recorder:gui:radio"
+    plugins="yes"
+    swcodec="yes"
+    toolset="$gigabeatbitmaptools"
+    boottool="$rootdir/tools/scramble -gigabeats"
+    bootoutput="nk.bin"
+    # architecture, manufacturer and model for the target-tree build
+    t_cpu="arm"
+    t_manufacturer="imx31"
+    t_model="gigabeat-s"
+    ;;
    *)
     echo "Please select a supported target platform!"
     exit 7
@@ -3506,6 +3566,7 @@ fi
       archosrom=""
       flash=""
       echo "Simulator build selected"
+      echo $CC
       ;;
     [Aa]*)
       echo "Advanced build selected"
