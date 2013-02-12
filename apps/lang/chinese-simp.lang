@@ -619,6 +619,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_CHANNEL_SWAP
+  desc: in sound_settings
+  user: core
+  <source>
+    *: "Swap"
+  </source>
+  <dest>
+    *: "交换左右"
+  </dest>
+  <voice>
+    *: "交换左右声道"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_STEREO_WIDTH
   desc: in sound_settings
   user: core

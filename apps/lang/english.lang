@@ -973,6 +973,20 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_CHANNEL_SWAP
+  desc: in sound_settings
+  user: core
+  <source>
+    *: "Swap"
+  </source>
+  <dest>
+    *: "Swap"
+  </dest>
+  <voice>
+    *: "Swap"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_STEREO_WIDTH
   desc: in sound_settings
   user: core
