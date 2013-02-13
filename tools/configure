@@ -4070,6 +4070,7 @@ export ANDROID_ARCH=${ANDROID_ARCH}
 #The following exports are mainly for auto-rename
 export LCD_WIDTH=${ARG_LCDWIDTH}
 export LCD_HEIGHT=${ARG_LCDHEIGHT}
+export BUILDVER=`git rev-parse --verify --short HEAD`
 
 CONFIGURE_OPTIONS=${cmdline}
 
