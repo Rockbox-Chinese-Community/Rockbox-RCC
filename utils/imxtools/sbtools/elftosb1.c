@@ -382,6 +382,11 @@ CMD_FN(cmd_call)
     return sb1_add_call(sb, args[0].uint, g_jump_arg);
 }
 
+CMD_FN(cmd_jump)
+{
+    return sb1_add_jump(sb, args[0].uint, g_jump_arg);
+}
+
 CMD_FN(cmd_jumparg)
 {
     (void) sb;
@@ -466,6 +471,14 @@ CMD_FN(cmd_component)
     return 0;
 }
 
+CMD_FN(cmd_keyfile)
+{
+    (void) sb;
+    if(!add_keys_from_file(args[0].str))
+        bug("Cannot add keys from file '%s'\n", args[0].str);
+    return 0;
+}
+
 #define CMD(name,fn,nr_args,...) {name,nr_args,{__VA_ARGS__},fn},
 struct cmd_entry_t g_cmds[] =
 {
@@ -501,6 +514,8 @@ struct cmd_entry_t g_cmds[] =
     CMD("-product", cmd_product, 1, ARG_STR)
     CMD("-v", cmd_component, 1, ARG_STR)
     CMD("-component", cmd_component, 1, ARG_STR)
+    CMD("-k", cmd_keyfile, 1, ARG_STR)
+    CMD("-jump", cmd_jump, 1, ARG_UINT)
 };
 #undef CMD
 
@@ -564,6 +579,8 @@ static void usage(void)
     printf("  -C/-noncritical\t\tClear critical flag\n");
     printf("  -n/-strict\t\t\tSet strict flag\n");
     printf("  -N/-nonstrict\t\t\tClear strict flag\n");
+    printf("  -call <addr>\t\tCall an address\n");
+    printf("  -jump <addr>\t\tJump to an address\n");
     
     exit(1);
 }
