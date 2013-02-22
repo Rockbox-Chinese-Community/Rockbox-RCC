@@ -782,11 +782,8 @@ static bool eq_save_preset(void)
 /* Allows browsing of preset files */
 static void eq_reset_gain(void)
 {
-    global_settings.eq_band_settings[5].gain = 0;
-    global_settings.eq_band_settings[6].gain = 0;
-    global_settings.eq_band_settings[7].gain = 0;
-    global_settings.eq_band_settings[8].gain = 0;
-    global_settings.eq_band_settings[9].gain = 0;
+    for(int i = 0;i<EQ_NUM_BANDS;i++)
+        global_settings.eq_band_settings[i].gain = 0;
     return eq_apply();
 }
 
