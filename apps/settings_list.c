@@ -481,16 +481,96 @@ static int32_t get_precut_talkid(int value, int unit)
 }
 
 struct eq_band_setting eq_defaults[EQ_NUM_BANDS] = {
-    { 32, 7, 0 },
-    { 64, 10, 0 },
-    { 125, 10, 0 },
-    { 250, 10, 0 },
-    { 500, 10, 0 },
-    { 1000, 10, 0 },
-    { 2000, 10, 0 },
-    { 4000, 10, 0 },
-    { 8000, 10, 0 },
-    { 16000, 7, 0 },
+    { 20, 7, 0 },
+    { 30, 10, 0 },
+#if EQ_NUM_BANDS > 3
+    { 40, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 4
+    { 60, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 5
+    { 80, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 6
+    { 100, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 7
+    { 130, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 8
+    { 180, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 9
+    { 240, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 10
+    { 320, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 11
+    { 430, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 12
+    { 580, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 13
+    { 780, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 14
+    { 1040, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 15
+    { 1390, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 16
+    { 1870, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 17
+    { 2500, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 18
+    { 3350, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 19
+    { 4500, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 20
+    { 6020, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 21
+    { 8070, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 22
+    { 10820, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 23
+    { 14490, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 24
+    { 19420, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 25
+    { 19421, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 26
+    { 19422, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 27
+    { 19423, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 28
+    { 19424, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 29
+    { 19425, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 30
+    { 19426, 10, 0 },
+#endif
+#if EQ_NUM_BANDS > 31
+    { 19427, 10, 0 },
+#endif
+    { 19428, 7, 0 },
 };
 
 static void eq_load_from_cfg(void *setting, char *value)
