@@ -31,7 +31,6 @@ thread_support="ASSEMBLER_THREADS"
 app_lcd_width=
 app_lcd_height=
 app_lcd_orientation=
-app_eq_bands_num=-1
 
 # Properly retain command line arguments containing spaces
 cmdline=
@@ -90,6 +89,7 @@ app_set_paths () {
 }
 
 app_set_eq_num_bands () {
+    app_eq_bands_num=-1
     if [ -z "$ARG_EQ_BANDS" ]; then
         ARG_EQ_BANDS=$1
     fi
@@ -3942,7 +3942,7 @@ ${app_lcd_height}
 /* NUM of EQ BANDS */
 ${app_eq_bands_num}
 #ifndef CUSTOMIZED_EQ_BANDS
-    #define EQ_NUM_BANDS 10;
+    #define EQ_NUM_BANDS 10
 #else
     #define EQ_NUM_BANDS CUSTOMIZED_EQ_BANDS
 #endif
