@@ -440,11 +440,11 @@
   </source>
   <dest>
     *: none
-    recording: "录音界面"
+    recording: "录音"
   </dest>
   <voice>
     *: none
-    recording: "录音界面"
+    recording: "录音"
   </voice>
 </phrase>
 <phrase>
@@ -9319,10 +9319,10 @@
     *: "Playlist Catalogue"
   </source>
   <dest>
-    *: "播放列表选项"
+    *: "播放列表目录"
   </dest>
   <voice>
-    *: "播放列表选项"
+    *: "播放列表目录"
   </voice>
 </phrase>
 <phrase>
@@ -10695,11 +10695,11 @@
   </source>
   <dest>
     *: none
-    accessory_supply: "给附件供电"
+    accessory_supply: "为附件供电"
   </dest>
   <voice>
     *: none
-    accessory_supply: "给附件供电"
+    accessory_supply: "为附件供电"
   </voice>
 </phrase>
 <phrase>
@@ -10710,10 +10710,10 @@
     *: "Unknown"
   </source>
   <dest>
-    *: "不知道"
+    *: "未知"
   </dest>
   <voice>
-    *: "不知道"
+    *: "未知"
   </voice>
 </phrase>
 <phrase>
