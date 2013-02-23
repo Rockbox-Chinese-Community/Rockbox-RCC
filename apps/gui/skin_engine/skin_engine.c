@@ -7,8 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2002 by Stuart Martin
- * RTC config saving code (C) 2002 by hessu@hes.iki.fi
+ * Copyright (C) 2010 Jonathan Gordon
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -64,21 +63,26 @@ static struct gui_skin_helper {
 };
 
 static struct gui_skin {
-    char                filename[MAX_PATH];
     struct gui_wps      gui_wps;
     struct wps_data     data;
-    char                *buffer_start;
-    size_t              buffer_usage;
+    struct skin_stats   stats;
     bool                failsafe_loaded;
 
     bool                needs_full_update;
 } skins[SKINNABLE_SCREENS_COUNT][NB_SCREENS];
 
+int skin_get_num_skins(void)
+{
+    return SKINNABLE_SCREENS_COUNT;
+}
+
+struct skin_stats *skin_get_stats(int number, int screen)
+{
+    return &skins[number][screen].stats;
+}
 
 static void gui_skin_reset(struct gui_skin *skin)
 {
-    skin->filename[0] = '\0';
-    skin->buffer_start = NULL;
     skin->failsafe_loaded = false;
     skin->needs_full_update = true;
     skin->gui_wps.data = &skin->data;
@@ -173,14 +177,14 @@ void skin_load(enum skinnable_screens skin, enum screen_type screen,
         skin_helpers[skin].preproccess(screen, &skins[skin][screen].data);
 
     if (buf && *buf)
-        loaded = skin_data_load(screen, &skins[skin][screen].data, buf, isfile);
-    if (loaded)
-        strcpy(skins[skin][screen].filename, buf);
+        loaded = skin_data_load(screen, &skins[skin][screen].data, buf, isfile,
+                                &skins[skin][screen].stats);
 
     if (!loaded && skin_helpers[skin].default_skin)
     {
         loaded = skin_data_load(screen, &skins[skin][screen].data,
-                                skin_helpers[skin].default_skin(screen), false);
+                                skin_helpers[skin].default_skin(screen), false,
+                                &skins[skin][screen].stats);
         skins[skin][screen].failsafe_loaded = loaded;
     }
 
@@ -270,7 +274,6 @@ struct gui_wps *skin_get_gwps(enum skinnable_screens skin, enum screen_type scre
         char filename[MAX_PATH];
         char *buf = get_skin_filename(filename, MAX_PATH, skin, screen);
         cpu_boost(true);
-        skins[skin][screen].filename[0] = '\0';
         skin_load(skin, screen, buf, true);
         cpu_boost(false);
     }

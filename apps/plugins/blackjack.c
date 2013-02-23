@@ -199,23 +199,7 @@ enum {
 #define BJACK_RIGHT         BUTTON_RIGHT
 #define BJACK_LEFT          BUTTON_LEFT
 
-#elif CONFIG_KEYPAD == SANSA_C200_PAD
-#define BJACK_SELECT_NAME    "SELECT"
-#define BJACK_STAY_NAME     "RIGHT"
-#define BJACK_QUIT_NAME     "POWER"
-#define BJACK_DOUBLE_NAME   "LEFT"
-#define BJACK_SELECT        BUTTON_SELECT
-#define BJACK_QUIT          BUTTON_POWER
-#define BJACK_MAX           BUTTON_VOL_UP
-#define BJACK_MIN           BUTTON_VOL_DOWN
-#define BJACK_STAY          BUTTON_RIGHT
-#define BJACK_DOUBLEDOWN    BUTTON_LEFT
-#define BJACK_UP            BUTTON_UP
-#define BJACK_DOWN          BUTTON_DOWN
-#define BJACK_RIGHT         BUTTON_RIGHT
-#define BJACK_LEFT          BUTTON_LEFT
-
-#elif CONFIG_KEYPAD == SANSA_CLIP_PAD
+#elif CONFIG_KEYPAD == SANSA_C200_PAD || CONFIG_KEYPAD == SANSA_CLIP_PAD
 #define BJACK_SELECT_NAME    "SELECT"
 #define BJACK_STAY_NAME     "RIGHT"
 #define BJACK_QUIT_NAME     "POWER"
@@ -636,7 +620,7 @@ static void blackjack_drawtable(struct game_context* bj) {
     unsigned int w, h, y_loc;
     char str[10];
 
-#if LCD_HEIGHT <= 64
+#if LCD_HEIGHT <= 64 || LCD_WIDTH <= 96
     rb->lcd_getstringsize("Bet", &w, &h);
     rb->lcd_putsxy(LCD_WIDTH - w, 2*h + 1, "Bet");
     rb->snprintf(str, 9, "$%d", bj->current_bet);
@@ -808,7 +792,7 @@ static void update_total(struct game_context* bj) {
     unsigned int w, h;
     rb->snprintf(total, 3, "%d", bj->player_total);
     rb->lcd_getstringsize(total, &w, &h);
-#if LCD_HEIGHT > 64
+#if LCD_HEIGHT > 64 && LCD_WIDTH > 96
     h *= 2;
 #endif
     rb->lcd_putsxy(LCD_WIDTH - w, LCD_HEIGHT/2 + h, total);
@@ -918,7 +902,7 @@ static void finish_game(struct game_context* bj) {
     }
     rb->lcd_getstringsize(str, &w, &h);
 
-#if LCD_HEIGHT <= 64
+#if LCD_HEIGHT <= 64 || LCD_WIDTH <= 96
     rb->lcd_set_drawmode(DRMODE_BG+DRMODE_INVERSEVID);
     rb->lcd_fillrect(0, LCD_HEIGHT/2, LCD_WIDTH, LCD_HEIGHT/2);
     rb->lcd_set_drawmode(DRMODE_SOLID);
@@ -987,7 +971,7 @@ static unsigned int blackjack_get_yes_no(char message[20]) {
     rb->lcd_getstringsize(message_yes, &w, &h);
     const char *stg[] = {message_yes, message_no};
 
-#if LCD_HEIGHT <= 64
+#if LCD_HEIGHT <= 64 || LCD_WIDTH <= 96
     b = 2*h+1;
 #else
     b = h-1;
@@ -1035,7 +1019,8 @@ static unsigned int blackjack_get_yes_no(char message[20]) {
 /*****************************************************************************
 * blackjack_get_amount() gets an amount from the player to be used
 ******************************************************************************/
-static signed int blackjack_get_amount(char message[20], signed int lower_limit,
+static signed int blackjack_get_amount(const char message[20],
+                                       signed int lower_limit,
                                        signed int upper_limit,
                                        signed int start) {
     int button;
@@ -1057,7 +1042,7 @@ static signed int blackjack_get_amount(char message[20], signed int lower_limit,
     rb->lcd_set_foreground(LCD_BLACK);
 #endif
 
-#if LCD_HEIGHT <= 64
+#if LCD_HEIGHT <= 64 || LCD_WIDTH <= 96
     rb->lcd_clear_display();
     rb->lcd_puts(0, 1, message);
     rb->lcd_putsf(0, 2, "$%d", amount);
@@ -1155,7 +1140,7 @@ static signed int blackjack_get_amount(char message[20], signed int lower_limit,
         }
 
         if(changed) {
-#if LCD_HEIGHT <= 64
+#if LCD_HEIGHT <= 64 || LCD_WIDTH <= 96
             rb->lcd_putsf(0, 2, "$%d", amount);
             rb->lcd_update();
 #else
@@ -1181,7 +1166,12 @@ static signed int blackjack_get_amount(char message[20], signed int lower_limit,
 * blackjack_get_bet() gets the player's bet.
 ******************************************************************************/
 static void blackjack_get_bet(struct game_context* bj) {
-    bj->current_bet = blackjack_get_amount("Please enter a bet", 10,
+#if LCD_WIDTH <= 96
+    static const char msg[] = "Enter a bet";
+#else
+    static const char msg[] = "Please enter a bet";
+#endif
+    bj->current_bet = blackjack_get_amount(msg, 10,
                                            bj->player_money, bj->current_bet);
 }
 

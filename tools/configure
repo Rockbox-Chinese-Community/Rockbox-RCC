@@ -31,6 +31,7 @@ thread_support="ASSEMBLER_THREADS"
 app_lcd_width=
 app_lcd_height=
 app_lcd_orientation=
+app_eq_bands_num=-1
 
 # Properly retain command line arguments containing spaces
 cmdline=
@@ -89,20 +90,27 @@ app_set_paths () {
 }
 
 app_set_eq_num_bands () {
-    echo "Enter the number of the EQ bands (10 or 24 , default: 24)"
-    #while (($app_eq_num_bands != "24" || $app_eq_num_bands != "10"))
-    app_eq_num_bands=0;
-    while [ $app_eq_num_bands -ne 24 -a $app_eq_num_bands -ne 10 ]
-    do
-        echo "Please enter 10 or 24"
-        app_eq_num_bands=`input`
-        if [ -z "$app_eq_num_bands" ]; then app_eq_num_bands="24";fi
-    done
-    if [ $app_eq_num_bands -eq 24 ]; then
-        app_eq_num_bands="#define MORE_EQ_BANDS_24"
-    else
-        app_eq_num_bands=""
+    if [ -z "$ARG_EQ_BANDS" ]; then
+        ARG_EQ_BANDS=$1
     fi
+
+    if [ -z "$ARG_EQ_BANDS" ]; then
+        until [ $app_eq_bands_num -ge 3 -a $app_eq_bands_num -le 32 ]
+        do
+           echo "Enter the number of the EQ bands (3~32, inclusive, default:24)"
+            tmp=`input`
+            if [ -z "$tmp" ]; then
+                app_eq_bands_num="24";
+            else
+                app_eq_bands_num=$tmp;
+            fi
+        done
+    else
+        app_eq_bands_num="$ARG_EQ_BANDS"
+    fi
+
+    echo "Selected $app_eq_bands_num bands EQ"
+    app_eq_bands_num="#define CUSTOMIZED_EQ_BANDS $app_eq_bands_num"
 }
 
 # Set the application LCD size according to the following priorities:
@@ -1184,6 +1192,7 @@ help() {
                       behavior of falling back to them if no native thread
                       support was found.
     --prefix          Target installation directory
+    --eq-bands        Bands number of equalizer, between 3~32 inclusive
     --help            Shows this message (must not be used with other options)
 
 EOF
@@ -1204,6 +1213,7 @@ ARG_VOICE=
 ARG_ARM_THUMB=
 ARG_PREFIX="$PREFIX"
 ARG_THREAD_SUPPORT=
+ARG_EQ_BANDS=
 err=            
 for arg in "$@"; do
 	case "$arg" in
@@ -1222,10 +1232,10 @@ for arg in "$@"; do
 		--voice=*)    ARG_VOICE=`echo "$arg" | cut -d = -f 2`;;
 		--thumb)      ARG_ARM_THUMB=1;;
 		--no-thumb)   ARG_ARM_THUMB=0;;
-        --sdl-threads)ARG_THREAD_SUPPORT=1;;
-        --no-sdl-threads)
-                      ARG_THREAD_SUPPORT=0;;
-        --prefix=*)   ARG_PREFIX=`echo "$arg" | cut -d = -f 2`;;
+		--sdl-threads) ARG_THREAD_SUPPORT=1;;
+		--no-sdl-threads) ARG_THREAD_SUPPORT=0;;
+		--prefix=*)   ARG_PREFIX=`echo "$arg" | cut -d = -f 2`;;
+		--eq-bands=*) ARG_EQ_BANDS=`echo "$arg" | cut -d = -f 2`;;
 		--help)       help;;
 		*)            err=1; echo "[ERROR] Option '$arg' unsupported";;
 	esac
@@ -3930,7 +3940,12 @@ ${app_lcd_width}
 ${app_lcd_height}
 
 /* NUM of EQ BANDS */
-${app_eq_num_bands}
+${app_eq_bands_num}
+#ifndef CUSTOMIZED_EQ_BANDS
+    #define EQ_NUM_BANDS 10;
+#else
+    #define EQ_NUM_BANDS CUSTOMIZED_EQ_BANDS
+#endif
 
 /* root of Rockbox */
 #define ROCKBOX_DIR "${rbdir}"
@@ -3986,8 +4001,9 @@ fi
 cmdline=`echo $cmdline | sed -e s,--target=[a-zA-Z_0-9]\*,,g \
                             -e s,--ram=[0-9]\*,,g \
                             -e s,--rbdir=[./a-zA-Z0-9]\*,,g \
-                            -e s,--type=[a-zA-Z]\*,,g`
-cmdline="$cmdline --target=\$(MODELNAME) --ram=\$(MEMORYSIZE) --rbdir=\$(RBDIR) --type=$btype$advopts"
+                            -e s,--type=[a-zA-Z]\*,,g \
+                            -e s,--eq-bands=[0-9]\*,,g`
+cmdline="$cmdline --target=\$(MODELNAME) --ram=\$(MEMORYSIZE) --rbdir=\$(RBDIR) --type=$btype$advopts --eq-bands=`echo $app_eq_bands_num | sed 's/[^0-9.]//g'`"
 
 ### end of cmdline
 
@@ -4078,3 +4094,4 @@ include \$(TOOLSDIR)/root.make
 EOF
 
 echo "Created Makefile"
+
