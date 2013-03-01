@@ -481,96 +481,96 @@ static int32_t get_precut_talkid(int value, int unit)
 }
 
 struct eq_band_setting eq_defaults[EQ_NUM_BANDS] = {
-    { 20, 7, 0 },
-    { 30, 10, 0 },
+    { 20, 4.3, 0 },
+    { 30, 4.3, 0 },
 #if EQ_NUM_BANDS > 3
-    { 40, 10, 0 },
+    { 40, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 4
-    { 60, 10, 0 },
+    { 50, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 5
-    { 80, 10, 0 },
+    { 60, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 6
-    { 100, 10, 0 },
+    { 70, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 7
-    { 130, 10, 0 },
+    { 90, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 8
-    { 180, 10, 0 },
+    { 110, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 9
-    { 240, 10, 0 },
+    { 140, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 10
-    { 320, 10, 0 },
+    { 180, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 11
-    { 430, 10, 0 },
+    { 230, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 12
-    { 580, 10, 0 },
+    { 290, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 13
-    { 780, 10, 0 },
+    { 360, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 14
-    { 1040, 10, 0 },
+    { 450, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 15
-    { 1390, 10, 0 },
+    { 570, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 16
-    { 1870, 10, 0 },
+    { 720, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 17
-    { 2500, 10, 0 },
+    { 910, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 18
-    { 3350, 10, 0 },
+    { 1140, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 19
-    { 4500, 10, 0 },
+    { 1440, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 20
-    { 6020, 10, 0 },
+    { 1810, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 21
-    { 8070, 10, 0 },
+    { 2280, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 22
-    { 10820, 10, 0 },
+    { 2880, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 23
-    { 14490, 10, 0 },
+    { 3620, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 24
-    { 19420, 10, 0 },
+    { 4560, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 25
-    { 19421, 10, 0 },
+    { 5750, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 26
-    { 19422, 10, 0 },
+    { 7250, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 27
-    { 19423, 10, 0 },
+    { 9130, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 28
-    { 19424, 10, 0 },
+    { 11500, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 29
-    { 19425, 10, 0 },
+    { 14490, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 30
-    { 19426, 10, 0 },
+    { 18260, 4.3, 0 },
 #endif
 #if EQ_NUM_BANDS > 31
-    { 19427, 10, 0 },
+    { 19420, 4.3, 0 },
 #endif
-    { 19428, 7, 0 },
+    { 19810, 4.3, 0 },
 };
 
 static void eq_load_from_cfg(void *setting, char *value)
