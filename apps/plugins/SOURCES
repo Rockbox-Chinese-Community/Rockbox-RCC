@@ -21,7 +21,6 @@ sort.c
 stats.c
 oscilloscope.c
 vu_meter.c
-matrix.c
 #ifdef HAVE_TOUCHSCREEN
 stopwatch.lua
 calculator.c
