@@ -30,10 +30,10 @@
                  style="@style/appwidget_button"
                  android:layout_weight="1"
                  android:src="@drawable/appwidget_prev" />
-    <ImageButton android:id="@+id/stop"
+    <!--<ImageButton android:id="@+id/stop"
                  style="@style/appwidget_button"
                  android:layout_weight="1"
-                 android:src="@drawable/appwidget_stop" />
+                 android:src="@drawable/appwidget_stop" />-->
     <ImageButton android:id="@+id/playPause"
                  style="@style/appwidget_button"
                  android:layout_weight="1"

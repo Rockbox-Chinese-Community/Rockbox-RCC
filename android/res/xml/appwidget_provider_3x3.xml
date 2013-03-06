@@ -2,6 +2,9 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
   android:minWidth="220dp"
   android:minHeight="220dp"
+  android:minResizeWidth="72dp"
+  android:minResizeHeight="72dp"
+  android:resizeMode="horizontal|vertical"
   android:updatePeriodMillis="86400000"
   android:initialLayout="@layout/appwidget_3x3"
   android:configure="org.rockbox.widgets.RockboxWidgetConfigure">
