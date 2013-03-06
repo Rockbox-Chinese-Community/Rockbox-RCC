@@ -528,10 +528,10 @@
     *: "Balance"
   </source>
   <dest>
-    *: "左右声道平衡"
+    *: "声道平衡"
   </dest>
   <voice>
-    *: "左右声道平衡"
+    *: "声道平衡"
   </voice>
 </phrase>
 <phrase>
@@ -1655,10 +1655,10 @@
     *: "Initialize Now"
   </source>
   <dest>
-    *: "立即初始化"
+    *: "初始化媒体库"
   </dest>
   <voice>
-    *: "立即初始化"
+    *: "初始化媒体库"
   </voice>
 </phrase>
 <phrase>
@@ -7351,7 +7351,7 @@
     *: "Boot changed"
   </source>
   <dest>
-    *: "引导文件已经更新"
+    *: "引导文件已被更新"
   </dest>
   <voice>
     *: "引导文件已经被更新"
@@ -7365,10 +7365,10 @@
     *: "Reboot now?"
   </source>
   <dest>
-    *: "现在就重启?"
+    *: "是否立即重新启动?"
   </dest>
   <voice>
-    *: "现在就重启吗"
+    *: "是否立即重新启动播放器"
   </voice>
 </phrase>
 <phrase>
@@ -7864,10 +7864,10 @@
     *: "Update Now"
   </source>
   <dest>
-    *: "立即更新"
+    *: "更新媒体库"
   </dest>
   <voice>
-    *: "立即更新"
+    *: "更新媒体库"
   </voice>
 </phrase>
 <phrase>
@@ -9550,10 +9550,10 @@
     *: "Please reboot to enable"
   </source>
   <dest>
-    *: "重启后启用"
+    *: "重新启动以完成初始化"
   </dest>
   <voice>
-    *: "重启后启用"
+    *: "重新启动您的播放器以完成初始化"
   </voice>
 </phrase>
 <phrase>
@@ -12631,10 +12631,10 @@
     *: "Filesize"
   </source>
   <dest>
-    *: "按照文件大小"
+    *: "文件大小"
   </dest>
   <voice>
-    *: "按照文件大小"
+    *: "文件大小"
   </voice>
 </phrase>
 <phrase>
@@ -13115,10 +13115,10 @@
     *: "Restart Sleep Timer On Keypress"
   </source>
   <dest>
-    *: "按键时重启睡眠计时器"
+    *: "按键时重置睡眠计时器"
   </dest>
   <voice>
-    *: "按键时重启睡眠计时器"
+    *: "按键时重置睡眠计时器"
   </voice>
 </phrase>
 <phrase>
