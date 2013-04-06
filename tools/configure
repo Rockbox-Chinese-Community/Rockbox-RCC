@@ -3261,11 +3261,7 @@ fi
     sharedir="/data/data/org.rockbox/app_rockbox/rockbox"
     bindir="/data/data/org.rockbox/lib"
     libdir="/data/data/org.rockbox/app_rockbox"
-    if [ $ARG_LCDHEIGHT -gt 800 ];then
-    memory=`expr $ARG_LCDHEIGHT / 100`
-    else
-    memory=8
-    fi
+    memory=16+`expr $ARG_LCDHEIGHT / 100`
     uname=`uname`
     androidcc armeabi
     tool="cp "
