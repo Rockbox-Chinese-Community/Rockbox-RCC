@@ -140,6 +140,7 @@ public class RockboxActivity extends Activity
         {
            case 3:
                 System.runFinalization();
+		MobclickAgent.onKillProcess(this);
                 android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(0);
                 break;
