@@ -4087,6 +4087,8 @@ export ROCKBOX_LIBRARY_PATH=${libdir}
 export SDLCONFIG=${sdl}
 export LCDORIENTATION=${lcd_orientation}
 export ANDROID_ARCH=${ANDROID_ARCH}
+export ANDROID_NDK_PATH=${ANDROID_NDK_PATH}
+export ANDROID_SDK_PATH=${ANDROID_SDK_PATH}
 #The following exports are mainly for auto-rename
 export LCD_WIDTH=${ARG_LCDWIDTH}
 export LCD_HEIGHT=${ARG_LCDHEIGHT}
