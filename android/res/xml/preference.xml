@@ -40,7 +40,7 @@
 android:targetClass="com.umeng.fb.ui.SendFeedback" />
         </PreferenceScreen>
         <PreferenceScreen android:title="@string/pre_rockbox_rcc_title" android:summary="@string/pre_rockbox_rcc_summary">
-            <intent android:action="android.intent.action.VIEW" android:data="http://rbtheme.5d6d.net" />
+            <intent android:action="android.intent.action.VIEW" android:data="http://bbs.rockboxcn.org" />
         </PreferenceScreen>
     </PreferenceCategory>
 </PreferenceScreen>
