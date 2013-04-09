@@ -16,7 +16,7 @@
 <string name="rockbox_wakelock_off_toast">关闭待机后继续播放功能</string>
 <string name="rockbox_about">关于</string>
 <string name="rockbox_about_title">关于 Rockbox</string>
-<string name="rockbox_about_message">Rockbox-RCC\nRockbox中文社区精心定制\nhttp://bbs.rockboxcnorg\n\n*转载注明出处*</string>
+<string name="rockbox_about_message">Rockbox-RCC\nRockbox中文社区精心定制\nhttp://bbs.rockboxcn.org\n\n*转载注明出处*</string>
 <string name="rockbox_vollock_on">设置锁定音量</string>
 <string name="rockbox_vollock_info">请输入锁定音量值（范围：1-100）</string>
 <string name="rockbox_vollock_hint1">当前值：</string>
