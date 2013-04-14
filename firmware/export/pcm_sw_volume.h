@@ -7,8 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- *
- * Copyright (c) 2011 Andrew Ryabinin
+ * Copyright (C) 2013 by Michael Sevakis
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,12 +18,24 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef __DUMMY_CODEC_H_
-#define __DUMMY_CODEC_H_
+#ifndef PCM_SW_VOLUME_H
+#define PCM_SW_VOLUME_H
 
-#define VOLUME_MIN   -730
-#define VOLUME_MAX   0
+#ifdef HAVE_SW_VOLUME_CONTROL
 
-void audiohw_set_master_vol(int vol_l, int vol_r);
+#include <audiohw.h>
+#include <limits.h>
 
-#endif /* __DUMMY_CODEC_H_ */
+#define PCM_MUTE_LEVEL INT_MIN
+
+#ifdef AUDIOHW_HAVE_PRESCALER
+/* Set the prescaler value for all PCM playback */
+void pcm_set_prescaler(int prescale);
+#endif /* AUDIOHW_HAVE_PRESCALER */
+
+/* Set the per-channel volume cut/gain for all PCM playback */
+void pcm_set_master_volume(int vol_l, int vol_r);
+
+#endif /* HAVE_SW_VOLUME_CONTROL */
+
+#endif /* PCM_SW_VOLUME_H */

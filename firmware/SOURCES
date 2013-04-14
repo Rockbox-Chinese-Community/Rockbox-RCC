@@ -355,6 +355,9 @@ sound.c
 pcm_sampr.c
 pcm.c
 pcm_mixer.c
+#ifdef HAVE_SW_VOLUME_CONTROL
+pcm_sw_volume.c
+#endif /* HAVE_SW_VOLUME_CONTROL */
 #ifdef HAVE_RECORDING
 enc_base.c
 #endif /* HAVE_RECORDING */
@@ -1509,6 +1512,7 @@ target/arm/s5l8702/ipod6g/piezo-ipod6g.c
 #endif
 
 #if CONFIG_CPU == RK27XX
+target/arm/rk27xx/audio-rk27xx.c
 target/arm/rk27xx/kernel-rk27xx.c
 target/arm/rk27xx/system-rk27xx.c
 target/arm/rk27xx/backlight-rk27xx.c
@@ -1532,6 +1536,7 @@ target/arm/rk27xx/rk27generic/button-rk27generic.c
 target/arm/rk27xx/rk27generic/powermgmt-rk27generic.c
 target/arm/rk27xx/rk27generic/power-rk27generic.c
 target/arm/rk27xx/rk27generic/lcd-rk27generic.c
+target/arm/rk27xx/rk27generic/fmradio-i2c-rk27generic.c
 #endif
 
 #if CONFIG_CPU == JZ4732

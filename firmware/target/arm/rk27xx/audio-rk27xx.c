@@ -5,10 +5,8 @@
  *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
  *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
  *                     \/            \/     \/    \/            \/
- * $Id$
  *
- *
- * Copyright (c) 2011 Andrew Ryabinin
+ * Copyright (C) 2013 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,12 +17,37 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef __DUMMY_CODEC_H_
-#define __DUMMY_CODEC_H_
+#include "config.h"
+#include "system.h"
+#include "audiohw.h"
+#include "audio.h"
 
-#define VOLUME_MIN   -730
-#define VOLUME_MAX   0
+#if (INPUT_SRC_CAPS != 0)
+static int input_source = AUDIO_SRC_PLAYBACK;
+static unsigned input_flags = 0;
+static int output_source = AUDIO_SRC_PLAYBACK;
 
-void audiohw_set_master_vol(int vol_l, int vol_r);
+static void select_audio_path(void)
+{
+    if(input_source == AUDIO_SRC_PLAYBACK)
+        audiohw_set_monitor(false);
+    else
+        audiohw_set_monitor(true);
+}
 
-#endif /* __DUMMY_CODEC_H_ */
+void audio_input_mux(int source, unsigned flags)
+{
+    (void) source;
+    (void) flags;
+    input_source = source;
+    input_flags = flags;
+    select_audio_path();
+}
+
+void audio_set_output_source(int source)
+{
+    (void) source;
+    output_source = source;
+    select_audio_path();
+}
+#endif

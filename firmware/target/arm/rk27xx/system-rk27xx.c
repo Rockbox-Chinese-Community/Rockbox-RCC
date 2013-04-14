@@ -186,10 +186,11 @@ void udelay(unsigned usecs)
         cycles_per_usec = (CPUFREQ_NORMAL + 999999) / 1000000;
     }
 
-    delay = (usecs * cycles_per_usec + 3) / 4;
+    delay = (usecs * cycles_per_usec) / 5;
 
     asm volatile(
         "1: subs %0, %0, #1  \n"    /* 1 cycle  */
+        "   nop              \n"    /* 1 cycle  */
         "   bne  1b          \n"    /* 3 cycles */
         : : "r"(delay)
     );

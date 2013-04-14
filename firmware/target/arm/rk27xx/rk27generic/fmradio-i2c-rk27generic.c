@@ -7,8 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- *
- * Copyright (c) 2011 Andrew Ryabinin
+ * Copyright (C) 2013 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,12 +18,22 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef __DUMMY_CODEC_H_
-#define __DUMMY_CODEC_H_
 
-#define VOLUME_MIN   -730
-#define VOLUME_MAX   0
+#include "config.h"
+#include "system.h"
+#include "fmradio_i2c.h"
+#include "i2c-rk27xx.h"
 
-void audiohw_set_master_vol(int vol_l, int vol_r);
+void fmradio_i2c_init(void)
+{
+}
 
-#endif /* __DUMMY_CODEC_H_ */
+int fmradio_i2c_write(unsigned char address, const unsigned char* buf, int count)
+{
+    return i2c_write(address, -1, count, buf);
+}
+
+int fmradio_i2c_read(unsigned char address, unsigned char* buf, int count)
+{
+    return i2c_read(address, -1, count, buf);
+}
