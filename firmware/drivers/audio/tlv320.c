@@ -31,23 +31,8 @@
 #endif
 #include "audiohw.h"
 
-const struct sound_settings_info audiohw_settings[] = {
-    [SOUND_VOLUME]        = {"dB", 0,  1, -73,   6, -20},
-    /* HAVE_SW_TONE_CONTROLS */
-    [SOUND_BASS]          = {"dB", 0,  1, -24,  24,   0},
-    [SOUND_TREBLE]        = {"dB", 0,  1, -24,  24,   0},
-    [SOUND_BALANCE]       = {"%",  0,  1,-100, 100,   0},
-    [SOUND_CHANNELS]      = {"",   0,  1,   0,   5,   0},
-    [SOUND_STEREO_WIDTH]  = {"%",  0,  5,   0, 250, 100},
-#ifdef HAVE_RECORDING
-    [SOUND_LEFT_GAIN]     = {"dB", 1,  1,   0,  31,  23},
-    [SOUND_RIGHT_GAIN]    = {"dB", 1,  1,   0,  31,  23},
-    [SOUND_MIC_GAIN]      = {"dB", 1,  1,   0,   1,   1},
-#endif
-};
-
-/* convert tenth of dB volume (-840..0) to master volume register value */
-int tenthdb2master(int db)
+/* convert tenth of dB volume (-73..6) to master volume register value */
+static int vol_tenthdb2hw(int db)
 {
     /* +6 to -73dB 1dB steps (plus mute == 80levels) 7bits */
     /* 1111111 == +6dB  (0x7f) */
@@ -210,8 +195,11 @@ void audiohw_set_frequency(int fsel)
  *
  * Left & Right: 48 .. 121 .. 127 => Volume -73dB (mute) .. +0 dB .. +6 dB
  */
-void audiohw_set_headphone_vol(int vol_l, int vol_r)
+void audiohw_set_volume(int vol_l, int vol_r)
 {
+    vol_l = vol_tenthdb2hw(vol_l);
+    vol_r = vol_tenthdb2hw(vol_r);
+
     unsigned value_dap = tlv320_regs[REG_DAP];
     unsigned value_dap_last = value_dap;
     unsigned value_l = LHV_LHV(vol_l);

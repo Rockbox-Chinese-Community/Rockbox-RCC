@@ -33,18 +33,8 @@
 
 static char volume_left = 0, volume_right = 0;
 
-const struct sound_settings_info audiohw_settings[] = {
-    [SOUND_VOLUME]        = {"dB", 0,  1, VOLUME_MIN/10, VOLUME_MAX/10, -25},
-    /* HAVE_SW_TONE_CONTROLS */
-    [SOUND_BASS]          = {"dB", 0,  1, -24,  24,   0},
-    [SOUND_TREBLE]        = {"dB", 0,  1, -24,  24,   0},
-    [SOUND_BALANCE]       = {"%",  0,  1,-100, 100,   0},
-    [SOUND_CHANNELS]      = {"",   0,  1,   0,   5,   0},
-    [SOUND_STEREO_WIDTH]  = {"%",  0,  5,   0, 250, 100},
-};
-
 /* convert tenth of dB volume to master volume register value */
-int tenthdb2master(int db)
+static int vol_tenthdb2hw(int db)
 {
     /* 0 to -63.0dB in 1dB steps, aic3x can goto -63.5 in 0.5dB steps */
     if (db < VOLUME_MIN)
@@ -270,8 +260,11 @@ void audiohw_set_frequency(int fsel)
     /* TODO */
 }
 
-void audiohw_set_headphone_vol(int vol_l, int vol_r)
+void audiohw_set_volume(int vol_l, int vol_r)
 {
+    vol_l = vol_tenthdb2hw(vol_l);
+    vol_r = vol_tenthdb2hw(vol_r);
+
     if ((volume_left & 0x7F) == (vol_l & 0x7F) &&
         (volume_right & 0x7F) == (vol_r & 0x7F))
     {

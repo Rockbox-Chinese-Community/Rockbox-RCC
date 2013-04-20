@@ -31,21 +31,6 @@
 #include "audiohw.h"
 #include "sound.h"
 
-const struct sound_settings_info audiohw_settings[] = {
-    [SOUND_VOLUME]        = {"dB", 0,  1,-127,   0, -25},
-    /* HAVE_SW_TONE_CONTROLS */
-    [SOUND_BASS]          = {"dB", 0,  1, -24,  24,   0},
-    [SOUND_TREBLE]        = {"dB", 0,  1, -24,  24,   0},
-    [SOUND_BALANCE]       = {"%",  0,  1,-100, 100,   0},
-    [SOUND_CHANNELS]      = {"",   0,  1,   0,   5,   0},
-    [SOUND_STEREO_WIDTH]  = {"%",  0,  5,   0, 250, 100},
-#if defined(HAVE_RECORDING)
-    [SOUND_LEFT_GAIN]     = {"dB", 1,  1,   0,  31,  23},
-    [SOUND_RIGHT_GAIN]    = {"dB", 1,  1,   0,  31,  23},
-    [SOUND_MIC_GAIN]      = {"dB", 1,  1,   0,   1,   0},
-#endif
-};
-
 static unsigned char akc_regs[AKC_NUM_REGS];
 
 static void akc_write(int reg, unsigned val)
@@ -80,7 +65,7 @@ static void codec_set_active(int active)
 #endif
 
 /* convert tenth of dB volume (-1270..0) to master volume register value */
-int tenthdb2master(int db)
+static int vol_tenthdb2hw(int db)
 {
     if (db < VOLUME_MIN)
         return 0xff; /* mute */
@@ -88,29 +73,6 @@ int tenthdb2master(int db)
         return 0x00;
     else
         return ((-db)/5);
-}
-
-int sound_val2phys(int setting, int value)
-{
-    int result;
-
-    switch(setting)
-    {
-#ifdef HAVE_RECORDING
-    case SOUND_LEFT_GAIN:
-    case SOUND_RIGHT_GAIN:
-        result = (value - 23) * 15; /* fix */
-        break;
-    case SOUND_MIC_GAIN:
-        result = value * 200; /* fix */
-        break;
-#endif
-    default:
-        result = value;
-        break;
-    }
-
-    return result;
 }
 
 /*static void audiohw_mute(bool mute)
@@ -230,8 +192,10 @@ void audiohw_close(void)
     akcodec_close(); /* target-specific */
 }
 
-void audiohw_set_master_vol(int vol_l, int vol_r)
+void audiohw_set_volume(int vol_l, int vol_r)
 {
+    vol_l = vol_tenthdb2hw(vol_l);
+    vol_r = vol_tenthdb2hw(vol_r);
     akc_write(AK4537_ATTL, vol_l & 0xff);
     akc_write(AK4537_ATTR, vol_r & 0xff);
 }

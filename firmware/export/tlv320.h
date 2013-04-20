@@ -25,14 +25,19 @@
 #define VOLUME_MIN -730
 #define VOLUME_MAX  60
 
-extern int tenthdb2master(int db);
+#define AUDIOHW_CAPS    (LIN_GAIN_CAP | MIC_GAIN_CAP)
+
+AUDIOHW_SETTING(VOLUME,     "dB", 0,  1, -74,   6, -20)
+#ifdef HAVE_RECORDING
+ /* (x - 23)/1.5 *10 */
+AUDIOHW_SETTING(LEFT_GAIN,  "dB", 1,  1,   0,  31,  23, (val - 23) * 15)
+AUDIOHW_SETTING(RIGHT_GAIN, "dB", 1,  1,   0,  31,  23, (val - 23) * 15)
+/* 0 or 20 dB */
+AUDIOHW_SETTING(MIC_GAIN,   "dB", 1,  1,   0,   1,   1, val * 200)
+#endif /* HAVE_RECORDING */
 
 /*** definitions ***/
-extern void audiohw_set_headphone_vol(int vol_l, int vol_r);
-
 #define HEADPHONE_MUTE 0x30 /* 0110000 = -73db */
-
-/* ToDo: samplerates */
 
 /* registers */
 /* REG_LLIV: Left line input channel volume control */
