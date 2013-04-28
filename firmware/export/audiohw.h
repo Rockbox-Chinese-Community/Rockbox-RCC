@@ -111,21 +111,6 @@ struct sound_settings_info
 #include "hosted_codec.h"
 #endif
 
-#if defined(SIMULATOR) && !defined(HAVE_SW_VOLUME_CONTROL)
-/* For now, without software volume control, sim only supports mono control */
-#define AUDIOHW_HAVE_MONO_VOLUME
-#endif
-
-/* Some values are the same for every codec and can be defined here one
-   time. */
-#ifdef HAVE_SW_TONE_CONTROLS
-AUDIOHW_SETTING(BASS,        "dB", 0, 1,  -24,  24,   0)
-AUDIOHW_SETTING(TREBLE,      "dB", 0, 1,  -24,  24,   0)
-#endif /* HAVE_SW_TONE_CONTROLS */
-AUDIOHW_SETTING(BALANCE,      "%", 0, 1, -100, 100,   0)
-AUDIOHW_SETTING(CHANNELS,      "", 0, 1,    0,   5,   0)
-AUDIOHW_SETTING(STEREO_WIDTH, "%", 0, 5,    0, 250, 100)
-
 /* convert caps into defines */
 #ifdef AUDIOHW_CAPS
 /* Tone controls */
@@ -282,14 +267,13 @@ enum AUDIOHW_EQ_SETTINGS
 #define AUDIOHW_HAVE_MIC_GAIN
 #endif
 #endif /* HAVE_RECORDING */
+#endif /* AUDIOHW_CAPS */
 
-#else /* ndef AUDIOHW_CAPS */
-#if defined (HAVE_SW_TONE_CONTROLS)
+#ifdef HAVE_SW_TONE_CONTROLS
 /* Needed for proper sound support */
 #define AUDIOHW_HAVE_BASS
 #define AUDIOHW_HAVE_TREBLE
-#endif
-#endif /* AUDIOHW_CAPS */
+#endif /* HAVE_SW_TONE_CONTROLS */
 
 /* Generate enumeration of SOUND_xxx constants */
 #include "audiohw_settings.h"
@@ -548,5 +532,16 @@ void audiohw_enable_speaker(bool on);
 typedef int (*audiohw_swcodec_cb_type)(int msg, intptr_t param);
 void audiohw_swcodec_set_callback(audiohw_swcodec_cb_type func);
 #endif /* CONFIG_CODEC == SWCODEC */
+
+/**
+ * Some setting are the same for every codec and can be defined here.
+ */
+#ifdef HAVE_SW_TONE_CONTROLS
+AUDIOHW_SETTING(BASS,        "dB", 0, 1,  -24,  24,   0)
+AUDIOHW_SETTING(TREBLE,      "dB", 0, 1,  -24,  24,   0)
+#endif /* HAVE_SW_TONE_CONTROLS */
+AUDIOHW_SETTING(BALANCE,      "%", 0, 1, -100, 100,   0)
+AUDIOHW_SETTING(CHANNELS,      "", 0, 1,    0,   5,   0)
+AUDIOHW_SETTING(STEREO_WIDTH, "%", 0, 5,    0, 250, 100)
 
 #endif /* _AUDIOHW_H_ */
