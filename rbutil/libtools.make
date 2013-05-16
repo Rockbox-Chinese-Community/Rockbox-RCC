@@ -21,15 +21,20 @@ endif
 
 # Get directory this Makefile is in for relative paths.
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))
+ifeq ($(OS),Windows_NT)
+mkdir = if not exist $(subst /,\,$(1)) mkdir $(subst /,\,$(1))
+else
+mkdir = mkdir -p $(1)
+endif
 
 # overwrite for releases
 APPVERSION ?= $(shell $(TOP)/../tools/version.sh $(TOP)/..)
-CFLAGS += -DVERSION=\""$(APPVERSION)"\"
+CFLAGS += -DVERSION=\"$(APPVERSION)\"
 TARGET_DIR ?= $(abspath .)/
 
-NATIVECC = gcc
-CC = gcc
-CPPDEFINES=$(shell echo foo | $(CROSS)$(CC) -dM -E -)
+NATIVECC ?= gcc
+CC ?= gcc
+CPPDEFINES := $(shell echo foo | $(CROSS)$(CC) -dM -E -)
 # use POSIX/C99 printf on windows
 CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 
@@ -69,16 +74,24 @@ endif
 WINDRES = windres
 
 BUILD_DIR ?= $(TARGET_DIR)build$(COMPILETARGET)
-OBJDIR = $(abspath $(BUILD_DIR)/$(RBARCH))/
 
 ifdef RBARCH
 CFLAGS += -arch $(RBARCH)
+OBJDIR = $(abspath $(BUILD_DIR)/$(RBARCH))/
+else
+OBJDIR = $(abspath $(BUILD_DIR))/
 endif
 
 all: $(BINARY)
 
 OBJS := $(patsubst %.c,%.o,$(addprefix $(OBJDIR),$(notdir $(SOURCES))))
 LIBOBJS := $(patsubst %.c,%.o,$(addprefix $(OBJDIR),$(notdir $(LIBSOURCES))))
+
+# create dependency files. Make sure to use the same prefix as with OBJS!
+$(foreach src,$(SOURCES) $(LIBSOURCES),$(eval $(addprefix $(OBJDIR),$(subst .c,.o,$(notdir $(src)))): $(src)))
+$(foreach src,$(SOURCES) $(LIBSOURCES),$(eval $(addprefix $(OBJDIR),$(subst .c,.d,$(notdir $(src)))): $(src)))
+DEPS = $(addprefix $(OBJDIR),$(subst .c,.d,$(notdir $(SOURCES) $(LIBSOURCES))))
+-include $(DEPS)
 
 # additional link dependencies for the standalone executable
 # extra dependencies: libucl
@@ -91,16 +104,16 @@ $(OBJDIR)$(LIBUCL):
 # building the standalone executable
 $(BINARY): $(OBJS) $(EXTRADEPS) $(addprefix $(OBJDIR),$(EXTRALIBOBJS))
 	@echo LD $@
-#	$(SILENT)mkdir -p $(dir $@)
+	$(SILENT)$(call mkdir,$(dir $@))
 # EXTRADEPS need to be built into OBJDIR.
 	$(SILENT)$(CROSS)$(CC) $(CFLAGS) $(LDOPTS) -o $(BINARY) \
 	    $(OBJS) $(addprefix $(OBJDIR),$(EXTRADEPS)) \
 	    $(addprefix $(OBJDIR),$(EXTRALIBOBJS))
 
 # common rules
-$(OBJDIR)%.o: %.c
+$(OBJDIR)%.o:
 	@echo CC $<
-	$(SILENT)mkdir -p $(dir $@)
+	$(SILENT)$(call mkdir,$(dir $@))
 	$(SILENT)$(CROSS)$(CC) $(CFLAGS) -c -o $@ $<
 
 # lib rules
@@ -114,19 +127,23 @@ dll: $(OUTPUT).dll
 $(OUTPUT).dll: $(TARGET_DIR)$(OUTPUT).dll
 $(TARGET_DIR)$(OUTPUT).dll: $(LIBOBJS) $(addprefix $(OBJDIR),$(EXTRALIBOBJS))
 	@echo DLL $(notdir $@)
-	$(SILENT)mkdir -p $(dir $@)
+	$(SILENT)$(call mkdir,$(dir $@))
 	$(SILENT)$(CROSS)$(CC) $(CFLAGS) -shared -o $@ $^ \
 		    -Wl,--output-def,$(TARGET_DIR)$(OUTPUT).def
 
 # create lib file from objects
 $(TARGET_DIR)lib$(OUTPUT)$(RBARCH).a: $(LIBOBJS) $(addprefix $(OBJDIR),$(EXTRALIBOBJS))
 	@echo AR $(notdir $@)
-	$(SILENT)mkdir -p $(dir $@)
+	$(SILENT)$(call mkdir,$(dir $@))
 	$(SILENT)$(AR) rcs $@ $^
 
 clean:
 	rm -f $(OBJS) $(OUTPUT) $(TARGET_DIR)lib$(OUTPUT)*.a $(OUTPUT).dmg
 	rm -rf $(OUTPUT)-* i386 ppc $(OBJDIR)
+
+%.d:
+	$(SILENT)$(call mkdir,$(BUILD_DIR))
+	$(SILENT)$(CC) -MG -MM -MT $(subst .d,.o,$@) $(CFLAGS) -o $(BUILD_DIR)/$(notdir $@) $<
 
 # extra tools
 BIN2C = $(TOP)/tools/bin2c
@@ -136,6 +153,6 @@ $(BIN2C):
 # OS X specifics
 $(OUTPUT).dmg: $(OUTPUT)
 	@echo DMG $@
-	$(SILENT)mkdir -p $(OUTPUT)-dmg
+	$(SILENT)$(call mkdir,$(OUTPUT)-dmg))
 	$(SILENT)cp -p $(OUTPUT) $(OUTPUT)-dmg
 	$(SILENT)hdiutil create -srcfolder $(OUTPUT)-dmg $@
