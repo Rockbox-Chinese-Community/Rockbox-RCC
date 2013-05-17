@@ -209,7 +209,7 @@ static intptr_t space80_configure(struct dsp_proc_entry *this, struct dsp_config
             this->data = (intptr_t)&space80_data;
             ((struct space80_data *)this->data)->dsp = dsp;
         }
-        this->process[0] = space80_process;
+        this->process = space80_process;
         dsp_proc_activate(dsp, DSP_PROC_SPACE80, true);
         break;
     case DSP_FLUSH:

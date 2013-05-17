@@ -104,7 +104,7 @@ static intptr_t surround_configure(struct dsp_proc_entry *this,
     case DSP_PROC_INIT:
         if (value != 0)
             break;
-        this->process[0] = dolby_surround_process;
+        this->process = dolby_surround_process;
         dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
         break;
     case DSP_FLUSH:

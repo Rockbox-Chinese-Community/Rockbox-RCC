@@ -58,7 +58,7 @@ static intptr_t aatube_configure(struct dsp_proc_entry *this,
     case DSP_PROC_INIT:
         if (value != 0)
             break; /* Already enabled */
-        this->process[0] = antialias_tube_process;
+        this->process = antialias_tube_process;
         dsp_proc_activate(dsp, DSP_PROC_AATUBE, true);
         break;
     case DSP_FLUSH:
