@@ -722,9 +722,6 @@ void settings_apply_pm_range(void)
 
 void sound_settings_apply(void)
 {
-#if CONFIG_CODEC == SWCODEC
-    audiohw_swcodec_set_callback(dsp_callback);
-#endif
 #ifdef AUDIOHW_HAVE_BASS
     sound_set(SOUND_BASS, global_settings.bass);
 #endif
@@ -755,6 +752,9 @@ void sound_settings_apply(void)
 #endif
 #ifdef AUDIOHW_HAVE_DEPTH_3D
     sound_set(SOUND_DEPTH_3D, global_settings.depth_3d);
+#endif
+#ifdef AUDIOHW_HAVE_FILTER_ROLL_OFF
+    sound_set(SOUND_FILTER_ROLL_OFF, global_settings.roll_off);
 #endif
 #ifdef AUDIOHW_HAVE_EQ
     int b;
