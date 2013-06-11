@@ -21,8 +21,7 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#include "config.h"
-#include "sound.h"
+#include "rbcodecconfig.h"
 #include "fixedpoint.h"
 #include "replaygain.h"
 #include "dsp_proc_entry.h"

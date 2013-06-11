@@ -18,9 +18,7 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#include "config.h"
-#include <stdbool.h>
-#include <sys/types.h>
+#include "rbcodecconfig.h"
 #include "fixedpoint.h"
 #include "fracmul.h"
 #include <string.h>
