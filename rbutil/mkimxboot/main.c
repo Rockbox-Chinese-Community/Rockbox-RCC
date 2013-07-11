@@ -38,6 +38,7 @@ struct imx_variant_t imx_variants[] =
     { "zenxfi2-nand", VARIANT_ZENXFI2_NAND },
     { "zenxfi2-sd", VARIANT_ZENXFI2_SD },
     { "zenxfistyle-recovery", VARIANT_ZENXFISTYLE_RECOVERY },
+    { "zenstyle-recovery", VARIANT_ZENSTYLE_RECOVERY },
 };
 
 #define NR_VARIANTS sizeof(imx_variants) / sizeof(imx_variants[0])
@@ -46,16 +47,16 @@ static void usage(void)
 {
     printf("Usage: mkimxboot [options | file]...\n");
     printf("Options:\n");
-    printf("  -?/--help\tDisplay this message\n");
-    printf("  -o <file>\tSet output file\n");
-    printf("  -i <file>\tSet input file\n");
-    printf("  -b <file>\tSet boot file\n");
-    printf("  -d/--debug\tEnable debug output\n");
-    printf("  -t <type>\tSet type (dualboot, singleboot, recovery)\n");
-    printf("  -v <v>\tSet variant\n");
-    printf("  -x\t\tDump device informations\n");
-    printf("  -w\tExtract the original firmware\n");
-    printf("  -p <ver>\tForce product and component version\n");
+    printf("  -?/--help   Display this message\n");
+    printf("  -o <file>   Set output file\n");
+    printf("  -i <file>   Set input file\n");
+    printf("  -b <file>   Set boot file\n");
+    printf("  -d/--debug  Enable debug output\n");
+    printf("  -t <type>   Set type (dualboot, singleboot, recovery)\n");
+    printf("  -v <v>      Set variant\n");
+    printf("  -x          Dump device informations\n");
+    printf("  -w          Extract the original firmware\n");
+    printf("  -p <ver>    Force product and component version\n");
     printf("Supported variants: (default is standard)\n");
     printf("  ");
     for(size_t i = 0; i < NR_VARIANTS; i++)
@@ -66,6 +67,11 @@ static void usage(void)
     }
     printf("\n");
     printf("By default a dualboot image is built\n");
+    printf("This tools supports the following format for the boot file:\n");
+    printf("- rockbox scramble format\n");
+    printf("- elf format\n");
+    printf("Additional checks will be performed on rockbox scramble format to\n");
+    printf("ensure soundness of operation.\n");
     exit(1);
 }
 
@@ -145,7 +151,7 @@ int main(int argc, char *argv[])
                 }
                 printf("Invalid variant '%s'\n", optarg);
                 return 1;
-                
+
                 Lok:
                 break;
             }

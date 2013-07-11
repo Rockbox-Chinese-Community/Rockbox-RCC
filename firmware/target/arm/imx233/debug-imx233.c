@@ -33,6 +33,8 @@
 #include "dcp-imx233.h"
 #include "pinctrl-imx233.h"
 #include "ocotp-imx233.h"
+#include "pwm-imx233.h"
+#include "emi-imx233.h"
 #include "string.h"
 #include "stdio.h"
 
@@ -56,7 +58,6 @@ static struct
     unsigned src;
 } dbg_irqs[] =
 {
-    { "ssp2_err", INT_SRC_SSP2_ERROR },
     { "vdd5v", INT_SRC_VDD5V },
     { "dac_dma", INT_SRC_DAC_DMA },
     { "dac_err", INT_SRC_DAC_ERROR },
@@ -68,7 +69,13 @@ static struct
     { "gpio0", INT_SRC_GPIO0 },
     { "gpio1", INT_SRC_GPIO1 },
     { "gpio2", INT_SRC_GPIO2 },
+#if IMX233_SUBTARGET >= 3780
     { "ssp2_dma", INT_SRC_SSP2_DMA },
+    { "ssp2_err", INT_SRC_SSP2_ERROR },
+    { "lcdif_dma", INT_SRC_LCDIF_DMA },
+    { "lcdif_err", INT_SRC_LCDIF_ERROR },
+    { "dcp", INT_SRC_DCP },
+#endif
     { "i2c_dma", INT_SRC_I2C_DMA },
     { "i2c_err", INT_SRC_I2C_ERROR },
     { "timer0", INT_SRC_TIMER(0) },
@@ -84,10 +91,7 @@ static struct
     { "lradc_ch5", INT_SRC_LRADC_CHx(5) },
     { "lradc_ch6", INT_SRC_LRADC_CHx(6) },
     { "lradc_ch7", INT_SRC_LRADC_CHx(7) },
-    { "lcdif_dma", INT_SRC_LCDIF_DMA },
-    { "lcdif_err", INT_SRC_LCDIF_ERROR },
     { "rtc_1msec", INT_SRC_RTC_1MSEC },
-    { "dcp", INT_SRC_DCP },
 };
 
 bool dbg_hw_info_dma(void)
@@ -166,9 +170,13 @@ bool dbg_hw_info_power(void)
         lcd_putsf(0, line++, "%6s %4d %4d %s", #name, trg, bo, buf); \
 
         DISP_REGULATOR(VDDD);
+#if IMX233_SUBTARGET >= 3700
         DISP_REGULATOR(VDDA);
         DISP_REGULATOR(VDDIO);
+#endif
+#if IMX233_SUBTARGET >= 3780
         DISP_REGULATOR(VDDMEM);
+#endif
         lcd_putsf(0, line++, "DC-DC: pll: %d   freq: %d", info.dcdc_sel_pllclk, info.dcdc_freqsel);
         lcd_putsf(0, line++, "charge: %d mA  stop: %d mA", info.charge_current, info.stop_current);
         lcd_putsf(0, line++, "charging: %d  bat_adj: %d", info.charging, info.batt_adj);
@@ -233,29 +241,15 @@ static struct
 {
     { CLK_PLL, "pll", true, false, false, false, true},
     { CLK_XTAL, "xtal", false, false, false, false, true},
+#if IMX233_SUBTARGET >= 3700
     { CLK_PIX, "pix", true, true, true, true, true },
+#endif
     { CLK_SSP, "ssp", true, true, true, false, true },
     { CLK_IO,  "io",  false, false, false, true, true },
     { CLK_CPU, "cpu", false, true, true, true, true },
     { CLK_HBUS, "hbus", false, false, true, true, true },
     { CLK_EMI, "emi", false, true, true, true, true },
     { CLK_XBUS, "xbus", false, false, true, false, true }
-};
-
-static struct
-{
-    enum imx233_as_monitor_t monitor;
-    const char *name;
-} dbg_as_monitor[] =
-{
-    { AS_CPU_INSTR, "cpu inst" },
-    { AS_CPU_DATA, "cpu data" },
-    { AS_TRAFFIC, "traffic" },
-    { AS_TRAFFIC_JAM, "traffic jam" },
-    { AS_APBXDMA, "apbx" },
-    { AS_APBHDMA, "apbh" },
-    { AS_PXP, "pxp" },
-    { AS_DCP, "dcp" }
 };
 
 bool dbg_hw_info_clkctrl(void)
@@ -277,7 +271,7 @@ bool dbg_hw_info_clkctrl(void)
                 lcd_setfont(FONT_UI);
                 return false;
         }
-        
+
         lcd_clear_display();
 
         /*               012345678901234567890123456789 */
@@ -287,45 +281,27 @@ bool dbg_hw_info_clkctrl(void)
             #define c dbg_clk[i]
             lcd_putsf(0, i + 1, "%4s", c.name);
             if(c.has_enable)
-                lcd_putsf(5, i + 1, "%2d", imx233_clkctrl_is_clock_enabled(c.clk));
+                lcd_putsf(5, i + 1, "%2d", imx233_clkctrl_is_enabled(c.clk));
+#if IMX233_SUBTARGET >= 3700
             if(c.has_bypass)
-                lcd_putsf(8, i + 1, "%2d", imx233_clkctrl_get_bypass_pll(c.clk));
-            if(c.has_idiv && imx233_clkctrl_get_clock_divisor(c.clk) != 0)
-                lcd_putsf(10, i + 1, "%4d", imx233_clkctrl_get_clock_divisor(c.clk));
-            if(c.has_fdiv && imx233_clkctrl_get_fractional_divisor(c.clk) != 0)
-                lcd_putsf(16, i + 1, "%4d", imx233_clkctrl_get_fractional_divisor(c.clk));
+                lcd_putsf(8, i + 1, "%2d", imx233_clkctrl_get_bypass(c.clk));
+#endif
+            if(c.has_idiv && imx233_clkctrl_get_div(c.clk) != 0)
+                lcd_putsf(10, i + 1, "%4d", imx233_clkctrl_get_div(c.clk));
+#if IMX233_SUBTARGET >= 3700
+            if(c.has_fdiv && imx233_clkctrl_get_frac_div(c.clk) != 0)
+                lcd_putsf(16, i + 1, "%4d", imx233_clkctrl_get_frac_div(c.clk));
+#endif
             if(c.has_freq)
-                lcd_putsf(21, i + 1, "%9d", imx233_clkctrl_get_clock_freq(c.clk));
+                lcd_putsf(21, i + 1, "%9d", imx233_clkctrl_get_freq(c.clk));
             #undef c
         }
         int line = ARRAYLEN(dbg_clk) + 1;
-        lcd_putsf(0, line, "as: %d/%d  emi sync: %d", imx233_clkctrl_is_auto_slow_enabled(),
-            1 << imx233_clkctrl_get_auto_slow_divisor(), imx233_clkctrl_is_emi_sync_enabled());
-        line++;
-        lcd_putsf(0, line, "as monitor: ");
-        int x_off = 12;
-        bool first = true;
-        unsigned line_w = lcd_getwidth() / font_get_width(font_get(lcd_getfont()), ' ');
-        for(unsigned i = 0; i < ARRAYLEN(dbg_as_monitor); i++)
-        {
-            if(!imx233_clkctrl_is_auto_slow_monitor_enabled(dbg_as_monitor[i].monitor))
-                continue;
-            if(!first)
-            {
-                lcd_putsf(x_off, line, ", ");
-                x_off += 2;
-            }
-            first = false;
-            if((x_off + strlen(dbg_as_monitor[i].name)) > line_w)
-            {
-                x_off = 1;
-                line++;
-            }
-            lcd_putsf(x_off, line, "%s", dbg_as_monitor[i].name);
-            x_off += strlen(dbg_as_monitor[i].name);
-        }
-        line++;
-        
+        if(!imx233_clkctrl_is_auto_slow_enabled())
+            lcd_putsf(0, line++, "auto-slow: disabled");
+        else
+            lcd_putsf(0, line++, "auto-slow: 1/%d", 1 << imx233_clkctrl_get_auto_slow_div());
+
         lcd_update();
         yield();
     }
@@ -334,7 +310,7 @@ bool dbg_hw_info_clkctrl(void)
 bool dbg_hw_info_powermgmt(void)
 {
     lcd_setfont(FONT_SYSFIXED);
-    
+
     while(1)
     {
         int button = get_action(CONTEXT_STD, HZ / 10);
@@ -355,12 +331,17 @@ bool dbg_hw_info_powermgmt(void)
         struct imx233_powermgmt_info_t info = imx233_powermgmt_get_info();
         
         lcd_putsf(0, 0, "state: %s",
+            info.state == DISCHARGING ? "discharging" :
+#if CONFIG_CHARGING >= CHARGING_MONITOR
             info.state == CHARGE_STATE_DISABLED ? "disabled" :
             info.state == CHARGE_STATE_ERROR ? "error" :
-            info.state == DISCHARGING ? "discharging" :
+#endif
+#if CONFIG_CHARGING >= CHARGING_MONITOR
             info.state == TRICKLE ? "trickle" :
             info.state == TOPOFF ? "topoff" :
-            info.state == CHARGING ? "charging" : "<unknown>");
+            info.state == CHARGING ? "charging" :
+#endif
+            "<unknown>");
         lcd_putsf(0, 1, "charging tmo: %d", info.charging_timeout);
         lcd_putsf(0, 2, "topoff tmo: %d", info.topoff_timeout);
         lcd_putsf(0, 3, "4p2ilimit tmo: %d", info.incr_4p2_ilimit_timeout);
@@ -402,6 +383,7 @@ bool dbg_hw_info_rtc(void)
     }
 }
 
+#if IMX233_SUBTARGET >= 3780
 bool dbg_hw_info_dcp(void)
 {
     lcd_setfont(FONT_SYSFIXED);
@@ -447,6 +429,12 @@ bool dbg_hw_info_dcp(void)
         yield();
     }
 }
+#else
+bool dbg_hw_info_dcp(void)
+{
+    return true;
+}
+#endif
 
 bool dbg_hw_info_icoll(void)
 {
@@ -455,7 +443,7 @@ bool dbg_hw_info_icoll(void)
     int first_irq = 0;
     int dbg_irqs_count = sizeof(dbg_irqs) / sizeof(dbg_irqs[0]);
     int line_count = lcd_getheight() / font_get(lcd_getfont())->height;
-    
+
     while(1)
     {
         int button = get_action(CONTEXT_STD, HZ / 10);
@@ -485,7 +473,7 @@ bool dbg_hw_info_icoll(void)
         {
             struct imx233_icoll_irq_info_t info = imx233_icoll_get_irq_info(dbg_irqs[i].src);
             lcd_putsf(0, j, "%s", dbg_irqs[i].name);
-            if(info.enabled)
+            if(info.enabled || info.freq > 0)
                 lcd_putsf(10, j, "%d", info.freq);
         }
         lcd_update();
@@ -527,7 +515,7 @@ bool dbg_hw_info_pinctrl(void)
 
         lcd_clear_display();
         for(int i = 0; i < 4; i++)
-            lcd_putsf(0, i, "DIN%d = 0x%08x", i, imx233_get_gpio_input_mask(i, 0xffffffff));
+            lcd_putsf(0, i, "DIN%d = 0x%08x", i, HW_PINCTRL_DINn(i));
 #ifdef IMX233_PINCTRL_DEBUG
         unsigned cur_line = 6;
         unsigned last_line = lcd_getheight() / font_get(lcd_getfont())->height;
@@ -536,7 +524,7 @@ bool dbg_hw_info_pinctrl(void)
         for(int bank = 0; bank < 4; bank++)
         for(int pin = 0; pin < 32; pin++)
         {
-            const char *owner = imx233_pinctrl_get_pin_use(bank, pin);
+            const char *owner = imx233_pinctrl_blame(bank, pin);
             if(owner == NULL)
                 continue;
             if(cur_idx++ >= top_user && cur_line < last_line)
@@ -556,21 +544,39 @@ struct
     volatile uint32_t *addr;
 } dbg_ocotp[] =
 {
+#if IMX233_SUBTARGET >= 3700
 #define E(n,v) { .name = n, .addr = &v }
-    E("CUST0", HW_OCOTP_CUSTx(0)), E("CUST1", HW_OCOTP_CUSTx(1)),
-    E("CUST2", HW_OCOTP_CUSTx(2)), E("CUST0", HW_OCOTP_CUSTx(3)),
-    E("HWCAP0", HW_OCOTP_HWCAPx(0)), E("HWCAP1", HW_OCOTP_HWCAPx(1)),
-    E("HWCAP2", HW_OCOTP_HWCAPx(2)), E("HWCAP3", HW_OCOTP_HWCAPx(3)),
-    E("HWCAP4", HW_OCOTP_HWCAPx(4)), E("HWCAP5", HW_OCOTP_HWCAPx(5)),
+    E("CUST0", HW_OCOTP_CUSTn(0)), E("CUST1", HW_OCOTP_CUSTn(1)),
+    E("CUST2", HW_OCOTP_CUSTn(2)), E("CUST0", HW_OCOTP_CUSTn(3)),
+    E("HWCAP0", HW_OCOTP_HWCAPn(0)), E("HWCAP1", HW_OCOTP_HWCAPn(1)),
+    E("HWCAP2", HW_OCOTP_HWCAPn(2)), E("HWCAP3", HW_OCOTP_HWCAPn(3)),
+    E("HWCAP4", HW_OCOTP_HWCAPn(4)), E("HWCAP5", HW_OCOTP_HWCAPn(5)),
     E("SWCAP", HW_OCOTP_SWCAP), E("CUSTCAP", HW_OCOTP_CUSTCAP),
-    E("OPS0", HW_OCOTP_OPSx(0)), E("OPS1", HW_OCOTP_OPSx(1)),
-    E("OPS2", HW_OCOTP_OPSx(2)), E("OPS2", HW_OCOTP_OPSx(3)),
-    E("UN0", HW_OCOTP_UNx(0)), E("UN1", HW_OCOTP_UNx(1)),
-    E("UN2", HW_OCOTP_UNx(2)),
-    E("ROM0", HW_OCOTP_ROMx(0)), E("ROM1", HW_OCOTP_ROMx(1)),
-    E("ROM2", HW_OCOTP_ROMx(2)), E("ROM3", HW_OCOTP_ROMx(3)),
-    E("ROM4", HW_OCOTP_ROMx(4)), E("ROM5", HW_OCOTP_ROMx(5)),
-    E("ROM6", HW_OCOTP_ROMx(6)), E("ROM7", HW_OCOTP_ROMx(7)),
+    E("OPS0", HW_OCOTP_OPSn(0)), E("OPS1", HW_OCOTP_OPSn(1)),
+    E("OPS2", HW_OCOTP_OPSn(2)), E("OPS2", HW_OCOTP_OPSn(3)),
+    E("UN0", HW_OCOTP_UNn(0)), E("UN1", HW_OCOTP_UNn(1)),
+    E("UN2", HW_OCOTP_UNn(2)),
+    E("ROM0", HW_OCOTP_ROMn(0)), E("ROM1", HW_OCOTP_ROMn(1)),
+    E("ROM2", HW_OCOTP_ROMn(2)), E("ROM3", HW_OCOTP_ROMn(3)),
+    E("ROM4", HW_OCOTP_ROMn(4)), E("ROM5", HW_OCOTP_ROMn(5)),
+    E("ROM6", HW_OCOTP_ROMn(6)), E("ROM7", HW_OCOTP_ROMn(7)),
+#undef E
+#else
+#define E(n,v) { .name = n, .addr = &v }
+    E("LASERFUSE0", HW_RTC_LASERFUSEn(0)),
+    E("LASERFUSE1", HW_RTC_LASERFUSEn(1)),
+    E("LASERFUSE2", HW_RTC_LASERFUSEn(2)),
+    E("LASERFUSE3", HW_RTC_LASERFUSEn(3)),
+    E("LASERFUSE4", HW_RTC_LASERFUSEn(4)),
+    E("LASERFUSE5", HW_RTC_LASERFUSEn(5)),
+    E("LASERFUSE6", HW_RTC_LASERFUSEn(6)),
+    E("LASERFUSE7", HW_RTC_LASERFUSEn(7)),
+    E("LASERFUSE8", HW_RTC_LASERFUSEn(8)),
+    E("LASERFUSE9", HW_RTC_LASERFUSEn(9)),
+    E("LASERFUSE10", HW_RTC_LASERFUSEn(10)),
+    E("LASERFUSE11", HW_RTC_LASERFUSEn(11)),
+#undef E
+#endif
 };
 
 bool dbg_hw_info_ocotp(void)
@@ -621,12 +627,155 @@ bool dbg_hw_info_ocotp(void)
     }
 }
 
+bool dbg_hw_info_pwm(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+    bool detailled_view = false;
+
+    while(1)
+    {
+        int button = get_action(CONTEXT_STD, HZ / 10);
+        switch(button)
+        {
+            case ACTION_STD_NEXT:
+            case ACTION_STD_PREV:
+                detailled_view = !detailled_view;
+                break;
+            case ACTION_STD_OK:
+            case ACTION_STD_MENU:
+                lcd_setfont(FONT_UI);
+                return true;
+            case ACTION_STD_CANCEL:
+                lcd_setfont(FONT_UI);
+                return false;
+        }
+
+        lcd_clear_display();
+        int line = 0;
+        if(detailled_view)
+            lcd_putsf(0, line++, "c cdiv period active/x inactive");
+        else
+            lcd_putsf(0, line++, "pwm");
+        for(int i = 0; i < IMX233_PWM_NR_CHANNELS; i++)
+        {
+            struct imx233_pwm_info_t info = imx233_pwm_get_info(i);
+            if(!info.enabled)
+                continue;
+            if(detailled_view)
+            {
+                lcd_putsf(0, line++, "%d %4d %6d %6d/%c %6d/%c", i, info.cdiv,
+                    info.period, info.active, info.active_state,
+                    info.inactive, info.inactive_state);
+            }
+            else
+            {
+                char *prefix = "";
+                int freq = imx233_clkctrl_get_freq(CLK_XTAL) * 1000 / info.cdiv / info.period;
+                if(freq > 1000)
+                {
+                    prefix = "K";
+                    freq /= 1000;
+                }
+                int duty = (info.inactive - info.active) * 100 / info.period;
+                lcd_putsf(0, line++, "%d @%d %sHz, %d%% %c/%c", i, freq, prefix,
+                    duty, info.active_state, info.inactive_state);
+            }
+        }
+
+        lcd_update();
+        yield();
+    }
+}
+
+bool dbg_hw_info_usb(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+
+    while(1)
+    {
+        int button = get_action(CONTEXT_STD, HZ / 10);
+        switch(button)
+        {
+            case ACTION_STD_NEXT:
+                BF_SET(USBPHY_CTRL, ENOTGIDDETECT);
+                BF_SET(USBPHY_CTRL, ENDEVPLUGINDETECT);
+                break;
+            case ACTION_STD_PREV:
+                BF_CLR(USBPHY_CTRL, ENOTGIDDETECT);
+                BF_CLR(USBPHY_CTRL, ENDEVPLUGINDETECT);
+                break;
+            case ACTION_STD_OK:
+            case ACTION_STD_MENU:
+                lcd_setfont(FONT_UI);
+                return true;
+            case ACTION_STD_CANCEL:
+                lcd_setfont(FONT_UI);
+                return false;
+        }
+
+        lcd_clear_display();
+        int line = 0;
+#if IMX233_SUBTARGET >= 3700
+        lcd_putsf(0, line++, "VBUS valid: %d/%d", BF_RD(POWER_STS, VBUSVALID), BF_RD(POWER_STS, VBUSVALID_STATUS));
+        lcd_putsf(0, line++, "A valid: %d/%d", BF_RD(POWER_STS, AVALID), BF_RD(POWER_STS, AVALID_STATUS));
+        lcd_putsf(0, line++, "B valid: %d/%d", BF_RD(POWER_STS, BVALID), BF_RD(POWER_STS, BVALID_STATUS));
+#else
+        lcd_putsf(0, line++, "VBUS valid: %d/%d", BF_RD(POWER_STS, VBUSVALID));
+        lcd_putsf(0, line++, "A valid: %d/%d", BF_RD(POWER_STS, AVALID));
+        lcd_putsf(0, line++, "B valid: %d/%d", BF_RD(POWER_STS, BVALID));
+#endif
+        lcd_putsf(0, line++, "session end: %d", BF_RD(POWER_STS, SESSEND));
+        lcd_putsf(0, line++, "dev plugin: %d", BF_RD(USBPHY_STATUS, DEVPLUGIN_STATUS));
+        lcd_putsf(0, line++, "OTG ID: %d", BF_RD(USBPHY_STATUS, OTGID_STATUS));
+
+        lcd_update();
+        yield();
+    }
+}
+
+bool dbg_hw_info_emi(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+
+    while(1)
+    {
+        int button = get_action(CONTEXT_STD, HZ / 10);
+        switch(button)
+        {
+            case ACTION_STD_NEXT:
+            case ACTION_STD_PREV:
+            case ACTION_STD_OK:
+            case ACTION_STD_MENU:
+                lcd_setfont(FONT_UI);
+                return true;
+            case ACTION_STD_CANCEL:
+                lcd_setfont(FONT_UI);
+                return false;
+        }
+
+        lcd_clear_display();
+        struct imx233_emi_info_t info = imx233_emi_get_info();
+        int line = 0;
+        lcd_putsf(0, line++, "EMI");
+        lcd_putsf(0, line++, "rows: %d", info.rows);
+        lcd_putsf(0, line++, "columns: %d", info.columns);
+        lcd_putsf(0, line++, "banks: %d", info.banks);
+        lcd_putsf(0, line++, "chips: %d", info.chips);
+        lcd_putsf(0, line++, "size: %d MiB", info.size / 1024 / 1024);
+        lcd_putsf(0, line++, "cas: %d.%d", info.cas / 2, 5 * (info.cas % 2));
+
+        lcd_update();
+        yield();
+    }
+}
+
 bool dbg_hw_info(void)
 {
     return dbg_hw_info_clkctrl() && dbg_hw_info_dma() && dbg_hw_info_adc() &&
         dbg_hw_info_power() && dbg_hw_info_powermgmt() && dbg_hw_info_rtc() &&
         dbg_hw_info_dcp() && dbg_hw_info_pinctrl() && dbg_hw_info_icoll() &&
-        dbg_hw_info_ocotp() && dbg_hw_target_info();
+        dbg_hw_info_ocotp() && dbg_hw_info_pwm() && dbg_hw_info_usb() && dbg_hw_info_emi() &&
+        dbg_hw_target_info();
 }
 
 bool dbg_ports(void)

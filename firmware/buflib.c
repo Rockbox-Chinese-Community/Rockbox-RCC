@@ -165,7 +165,7 @@ static union buflib_data* handle_to_block(struct buflib_context* ctx, int handle
     union buflib_data* name_field =
                 (union buflib_data*)buflib_get_name(ctx, handle);
 
-    return name_field - 3;
+    return name_field ? name_field - 3 : NULL;
 }
 
 /* Shrink the handle table, returning true if its size was reduced, false if
@@ -353,11 +353,15 @@ buflib_compact_and_shrink(struct buflib_context *ctx, unsigned shrink_hints)
                 ret = this[2].ops->shrink_callback(handle, shrink_hints,
                                             data, (char*)(this+this->val)-data);
                 result |= (ret == BUFLIB_CB_OK);
-                /* this might have changed in the callback (if
-                 * it shrinked from the top), get it again */
+                /* 'this' might have changed in the callback (if it shrinked
+                 * from the top or even freed the handle), get it again */
                 this = handle_to_block(ctx, handle);
+                /* The handle was possibly be freed in the callback,
+                 * re-run the loop with the handle before */
+                if (!this)
+                    this = before;
                 /* could also change with shrinking from back */
-                if (last)
+                else if (last)
                     ctx->alloc_end = this + this->val;
             }
         }
@@ -643,9 +647,9 @@ free_space_at_end(struct buflib_context* ctx)
         return 0;
 }
 
-/* Return the maximum allocatable memory in bytes */
+/* Return the maximum allocatable contiguous memory in bytes */
 size_t
-buflib_available(struct buflib_context* ctx)
+buflib_allocatable(struct buflib_context* ctx)
 {
     union buflib_data *this;
     size_t free_space = 0, max_free_space = 0;
@@ -681,6 +685,29 @@ buflib_available(struct buflib_context* ctx)
         return max_free_space;
     else
         return 0;
+}
+
+/* Return the amount of unallocated memory in bytes (even if not contiguous) */
+size_t
+buflib_available(struct buflib_context* ctx)
+{
+    union buflib_data *this;
+    size_t free_space = 0;
+
+    /* now look if there's free in holes */
+    for(this = find_first_free(ctx); this < ctx->alloc_end; this += abs(this->val))
+    {
+        if (this->val < 0)
+        {
+            free_space += -this->val;
+            continue;
+        }
+    }
+
+    free_space *= sizeof(union buflib_data); /* make it bytes */
+    free_space += free_space_at_end(ctx);
+
+    return free_space;
 }
 
 /*
@@ -780,6 +807,8 @@ buflib_shrink(struct buflib_context* ctx, int handle, void* new_start, size_t ne
 const char* buflib_get_name(struct buflib_context *ctx, int handle)
 {
     union buflib_data *data = ALIGN_DOWN(buflib_get_data(ctx, handle), sizeof (*data));
+    if (!data)
+        return NULL;
     size_t len = data[-1].val;
     if (len <= 1)
         return NULL;

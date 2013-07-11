@@ -181,6 +181,19 @@ static int init_drive(int drive);
  * refer to sd/mmc drive indexes. We keep two maps sd->sdmmc and mmc->sdmmc
  * to find the sdmmc index from the sd or mmc one */
 
+static int sdmmc_present(int drive)
+{
+    if(SDMMC_FLAGS(drive) & REMOVABLE)
+        return imx233_ssp_sdmmc_detect(SDMMC_SSP(drive));
+    else
+        return true;
+}
+
+static inline int sdmmc_removable(int drive)
+{
+    return SDMMC_FLAGS(drive) & REMOVABLE;
+}
+
 static void sdmmc_detect_callback(int ssp)
 {
     /* This is called only if the state was stable for 300ms - check state
@@ -200,13 +213,13 @@ static void sdmmc_power(int drive, bool on)
     {
         int bank = PIN2BANK(SDMMC_CONF(drive).power_pin);
         int pin = PIN2PIN(SDMMC_CONF(drive).power_pin);
-        imx233_pinctrl_acquire_pin(bank, pin, "sd/mmc power");
-        imx233_set_pin_function(bank, pin, PINCTRL_FUNCTION_GPIO);
-        imx233_enable_gpio_output(bank, pin, true);
+        imx233_pinctrl_acquire(bank, pin, "sdmmc_power");
+        imx233_pinctrl_set_function(bank, pin, PINCTRL_FUNCTION_GPIO);
+        imx233_pinctrl_enable_gpio(bank, pin, true);
         if(SDMMC_FLAGS(drive) & POWER_INVERTED)
-            imx233_set_gpio_output(bank, pin, !on);
+            imx233_pinctrl_set_gpio(bank, pin, !on);
         else
-            imx233_set_gpio_output(bank, pin, on);
+            imx233_pinctrl_set_gpio(bank, pin, on);
     }
     if(SDMMC_FLAGS(drive) & POWER_DELAY)
         sleep(SDMMC_CONF(drive).power_delay);
@@ -287,11 +300,10 @@ static int init_sd_card(int drive)
     sdmmc_power(drive, true);
     imx233_ssp_start(ssp);
     imx233_ssp_softreset(ssp);
-    imx233_ssp_set_mode(ssp, HW_SSP_CTRL1__SSP_MODE__SD_MMC);
+    imx233_ssp_set_mode(ssp, BV_SSP_CTRL1_SSP_MODE__SD_MMC);
     /* SSPCLK @ 96MHz
      * gives bitrate of 96000 / 240 / 1 = 400kHz */
     imx233_ssp_set_timings(ssp, 240, 0, 0xffff);
-
     imx233_ssp_sd_mmc_power_up_sequence(ssp);
     imx233_ssp_set_bus_width(ssp, 1);
     imx233_ssp_set_block_size(ssp, 9);
@@ -341,9 +353,17 @@ static int init_sd_card(int drive)
             return -6;
 
         /* CMD6 */
-        if(!send_cmd(drive, SD_SWITCH_FUNC, 0x80fffff1, MCI_NO_RESP, NULL))
-            return -7;
-        sleep(HZ/10);
+        {
+            /* only transfer 64 bytes */
+            imx233_ssp_set_block_size(ssp, /*log2(64)*/6);
+            if(imx233_ssp_sd_mmc_transfer(ssp, SD_SWITCH_FUNC, 0x80fffff1,
+                    SSP_SHORT_RESP, aligned_buffer[drive], 1, true, true, NULL))
+            {
+                imx233_ssp_set_block_size(ssp, /*log2(512)*/9);
+                return -12;
+            }
+            imx233_ssp_set_block_size(ssp, /*log2(512)*/9);
+        }
 
         /*  go back to STBY state so we can read csd */
         /*  CMD7 w/rca=0:  Deselect card to put it in STBY state */
@@ -398,7 +418,7 @@ static int init_mmc_drive(int drive)
     sdmmc_power(drive, true);
     imx233_ssp_start(ssp);
     imx233_ssp_softreset(ssp);
-    imx233_ssp_set_mode(ssp, HW_SSP_CTRL1__SSP_MODE__SD_MMC);
+    imx233_ssp_set_mode(ssp, BV_SSP_CTRL1_SSP_MODE__SD_MMC);
     /* SSPCLK @ 96MHz
      * gives bitrate of 96000 / 240 / 1 = 400kHz */
     imx233_ssp_set_timings(ssp, 240, 0, 0xffff);
@@ -454,10 +474,9 @@ static int init_mmc_drive(int drive)
 
     /* read extended CSD */
     {
-        uint8_t ext_csd[512];
+        uint8_t *ext_csd = aligned_buffer[drive];
         if(imx233_ssp_sd_mmc_transfer(ssp, 8, 0, SSP_SHORT_RESP, aligned_buffer[drive], 1, true, true, &status))
             return -12;
-        memcpy(ext_csd, aligned_buffer[drive], 512);
         uint32_t *sec_count = (void *)&ext_csd[212];
         window_start[drive] = 0;
         window_end[drive] = *sec_count;
@@ -672,7 +691,9 @@ static void sdmmc_thread(void)
               * prevent deadlocking via disk_mount that
               * would cause a reverse-order attempt with
               * another thread */
+#ifdef HAVE_HOTSWAP
             fat_lock();
+#endif
 
             /* We now have exclusive control of fat cache and sd.
              * Release "by force", ensure file
@@ -682,7 +703,7 @@ static void sdmmc_thread(void)
             {
                 int drive = sd_map[sd_drive];
                 /* Skip non-removable drivers */
-                if(!sd_removable(sd_drive))
+                if(!sdmmc_removable(drive))
                     continue;
                 /* lock-out card activity - direct calls
                  * into driver that bypass the fat cache */
@@ -710,7 +731,9 @@ static void sdmmc_thread(void)
                 mutex_unlock(&mutex[drive]);
             }
             /* Access is now safe */
+#ifdef HAVE_HOTSWAP
             fat_unlock();
+#endif
             break;
         }
 #endif
@@ -765,21 +788,8 @@ static int sdmmc_init(void)
             imx233_ssp_sdmmc_setup_detect(SDMMC_SSP(drive), true, sdmmc_detect_callback,
                 false, SDMMC_FLAGS(drive) & DETECT_INVERTED);
     }
-    
+
     return 0;
-}
-
-static int sdmmc_present(int drive)
-{
-    if(SDMMC_FLAGS(drive) & REMOVABLE)
-        return imx233_ssp_sdmmc_detect(SDMMC_SSP(drive));
-    else
-        return true;
-}
-
-static inline int sdmmc_removable(int drive)
-{
-    return SDMMC_FLAGS(drive) & REMOVABLE;
 }
 
 #if CONFIG_STORAGE & STORAGE_SD
@@ -808,11 +818,17 @@ int sd_num_drives(int first_drive)
 
 bool sd_present(IF_MV_NONVOID(int sd_drive))
 {
+#ifndef HAVE_MULTIVOLUME
+    int sd_drive = 0;
+#endif
     return sdmmc_present(sd_map[sd_drive]);
 }
 
 bool sd_removable(IF_MV_NONVOID(int sd_drive))
 {
+#ifndef HAVE_MULTIVOLUME
+    int sd_drive = 0;
+#endif
     return sdmmc_removable(sd_map[sd_drive]);
 }
 
@@ -831,11 +847,17 @@ void sd_enable(bool on)
 
 int sd_read_sectors(IF_MD2(int sd_drive,) unsigned long start, int count, void *buf)
 {
+#ifndef HAVE_MULTIDRIVE
+    int sd_drive = 0;
+#endif
     return transfer_sectors(sd_map[sd_drive], start, count, buf, true);
 }
 
 int sd_write_sectors(IF_MD2(int sd_drive,) unsigned long start, int count, const void* buf)
 {
+#ifndef HAVE_MULTIDRIVE
+    int sd_drive = 0;
+#endif
     return transfer_sectors(sd_map[sd_drive], start, count, (void *)buf, false);
 }
 #endif
@@ -858,6 +880,9 @@ int mmc_init(void)
 
 void mmc_get_info(IF_MD2(int mmc_drive,) struct storage_info *info)
 {
+#ifndef HAVE_MULTIDRIVE
+    int mmc_drive = 0;
+#endif
     int drive = mmc_map[mmc_drive];
     info->sector_size = 512;
     info->num_sectors = window_end[drive] - window_start[drive];
@@ -874,11 +899,17 @@ int mmc_num_drives(int first_drive)
 
 bool mmc_present(IF_MV_NONVOID(int mmc_drive))
 {
+#ifndef HAVE_MULTIVOLUME
+    int mmc_drive = 0;
+#endif
     return sdmmc_present(mmc_map[mmc_drive]);
 }
 
 bool mmc_removable(IF_MV_NONVOID(int mmc_drive))
 {
+#ifndef HAVE_MULTIVOLUME
+    int mmc_drive = 0;
+#endif
     return sdmmc_removable(mmc_map[mmc_drive]);
 }
 
@@ -939,11 +970,17 @@ int mmc_spinup_time(void)
 
 int mmc_read_sectors(IF_MD2(int mmc_drive,) unsigned long start, int count, void *buf)
 {
+#ifndef HAVE_MULTIDRIVE
+    int mmc_drive = 0;
+#endif
     return transfer_sectors(mmc_map[mmc_drive], start, count, buf, true);
 }
 
 int mmc_write_sectors(IF_MD2(int mmc_drive,) unsigned long start, int count, const void* buf)
 {
+#ifndef HAVE_MULTIDRIVE
+    int mmc_drive = 0;
+#endif
     return transfer_sectors(mmc_map[mmc_drive], start, count, (void *)buf, false);
 }
 

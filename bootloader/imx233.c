@@ -31,6 +31,8 @@
 #include "backlight.h"
 #include "button-target.h"
 #include "common.h"
+#include "rb-loader.h"
+#include "loader_strerror.h"
 #include "storage.h"
 #include "disk.h"
 #include "panic.h"
@@ -52,7 +54,7 @@ extern char loadaddressend[];
 static void usb_mode(int connect_timeout)
 {
     int button;
-    
+
     usb_init();
     usb_start_monitoring();
 
@@ -150,7 +152,9 @@ void main(uint32_t arg, uint32_t addr)
 
     printf("Boot version: %s", RBVERSION);
     printf("arg=%x addr=%x", arg, addr);
-    printf("power up source: %x", __XTRACT(HW_POWER_STS, PWRUP_SOURCE));
+#if IMX233_SUBTARGET >= 3780
+    printf("power up source: %x", BF_RD(POWER_STS, PWRUP_SOURCE));
+#endif
 
     if(arg == 0xfee1dead)
     {
@@ -178,7 +182,7 @@ void main(uint32_t arg, uint32_t addr)
     loadbuffer = (unsigned char*)loadaddress;
     buffer_size = (int)(loadaddressend - loadaddress);
 
-    while((ret = load_firmware(loadbuffer, BOOTFILE, buffer_size)) < 0)
+    while((ret = load_firmware(loadbuffer, BOOTFILE, buffer_size)) <= EFILE_EMPTY)
     {
         error(EBOOTFILE, ret, true);
     }

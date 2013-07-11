@@ -184,7 +184,7 @@ enum sb1_error_t sb1_write_file(struct sb1_file_t *sb, const char *filename)
     if(sb->userdata)
         fwrite(sb->userdata, sb->userdata_size, 1, fd);
     fclose(fd);
-    
+
     return SB1_SUCCESS;
 }
 
@@ -252,12 +252,14 @@ static const char *sb1_datatype_name(int cmd)
     }
 }
 
-bool sb1_is_key_valid_fast(void *buffer, size_t size, union xorcrypt_key_t _key[2])
+/* Quick and dirty way to check a key is valid.
+ * We don't do any form of format checking because we are trying to bruteforce
+ * the key anyway. Assume buffer is of size SECTOR_SIZE */
+bool sb1_is_key_valid_fast(void *buffer, union xorcrypt_key_t _key[2])
 {
     struct sb1_header_t *header = (struct sb1_header_t *)buffer;
-
     union xorcrypt_key_t key[2];
-    
+
     uint8_t sector[SECTOR_SIZE];
     /* copy key and data because it's modified by the crypto code */
     memcpy(key, _key, sizeof(key));
@@ -312,7 +314,7 @@ bool sb1_brute_force(const char *filename, void *u, sb1_color_printf cprintf,
                 for(int j = 0; j < 32; j++)
                     printf(YELLOW, " %08x", key->u.xor_key[j / 16].k[j % 16]);
             }
-            if(sb1_is_key_valid_fast(sector, SECTOR_SIZE, key->u.xor_key))
+            if(sb1_is_key_valid_fast(sector, key->u.xor_key))
             {
                 if(g_debug)
                     printf(RED, " Ok\n");
@@ -399,7 +401,7 @@ struct sb1_file_t *sb1_read_memory(void *_buf, size_t filesize, void *u,
     printf(YELLOW, "%X.%X.%X\n", product_ver.major, product_ver.minor, product_ver.revision);
     printf(GREEN, "  Component version: ");
     printf(YELLOW, "%X.%X.%X\n", component_ver.major, component_ver.minor, component_ver.revision);
-    
+
     printf(GREEN, "  Drive tag: ");
     printf(YELLOW, "%x\n", header->drive_tag);
 

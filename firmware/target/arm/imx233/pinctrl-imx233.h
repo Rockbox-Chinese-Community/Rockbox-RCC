@@ -24,125 +24,156 @@
 #define __PINCTRL_IMX233_H__
 
 #include "config.h"
+#include "system.h"
+#include "regs/regs-pinctrl.h"
 
 // set to debug pinctrl use
 #define IMX233_PINCTRL_DEBUG
-
-#define HW_PINCTRL_BASE         0x80018000
-
-#define HW_PINCTRL_CTRL         (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x0))
-#define HW_PINCTRL_MUXSEL(i)    (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x100 + (i) * 0x10))
-#define HW_PINCTRL_DRIVE(i)     (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x200 + (i) * 0x10))
-#define HW_PINCTRL_PULL(i)      (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x400 + (i) * 0x10))
-#define HW_PINCTRL_DOUT(i)      (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x500 + (i) * 0x10))
-#define HW_PINCTRL_DIN(i)       (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x600 + (i) * 0x10))
-#define HW_PINCTRL_DOE(i)       (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x700 + (i) * 0x10))
-#define HW_PINCTRL_PIN2IRQ(i)   (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x800 + (i) * 0x10))
-#define HW_PINCTRL_IRQEN(i)     (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x900 + (i) * 0x10))
-#define HW_PINCTRL_IRQEN(i)     (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0x900 + (i) * 0x10))
-#define HW_PINCTRL_IRQLEVEL(i)  (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0xa00 + (i) * 0x10))
-#define HW_PINCTRL_IRQPOL(i)    (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0xb00 + (i) * 0x10))
-#define HW_PINCTRL_IRQSTAT(i)   (*(volatile uint32_t *)(HW_PINCTRL_BASE + 0xc00 + (i) * 0x10))
 
 #define PINCTRL_FUNCTION_MAIN   0
 #define PINCTRL_FUNCTION_ALT1   1
 #define PINCTRL_FUNCTION_ALT2   2
 #define PINCTRL_FUNCTION_GPIO   3
 
+#if IMX233_SUBTARGET >= 3700
 #define PINCTRL_DRIVE_4mA       0
 #define PINCTRL_DRIVE_8mA       1
 #define PINCTRL_DRIVE_12mA      2
 #define PINCTRL_DRIVE_16mA      3 /* not available on all pins */
+#else
+#define PINCTRL_DRIVE_4mA       0
+#define PINCTRL_DRIVE_8mA       1
+#endif
 
 #ifdef IMX233_PINCTRL_DEBUG
-void imx233_pinctrl_acquire_pin(unsigned bank, unsigned pin, const char *name);
-void imx233_pinctrl_acquire_pin_mask(unsigned bank, uint32_t mask, const char *name);
-void imx233_pinctrl_release_pin(unsigned bank, unsigned pin, const char *name);
-void imx233_pinctrl_release_pin_mask(unsigned bank, uint32_t mask, const char *name);
-const char *imx233_pinctrl_get_pin_use(unsigned bank, unsigned pin);
+void imx233_pinctrl_acquire(unsigned bank, unsigned pin, const char *name);
+void imx233_pinctrl_release(unsigned bank, unsigned pin, const char *name);
+const char *imx233_pinctrl_blame(unsigned bank, unsigned pin);
 #else
-#define imx233_pinctrl_acquire_pin(...)
-#define imx233_pinctrl_acquire_pin_mask(...)
-#define imx233_pinctrl_release_pin(...)
-#define imx233_pinctrl_release_pin_mask(...)
+#define imx233_pinctrl_acquire(...)
+#define imx233_pinctrl_release(...)
 #define imx233_pinctrl_get_pin_use(...) NULL
 #endif
 
-typedef void (*pin_irq_cb_t)(int bank, int pin);
+typedef void (*pin_irq_cb_t)(int bank, int pin, intptr_t user);
 
 static inline void imx233_pinctrl_init(void)
 {
-    __REG_CLR(HW_PINCTRL_CTRL) = __BLOCK_CLKGATE | __BLOCK_SFTRST;
+    HW_PINCTRL_CTRL_CLR = BM_OR2(PINCTRL_CTRL, CLKGATE, SFTRST);
 }
 
-static inline void imx233_set_pin_drive_strength(unsigned bank, unsigned pin, unsigned strength)
+#if IMX233_SUBTARGET >= 3700
+static inline void imx233_pinctrl_set_drive(unsigned bank, unsigned pin, unsigned strength)
 {
-    __REG_CLR(HW_PINCTRL_DRIVE(4 * bank + pin / 8)) = 3 << (4 * (pin % 8));
-    __REG_SET(HW_PINCTRL_DRIVE(4 * bank + pin / 8)) = strength << (4 * (pin % 8));
+    HW_PINCTRL_DRIVEn_CLR(4 * bank + pin / 8) = 3 << (4 * (pin % 8));
+    HW_PINCTRL_DRIVEn_SET(4 * bank + pin / 8) = strength << (4 * (pin % 8));
 }
+#else
+static inline void imx233_pinctrl_set_drive(unsigned bank, unsigned pin, unsigned strength)
+{
+   HW_PINCTRL_DRIVEn_CLR(bank) = 1 << pin;
+   HW_PINCTRL_DRIVEn_SET(bank) = strength << pin;
+}
+#endif
 
-static inline void imx233_enable_gpio_output(unsigned bank, unsigned pin, bool enable)
+static inline void imx233_pinctrl_enable_gpio(unsigned bank, unsigned pin, bool enable)
 {
     if(enable)
-        __REG_SET(HW_PINCTRL_DOE(bank)) = 1 << pin;
+        HW_PINCTRL_DOEn_SET(bank) = 1 << pin;
     else
-        __REG_CLR(HW_PINCTRL_DOE(bank)) = 1 << pin;
+        HW_PINCTRL_DOEn_CLR(bank) = 1 << pin;
 }
 
-static inline void imx233_enable_gpio_output_mask(unsigned bank, uint32_t pin_mask, bool enable)
-{
-    if(enable)
-        __REG_SET(HW_PINCTRL_DOE(bank)) = pin_mask;
-    else
-        __REG_CLR(HW_PINCTRL_DOE(bank)) = pin_mask;
-}
-
-static inline void imx233_set_gpio_output(unsigned bank, unsigned pin, bool value)
+static inline void imx233_pinctrl_set_gpio(unsigned bank, unsigned pin, bool value)
 {
     if(value)
-        __REG_SET(HW_PINCTRL_DOUT(bank)) = 1 << pin;
+        HW_PINCTRL_DOUTn_SET(bank) = 1 << pin;
     else
-        __REG_CLR(HW_PINCTRL_DOUT(bank)) = 1 << pin;
+        HW_PINCTRL_DOUTn_CLR(bank) = 1 << pin;
 }
 
-static inline void imx233_set_gpio_output_mask(unsigned bank, uint32_t pin_mask, bool value)
+static inline bool imx233_pinctrl_get_gpio(unsigned bank, unsigned pin)
 {
-    if(value)
-        __REG_SET(HW_PINCTRL_DOUT(bank)) = pin_mask;
+    return (HW_PINCTRL_DINn(bank) >> pin) & 1;
+}
+
+static inline void imx233_pinctrl_set_function(unsigned bank, unsigned pin, unsigned function)
+{
+#if IMX233_SUBTARGET >= 3700
+    HW_PINCTRL_MUXSELn_CLR(2 * bank + pin / 16) = 3 << (2 * (pin % 16));
+    HW_PINCTRL_MUXSELn_SET(2 * bank + pin / 16) = function << (2 * (pin % 16));
+#else
+    if(pin < 16)
+    {
+        HW_PINCTRL_MUXSELLn_CLR(bank) = 3 << (2 * pin);
+        HW_PINCTRL_MUXSELLn_SET(bank) = function << (2 * pin);
+    }
     else
-        __REG_CLR(HW_PINCTRL_DOUT(bank)) = pin_mask;
+    {
+        pin -= 16;
+        HW_PINCTRL_MUXSELHn_CLR(bank) = 3 << (2 * pin);
+        HW_PINCTRL_MUXSELHn_SET(bank) = function << (2 * pin);
+    }
+#endif
 }
 
-static inline uint32_t imx233_get_gpio_input_mask(unsigned bank, uint32_t pin_mask)
-{
-    return HW_PINCTRL_DIN(bank) & pin_mask;
-}
-
-static inline void imx233_set_pin_function(unsigned bank, unsigned pin, unsigned function)
-{
-    __REG_CLR(HW_PINCTRL_MUXSEL(2 * bank + pin / 16)) = 3 << (2 * (pin % 16));
-    __REG_SET(HW_PINCTRL_MUXSEL(2 * bank + pin / 16)) = function << (2 * (pin % 16));
-}
-
-static inline void imx233_enable_pin_pullup(unsigned bank, unsigned pin, bool enable)
+#if IMX233_SUBTARGET >= 3700
+static inline void imx233_pinctrl_enable_pullup(unsigned bank, unsigned pin, bool enable)
 {
     if(enable)
-        __REG_SET(HW_PINCTRL_PULL(bank)) = 1 << pin;
+        HW_PINCTRL_PULLn_SET(bank) = 1 << pin;
     else
-        __REG_CLR(HW_PINCTRL_PULL(bank)) = 1 << pin;
+        HW_PINCTRL_PULLn_CLR(bank) = 1 << pin;
 }
-
-static inline void imx233_enable_pin_pullup_mask(unsigned bank, uint32_t pin_msk, bool enable)
+#else
+static inline void imx233_pinctrl_enable_pullup(unsigned bank, unsigned pin, bool enable)
 {
-    if(enable)
-        __REG_SET(HW_PINCTRL_PULL(bank)) = pin_msk;
-    else
-        __REG_CLR(HW_PINCTRL_PULL(bank)) = pin_msk;
+    (void) bank;
+    (void) pin;
+    (void) enable;
 }
+#endif
 
 /** On irq, the pin irq interrupt is disable and then cb is called;
  * the setup_pin_irq function needs to be called again to enable it again */
-void imx233_setup_pin_irq(int bank, int pin, bool enable_int,
-    bool level, bool polarity, pin_irq_cb_t cb);
+void imx233_pinctrl_setup_irq(unsigned bank, unsigned pin, bool enable_int,
+    bool level, bool polarity, pin_irq_cb_t cb, intptr_t user);
+
+/**
+ * Virtual pin interface
+ *
+ * This interface provides an easy way to configure standard pins for
+ * devices like SSP, LCD, etc
+ * The point here is that these pins can or cannot exist depending on the
+ * chip and the package and the drivers don't want to mess with that.
+ *
+ * A virtual pin is described by a bank, a pin and the function.
+ */
+typedef unsigned vpin_t;
+#define VPIN_PACK(bank, pin, mux)  \
+    ((vpin_t)((bank) << 5 | (pin) | PINCTRL_FUNCTION_##mux << 7))
+#define VPIN_UNPACK_BANK(vpin) (((vpin) >> 5) & 3)
+#define VPIN_UNPACK_PIN(vpin)  (((vpin) >> 0) & 0x1f)
+#define VPIN_UNPACK_MUX(vpin)  (((vpin) >> 7) & 3)
+
+static inline void imx233_pinctrl_setup_vpin(vpin_t vpin, const char *name,
+    unsigned drive, bool pullup)
+{
+    unsigned bank = VPIN_UNPACK_BANK(vpin), pin = VPIN_UNPACK_PIN(vpin);
+    imx233_pinctrl_acquire(bank, pin, name);
+    imx233_pinctrl_set_function(bank, pin, VPIN_UNPACK_MUX(vpin));
+    imx233_pinctrl_set_drive(bank, pin, drive);
+    imx233_pinctrl_enable_pullup(bank, pin, pullup);
+}
+
+#if IMX233_SUBTARGET < 3700
+#include "pins/pins-stmp3600.h"
+#elif IMX233_SUBTARGET < 3770
+#include "pins/pins-stmp3700.h"
+#elif IMX233_SUBTARGET < 3780
+#error implement this
+#else
+#include "pins/pins-imx233.h"
+#endif
 
 #endif /* __PINCTRL_IMX233_H__ */

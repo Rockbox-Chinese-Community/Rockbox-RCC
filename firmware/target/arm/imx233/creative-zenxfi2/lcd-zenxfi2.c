@@ -32,68 +32,16 @@
 #ifdef HAVE_LCD_ENABLE
 static bool lcd_on;
 #endif
-static unsigned lcd_yuv_options = 0;
-
-static void setup_parameters(void)
-{
-    imx233_lcdif_reset();
-    imx233_lcdif_set_lcd_databus_width(HW_LCDIF_CTRL__LCD_DATABUS_WIDTH_18_BIT);
-    imx233_lcdif_set_word_length(HW_LCDIF_CTRL__WORD_LENGTH_18_BIT);
-    imx233_lcdif_set_timings(2, 2, 3, 3);
-    imx233_lcdif_enable_underflow_recover(true);
-}
-
-static void setup_lcd_pins(bool use_lcdif)
-{
-    imx233_pinctrl_acquire_pin(1, 18, "lcd reset");
-    imx233_pinctrl_acquire_pin(1, 19, "lcd rs");
-    imx233_pinctrl_acquire_pin(1, 20, "lcd wr");
-    imx233_pinctrl_acquire_pin(1, 21, "lcd cs");
-    imx233_pinctrl_acquire_pin(1, 22, "lcd dotclk");
-    imx233_pinctrl_acquire_pin(1, 23, "lcd enable");
-    imx233_pinctrl_acquire_pin(1, 24, "lcd hsync");
-    imx233_pinctrl_acquire_pin(1, 25, "lcd vsync");
-    imx233_pinctrl_acquire_pin_mask(1, 0x3ffff, "lcd data");
-    if(use_lcdif)
-    {
-        imx233_set_pin_function(1, 25, PINCTRL_FUNCTION_MAIN); /* lcd_vsync */
-        imx233_set_pin_function(1, 21, PINCTRL_FUNCTION_MAIN); /* lcd_cs */
-        imx233_set_pin_function(1, 22, PINCTRL_FUNCTION_MAIN); /* lcd_dotclk */
-        imx233_set_pin_function(1, 23, PINCTRL_FUNCTION_MAIN); /* lcd_enable */
-        imx233_set_pin_function(1, 24, PINCTRL_FUNCTION_MAIN); /* lcd_hsync */
-        imx233_set_pin_function(1, 18, PINCTRL_FUNCTION_MAIN); /* lcd_reset */
-        imx233_set_pin_function(1, 19, PINCTRL_FUNCTION_MAIN); /* lcd_rs */
-        imx233_set_pin_function(1, 16, PINCTRL_FUNCTION_MAIN); /* lcd_d16 */
-        imx233_set_pin_function(1, 17, PINCTRL_FUNCTION_MAIN); /* lcd_d17 */
-        imx233_set_pin_function(1, 20, PINCTRL_FUNCTION_MAIN); /* lcd_wr */
-        __REG_CLR(HW_PINCTRL_MUXSEL(2)) = 0xffffffff; /* lcd_d{0-15} */
-    }
-    else
-    {
-        __REG_SET(HW_PINCTRL_MUXSEL(2)) = 0xffffffff; /* lcd_d{0-15} */
-        imx233_enable_gpio_output_mask(1, 0x3ffffff, false); /* lcd_{d{0-17},reset,rs,wr,cs,dotclk,enable,hsync,vsync} */
-        imx233_set_pin_function(1, 16, PINCTRL_FUNCTION_GPIO); /* lcd_d16 */
-        imx233_set_pin_function(1, 17, PINCTRL_FUNCTION_GPIO); /* lcd_d17 */
-        imx233_set_pin_function(1, 19, PINCTRL_FUNCTION_GPIO); /* lcd_rs */
-        imx233_set_pin_function(1, 20, PINCTRL_FUNCTION_GPIO); /* lcd_wr */
-        imx233_set_pin_function(1, 21, PINCTRL_FUNCTION_GPIO); /* lcd_cs */
-        imx233_set_pin_function(1, 22, PINCTRL_FUNCTION_GPIO); /* lcd_dotclk */
-        imx233_set_pin_function(1, 23, PINCTRL_FUNCTION_GPIO); /* lcd_enable */
-        imx233_set_pin_function(1, 24, PINCTRL_FUNCTION_GPIO); /* lcd_hsync */
-        imx233_set_pin_function(1, 25, PINCTRL_FUNCTION_GPIO); /* lcd_vsync */
-    }
-}
-
-static void common_lcd_enable(bool enable)
-{
-    imx233_lcdif_enable(enable);
-    setup_lcd_pins(enable); /* use GPIO pins when disable */
-}
 
 static void setup_lcdif(void)
 {
-    setup_parameters();
-    common_lcd_enable(true);
+    imx233_lcdif_init();
+    imx233_lcdif_set_lcd_databus_width(18);
+    imx233_lcdif_set_word_length(18);
+    imx233_lcdif_set_timings(2, 2, 3, 3);
+    imx233_lcdif_enable_underflow_recover(true);
+    imx233_lcdif_enable(true);
+    imx233_lcdif_setup_system_pins(18);
     imx233_lcdif_enable_bus_master(true);
 }
 
@@ -110,23 +58,23 @@ static inline uint32_t decode_18_to_16(uint32_t a)
 static void setup_lcdif_clock(void)
 {
     /* the LCD seems to work at 24Mhz, so use the xtal clock with no divider */
-    imx233_clkctrl_enable_clock(CLK_PIX, false);
-    imx233_clkctrl_set_clock_divisor(CLK_PIX, 1);
-    imx233_clkctrl_set_bypass_pll(CLK_PIX, true); /* use XTAL */
-    imx233_clkctrl_enable_clock(CLK_PIX, true);
+    imx233_clkctrl_enable(CLK_PIX, false);
+    imx233_clkctrl_set_div(CLK_PIX, 1);
+    imx233_clkctrl_set_bypass(CLK_PIX, true); /* use XTAL */
+    imx233_clkctrl_enable(CLK_PIX, true);
 }
 
 static void lcd_write_reg(uint32_t reg, uint32_t data)
 {
     uint32_t old_reg = reg;
     /* get back to 18-bit word length */
-    imx233_lcdif_set_word_length(HW_LCDIF_CTRL__WORD_LENGTH_18_BIT);
+    imx233_lcdif_set_word_length(18);
     reg = encode_16_to_18(reg);
     data = encode_16_to_18(data);
     
-    imx233_lcdif_pio_send(false, 2, &reg);
+    imx233_lcdif_pio_send(false, 1, &reg);
     if(old_reg != 0 && old_reg != 0x202)
-        imx233_lcdif_pio_send(true, 2, &data);
+        imx233_lcdif_pio_send(true, 1, &data);
 }
 
 #define REG_MDELAY  0xffffffff
@@ -208,11 +156,11 @@ void lcd_init_device(void)
     setup_lcdif_clock();
 
     // reset device
-    __REG_SET(HW_LCDIF_CTRL1) = HW_LCDIF_CTRL1__RESET;
+    imx233_lcdif_reset_lcd(true);
     mdelay(50);
-    __REG_CLR(HW_LCDIF_CTRL1) = HW_LCDIF_CTRL1__RESET;
+    imx233_lcdif_reset_lcd(false);
     mdelay(10);
-    __REG_SET(HW_LCDIF_CTRL1) = HW_LCDIF_CTRL1__RESET;
+    imx233_lcdif_reset_lcd(true);
 
     lcd_init_seq();
 #ifdef HAVE_LCD_ENABLE
@@ -247,12 +195,8 @@ void lcd_enable(bool enable)
 
     lcd_on = enable;
     
-    if(enable)
-        common_lcd_enable(true);
     lcd_enable_seq(enable);
-    if(!enable)
-        common_lcd_enable(false);
-    else
+    if(enable)
         send_event(LCD_EVENT_ACTIVATION, NULL);
 }
 #endif
@@ -283,9 +227,8 @@ void lcd_update_rect(int x, int y, int w, int h)
     lcd_write_reg(0x201, 0);
     lcd_write_reg(0x202, 0);
     imx233_lcdif_wait_ready();
-    imx233_lcdif_set_word_length(HW_LCDIF_CTRL__WORD_LENGTH_16_BIT);
+    imx233_lcdif_set_word_length(16);
     imx233_lcdif_set_byte_packing_format(0xf); /* two pixels per 32-bit word */
-    imx233_lcdif_set_data_format(false, false, false); /* RGB565, don't care, don't care */
 
     /* there are two cases here:
      * - either width = LCD_WIDTH and we can directly memcopy a part of lcd_framebuffer to FRAME
@@ -329,196 +272,4 @@ void lcd_update_rect(int x, int y, int w, int h)
         w = 4;
     }
     imx233_lcdif_dma_send((void *)FRAME_PHYS_ADDR, w, h);
-}
-
-void lcd_yuv_set_options(unsigned options)
-{
-    lcd_yuv_options = options;
-}
-
-#define YFAC    (74)
-#define RVFAC   (101)
-#define GUFAC   (-24)
-#define GVFAC   (-51)
-#define BUFAC   (128)
-
-static inline int clamp(int val, int min, int max)
-{
-    if (val < min)
-        val = min;
-    else if (val > max)
-        val = max;
-    return val;
-}
-
-void lcd_blit_yuv(unsigned char * const src[3],
-                  int src_x, int src_y, int stride,
-                  int x, int y, int width, int height)
-{
-    const unsigned char *ysrc, *usrc, *vsrc;
-    int linecounter;
-    fb_data *dst, *row_end;
-    long z;
-
-    /* width and height must be >= 2 and an even number */
-    width &= ~1;
-    linecounter = height >> 1;
-
-    #if LCD_WIDTH >= LCD_HEIGHT
-    dst     = FBADDR(x,y);
-    row_end = dst + width;
-    #else
-    dst     = FBADDR(LCD_WIDTH - y - 1,x);
-    row_end = dst + LCD_WIDTH * width;
-    #endif
-
-    z    = stride * src_y;
-    ysrc = src[0] + z + src_x;
-    usrc = src[1] + (z >> 2) + (src_x >> 1);
-    vsrc = src[2] + (usrc - src[1]);
-
-    /* stride => amount to jump from end of last row to start of next */
-    stride -= width;
-
-    /* upsampling, YUV->RGB conversion and reduction to RGB565 in one go */
-
-    do
-    {
-        do
-        {
-            int y, cb, cr, rv, guv, bu, r, g, b;
-
-            y  = YFAC*(*ysrc++ - 16);
-            cb = *usrc++ - 128;
-            cr = *vsrc++ - 128;
-
-            rv  =            RVFAC*cr;
-            guv = GUFAC*cb + GVFAC*cr;
-            bu  = BUFAC*cb;
-
-            r = y + rv;
-            g = y + guv;
-            b = y + bu;
-
-            if ((unsigned)(r | g | b) > 64*256-1)
-            {
-                r = clamp(r, 0, 64*256-1);
-                g = clamp(g, 0, 64*256-1);
-                b = clamp(b, 0, 64*256-1);
-            }
-
-            *dst = LCD_RGBPACK_LCD(r >> 9, g >> 8, b >> 9);
-
-            #if LCD_WIDTH >= LCD_HEIGHT
-            dst++;
-            #else
-            dst += LCD_WIDTH;
-            #endif
-
-            y = YFAC*(*ysrc++ - 16);
-            r = y + rv;
-            g = y + guv;
-            b = y + bu;
-
-            if ((unsigned)(r | g | b) > 64*256-1)
-            {
-                r = clamp(r, 0, 64*256-1);
-                g = clamp(g, 0, 64*256-1);
-                b = clamp(b, 0, 64*256-1);
-            }
-
-            *dst = LCD_RGBPACK_LCD(r >> 9, g >> 8, b >> 9);
-
-            #if LCD_WIDTH >= LCD_HEIGHT
-            dst++;
-            #else
-            dst += LCD_WIDTH;
-            #endif
-        }
-        while (dst < row_end);
-
-        ysrc    += stride;
-        usrc    -= width >> 1;
-        vsrc    -= width >> 1;
-
-        #if LCD_WIDTH >= LCD_HEIGHT
-        row_end += LCD_WIDTH;
-        dst     += LCD_WIDTH - width;
-        #else
-        row_end -= 1;
-        dst     -= LCD_WIDTH*width + 1;
-        #endif
-
-        do
-        {
-            int y, cb, cr, rv, guv, bu, r, g, b;
-
-            y  = YFAC*(*ysrc++ - 16);
-            cb = *usrc++ - 128;
-            cr = *vsrc++ - 128;
-
-            rv  =            RVFAC*cr;
-            guv = GUFAC*cb + GVFAC*cr;
-            bu  = BUFAC*cb;
-
-            r = y + rv;
-            g = y + guv;
-            b = y + bu;
-
-            if ((unsigned)(r | g | b) > 64*256-1)
-            {
-                r = clamp(r, 0, 64*256-1);
-                g = clamp(g, 0, 64*256-1);
-                b = clamp(b, 0, 64*256-1);
-            }
-
-            *dst = LCD_RGBPACK_LCD(r >> 9, g >> 8, b >> 9);
-
-            #if LCD_WIDTH >= LCD_HEIGHT
-            dst++;
-            #else
-            dst += LCD_WIDTH;
-            #endif
-
-            y = YFAC*(*ysrc++ - 16);
-            r = y + rv;
-            g = y + guv;
-            b = y + bu;
-
-            if ((unsigned)(r | g | b) > 64*256-1)
-            {
-                r = clamp(r, 0, 64*256-1);
-                g = clamp(g, 0, 64*256-1);
-                b = clamp(b, 0, 64*256-1);
-            }
-
-            *dst = LCD_RGBPACK_LCD(r >> 9, g >> 8, b >> 9);
-
-            #if LCD_WIDTH >= LCD_HEIGHT
-            dst++;
-            #else
-            dst += LCD_WIDTH;
-            #endif
-        }
-        while (dst < row_end);
-
-        ysrc    += stride;
-        usrc    += stride >> 1;
-        vsrc    += stride >> 1;
-
-        #if LCD_WIDTH >= LCD_HEIGHT
-        row_end += LCD_WIDTH;
-        dst     += LCD_WIDTH - width;
-        #else
-        row_end -= 1;
-        dst     -= LCD_WIDTH*width + 1;
-        #endif
-    }
-    while (--linecounter > 0);
-
-    #if LCD_WIDTH >= LCD_HEIGHT
-    lcd_update_rect(x, y, width, height);
-    #else
-    lcd_update_rect(LCD_WIDTH - y - height, x, height, width);
-    #endif
 }

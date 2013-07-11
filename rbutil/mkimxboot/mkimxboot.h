@@ -41,7 +41,8 @@ enum imx_error_t
     IMX_BOOT_CHECKSUM_ERROR = -7,
     IMX_DONT_KNOW_HOW_TO_PATCH = -8,
     IMX_VARIANT_MISMATCH = -9,
-    IMX_FIRST_SB_ERROR = -10,
+    IMX_WRITE_ERROR = -10,
+    IMX_FIRST_SB_ERROR = -11,
 };
 
 enum imx_output_type_t
@@ -59,6 +60,7 @@ enum imx_model_t
     MODEL_ZENXFI2 = 1,
     MODEL_ZENXFI3 = 2,
     MODEL_ZENXFISTYLE = 3,
+    MODEL_ZENSTYLE = 4, /* Style 100 and Style 300 */
     /* new models go here */
 
     NUM_MODELS
@@ -74,6 +76,8 @@ enum imx_firmware_variant_t
     VARIANT_ZENXFI2_RECOVERY,
     /* For the Creative X-Fi Style */
     VARIANT_ZENXFISTYLE_RECOVERY,
+    /* For the Creative Zen Style 100/300 */
+    VARIANT_ZENSTYLE_RECOVERY,
     /* Last */
     VARIANT_COUNT
 };

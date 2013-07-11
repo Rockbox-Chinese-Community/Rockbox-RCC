@@ -29,10 +29,8 @@
 
 void _backlight_set_brightness(int brightness)
 {
-    imx233_pwm_setup_channel(2, 1024, HW_PWM_PERIODx__CDIV__DIV_1,
-        0, HW_PWM_PERIODx__STATE__HIGH,
-        (brightness * 1024) / 100, HW_PWM_PERIODx__STATE__LOW);
-    imx233_pwm_enable_channel(2, true);
+    imx233_pwm_setup_simple(2, 24000, brightness);
+    imx233_pwm_enable(2, true);
 }
 
 bool _backlight_init(void)

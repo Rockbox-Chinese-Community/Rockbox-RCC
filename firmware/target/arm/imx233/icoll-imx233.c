@@ -36,12 +36,8 @@ default_interrupt(INT_TIMER0);
 default_interrupt(INT_TIMER1);
 default_interrupt(INT_TIMER2);
 default_interrupt(INT_TIMER3);
-default_interrupt(INT_LCDIF_DMA);
-default_interrupt(INT_LCDIF_ERROR);
 default_interrupt(INT_SSP1_DMA);
 default_interrupt(INT_SSP1_ERROR);
-default_interrupt(INT_SSP2_DMA);
-default_interrupt(INT_SSP2_ERROR);
 default_interrupt(INT_I2C_DMA);
 default_interrupt(INT_I2C_ERROR);
 default_interrupt(INT_GPIO0);
@@ -60,11 +56,19 @@ default_interrupt(INT_DAC_DMA);
 default_interrupt(INT_DAC_ERROR);
 default_interrupt(INT_ADC_DMA);
 default_interrupt(INT_ADC_ERROR);
-default_interrupt(INT_DCP);
 default_interrupt(INT_TOUCH_DETECT);
 default_interrupt(INT_RTC_1MSEC);
-
-void INT_RTC_1MSEC(void);
+/* STMP3700+ specific */
+#if IMX233_SUBTARGET >= 3700
+default_interrupt(INT_SSP2_DMA);
+default_interrupt(INT_SSP2_ERROR);
+default_interrupt(INT_DCP);
+default_interrupt(INT_LCDIF_DMA);
+default_interrupt(INT_LCDIF_ERROR);
+#endif
+/* STMP3780+ specific */
+#if IMX233_SUBTARGET >= 3780
+#endif
 
 typedef void (*isr_t)(void);
 
@@ -75,12 +79,8 @@ static isr_t isr_table[INT_SRC_NR_SOURCES] =
     [INT_SRC_TIMER(1)] = INT_TIMER1,
     [INT_SRC_TIMER(2)] = INT_TIMER2,
     [INT_SRC_TIMER(3)] = INT_TIMER3,
-    [INT_SRC_LCDIF_DMA] = INT_LCDIF_DMA,
-    [INT_SRC_LCDIF_ERROR] = INT_LCDIF_ERROR,
     [INT_SRC_SSP1_DMA] = INT_SSP1_DMA,
     [INT_SRC_SSP1_ERROR] = INT_SSP1_ERROR,
-    [INT_SRC_SSP2_DMA] = INT_SSP2_DMA,
-    [INT_SRC_SSP2_ERROR] = INT_SSP2_ERROR,
     [INT_SRC_I2C_DMA] = INT_I2C_DMA,
     [INT_SRC_I2C_ERROR] = INT_I2C_ERROR,
     [INT_SRC_GPIO0] = INT_GPIO0,
@@ -99,9 +99,17 @@ static isr_t isr_table[INT_SRC_NR_SOURCES] =
     [INT_SRC_DAC_ERROR] = INT_DAC_ERROR,
     [INT_SRC_ADC_DMA] = INT_ADC_DMA,
     [INT_SRC_ADC_ERROR] = INT_ADC_ERROR,
-    [INT_SRC_DCP] = INT_DCP,
     [INT_SRC_TOUCH_DETECT] = INT_TOUCH_DETECT,
     [INT_SRC_RTC_1MSEC] = INT_RTC_1MSEC,
+#if IMX233_SUBTARGET >= 3700
+    [INT_SRC_SSP2_DMA] = INT_SSP2_DMA,
+    [INT_SRC_SSP2_ERROR] = INT_SSP2_ERROR,
+    [INT_SRC_DCP] = INT_DCP,
+    [INT_SRC_LCDIF_DMA] = INT_LCDIF_DMA,
+    [INT_SRC_LCDIF_ERROR] = INT_LCDIF_ERROR,
+#endif
+#if IMX233_SUBTARGET >= 3780
+#endif
 };
 
 #define IRQ_STORM_DELAY         100 /* ms */
@@ -113,7 +121,11 @@ static uint32_t irq_count[INT_SRC_NR_SOURCES];
 struct imx233_icoll_irq_info_t imx233_icoll_get_irq_info(int src)
 {
     struct imx233_icoll_irq_info_t info;
-    info.enabled = !!(HW_ICOLL_INTERRUPT(src) & HW_ICOLL_INTERRUPT__ENABLE);
+#if IMX233_SUBTARGET < 3780
+    info.enabled = BF_RDn(ICOLL_PRIORITYn, src / 4, ENABLEx(src % 4));
+#else
+    info.enabled = BF_RDn(ICOLL_INTERRUPTn, src, ENABLE);
+#endif
     info.freq = irq_count_old[src];
     return info;
 }
@@ -145,7 +157,7 @@ void irq_handler(void)
         do_irq_stat();
     (*(isr_t *)HW_ICOLL_VECTOR)();
     /* acknowledge completion of IRQ (all use the same priority 0) */
-    HW_ICOLL_LEVELACK = HW_ICOLL_LEVELACK__LEVEL0;
+    HW_ICOLL_LEVELACK = BV_ICOLL_LEVELACK_IRQLEVELACK__LEVEL0;
 }
 
 void fiq_handler(void)
@@ -154,24 +166,34 @@ void fiq_handler(void)
 
 void imx233_icoll_enable_interrupt(int src, bool enable)
 {
+#if IMX233_SUBTARGET < 3780
     if(enable)
-        __REG_SET(HW_ICOLL_INTERRUPT(src)) = HW_ICOLL_INTERRUPT__ENABLE;
+        BF_SETn(ICOLL_PRIORITYn, src / 4, ENABLEx(src % 4));
     else
-        __REG_CLR(HW_ICOLL_INTERRUPT(src)) = HW_ICOLL_INTERRUPT__ENABLE;
+        BF_CLRn(ICOLL_PRIORITYn, src / 4, ENABLEx(src % 4));
+#else
+    if(enable)
+        BF_SETn(ICOLL_INTERRUPTn, src, ENABLE);
+    else
+        BF_CLRn(ICOLL_INTERRUPTn, src, ENABLE);
+#endif
 }
 
 void imx233_icoll_init(void)
 {
     imx233_reset_block(&HW_ICOLL_CTRL);
     /* disable all interrupts */
+    /* priority = 0, disable, disable fiq */
+#if IMX233_SUBTARGET >= 3780
     for(int i = 0; i < INT_SRC_NR_SOURCES; i++)
-    {
-        /* priority = 0, disable, disable fiq */
-        HW_ICOLL_INTERRUPT(i) = 0;
-    }
+        HW_ICOLL_INTERRUPTn(i) = 0;
+#else
+    for(int i = 0; i < INT_SRC_NR_SOURCES / 4; i++)
+        HW_ICOLL_PRIORITYn(i) = 0;
+#endif
     /* setup vbase as isr_table */
     HW_ICOLL_VBASE = (uint32_t)&isr_table;
     /* enable final irq bit */
-    __REG_SET(HW_ICOLL_CTRL) = HW_ICOLL_CTRL__IRQ_FINAL_ENABLE;
+    BF_SET(ICOLL_CTRL, IRQ_FINAL_ENABLE);
 }
 

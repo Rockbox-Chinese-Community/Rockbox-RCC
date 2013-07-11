@@ -280,7 +280,7 @@ static void set_gain(void)
     {
         if (global_settings.rec_mic_gain > sound_max(SOUND_MIC_GAIN))
             global_settings.rec_mic_gain = sound_max(SOUND_MIC_GAIN);
-        
+
         if (global_settings.rec_mic_gain < sound_min(SOUND_MIC_GAIN))
             global_settings.rec_mic_gain = sound_min(SOUND_MIC_GAIN);
 
@@ -301,7 +301,7 @@ static void set_gain(void)
 
         if (global_settings.rec_right_gain < sound_min(SOUND_RIGHT_GAIN))
             global_settings.rec_right_gain = sound_min(SOUND_RIGHT_GAIN);
-      
+
         /* AUDIO_SRC_LINEIN, AUDIO_SRC_FMRADIO, AUDIO_SRC_SPDIF */
         audio_set_recording_gain(global_settings.rec_left_gain,
                                  global_settings.rec_right_gain,
@@ -327,7 +327,7 @@ static bool read_peak_levels(int *peak_l, int *peak_r, int *balance)
             return false;
 
     if (*peak_r > *peak_l)
-        balance_mem[peak_time % BAL_MEM_SIZE] = (*peak_l ? 
+        balance_mem[peak_time % BAL_MEM_SIZE] = (*peak_l ?
             MIN((10000 * *peak_r) / *peak_l - 10000, 15118) : 15118);
     else
         balance_mem[peak_time % BAL_MEM_SIZE] = (*peak_r ?
@@ -394,7 +394,7 @@ static void change_recording_gain(bool increment, bool left, bool right)
     }
 }
 
-/* 
+/*
  * Handle automatic gain control (AGC).
  * Change recording gain if peak_x levels are above or below
  * target volume for specified timeouts.
@@ -645,7 +645,7 @@ int rec_create_directory(void)
         {
             while (action_userabort(HZ) == false)
             {
-                splashf(0, "%s %s", 
+                splashf(0, "%s %s",
                         str(LANG_REC_DIR_NOT_WRITABLE),
                         str(LANG_OFF_ABORT));
             }
@@ -964,8 +964,7 @@ static const char* reclist_get_name(int selected_item, void * data,
 #ifdef HAVE_SPDIF_REC
         case ITEM_SAMPLERATE_D:
             snprintf(buffer, buffer_len, "%s: %lu",
-                     str(LANG_RECORDING_FREQUENCY),
-                     pcm_rec_sample_rate());
+                     str(LANG_FREQUENCY), pcm_rec_sample_rate());
             break;
 #endif
 #endif
@@ -1050,7 +1049,7 @@ bool recording_screen(bool no_source)
     int trig_ypos[NB_SCREENS];      /* trigger bar y pos */
     int trig_width[NB_SCREENS];     /* trigger bar width */
     int top_height_req[NB_SCREENS]; /* required height for top half */
-                                     /* tweak layout tiny screens / big fonts */                                    
+                                     /* tweak layout tiny screens / big fonts */
     bool compact_view[NB_SCREENS] = { false };
     struct gui_synclist lists;      /* the list in the bottom vp */
 #if defined(HAVE_AGC)
@@ -1074,6 +1073,10 @@ bool recording_screen(bool no_source)
 #endif
 
 #if CONFIG_CODEC == SWCODEC
+    /* hardware samplerate gets messed up so prevent mixer playing */
+    int keyclick = global_settings.keyclick;
+    global_settings.keyclick = 0;
+
     /* recording_menu gets messed up: so prevent manus talking */
     talk_disable(true);
     /* audio_init_recording stops anything playing when it takes the audio
@@ -1445,7 +1448,7 @@ bool recording_screen(bool no_source)
 #ifdef HAVE_MIC_REC
                         if(global_settings.rec_source == AUDIO_SRC_MIC)
                         {
-                            global_settings.rec_mic_gain -= 
+                            global_settings.rec_mic_gain -=
                                 sound_steps(SOUND_MIC_GAIN);
                         }
                         else
@@ -1730,7 +1733,7 @@ bool recording_screen(bool no_source)
                 /* Don't use language string unless agreed upon to make this
                    method permanent - could do something in the statusbar */
                 snprintf(buf, sizeof(buf), "Warning: %08lX",
-                         pcm_rec_get_warnings());
+                         (unsigned long)pcm_rec_get_warnings());
             }
             else
 #endif /* CONFIG_CODEC == SWCODEC */
@@ -1755,8 +1758,16 @@ bool recording_screen(bool no_source)
 
             if(audio_stat & AUDIO_STATUS_PRERECORD)
             {
+#if CONFIG_CODEC == SWCODEC
+                /* Tracks amount of prerecorded data in buffer */
+                snprintf(buf, sizeof(buf), "%s (%lu/%ds)...",
+                         str(LANG_RECORD_PRERECORD),
+                         audio_prerecorded_time() / HZ,
+                         global_settings.rec_prerecord_time);
+#else /* !SWCODEC */
                 snprintf(buf, sizeof(buf), "%s...",
                          str(LANG_RECORD_PRERECORD));
+#endif /* CONFIG_CODEC == SWCODEC */
             }
             else
             {
@@ -1915,8 +1926,7 @@ bool recording_screen(bool no_source)
             screens[i].update();
 
 #if CONFIG_CODEC == SWCODEC
-        /* stop recording - some players like H10 freeze otherwise
-           TO DO: find out why it freezes and fix properly */
+        /* stop recording first and try to finish saving whatever it can */
         rec_command(RECORDING_CMD_STOP);
         audio_close_recording();
 #endif
@@ -1949,6 +1959,9 @@ rec_abort:
 
     /* restore talking */
     talk_disable(false);
+
+    /* restore keyclick */
+    global_settings.keyclick = keyclick;
 #else /* !SWCODEC */
     audio_init_playback();
 #endif /* CONFIG_CODEC == SWCODEC */

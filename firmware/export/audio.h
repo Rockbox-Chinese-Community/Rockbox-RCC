@@ -77,7 +77,7 @@ void audio_beep(int duration);
 
 /* Required call when audio buffer is required for some other purpose */
 /* implemented in apps but called from firmware(!) */
-unsigned char *audio_get_buffer(bool talk_buf, size_t *buffer_size); 
+unsigned char *audio_get_buffer(bool talk_buf, size_t *buffer_size);
 
 #if CONFIG_CODEC == SWCODEC
 void audio_next_dir(void);
@@ -212,10 +212,7 @@ unsigned long audio_num_recorded_bytes(void);
 
 #if CONFIG_CODEC == SWCODEC
 /* SWCODEC recording functions */
-/* playback.c */
-bool audio_load_encoder(int afmt);
-void audio_remove_encoder(void);
-unsigned char *audio_get_recording_buffer(size_t *buffer_size);
+unsigned long audio_prerecorded_time(void);
 #endif /* CONFIG_CODEC == SWCODEC */
 
 #endif /* HAVE_RECORDING */
@@ -257,29 +254,29 @@ void audio_register_event_handler(AUDIO_EVENT_HANDLER handler, unsigned short ma
 /***********************************************************************/
 /* handler return codes */
 
-#define AUDIO_EVENT_RC_IGNORED      200 
+#define AUDIO_EVENT_RC_IGNORED      200
     /* indicates that no action was taken or the event was not recognized */
 
-#define AUDIO_EVENT_RC_HANDLED      201 
-    /* indicates that the event was handled and some action was taken which renders 
-    the original event invalid; USE WITH CARE!; this return code aborts all further 
+#define AUDIO_EVENT_RC_HANDLED      201
+    /* indicates that the event was handled and some action was taken which renders
+    the original event invalid; USE WITH CARE!; this return code aborts all further
     processing of the given event */
 
 /***********************************************************************/
 /* audio event IDs */
 
-#define AUDIO_EVENT_POS_REPORT      (1<<0)  
+#define AUDIO_EVENT_POS_REPORT      (1<<0)
     /* sends a periodic song position report to handlers; a report is sent on
-    each kernal tick; the number of ticks per second is defined by HZ; on each 
-    report the current song position is passed in 'data'; if a handler takes an 
-    action that changes the song or the song position it must return 
+    each kernal tick; the number of ticks per second is defined by HZ; on each
+    report the current song position is passed in 'data'; if a handler takes an
+    action that changes the song or the song position it must return
     AUDIO_EVENT_RC_HANDLED which suppresses the event for any remaining handlers */
 
-#define AUDIO_EVENT_END_OF_TRACK    (1<<1) 
+#define AUDIO_EVENT_END_OF_TRACK    (1<<1)
     /* generated when the end of the currently playing track is reached; no
     data is passed; if the handler implements some alternate end-of-track
     processing it should return AUDIO_EVENT_RC_HANDLED which suppresses the
-    event for any remaining handlers as well as the normal end-of-track 
+    event for any remaining handlers as well as the normal end-of-track
     processing */
 
 #endif

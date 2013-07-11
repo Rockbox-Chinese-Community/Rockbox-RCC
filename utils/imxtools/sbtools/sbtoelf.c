@@ -86,10 +86,10 @@ static void extract_elf_section(struct elf_params_t *elf, int count, uint32_t id
     sprintf(filename, "%s%s.%d.elf", g_out_prefix, name, count);
     if(g_debug)
         printf("Write boot section %s to %s\n", name, filename);
-    
+
     FILE *fd = fopen(filename, "wb");
     free(filename);
-    
+
     if(fd == NULL)
         return;
     if(g_elf_simplify)
@@ -112,7 +112,7 @@ static void extract_sb_section(struct sb_section_t *sec)
         if(g_debug)
             printf("Write data section %s to %s\n", sec_name, filename);
         free(filename);
-        
+
         for(int j = 0; j < sec->nr_insts; j++)
         {
             assert(sec->insts[j].inst == SB_INST_DATA);
@@ -217,21 +217,21 @@ static void usage(void)
 {
     printf("Usage: sbtoelf [options] sb-file\n");
     printf("Options:\n");
-    printf("  -?/--help\tDisplay this message\n");
-    printf("  -o <prefix>\tEnable output and set prefix\n");
-    printf("  -d/--debug\tEnable debug output*\n");
-    printf("  -k <file>\tAdd key file\n");
-    printf("  -z\t\tAdd zero key\n");
-    printf("  -r\t\tUse raw command mode\n");
-    printf("  -a/--add-key <key>\tAdd single key (hex or usbotp)\n");
-    printf("  -n/--no-color\tDisable output colors\n");
-    printf("  -l/--loopback <file>\tProduce sb file out of extracted description*\n");
-    printf("  -f/--force\tForce reading even without a key*\n");
-    printf("  -1/--v1\tForce to read file as a version 1 file\n");
-    printf("  -2/--v2\tForce to read file as a version 2 file\n");
-    printf("  -s/--no-simpl\tPrevent elf files from being simplified*\n");
-    printf("  -x\t\tUse default sb1 key\n");
-    printf("  -b\tBrute force key\n");
+    printf("  -?/--help             Display this message\n");
+    printf("  -o <prefix>           Enable output and set prefix\n");
+    printf("  -d/--debug            Enable debug output*\n");
+    printf("  -k <file>             Add key file\n");
+    printf("  -z                    Add zero key\n");
+    printf("  -r                    Use raw command mode\n");
+    printf("  -a/--add-key <key>    Add single key (hex or usbotp)\n");
+    printf("  -n/--no-color         Disable output colors\n");
+    printf("  -l/--loopback <file>  Produce sb file out of extracted description*\n");
+    printf("  -f/--force            Force reading even without a key*\n");
+    printf("  -1/--v1               Force to read file as a version 1 file\n");
+    printf("  -2/--v2               Force to read file as a version 2 file\n");
+    printf("  -s/--no-simpl         Prevent elf files from being simplified*\n");
+    printf("  -x                    Use default sb1 key\n");
+    printf("  -b                    Brute force key\n");
     printf("Options marked with a * are for debug purpose only\n");
     exit(1);
 }
@@ -494,7 +494,7 @@ int main(int argc, char **argv)
         }
         if(loopback)
             sb1_write_file(file, loopback);
-        
+
         sb1_free(file);
     }
     else
@@ -504,6 +504,6 @@ int main(int argc, char **argv)
         return 1;
     }
     clear_keys();
-    
+
     return 0;
 }

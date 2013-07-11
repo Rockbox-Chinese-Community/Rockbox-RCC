@@ -30,7 +30,9 @@
 #include "dma-imx233.h"
 #include "ssp-imx233.h"
 #include "i2c-imx233.h"
+#if IMX233_SUBTARGET >= 3700
 #include "dcp-imx233.h"
+#endif
 #include "pwm-imx233.h"
 #include "icoll-imx233.h"
 #include "lradc-imx233.h"
@@ -41,10 +43,15 @@
 #include "backlight-target.h"
 #include "button.h"
 #include "fmradio_i2c.h"
+#include "powermgmt.h"
 
 void imx233_chip_reset(void)
 {
-    HW_CLKCTRL_RESET = HW_CLKCTRL_RESET_CHIP;
+#if IMX233_SUBTARGET >= 3700
+    HW_CLKCTRL_RESET = BM_CLKCTRL_RESET_CHIP;
+#else
+    HW_POWER_RESET = BF_OR2(POWER_RESET, UNLOCK_V(KEY), RST_DIG(1));
+#endif
 }
 
 void system_reboot(void)
@@ -105,33 +112,37 @@ void system_init(void)
     /* NOTE: don't use anything here that might require tick task !
      * It is initialized by kernel_init *after* system_init().
      * The main() will naturally set cpu speed to normal after kernel_init()
-     * so don't bother if the cpu is running at 24MHz here. */
-    imx233_clkctrl_enable_clock(CLK_PLL, true);
+     * so don't bother if the cpu is running at 24MHz here.
+     * Make sure IO clock is running at expected speed */
+    imx233_clkctrl_init();
+    imx233_clkctrl_enable(CLK_PLL, true);
+#if IMX233_SUBTARGET >= 3700
+    imx233_clkctrl_set_frac_div(CLK_IO, 18); // clk_io@clk_pll
+#endif
+
     imx233_rtc_init();
     imx233_icoll_init();
     imx233_pinctrl_init();
     imx233_timrot_init();
     imx233_dma_init();
     imx233_ssp_init();
+#if IMX233_SUBTARGET >= 3700
     imx233_dcp_init();
+#endif
     imx233_pwm_init();
     imx233_lradc_init();
     imx233_power_init();
     imx233_i2c_init();
+    imx233_powermgmt_init();
 
-    imx233_clkctrl_enable_auto_slow_monitor(AS_CPU_INSTR, true);
-    imx233_clkctrl_enable_auto_slow_monitor(AS_CPU_DATA, true);
-    imx233_clkctrl_enable_auto_slow_monitor(AS_TRAFFIC, true);
-    imx233_clkctrl_enable_auto_slow_monitor(AS_TRAFFIC_JAM, true);
-    imx233_clkctrl_enable_auto_slow_monitor(AS_APBXDMA, true);
-    imx233_clkctrl_enable_auto_slow_monitor(AS_APBHDMA, true);
-    imx233_clkctrl_set_auto_slow_divisor(AS_DIV_8);
-    imx233_clkctrl_enable_auto_slow(true);
+    /* make sure auto-slow is disable now, we don't know at which frequency we
+     * are running and auto-slow could violate constraints on {xbus,hbus} */
+    imx233_clkctrl_enable_auto_slow(false);
+    imx233_clkctrl_set_auto_slow_div(BV_CLKCTRL_HBUS_SLOW_DIV__BY8);
 
-    cpu_frequency = imx233_clkctrl_get_clock_freq(CLK_CPU);
+    cpu_frequency = imx233_clkctrl_get_freq(CLK_CPU);
 
-#if !defined(BOOTLOADER) &&(defined(SANSA_FUZEPLUS) || \
-    defined(CREATIVE_ZENXFI3) || defined(CREATIVE_ZENXFI2))
+#if CONFIG_TUNER
     fmradio_i2c_init();
 #endif
 }
@@ -167,12 +178,13 @@ void udelay(unsigned us)
 
 void imx233_digctl_set_arm_cache_timings(unsigned timings)
 {
-    HW_DIGCTL_ARMCACHE =
-        timings << HW_DIGCTL_ARMCACHE__ITAG_SS_BP |
-        timings << HW_DIGCTL_ARMCACHE__DTAG_SS_BP |
-        timings << HW_DIGCTL_ARMCACHE__CACHE_SS_BP |
-        timings << HW_DIGCTL_ARMCACHE__DRTY_SS_BP |
-        timings << HW_DIGCTL_ARMCACHE__VALID_SS_BP;
+#if IMX233_SUBTARGET >= 3780
+    HW_DIGCTL_ARMCACHE = BF_OR5(DIGCTL_ARMCACHE, ITAG_SS(timings),
+        DTAG_SS(timings), CACHE_SS(timings), DRTY_SS(timings), VALID_SS(timings));
+#else
+    HW_DIGCTL_ARMCACHE = BF_OR3(DIGCTL_ARMCACHE, ITAG_SS(timings),
+        DTAG_SS(timings), CACHE_SS(timings));
+#endif
 }
 
 #ifdef HAVE_ADJUSTABLE_CPU_FREQ
@@ -190,11 +202,11 @@ struct cpufreq_profile_t
 
 static struct cpufreq_profile_t cpu_profiles[] =
 {
-    /* clk_p@454.74 MHz, clk_h@130.91 MHz, clk_emi@130.91 MHz */
+    /* clk_p@454.74 MHz, clk_h@130.91 MHz, clk_emi@130.91 MHz, VDDD@1.550 V */
     {IMX233_CPUFREQ_454_MHz, 1550, 1450, 3, 1, 19, IMX233_EMIFREQ_130_MHz, 0},
-    /* clk_p@261.82 MHz, clk_h@130.91 MHz, clk_emi@130.91 MHz */
+    /* clk_p@261.82 MHz, clk_h@130.91 MHz, clk_emi@130.91 MHz, VDDD@1.275 V */
     {IMX233_CPUFREQ_261_MHz, 1275, 1175, 2, 1, 33, IMX233_EMIFREQ_130_MHz, 0},
-    /* clk_p@64 MHz, clk_h@64 MHz, clk_emi@64 MHz */
+    /* clk_p@64 MHz, clk_h@64 MHz, clk_emi@64 MHz, VDDD@1.050 V */
     {IMX233_CPUFREQ_64_MHz, 1050, 975, 1, 5, 27, IMX233_EMIFREQ_64_MHz, 0},
     /* dummy */
     {0, 0, 0, 0, 0, 0, 0, 0}
@@ -214,7 +226,6 @@ void set_cpu_frequency(long frequency)
     if(prof->cpu_freq == 0)
         return;
     /* disable auto-slow (enable back afterwards) */
-    bool as = imx233_clkctrl_is_auto_slow_enabled();
     imx233_clkctrl_enable_auto_slow(false);
 
     /* WARNING watch out the order ! */
@@ -225,28 +236,28 @@ void set_cpu_frequency(long frequency)
         /* Change ARM cache timings */
         imx233_digctl_set_arm_cache_timings(prof->arm_cache_timings);
         /* Switch CPU to crystal at 24MHz */
-        imx233_clkctrl_set_bypass_pll(CLK_CPU, true);
+        imx233_clkctrl_set_bypass(CLK_CPU, true);
         /* Program CPU divider for PLL */
-        imx233_clkctrl_set_fractional_divisor(CLK_CPU, prof->cpu_fdiv);
-        imx233_clkctrl_set_clock_divisor(CLK_CPU, prof->cpu_idiv);
+        imx233_clkctrl_set_frac_div(CLK_CPU, prof->cpu_fdiv);
+        imx233_clkctrl_set_div(CLK_CPU, prof->cpu_idiv);
         /* Change the HBUS divider to its final value */
-        imx233_clkctrl_set_clock_divisor(CLK_HBUS, prof->hbus_div);
+        imx233_clkctrl_set_div(CLK_HBUS, prof->hbus_div);
         /* Switch back CPU to PLL */
-        imx233_clkctrl_set_bypass_pll(CLK_CPU, false);
+        imx233_clkctrl_set_bypass(CLK_CPU, false);
         /* Set the new EMI frequency */
         imx233_emi_set_frequency(prof->emi_freq);
     }
     else
     {
         /* Switch CPU to crystal at 24MHz */
-        imx233_clkctrl_set_bypass_pll(CLK_CPU, true);
+        imx233_clkctrl_set_bypass(CLK_CPU, true);
         /* Program HBUS divider to its final value */
-        imx233_clkctrl_set_clock_divisor(CLK_HBUS, prof->hbus_div);
+        imx233_clkctrl_set_div(CLK_HBUS, prof->hbus_div);
         /* Program CPU divider for PLL */
-        imx233_clkctrl_set_fractional_divisor(CLK_CPU, prof->cpu_fdiv);
-        imx233_clkctrl_set_clock_divisor(CLK_CPU, prof->cpu_idiv);
+        imx233_clkctrl_set_frac_div(CLK_CPU, prof->cpu_fdiv);
+        imx233_clkctrl_set_div(CLK_CPU, prof->cpu_idiv);
         /* Switch back CPU to PLL */
-        imx233_clkctrl_set_bypass_pll(CLK_CPU, false);
+        imx233_clkctrl_set_bypass(CLK_CPU, false);
         /* Set the new EMI frequency */
         imx233_emi_set_frequency(prof->emi_freq);
         /* Change ARM cache timings */
@@ -255,7 +266,7 @@ void set_cpu_frequency(long frequency)
         imx233_power_set_regulator(REGULATOR_VDDD, prof->vddd, prof->vddd_bo);
     }
     /* enable auto slow again */
-    imx233_clkctrl_enable_auto_slow(as);
+    imx233_clkctrl_enable_auto_slow(true);
     /* update frequency */
     cpu_frequency = frequency;
 }
@@ -264,21 +275,23 @@ void set_cpu_frequency(long frequency)
 void imx233_enable_usb_controller(bool enable)
 {
     if(enable)
-        __REG_CLR(HW_DIGCTL_CTRL) = HW_DIGCTL_CTRL__USB_CLKGATE;
+        BF_CLR(DIGCTL_CTRL, USB_CLKGATE);
     else
-        __REG_SET(HW_DIGCTL_CTRL) = HW_DIGCTL_CTRL__USB_CLKGATE;
+        BF_SET(DIGCTL_CTRL, USB_CLKGATE);
 }
 
 void imx233_enable_usb_phy(bool enable)
 {
     if(enable)
     {
-        __REG_CLR(HW_USBPHY_CTRL) = __BLOCK_CLKGATE | __BLOCK_SFTRST;
-        __REG_CLR(HW_USBPHY_PWD) = HW_USBPHY_PWD__ALL;
+        BF_CLR(USBPHY_CTRL, SFTRST);
+        BF_CLR(USBPHY_CTRL, CLKGATE);
+        HW_USBPHY_PWD_CLR = 0xffffffff;
     }
     else
     {
-        __REG_SET(HW_USBPHY_PWD) = HW_USBPHY_PWD__ALL;
-        __REG_SET(HW_USBPHY_CTRL) = __BLOCK_CLKGATE | __BLOCK_SFTRST;
+        HW_USBPHY_PWD_SET = 0xffffffff;
+        BF_SET(USBPHY_CTRL, SFTRST);
+        BF_SET(USBPHY_CTRL, CLKGATE);
     }
 }

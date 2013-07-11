@@ -18,42 +18,22 @@
  *
  ****************************************************************************/
 
+#include <stdio.h>
 #include "config.h"
+#include "loader_strerror.h"
 #include "rkw-loader.h"
 #include "crc32-rkw.h"
 #include "file.h"
 #include "panic.h"
 
-/* error strings sorted by number */
-/* error 0 is empty */
-static const char *err_str[] = {
-    "Loading OK",
-    "Can't open RKW file",
-    "Can't read RKW header",
-    "Invalid RKW magic number",
-    "RKW header CRC error",
-    "RKW file too big",
-    "RKW Load address mismatch",
-    "Bad model number",
-    "Error Reading File",
-    "RKW firmware CRC error"
-};
-
-const char *rkw_strerror(int8_t errno)
-{
-    if ((uint8_t)-errno >= sizeof(err_str)/sizeof(err_str[0]) || errno > 0)
-        return "Unknown error";
-
-    return err_str[-errno];
-}
-
 /* loosely based on load_firmware()
- * on success we return size loaded image
+ * on success we return size of loaded image
  * on error we return negative value which can be deciphered by means
  * of rkw_strerror() function
  */
-int load_rkw(unsigned char* buf, const char* filename, int buffer_size)
+int load_rkw(unsigned char* buf, const char* firmware, int buffer_size)
 {
+    char filename[MAX_PATH];
     int fd;
     int rc;
     int len;
@@ -61,22 +41,42 @@ int load_rkw(unsigned char* buf, const char* filename, int buffer_size)
     uint32_t crc, fw_crc;
     struct rkw_header_t rkw_info;
 
-    fd = open(filename, O_RDONLY);
+    /* only filename passed */
+    if (firmware[0] != '/')
+    {
+        /* First check in BOOTDIR */
+        snprintf(filename, sizeof(filename), BOOTDIR "/%s",firmware);
 
-    if(fd < 0)
-        return -1;
+        fd = open(filename, O_RDONLY);
+        if(fd < 0)
+        {
+            /* Check in root dir */
+            snprintf(filename, sizeof(filename),"/%s",firmware);
+            fd = open(filename, O_RDONLY);
+
+            if (fd < 0)
+                return EFILE_NOT_FOUND;
+        }
+    }
+    else
+    {
+        /* full path passed */
+        fd = open(firmware, O_RDONLY);
+        if (fd < 0)
+            return EFILE_NOT_FOUND;
+    }
 
     rc = read(fd, &rkw_info, sizeof(rkw_info));
     if (rc < (int)sizeof(rkw_info))
     {
-        ret = -2;
+        ret = EREAD_HEADER_FAILED;
         goto end;
     }
 
     /* check if RKW is valid */
     if (rkw_info.magic_number != RKLD_MAGIC)
     {
-        ret = -3;
+        ret = EINVALID_FORMAT;
         goto end;
     }
 
@@ -86,7 +86,7 @@ int load_rkw(unsigned char* buf, const char* filename, int buffer_size)
         crc = crc32_rkw((uint8_t *)&rkw_info, sizeof(rkw_info)-sizeof(uint32_t));
         if (rkw_info.crc != crc)
         {
-            ret = -4;
+            ret = EBAD_HEADER_CHKSUM;
             goto end;
         }
     }
@@ -95,14 +95,14 @@ int load_rkw(unsigned char* buf, const char* filename, int buffer_size)
     len = rkw_info.load_limit - rkw_info.load_address;
     if (len > buffer_size)
     {
-        ret = -5;
+        ret = EFILE_TOO_BIG;
         goto end;
     }
 
     /* check load address - we support loading only at 0x60000000 */
     if (rkw_info.load_address != 0x60000000)
     {
-        ret = -6;
+        ret = EINVALID_LOAD_ADDR;
         goto end;
     }
 
@@ -112,7 +112,7 @@ int load_rkw(unsigned char* buf, const char* filename, int buffer_size)
      */
     if (rkw_info.reserved0 != 0 && rkw_info.reserved0 != MODEL_NUMBER)
     {
-        ret = -7;
+        ret = EBAD_MODEL;
         goto end;
     }
 
@@ -124,7 +124,7 @@ int load_rkw(unsigned char* buf, const char* filename, int buffer_size)
 
     if(rc < len)
     {
-        ret = -8;
+        ret = EREAD_IMAGE_FAILED;
         goto end;
     }
 
@@ -136,7 +136,7 @@ int load_rkw(unsigned char* buf, const char* filename, int buffer_size)
 
         if (fw_crc != crc)
         {
-            ret = -9;
+            ret = EBAD_CHKSUM;
             goto end;
         }
     }

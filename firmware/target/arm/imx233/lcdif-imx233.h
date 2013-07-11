@@ -26,78 +26,51 @@
 #include "system.h"
 #include "system-target.h"
 
-#define HW_LCDIF_BASE           0x80030000
+#include "regs/regs-lcdif.h"
 
-#define HW_LCDIF_CTRL           (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x0))
-#define HW_LCDIF_CTRL__WORD_LENGTH_16_BIT   (0 << 8)
-#define HW_LCDIF_CTRL__WORD_LENGTH_8_BIT    (1 << 8)
-#define HW_LCDIF_CTRL__WORD_LENGTH_18_BIT   (2 << 8)
-#define HW_LCDIF_CTRL__WORD_LENGTH_24_BIT   (3 << 8)
-#define HW_LCDIF_CTRL__WORD_LENGTH_BM       (3 << 8)
-#define HW_LCDIF_CTRL__LCD_DATABUS_WIDTH_16_BIT (0 << 10)
-#define HW_LCDIF_CTRL__LCD_DATABUS_WIDTH_18_BIT (2 << 10)
-#define HW_LCDIF_CTRL__LCD_DATABUS_WIDTH_BM (3 << 10)
-#define HW_LCDIF_CTRL__LCDIF_MASTER         (1 << 5)
-#define HW_LCDIF_CTRL__DATA_FORMAT_16_BIT   (1 << 3)
-#define HW_LCDIF_CTRL__DATA_FORMAT_18_BIT   (1 << 2)
-#define HW_LCDIF_CTRL__DATA_FORMAT_24_BIT   (1 << 1)
-#define HW_LCDIF_CTRL__RUN                  0x1
-#define HW_LCDIF_CTRL__DATA_SELECT          (1 << 16)
+typedef void (*lcdif_irq_cb_t)(void);
 
-#define HW_LCDIF_CTRL1          (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x10))
-#define HW_LCDIF_CTRL1__RESET           1
-#define HW_LCDIF_CTRL1__BUSY_ENABLE     (1 << 2)
-#define HW_LCDIF_CTRL1__MODE86          (1 << 1)
-#define HW_LCDIF_CTRL1__IRQ_EN_BP       12
-#define HW_LCDIF_CTRL1__IRQ_EN_BM       (0xf << 12)
-#define HW_LCDIF_CTRL1__IRQ_BP          8
-#define HW_LCDIF_CTRL1__BYTE_PACKING_FORMAT_BM  (0xf << 16)
-#define HW_LCDIF_CTRL1__BYTE_PACKING_FORMAT_BP  16
-#define HW_LCDIF_CTRL1__RECOVER_ON_UNDERFLOW    (1 << 24)
-
-#define HW_LCDIF__VSYNC_EDGE_IRQ        1
-#define HW_LCDIF__CUR_FRAME_DONE_IRQ    2
-#define HW_LCDIF__UNDERFLOW_IRQ         4
-#define HW_LCDIF__OVERFLOW_IRQ          8
-
-#define HW_LCDIF_TRANSFER_COUNT (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x20))
-#define HW_LCDIF_CUR_BUF        (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x30))
-#define HW_LCDIF_NEXT_BUF       (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x40))
-#define HW_LCDIF_TIMING         (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x60))
-#define HW_LCDIF_TIMING__DATA_SETUP_BP  0
-#define HW_LCDIF_TIMING__DATA_HOLD_BP   8
-#define HW_LCDIF_TIMING__CMD_SETUP_BP   16
-#define HW_LCDIF_TIMING__CMD_HOLD_BP    24
-
-#define HW_LCDIF_CSC_COEFF0     (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x110))
-#define HW_LCDIF_CSC_COEFF1     (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x120))
-#define HW_LCDIF_CSC_COEFF2     (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x130))
-#define HW_LCDIF_CSC_COEFF3     (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x140))
-#define HW_LCDIF_CSC_COEFF4     (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x150))
-#define HW_LCDIF_CSC_OFFSET     (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x160))
-#define HW_LCDIF_CSC_LIMIT      (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x170))
-#define HW_LCDIF_DATA           (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x1b0))
-
-#define HW_LCDIF_STAT           (*(volatile uint32_t *)(HW_LCDIF_BASE + 0x1d0))
-#define HW_LCDIF_STAT__LFIFO_FULL   (1 << 29)
-#define HW_LCDIF_STAT__LFIFO_EMPTY  (1 << 28)
-#define HW_LCDIF_STAT__TXFIFO_FULL  (1 << 27)
-#define HW_LCDIF_STAT__TXFIFO_EMPTY (1 << 26)
-#define HW_LCDIF_STAT__BUSY         (1 << 25)
-
-void imx233_lcdif_enable_underflow_recover(bool enable);
-void imx233_lcdif_enable_bus_master(bool enable);
 void imx233_lcdif_enable(bool enable);
-void imx233_lcdif_reset(void);// reset lcdif block
+void imx233_lcdif_init(void);// reset lcdif block
+void imx233_lcdif_reset_lcd(bool enable);// set/clr reset line
 void imx233_lcdif_set_timings(unsigned data_setup, unsigned data_hold,
     unsigned cmd_setup, unsigned cmd_hold);
-void imx233_lcdif_set_lcd_databus_width(unsigned width);
 void imx233_lcdif_set_word_length(unsigned word_length);
-void imx233_lcdif_set_byte_packing_format(unsigned byte_packing);
-void imx233_lcdif_set_data_format(bool data_fmt_16, bool data_fmt_18, bool data_fmt_24);
-unsigned imx233_lcdif_enable_irqs(unsigned irq_bm); /* return old mask */
 void imx233_lcdif_wait_ready(void);
-void imx233_lcdif_pio_send(bool data_mode, unsigned len, uint32_t *buf);
+void imx233_lcdif_set_data_swizzle(unsigned swizzle);
+/* This function assumes the data is packed in 8/16-bit mode and unpacked in
+ * 18-bit mode.
+ * WARNING: doesn't support 24-bit mode
+ * WARNING: count must be lower than or equal to 0xffff
+ * Note that this function might affect the byte packing format and bus master.
+ * Note that count is number of pixels, NOT the number of bytes ! */
+void imx233_lcdif_pio_send(bool data_mode, unsigned count, void *buf);
 void imx233_lcdif_dma_send(void *buf, unsigned width, unsigned height);
+void imx233_lcdif_setup_system_pins(unsigned bus_width);
+void imx233_lcdif_setup_dotclk_pins(unsigned bus_width, bool have_enable);
+
+#if IMX233_SUBTARGET >= 3700
+void imx233_lcdif_set_byte_packing_format(unsigned byte_packing);
+/* low-level function */
+void imx233_lcdif_setup_dotclk(unsigned v_pulse_width, unsigned v_period,
+    unsigned v_wait_cnt, unsigned v_active, unsigned h_pulse_width,
+    unsigned h_period, unsigned h_wait_cnt, unsigned h_active, bool enable_present);
+/* high-level function */
+void imx233_lcdif_setup_dotclk_ex(unsigned v_pulse_width, unsigned v_back_porch,
+    unsigned v_front_porch, unsigned h_pulse_width, unsigned h_back_porch,
+    unsigned h_front_porch, unsigned width, unsigned height, unsigned clk_per_pix,
+    bool enable_present);
+void imx233_lcdif_enable_frame_done_irq(bool en);
+void imx233_lcdif_set_frame_done_cb(lcdif_irq_cb_t cb);
+void imx233_lcdif_enable_vsync_edge_irq(bool en);
+void imx233_lcdif_set_vsync_edge_cb(lcdif_irq_cb_t cb);
+void imx233_lcdif_enable_sync_signals(bool en);
+#endif
+
+#if IMX233_SUBTARGET >= 3780
+void imx233_lcdif_enable_underflow_recover(bool enable);
+void imx233_lcdif_enable_bus_master(bool enable);
+void imx233_lcdif_set_lcd_databus_width(unsigned width);
+#endif
 
 #endif /* __LCDIF_IMX233_H__ */

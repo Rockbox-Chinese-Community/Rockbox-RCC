@@ -333,12 +333,13 @@ static void set_serial_descriptor(void)
     }
     usb_string_iSerial.bLength = 36 + (2 * AS3514_UID_LEN);
 }
-#elif (CONFIG_CPU == IMX233)
+#elif (CONFIG_CPU == IMX233) && IMX233_SUBTARGET >= 3700
+// FIXME where is the STMP3600 serial number stored ?
 static void set_serial_descriptor(void)
 {
     short* p = &usb_string_iSerial.wString[1];
     for(int i = 0; i < IMX233_NUM_OCOTP_OPS; i++) {
-        uint32_t ops = imx233_ocotp_read(&HW_OCOTP_OPSx(i));
+        uint32_t ops = imx233_ocotp_read(&HW_OCOTP_OPSn(i));
         for(int j = 0; j < 8; j++) {
             *p++ = hex[(ops >> 28) & 0xF];
             ops <<= 4;

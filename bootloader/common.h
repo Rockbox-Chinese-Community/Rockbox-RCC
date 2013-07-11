@@ -21,16 +21,6 @@
 
 #include <stdbool.h>
 
-/* Error codes */
-#define     EOK                      0
-#define     EFILE_NOT_FOUND         -1
-#define     EREAD_CHKSUM_FAILED     -2
-#define     EREAD_MODEL_FAILED      -3
-#define     EREAD_IMAGE_FAILED      -4
-#define     EBAD_CHKSUM             -5
-#define     EFILE_TOO_BIG           -6
-#define     EINVALID_FORMAT         -7
-
 /* Set this to true to enable lcd_update() in the printf function */
 extern bool verbose;
 
@@ -42,9 +32,7 @@ extern bool verbose;
 /* Functions common to all bootloaders */
 void reset_screen(void);
 int printf(const char *format, ...);
-char *strerror(int error);
 void error(int errortype, int error, bool shutdown);
-int load_firmware(unsigned char* buf, char* firmware, int buffer_size);
 int load_raw_firmware(unsigned char* buf, char* firmware, int buffer_size);
 #ifdef ROCKBOX_HAS_LOGF
 void display_logf(void);

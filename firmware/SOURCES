@@ -35,6 +35,9 @@ load_code.c
 #ifdef RB_PROFILE
 profile.c
 #endif /* RB_PROFILE */
+#if !defined(RKW_FORMAT) && !defined(MI4_FORMAT) && defined(MODEL_NUMBER)
+common/rb-loader.c
+#endif
 #if !defined(BOOTLOADER) || defined(CPU_SH)
 rolo.c
 #endif /* !defined(BOOTLOADER) || defined(CPU_SH) */
@@ -139,6 +142,9 @@ libc/gmtime.c
 common/version.c
 common/config.c
 common/crc32.c
+#ifdef MODEL_NUMBER
+common/loader_strerror.c
+#endif
 #ifdef MI4_FORMAT
 common/crc32-mi4.c
 #endif
@@ -521,6 +527,9 @@ target/arm/imx233/kernel-imx233.c
 # if (CONFIG_STORAGE & (STORAGE_SD | STORAGE_MMC))
 target/arm/imx233/sdmmc-imx233.c
 # endif
+# if (CONFIG_STORAGE & (STORAGE_ATA))
+target/arm/imx233/ata-imx233.c
+# endif
 target/arm/imx233/partitions-imx233.c
 target/arm/imx233/ssp-imx233.c
 target/arm/imx233/dma-imx233.c
@@ -532,9 +541,12 @@ target/arm/imx233/adc-imx233.c
 target/arm/imx233/lradc-imx233.c
 target/arm/imx233/pwm-imx233.c
 target/arm/imx233/rtc-imx233.c
+#if IMX233_SUBTARGET >= 3700
 target/arm/imx233/dcp-imx233.c
+#endif
 target/arm/imx233/emi-imx233.c
-# ifdef HAVE_TOUCHSCREEN
+target/arm/imx233/uartdbg-imx233.c
+# if defined(HAVE_TOUCHSCREEN) || defined(HAVE_TOUCHPAD_IMX233)
 target/arm/imx233/touchscreen-imx233.c
 # endif
 #ifndef BOOTLOADER
@@ -547,6 +559,7 @@ target/arm/imx233/usb-imx233.c
 #ifdef HAVE_IMX233_CODEC
 target/arm/imx233/audioout-imx233.c
 target/arm/imx233/audioin-imx233.c
+target/arm/imx233/audio-imx233.c
 target/arm/imx233/pcm-imx233.c
 drivers/audio/imx233-codec.c
 #endif
@@ -587,6 +600,7 @@ target/arm/as3525/pcm-as3525.c
 target/arm/pp/i2s-pp.c
 target/arm/pp/kernel-pp.c
 target/arm/pp/timer-pp.c
+target/arm/pp/mi4-loader.c
 # if CONFIG_STORAGE & STORAGE_SD
 target/arm/pp/ata-sd-pp.c
 # endif
@@ -1156,9 +1170,6 @@ target/arm/imx233/creative-zenxfi2/debug-zenxfi2.c
 target/arm/imx233/creative-zenxfi2/power-zenxfi2.c
 target/arm/imx233/creative-zenxfi2/adc-zenxfi2.c
 target/arm/imx233/creative-zenxfi2/powermgmt-zenxfi2.c
-#ifndef BOOTLOADER
-target/arm/imx233/creative-zenxfi2/audio-zenxfi2.c
-#endif
 #endif
 
 #ifdef CREATIVE_ZENXFI3
@@ -1171,9 +1182,6 @@ target/arm/imx233/creative-zenxfi3/debug-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/power-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/adc-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/powermgmt-zenxfi3.c
-#ifndef BOOTLOADER
-target/arm/imx233/creative-zenxfi3/audio-zenxfi3.c
-#endif
 #endif
 
 #ifdef SANSA_CONNECT
@@ -1393,9 +1401,6 @@ target/arm/imx233/sansa-fuzeplus/debug-fuzeplus.c
 target/arm/imx233/sansa-fuzeplus/power-fuzeplus.c
 target/arm/imx233/sansa-fuzeplus/adc-fuzeplus.c
 target/arm/imx233/sansa-fuzeplus/powermgmt-fuzeplus.c
-#ifndef BOOTLOADER
-target/arm/imx233/sansa-fuzeplus/audio-fuzeplus.c
-#endif
 #endif
 
 #ifdef SANSA_CLIPZIP

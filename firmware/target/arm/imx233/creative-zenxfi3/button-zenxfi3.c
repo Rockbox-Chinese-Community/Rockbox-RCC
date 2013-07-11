@@ -66,10 +66,11 @@ static long mpr121_stack[DEFAULT_STACK_SIZE/sizeof(long)];
 static const char mpr121_thread_name[] = "mpr121";
 static struct event_queue mpr121_queue;
 
-static void mpr121_irq_cb(int bank, int pin)
+static void mpr121_irq_cb(int bank, int pin, intptr_t user)
 {
     (void) bank;
     (void) pin;
+    (void) user;
     /* the callback will not be fired until interrupt is enabled back so
      * the queue will not overflow or contain multiple MPR121_INTERRUPT events */
     queue_post(&mpr121_queue, MPR121_INTERRUPT, 0);
@@ -107,7 +108,7 @@ static void mpr121_thread(void)
             if(status & 0x80) touchpad_btns |= BUTTON_PLAY;
         }
         /* enable interrupt */
-        imx233_setup_pin_irq(0, 18, true, true, false, &mpr121_irq_cb);
+        imx233_pinctrl_setup_irq(0, 18, true, true, false, &mpr121_irq_cb, 0);
     }
 }
 
@@ -122,28 +123,28 @@ void button_init_device(void)
     create_thread(mpr121_thread, mpr121_stack, sizeof(mpr121_stack), 0,
         mpr121_thread_name IF_PRIO(, PRIORITY_USER_INTERFACE) IF_COP(, CPU));
     /* enable interrupt */
-    imx233_pinctrl_acquire_pin(0, 18, "mpr121 int");
-    imx233_set_pin_function(0, 18, PINCTRL_FUNCTION_GPIO);
-    imx233_enable_gpio_output(0, 18, false);
-    imx233_setup_pin_irq(0, 18, true, true, false, &mpr121_irq_cb);
+    imx233_pinctrl_acquire(0, 18, "mpr121 int");
+    imx233_pinctrl_set_function(0, 18, PINCTRL_FUNCTION_GPIO);
+    imx233_pinctrl_enable_gpio(0, 18, false);
+    imx233_pinctrl_setup_irq(0, 18, true, true, false, &mpr121_irq_cb, 0);
     /* hold button */
-    imx233_pinctrl_acquire_pin(0, 4, "hold");
-    imx233_set_pin_function(0, 4, PINCTRL_FUNCTION_GPIO);
-    imx233_enable_gpio_output(0, 4, false);
+    imx233_pinctrl_acquire(0, 4, "hold");
+    imx233_pinctrl_set_function(0, 4, PINCTRL_FUNCTION_GPIO);
+    imx233_pinctrl_enable_gpio(0, 4, false);
     /* volume down button */
-    imx233_pinctrl_acquire_pin(2, 7, "volume down");
-    imx233_set_pin_function(2, 7, PINCTRL_FUNCTION_GPIO);
-    imx233_enable_gpio_output(2, 7, false);
+    imx233_pinctrl_acquire(2, 7, "volume down");
+    imx233_pinctrl_set_function(2, 7, PINCTRL_FUNCTION_GPIO);
+    imx233_pinctrl_enable_gpio(2, 7, false);
     /* volume up button */
-    imx233_pinctrl_acquire_pin(2, 8, "volume up");
-    imx233_set_pin_function(2, 8, PINCTRL_FUNCTION_GPIO);
-    imx233_enable_gpio_output(2, 8, false);
+    imx233_pinctrl_acquire(2, 8, "volume up");
+    imx233_pinctrl_set_function(2, 8, PINCTRL_FUNCTION_GPIO);
+    imx233_pinctrl_enable_gpio(2, 8, false);
 }
 
 bool button_hold(void)
 {
     /* B0P04: #hold */
-    return !imx233_get_gpio_input_mask(0, 0x10);
+    return !imx233_pinctrl_get_gpio(0, 4);
 }
 
 int button_read_device(void)
@@ -171,12 +172,11 @@ int button_read_device(void)
     /* B2P07: #volume-
      * B2P08: #volume+
      * PSWITCH: power */
-    uint32_t mask = imx233_get_gpio_input_mask(2, 0x180);
-    if(!(mask & 0x80))
+    if(!imx233_pinctrl_get_gpio(2, 7))
         res |= BUTTON_VOL_DOWN;
-    if(!(mask & 0x100))
+    if(!imx233_pinctrl_get_gpio(2, 8))
         res |= BUTTON_VOL_UP;
-    if(__XTRACT(HW_POWER_STS, PSWITCH) != 0 && power_ignore_counter == 0)
+    if(BF_RD(POWER_STS, PSWITCH) != 0 && power_ignore_counter == 0)
         res |= BUTTON_POWER;
     return res | touchpad_btns;
 }

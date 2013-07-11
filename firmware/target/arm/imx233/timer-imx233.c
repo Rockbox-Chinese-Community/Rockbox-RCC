@@ -22,15 +22,7 @@
 #include "timrot-imx233.h"
 #include "timer.h"
 
-#ifdef SANSA_FUZEPLUS
 #define USER_TIMER_NR   1
-#elif defined(CREATIVE_ZENXFI2)
-#define USER_TIMER_NR   1
-#elif defined(CREATIVE_ZENXFI3)
-#define USER_TIMER_NR   1
-#else
-#error Select user timer !
-#endif
 
 static long timer_cycles = 0;
 
@@ -58,13 +50,13 @@ bool timer_set(long cycles, bool start)
 bool timer_start(IF_COP_VOID(int core))
 {
     imx233_setup_timer(USER_TIMER_NR, true, timer_cycles,
-        HW_TIMROT_TIMCTRL__SELECT_32KHZ_XTAL, HW_TIMROT_TIMCTRL__PRESCALE_1,
+        BV_TIMROT_TIMCTRLn_SELECT__32KHZ_XTAL, BV_TIMROT_TIMCTRLn_PRESCALE__DIV_BY_1,
             false, &timer_fn);
     return true;
 }
 
 void timer_stop(void)
 {
-    imx233_setup_timer(USER_TIMER_NR, false, 0, HW_TIMROT_TIMCTRL__SELECT_NEVER_TICK,
-        HW_TIMROT_TIMCTRL__PRESCALE_1, false, NULL);
+    imx233_setup_timer(USER_TIMER_NR, false, 0, BV_TIMROT_TIMCTRLn_SELECT__NEVER_TICK,
+        BV_TIMROT_TIMCTRLn_PRESCALE__DIV_BY_1, false, NULL);
 }

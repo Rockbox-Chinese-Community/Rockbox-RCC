@@ -351,18 +351,6 @@ void playback_voice_event(void *data)
     pcmbuf_soft_mode(*(bool *)data);
 }
 
-/** --- audio_queue helpers --- **/
-static void audio_queue_post(long id, intptr_t data)
-{
-    queue_post(&audio_queue, id, data);
-}
-
-static intptr_t audio_queue_send(long id, intptr_t data)
-{
-    return queue_send(&audio_queue, id, data);
-}
-
-
 /** --- MP3Entry --- **/
 
 /* Does the mp3entry have enough info for us to use it? */
@@ -506,7 +494,7 @@ static void track_info_wipe(struct track_info * info)
 /** --- Track list --- **/
 
 /* Initialize the track list */
-static void track_list_init(void)
+static void INIT_ATTR track_list_init(void)
 {
     int i;
     for (i = 0; i < TRACK_LIST_LEN; i++)
@@ -787,7 +775,7 @@ static void audio_reset_buffer_noalloc(
         allocsize = ALIGN_UP(allocsize, sizeof (intptr_t));
         if (allocsize > filebuflen)
             goto bufpanic;
-    
+
         filebuflen -= allocsize;
 
         /* Scratch memory */
@@ -2040,8 +2028,11 @@ static int audio_fill_file_buffer(void)
     /* Must reset the buffer before use if trashed or voice only - voice
        file size shouldn't have changed so we can go straight from
        AUDIOBUF_STATE_VOICED_ONLY to AUDIOBUF_STATE_INITIALIZED */
-    if (buffer_state != AUDIOBUF_STATE_INITIALIZED)
+    if (buffer_state != AUDIOBUF_STATE_INITIALIZED ||
+        !pcmbuf_is_same_size())
+    {
         audio_reset_buffer(AUDIOBUF_STATE_INITIALIZED);
+    }
 
     logf("Starting buffer fill");
 
@@ -2522,6 +2513,11 @@ static void audio_start_playback(size_t offset, unsigned int flags)
 #ifndef PLATFORM_HAS_VOLUME_CHANGE
         sound_set_volume(global_settings.volume);
 #endif
+#ifdef HAVE_PLAY_FREQ
+        settings_apply_play_freq(global_settings.play_frequency, true);
+#endif
+        pcmbuf_update_frequency();
+
         /* Be sure channel is audible */
         pcmbuf_fade(false, true);
 
@@ -3759,7 +3755,7 @@ unsigned int playback_status(void)
 }
 
 /** -- Startup -- **/
-void playback_init(void)
+void INIT_ATTR playback_init(void)
 {
     logf("playback: initializing");
 
@@ -3767,6 +3763,7 @@ void playback_init(void)
     mutex_init(&id3_mutex);
     track_list_init();
     buffering_init();
+    pcmbuf_update_frequency();
     add_event(PLAYBACK_EVENT_VOICE_PLAYING, false, playback_voice_event);
 #ifdef HAVE_CROSSFADE
     /* Set crossfade setting for next buffer init which should be about... */
