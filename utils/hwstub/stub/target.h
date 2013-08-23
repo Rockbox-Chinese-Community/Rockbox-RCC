@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2012 by Amaury Pouly
+ * Copyright (C) 2013 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,39 +18,18 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef __HWSTUB_CONFIG__
-#define __HWSTUB_CONFIG__
+#ifndef __TARGET_H__
+#define __TARGET_H__
 
-#define MEMORYSIZE      0
-#define STACK_SIZE      0x1000
-#define MAX_LOGF_SIZE   128
+#include "protocol.h"
 
-#define IRAM_ORIG       0
-#define IRAM_SIZE       0x8000
-#define DRAM_ORIG       0x40000000
-#define DRAM_SIZE       (MEMORYSIZE * 0x100000)
+/* do target specific init */
+void target_init(void);
+/* exit, performing the atexit action (default is target specific) */
+void target_exit(void);
+/* get information, return actual size or -1 if error */
+int target_get_info(int info, void **buffer);
+/* set atexit action or return -1 on error */
+int target_atexit(int action);
 
-#define CPU_ARM
-#define ARM_ARCH    5
-
-#if defined(CPU_ARM) && defined(__ASSEMBLER__)
-/* ARMv4T doesn't switch the T bit when popping pc directly, we must use BX */
-.macro ldmpc cond="", order="ia", regs
-#if ARM_ARCH == 4 && defined(USE_THUMB)
-    ldm\cond\order sp!, { \regs, lr }
-    bx\cond lr
-#else
-    ldm\cond\order sp!, { \regs, pc }
-#endif
-.endm
-.macro ldrpc cond=""
-#if ARM_ARCH == 4 && defined(USE_THUMB)
-    ldr\cond lr, [sp], #4
-    bx\cond  lr
-#else
-    ldr\cond pc, [sp], #4
-#endif
-.endm
-#endif
-
-#endif /* __HWSTUB_CONFIG__ */
+#endif /* __TARGET_H__ */

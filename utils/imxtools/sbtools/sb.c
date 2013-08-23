@@ -22,6 +22,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include "misc.h"
 #include "crypto.h"
 #include "sb.h"
@@ -44,8 +45,9 @@ static void fill_gaps(struct sb_file_t *sb)
     }
 }
 
-static void compute_sb_offsets(struct sb_file_t *sb)
+static void compute_sb_offsets(struct sb_file_t *sb, void *u, generic_printf_t cprintf)
 {
+    #define printf(c, ...) cprintf(u, false, c, __VA_ARGS__)
     sb->image_size = 0;
     /* sb header */
     sb->image_size += sizeof(struct sb_header_t) / BLOCK_SIZE;
@@ -67,14 +69,14 @@ static void compute_sb_offsets(struct sb_file_t *sb)
         struct sb_section_t *sec = &sb->sections[i];
         sec->sec_size = 0;
 
-        if(g_debug)
-        {
-            printf("%s section 0x%08x", sec->is_data ? "Data" : "Boot",
-                sec->identifier);
-            if(sec->is_cleartext)
-                printf(" (cleartext)");
-            printf("\n");
-        }
+        char name[5];
+        sb_fill_section_name(name, sec->identifier);
+        printf(BLUE, "%s", sec->is_data ? "Data" : "Boot");
+        printf(GREEN, " Section");
+        printf(YELLOW, "'%s'", name);
+        if(sec->is_cleartext)
+            printf(RED, " (cleartext)");
+        printf(OFF, "\n");
 
         sec->file_offset = sb->image_size;
         for(int j = 0; j < sec->nr_insts; j++)
@@ -82,24 +84,26 @@ static void compute_sb_offsets(struct sb_file_t *sb)
             struct sb_inst_t *inst = &sec->insts[j];
             if(inst->inst == SB_INST_CALL || inst->inst == SB_INST_JUMP)
             {
-                if(g_debug)
-                    printf("  %s | addr=0x%08x | arg=0x%08x\n",
-                        inst->inst == SB_INST_CALL ? "CALL" : "JUMP", inst->addr, inst->argument);
+                printf(RED, "  %s", inst->inst == SB_INST_CALL ? "CALL" : "JUMP");
+                printf(OFF, " | "); printf(BLUE, "addr=0x%08x", inst->addr);
+                printf(OFF, " | "); printf(GREEN, "arg=0x%08x\n", inst->argument);
                 sb->image_size += sizeof(struct sb_instruction_call_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_call_t) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_FILL)
             {
-                if(g_debug)
-                    printf("  FILL | addr=0x%08x | len=0x%08x | pattern=0x%08x\n",
-                        inst->addr, inst->size, inst->pattern);
+                printf(RED, "  FILL");
+                printf(OFF, " | "); printf(BLUE, "addr=0x%08x", inst->addr);
+                printf(OFF, " | "); printf(GREEN, "len=0x%08x", inst->size);
+                printf(OFF, " | "); printf(YELLOW, "pattern=0x%08x\n", inst->pattern);
                 sb->image_size += sizeof(struct sb_instruction_fill_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_fill_t) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_LOAD)
             {
-                if(g_debug)
-                    printf("  LOAD | addr=0x%08x | len=0x%08x\n", inst->addr, inst->size);
+                printf(RED, "  LOAD");
+                printf(OFF, " | "); printf(BLUE, "addr=0x%08x", inst->addr);
+                printf(OFF, " | "); printf(GREEN, "len=0x%08x\n", inst->size);
                 /* load header */
                 sb->image_size += sizeof(struct sb_instruction_load_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_load_t) / BLOCK_SIZE;
@@ -109,22 +113,27 @@ static void compute_sb_offsets(struct sb_file_t *sb)
             }
             else if(inst->inst == SB_INST_MODE)
             {
-                if(g_debug)
-                    printf("  MODE | mod=0x%08x\n", inst->addr);
+                printf(RED, "  MODE");
+                printf(OFF, " | "); printf(BLUE, "mod=0x%08x\n", inst->addr);
                 sb->image_size += sizeof(struct sb_instruction_mode_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_mode_t) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_DATA)
             {
-                if(g_debug)
-                    printf("  DATA | size=0x%08x\n", inst->size);
+                printf(RED, "  DATA");
+                printf(OFF, " | "); printf(BLUE, "size=0x%08x\n", inst->size);
                 sb->image_size += ROUND_UP(inst->size, BLOCK_SIZE) / BLOCK_SIZE;
                 sec->sec_size += ROUND_UP(inst->size, BLOCK_SIZE) / BLOCK_SIZE;
             }
+            else if(inst->inst == SB_INST_NOP)
+            {
+                printf(RED, "  NOOP\n");
+                sb->image_size += sizeof(struct sb_instruction_nop_t) / BLOCK_SIZE;
+                sec->sec_size += sizeof(struct sb_instruction_nop_t) / BLOCK_SIZE;
+            }
             else
             {
-                if(g_debug)
-                    printf("die on inst %d\n", inst->inst);
+                cprintf(u, true, GREY, "die on inst %d\n", inst->inst);
             }
         }
         /* we need to make sure next section starts on the right alignment.
@@ -147,8 +156,8 @@ static void compute_sb_offsets(struct sb_file_t *sb)
                 aug_insts[0].size = missing_sz * BLOCK_SIZE;
                 aug_insts[0].data = xmalloc(missing_sz * BLOCK_SIZE);
                 generate_random_data(aug_insts[0].data, missing_sz * BLOCK_SIZE);
-                if(g_debug)
-                    printf("  DATA | size=0x%08x\n", aug_insts[0].size);
+                printf(RED, "  DATA");
+                printf(OFF, " | "); printf(BLUE, "size=0x%08x\n", aug_insts[0].size);
             }
             else
             {
@@ -158,8 +167,7 @@ static void compute_sb_offsets(struct sb_file_t *sb)
                 for(int j = 0; j < nr_aug_insts; j++)
                 {
                     aug_insts[j].inst = SB_INST_NOP;
-                    if(g_debug)
-                        printf("  NOOP\n");
+                    printf(RED, "  NOOP\n");
                 }
             }
 
@@ -175,9 +183,10 @@ static void compute_sb_offsets(struct sb_file_t *sb)
     }
     /* final signature */
     sb->image_size += 2;
+    #undef printf
 }
 
-static uint64_t generate_timestamp()
+uint64_t sb_generate_timestamp(void)
 {
     struct tm tm_base;
     memset(&tm_base, 0, sizeof(tm_base));
@@ -209,11 +218,11 @@ static void produce_sb_header(struct sb_file_t *sb, struct sb_header_t *sb_hdr)
     sb_hdr->signature[2] = 'M';
     sb_hdr->signature[3] = 'P';
     sb_hdr->major_ver = IMAGE_MAJOR_VERSION;
-    sb_hdr->minor_ver = IMAGE_MINOR_VERSION;
-    sb_hdr->flags = 0;
+    sb_hdr->minor_ver = sb->minor_version;
+    sb_hdr->flags = sb->flags;
     sb_hdr->image_size = sb->image_size;
     sb_hdr->header_size = sizeof(struct sb_header_t) / BLOCK_SIZE;
-    sb_hdr->first_boot_sec_id = sb->first_boot_sec_id;
+    sb_hdr->first_boot_sec_id = sb->sections[0].identifier;
     sb_hdr->nr_keys = g_nr_keys;
     sb_hdr->nr_sections = sb->nr_sections;
     sb_hdr->sec_hdr_size = sizeof(struct sb_section_header_t) / BLOCK_SIZE;
@@ -228,7 +237,7 @@ static void produce_sb_header(struct sb_file_t *sb, struct sb_header_t *sb_hdr)
     if(sb->minor_version >= 1)
         memcpy(&sb_hdr->rand_pad0[2], "sgtl", 4);
 
-    sb_hdr->timestamp = generate_timestamp();
+    sb_hdr->timestamp = sb->timestamp;
     sb_hdr->product_ver = sb->product_ver;
     fix_version(&sb_hdr->product_ver);
     sb_hdr->component_ver = sb->component_ver;
@@ -249,7 +258,8 @@ static void produce_sb_section_header(struct sb_section_t *sec,
     sec_hdr->offset = sec->file_offset;
     sec_hdr->size = sec->sec_size;
     sec_hdr->flags = (sec->is_data ? 0 : SECTION_BOOTABLE)
-        | (sec->is_cleartext ? SECTION_CLEARTEXT : 0);
+        | (sec->is_cleartext ? SECTION_CLEARTEXT : 0)
+        | sec->other_flags;
 }
 
 static uint8_t instruction_checksum(struct sb_instruction_header_t *hdr)
@@ -269,12 +279,13 @@ static void produce_section_tag_cmd(struct sb_section_t *sec,
     tag->identifier = sec->identifier;
     tag->len = sec->sec_size;
     tag->flags = (sec->is_data ? 0 : SECTION_BOOTABLE)
-        | (sec->is_cleartext ? SECTION_CLEARTEXT : 0);
+        | (sec->is_cleartext ? SECTION_CLEARTEXT : 0)
+        | sec->other_flags;
     tag->hdr.checksum = instruction_checksum(&tag->hdr);
 }
 
 void produce_sb_instruction(struct sb_inst_t *inst,
-    struct sb_instruction_common_t *cmd)
+    struct sb_instruction_common_t *cmd, void *u, generic_printf_t cprintf)
 {
     memset(cmd, 0, sizeof(struct sb_instruction_common_t));
     cmd->hdr.opcode = inst->inst;
@@ -303,13 +314,15 @@ void produce_sb_instruction(struct sb_inst_t *inst,
             break;
         default:
             if(g_debug)
-                printf("die on invalid inst %d\n", inst->inst);
+                cprintf(u, true, GREY, "die on invalid inst %d\n", inst->inst);
     }
     cmd->hdr.checksum = instruction_checksum(&cmd->hdr);
 }
 
-enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename)
+enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *u,
+    generic_printf_t cprintf)
 {
+    #define printf(c, ...) cprintf(u, false, c, __VA_ARGS__)
     struct crypto_key_t real_key;
     real_key.method = CRYPTO_KEY;
     byte crypto_iv[16];
@@ -319,7 +332,12 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename)
         memset(cbc_macs[i], 0, 16);
 
     fill_gaps(sb);
-    compute_sb_offsets(sb);
+    if(sb->nr_sections == 0 || sb->sections[0].is_data)
+    {
+        cprintf(u, true, GREY, "First section of the image is not bootable, I cannot handle that.\n");
+        return SB_ERROR;
+    }
+    compute_sb_offsets(sb, u, cprintf);
 
     generate_random_data(real_key.u.key, 16);
 
@@ -379,14 +397,14 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename)
     /* KCAH KCAH KCAH KCAH KCAH KCAH KCAH KCAH KCAH KCAH KCAH KCAH KCAH KCAH */
     if(g_debug)
     {
-        printf("Real key: ");
+        printf(GREEN, "Real key: ");
         for(int j = 0; j < 16; j++)
-            printf("%02x", real_key.u.key[j]);
-        printf("\n");
-        printf("IV      : ");
+            printf(YELLOW, "%02x", real_key.u.key[j]);
+        printf(OFF, "\n");
+        printf(GREEN, "IV      : ");
         for(int j = 0; j < 16; j++)
-            printf("%02x", crypto_iv[j]);
-        printf("\n");
+            printf(YELLOW, "%02x", crypto_iv[j]);
+        printf(OFF, "\n");
     }
     /* produce sections data */
     for(int i = 0; i< sb_hdr.nr_sections; i++)
@@ -409,7 +427,7 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename)
             if(inst->inst != SB_INST_DATA)
             {
                 struct sb_instruction_common_t cmd;
-                produce_sb_instruction(inst, &cmd);
+                produce_sb_instruction(inst, &cmd, u, cprintf);
                 if(g_nr_keys > 0 && !sb->sections[i].is_cleartext)
                     crypto_cbc((byte *)&cmd, (byte *)&cmd, sizeof(cmd) / BLOCK_SIZE,
                         &real_key, cur_cbc_mac, &cur_cbc_mac, 1);
@@ -444,7 +462,7 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename)
     if(buf_p - buf != sb_hdr.image_size * BLOCK_SIZE)
     {
         if(g_debug)
-            printf("SB image buffer was not entirely filled !");
+            printf(GREY, u, true, "SB image buffer was not entirely filled !\n");
         return SB_ERROR;
     }
 
@@ -460,10 +478,11 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename)
     free(buf);
 
     return SB_SUCCESS;
+    #undef printf
 }
 
 static struct sb_section_t *read_section(bool data_sec, uint32_t id, byte *buf,
-    int size, const char *indent, void *u, sb_color_printf cprintf, enum sb_error_t *err)
+    int size, const char *indent, void *u, generic_printf_t cprintf, enum sb_error_t *err)
 {
     #define printf(c, ...) cprintf(u, false, c, __VA_ARGS__)
     #define fatal(e, ...) \
@@ -628,13 +647,13 @@ static uint32_t guess_alignment(uint32_t off)
 }
 
 struct sb_file_t *sb_read_file(const char *filename, bool raw_mode, void *u,
-    sb_color_printf cprintf, enum sb_error_t *err)
+    generic_printf_t cprintf, enum sb_error_t *err)
 {
     return sb_read_file_ex(filename, 0, -1, raw_mode, u, cprintf, err);
 }
 
 struct sb_file_t *sb_read_file_ex(const char *filename, size_t offset, size_t size, bool raw_mode, void *u,
-    sb_color_printf cprintf, enum sb_error_t *err)
+    generic_printf_t cprintf, enum sb_error_t *err)
 {
     #define fatal(e, ...) \
         do { if(err) *err = e; \
@@ -666,8 +685,27 @@ struct sb_file_t *sb_read_file_ex(const char *filename, size_t offset, size_t si
     #undef fatal
 }
 
+struct printer_t
+{
+    void *user;
+    generic_printf_t cprintf;
+    const char *color;
+    bool error;
+};
+
+static void sb_printer(void *user, const char *fmt, ...)
+{
+    struct printer_t *p = user;
+    va_list args;
+    va_start(args, fmt);
+    char buffer[1024];
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+    p->cprintf(p->user, p->error, p->color, "%s", buffer);
+    va_end(args);
+}
+
 struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, bool raw_mode, void *u,
-    sb_color_printf cprintf, enum sb_error_t *err)
+    generic_printf_t cprintf, enum sb_error_t *err)
 {
     struct sb_file_t *sb_file = NULL;
     uint8_t *buf = _buf;
@@ -678,8 +716,9 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, bool raw_mode, voi
             cprintf(u, true, GREY, __VA_ARGS__); \
             sb_free(sb_file); \
             return NULL; } while(0)
+    struct printer_t printer = {.user = u, .cprintf = cprintf, .color = OFF, .error = false };
     #define print_hex(c, p, len, nl) \
-        do { printf(c, ""); print_hex(p, len, nl); } while(0)
+        do { printer.color = c; print_hex(&printer, sb_printer, p, len, nl); } while(0)
 
     struct sha_1_params_t sha_1_params;
     sb_file = xmalloc(sizeof(struct sb_file_t));
@@ -757,6 +796,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, bool raw_mode, voi
     struct tm *time = gmtime(&seconds);
     printf(GREEN, "  Creation date/time = ");
     printf(YELLOW, "%s", asctime(time));
+    sb_file->timestamp = sb_header->timestamp;
 
     struct sb_version_t product_ver = sb_header->product_ver;
     fix_version(&product_ver);
@@ -790,8 +830,8 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, bool raw_mode, voi
         {
             printf(RED, "  Key %d\n", i),
             printf(GREEN, "    Key: ");
-            printf(YELLOW, "");
-            print_key(&g_key_array[i], true);
+            printer.color = YELLOW;
+            print_key(&printer, sb_printer, &g_key_array[i], true);
             printf(GREEN, "    CBC-MAC: ");
             /* check it */
             byte zero[16];
@@ -947,6 +987,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, bool raw_mode, voi
                 sec, size, "      ", u, cprintf, err);
             if(s)
             {
+                s->other_flags = sec_hdr->flags & ~SECTION_STD_MASK;
                 s->is_cleartext = !encrypted;
                 s->alignment = guess_alignment(pos);
                 memcpy(&sb_file->sections[i], s, sizeof(struct sb_section_t));
@@ -1037,6 +1078,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, bool raw_mode, voi
                     sec, size, "      ", u, cprintf, err);
                 if(s)
                 {
+                    s->other_flags = tag->flags & ~SECTION_STD_MASK;
                     s->is_cleartext = !encrypted;
                     s->alignment = guess_alignment(pos);
                     sb_file->sections = augment_array(sb_file->sections,
@@ -1102,6 +1144,19 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, bool raw_mode, voi
     #undef print_hex
 }
 
+void sb_generate_default_version(struct sb_version_t *ver)
+{
+    ver->major = ver->minor = ver->revision = 0x999;
+}
+
+void sb_build_default_image(struct sb_file_t *sb)
+{
+    sb->minor_version = IMAGE_MINOR_VERSION;
+    sb->timestamp = sb_generate_timestamp();
+    sb_generate_default_version(&sb->product_ver);
+    sb_generate_default_version(&sb->component_ver);
+}
+
 void sb_free_instruction(struct sb_inst_t inst)
 {
     free(inst.padding);
@@ -1126,11 +1181,12 @@ void sb_free(struct sb_file_t *file)
     free(file);
 }
 
-void sb_dump(struct sb_file_t *file, void *u, sb_color_printf cprintf)
+void sb_dump(struct sb_file_t *file, void *u, generic_printf_t cprintf)
 {
     #define printf(c, ...) cprintf(u, false, c, __VA_ARGS__)
+    struct printer_t printer = {.user = u, .cprintf = cprintf, .color = OFF, .error = false };
     #define print_hex(c, p, len, nl) \
-        do { printf(c, ""); print_hex(p, len, nl); } while(0)
+        do { printer.color = c; print_hex(&printer, sb_printer, p, len, nl); } while(0)
 
     #define TREE    RED
     #define HEADER  GREEN
@@ -1153,6 +1209,23 @@ void sb_dump(struct sb_file_t *file, void *u, sb_color_printf cprintf)
     char name[5];
     sb_fill_section_name(name, file->first_boot_sec_id);
     printf(TEXT, "%08x (%s)\n", file->first_boot_sec_id, name);
+    printf(TREE, "+-");
+    printf(HEADER, "Timestamp: ");
+    printf(TEXT, "%#llx", file->timestamp);
+    {
+        uint64_t micros = file->timestamp;
+        time_t seconds = (micros / (uint64_t)1000000L);
+        struct tm tm_base;
+        memset(&tm_base, 0, sizeof(tm_base));
+        /* 2000/1/1 0:00:00 */
+        tm_base.tm_mday = 1;
+        tm_base.tm_year = 100;
+        seconds += mktime(&tm_base);
+        struct tm *time = gmtime(&seconds);
+        char *str = asctime(time);
+        str[strlen(str) - 1] = 0;
+        printf(TEXT2, " (%s)\n", str);
+    }
 
     if(file->override_real_key)
     {
@@ -1191,6 +1264,9 @@ void sb_dump(struct sb_file_t *file, void *u, sb_color_printf cprintf)
         printf(TREE, "|  +-");
         printf(HEADER, "Alignment: ");
         printf(TEXT, "%d (bytes)\n", sec->alignment);
+        printf(TREE, "|  +-");
+        printf(HEADER, "Other Flags: ");
+        printf(TEXT, "%#x\n", sec->other_flags);
         printf(TREE, "|  +-");
         printf(HEADER, "Instructions\n");
         for(int j = 0; j < sec->nr_insts; j++)
@@ -1244,4 +1320,10 @@ void sb_dump(struct sb_file_t *file, void *u, sb_color_printf cprintf)
 
     #undef printf
     #undef print_hex
+}
+
+void sb_get_zero_key(struct crypto_key_t *key)
+{
+    key->method = CRYPTO_KEY;
+    memset(key->u.key, 0, sizeof(key->u.key));
 }

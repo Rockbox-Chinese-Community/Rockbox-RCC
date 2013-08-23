@@ -353,7 +353,7 @@ static bool check_disk_present(IF_MD_NONVOID(int volume))
     return true;
 #else
     unsigned char* sector = fat_get_sector_buffer();
-    bool success = storage_read_sectors(IF_MD2(volume,)0,1,sector) == 0;
+    bool success = storage_read_sectors(IF_MD(volume,)0,1,sector) == 0;
     fat_release_sector_buffer();
     return success;
 #endif
@@ -526,7 +526,7 @@ void usb_storage_transfer_complete(int ep,int dir,int status,int length)
                 int result = USBSTOR_WRITE_SECTORS_FILTER();
 
                 if (result == 0) {
-                    result = storage_write_sectors(IF_MD2(cur_cmd.lun,)
+                    result = storage_write_sectors(IF_MD(cur_cmd.lun,)
                         cur_cmd.sector,
                         MIN(WRITE_BUFFER_SIZE/SECTOR_SIZE, cur_cmd.count),
                         cur_cmd.data[cur_cmd.data_select]);
@@ -728,7 +728,7 @@ static void send_and_read_next(void)
                 ramdisk_buffer + cur_cmd.sector*SECTOR_SIZE,
                 MIN(READ_BUFFER_SIZE/SECTOR_SIZE, cur_cmd.count)*SECTOR_SIZE);
 #else
-        result = storage_read_sectors(IF_MD2(cur_cmd.lun,)
+        result = storage_read_sectors(IF_MD(cur_cmd.lun,)
                 cur_cmd.sector,
                 MIN(READ_BUFFER_SIZE/SECTOR_SIZE, cur_cmd.count),
                 cur_cmd.data[cur_cmd.data_select]);
@@ -753,6 +753,7 @@ static void handle_scsi(struct command_block_wrapper* cbw)
     unsigned int block_size_mult = 1;
 
     if(letoh32(cbw->signature) != CBW_SIGNATURE) {
+        logf("ums: bad cbw signature (%x)", cbw->signature);
         usb_drv_stall(ep_in, true,true);
         usb_drv_stall(ep_out, true,false);
         return;
@@ -815,7 +816,7 @@ static void handle_scsi(struct command_block_wrapper* cbw)
 
         case SCSI_REPORT_LUNS: {
             logf("scsi report luns %d",lun);
-            int allocation_length=0;
+            unsigned int allocation_length=0;
             int i;
             unsigned int response_length = 8+8*storage_num_drives();
             allocation_length|=(cbw->command_block[6]<<24);
@@ -833,6 +834,7 @@ static void handle_scsi(struct command_block_wrapper* cbw)
 #endif
                     tb.lun_data->luns[i][1]=0;
             }
+            length = MIN(length, allocation_length);
             send_command_result(tb.lun_data,
                                 MIN(response_length, length));
             break;
@@ -1085,7 +1087,7 @@ static void handle_scsi(struct command_block_wrapper* cbw)
                         ramdisk_buffer + cur_cmd.sector*SECTOR_SIZE,
                         MIN(READ_BUFFER_SIZE/SECTOR_SIZE,cur_cmd.count)*SECTOR_SIZE);
 #else
-                cur_cmd.last_result = storage_read_sectors(IF_MD2(cur_cmd.lun,)
+                cur_cmd.last_result = storage_read_sectors(IF_MD(cur_cmd.lun,)
                         cur_cmd.sector,
                         MIN(READ_BUFFER_SIZE/SECTOR_SIZE, cur_cmd.count),
                         cur_cmd.data[cur_cmd.data_select]);
@@ -1151,6 +1153,7 @@ static void handle_scsi(struct command_block_wrapper* cbw)
 
         default:
             logf("scsi unknown cmd %x",cbw->command_block[0x0]);
+            usb_drv_stall(ep_in, true,true);
             send_csw(UMS_STATUS_FAIL);
             cur_sense_data.sense_key=SENSE_ILLEGAL_REQUEST;
             cur_sense_data.asc=ASC_INVALID_COMMAND;

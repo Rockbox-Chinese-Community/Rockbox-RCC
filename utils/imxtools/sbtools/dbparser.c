@@ -316,6 +316,84 @@ static void log_lexem(struct lexem_t *lexem)
 }
 #endif
 
+struct cmd_option_t *db_add_opt(struct cmd_option_t **opt, const char *identifier, bool is_str)
+{
+    while(*opt)
+        opt = &(*opt)->next;
+    *opt = xmalloc(sizeof(struct cmd_option_t));
+    memset(*opt, 0, sizeof(struct cmd_option_t));
+    (*opt)->name = strdup(identifier);
+    (*opt)->is_string = is_str;
+    return *opt;
+}
+
+void db_add_str_opt(struct cmd_option_t **opt, const char *name, const char *value)
+{
+    db_add_opt(opt, name, true)->str = strdup(value);
+}
+
+void db_add_int_opt(struct cmd_option_t **opt, const char *name, uint32_t value)
+{
+    db_add_opt(opt, name, false)->val = value;
+}
+
+static struct cmd_source_t *db_add_src(struct cmd_source_t **src, const char *identifier, bool is_extern)
+{
+    while(*src)
+        src = &(*src)->next;
+    *src = xmalloc(sizeof(struct cmd_source_t));
+    memset(*src, 0, sizeof(struct cmd_source_t));
+    (*src)->identifier = strdup(identifier);
+    (*src)->is_extern = is_extern;
+    return *src;
+}
+
+void db_add_source(struct cmd_file_t *cmd_file, const char *identifier, const char *filename)
+{
+    db_add_src(&cmd_file->source_list, identifier, false)->filename = strdup(filename);
+}
+
+void db_add_extern_source(struct cmd_file_t *cmd_file, const char *identifier, int extern_nr)
+{
+    db_add_src(&cmd_file->source_list, identifier, false)->extern_nr = extern_nr;
+}
+
+static struct cmd_inst_t *db_add_inst(struct cmd_inst_t **list, enum cmd_inst_type_t type,
+    uint32_t argument)
+{
+    while(*list)
+        list = &(*list)->next;
+    *list = xmalloc(sizeof(struct cmd_inst_t));
+    memset(*list, 0, sizeof(struct cmd_inst_t));
+    (*list)->type = type;
+    (*list)->argument = argument;
+    return *list;
+}
+
+void db_add_inst_id(struct cmd_section_t *cmd_section, enum cmd_inst_type_t type,
+    const char *identifier, uint32_t argument)
+{
+    db_add_inst(&cmd_section->inst_list, type, argument)->identifier = strdup(identifier);
+}
+
+void db_add_inst_addr(struct cmd_section_t *cmd_section, enum cmd_inst_type_t type,
+    uint32_t addr, uint32_t argument)
+{
+    db_add_inst(&cmd_section->inst_list, type, argument)->addr = addr;
+}
+
+struct cmd_section_t *db_add_section(struct cmd_file_t *cmd_file, uint32_t identifier, bool data)
+{
+    struct cmd_section_t **prev = &cmd_file->section_list;
+    while(*prev)
+        prev = &(*prev)->next;
+    *prev = xmalloc(sizeof(struct cmd_section_t));
+    memset(*prev, 0, sizeof(struct cmd_section_t));
+    (*prev)->identifier = identifier;
+    (*prev)->is_data = data;
+    return *prev;
+}
+
 struct cmd_source_t *db_find_source_by_id(struct cmd_file_t *cmd_file, const char *id)
 {
     struct cmd_source_t *src = cmd_file->source_list;
@@ -341,44 +419,49 @@ struct cmd_option_t *db_find_option_by_id(struct cmd_option_t *opt, const char *
 
 #define INVALID_SB_SUBVERSION   0xffff
 
-static uint16_t parse_sb_subversion(char *str)
+static const char *parse_sb_subversion(const char *str, uint16_t *v)
 {
-    int len = strlen(str);
-    uint16_t n = 0;
-    if(len == 0 || len > 4)
-        return INVALID_SB_SUBVERSION;
-    for(int i = 0; i < len; i++)
-    {
-        if(!isdigit(str[i]))
-            return INVALID_SB_SUBVERSION;
-        n = n << 4 | (str[i] - '0');
-    }
-    return n;
+    int len = 0;
+    *v = 0;
+    while(isdigit(str[len]) && len < 3)
+        *v = (*v) << 4 | (str[len++] - '0');
+    if(len == 0)
+        *v = INVALID_SB_SUBVERSION;
+    return str + len;
 }
 
-bool db_parse_sb_version(struct sb_version_t *ver, char *str)
+bool db_parse_sb_version(struct sb_version_t *ver, const char *str)
 {
-    int len = strlen(str);
-    int cnt = 0;
-    int pos[2];
-
-    for(int i = 0; i < len; i++)
-    {
-        if(str[i] != '.')
-            continue;
-        if(cnt == 2)
-            return false;
-        pos[cnt++] = i + 1;
-        str[i] = 0;
-    }
-    if(cnt != 2)
+    str = parse_sb_subversion(str, &ver->major);
+    if(ver->major == INVALID_SB_SUBVERSION || *str != '.')
         return false;
-    ver->major = parse_sb_subversion(str);
-    ver->minor = parse_sb_subversion(str + pos[0]);
-    ver->revision = parse_sb_subversion(str + pos[1]);
-    return ver->major != INVALID_SB_SUBVERSION &&
-        ver->minor != INVALID_SB_SUBVERSION &&
-        ver->revision != INVALID_SB_SUBVERSION;
+    str = parse_sb_subversion(str + 1, &ver->minor);
+    if(ver->minor == INVALID_SB_SUBVERSION || *str != '.')
+        return false;
+    str = parse_sb_subversion(str + 1, &ver->revision);
+    if(ver->revision == INVALID_SB_SUBVERSION || *str != 0)
+        return false;
+    return true;
+}
+
+static bool db_generate_sb_subversion(uint16_t subver, char *str)
+{
+    str[0] = '0' + ((subver >> 8) & 0xf);
+    str[1] = '0' + ((subver >> 4) & 0xf);
+    str[2] = '0' + (subver & 0xf);
+    return true;
+}
+
+bool db_generate_sb_version(struct sb_version_t *ver, char *str, int size)
+{
+    if(size < 12)
+        return false;
+    str[3] = '.';
+    str[7] = '.';
+    str[11] = 0;
+    return db_generate_sb_subversion(ver->major, str) &&
+        db_generate_sb_subversion(ver->minor, str + 4) &&
+        db_generate_sb_subversion(ver->revision, str + 8);
 }
 
 #undef parse_error
@@ -484,15 +567,7 @@ struct cmd_file_t *db_parse_file(const char *file)
 
     /* add initial constants */
     for(int i = 0; i < NR_INITIAL_CONSTANTS; i++)
-    {
-        struct cmd_option_t *opt = xmalloc(sizeof(struct cmd_option_t));
-        memset(opt, 0, sizeof(struct cmd_option_t));
-        opt->name = strdup(init_const_name[i]);
-        opt->is_string = false;
-        opt->val = init_const_value[i];
-        opt->next = cmd_file->constant_list;
-        cmd_file->constant_list = opt;
-    }
+        db_add_int_opt(&cmd_file->constant_list, init_const_name[i], init_const_value[i]);
 
     struct lex_ctx_t lctx;
     lctx.ctx.file = file;
@@ -513,22 +588,17 @@ struct cmd_file_t *db_parse_file(const char *file)
 
         while(true)
         {
-            struct cmd_option_t *opt = xmalloc(sizeof(struct cmd_option_t));
-            memset(opt, 0, sizeof(struct cmd_option_t));
             next(true);
             if(lexem.type == LEX_RBRACE)
                 break;
             if(lexem.type != LEX_IDENTIFIER)
                 parse_error(lexem, "Identifier expected in constants\n");
-            opt->name = lexem.str;
+            const char *name = lexem.str;
             next(false); /* lexem string is kept as option name */
             if(lexem.type != LEX_EQUAL)
                 parse_error(lexem, "'=' expected after identifier\n");
             next(true);
-            opt->is_string = false;
-            opt->val = parse_intexpr(&lctx, cmd_file->constant_list);
-            opt->next = cmd_file->constant_list;
-            cmd_file->constant_list = opt;
+            db_add_int_opt(&cmd_file->constant_list, name, parse_intexpr(&lctx, cmd_file->constant_list));
             if(lexem.type != LEX_SEMICOLON)
                parse_error(lexem, "';' expected after string\n");
         }
@@ -546,28 +616,20 @@ struct cmd_file_t *db_parse_file(const char *file)
             next(true);
             if(lexem.type == LEX_RBRACE)
                 break;
-            struct cmd_option_t *opt = xmalloc(sizeof(struct cmd_option_t));
-            memset(opt, 0, sizeof(struct cmd_option_t));
             if(lexem.type != LEX_IDENTIFIER)
                 parse_error(lexem, "Identifier expected in options\n");
-            opt->name = lexem.str;
+            const char *name = lexem.str;
             next(false); /* lexem string is kept as option name */
             if(lexem.type != LEX_EQUAL)
                 parse_error(lexem, "'=' expected after identifier\n");
             next(true);
             if(lexem.type == LEX_STRING)
             {
-                opt->is_string = true;
-                opt->str = lexem.str;
-                next(false); /* lexem string is kept as option name */
+                db_add_str_opt(&cmd_file->opt_list, name, lexem.str);
+                next(true);
             }
             else
-            {
-                opt->is_string = false;
-                opt->val = parse_intexpr(&lctx, cmd_file->constant_list);
-            }
-            opt->next = cmd_file->opt_list;
-            cmd_file->opt_list = opt;
+                db_add_int_opt(&cmd_file->opt_list, name, parse_intexpr(&lctx, cmd_file->constant_list));
             if(lexem.type != LEX_SEMICOLON)
                parse_error(lexem, "';' expected after string\n");
         }
@@ -585,30 +647,27 @@ struct cmd_file_t *db_parse_file(const char *file)
         next(true);
         if(lexem.type == LEX_RBRACE)
             break;
-        struct cmd_source_t *src = xmalloc(sizeof(struct cmd_source_t));
-        memset(src, 0, sizeof(struct cmd_source_t));
         if(lexem.type != LEX_IDENTIFIER)
             parse_error(lexem, "identifier expected in sources\n");
-        src->identifier = lexem.str;
+        const char *srcid = lexem.str;
+        if(db_find_source_by_id(cmd_file, srcid) != NULL)
+            parse_error(lexem, "Duplicate source identifier\n");
         next(false); /* lexem string is kept as source name */
         if(lexem.type != LEX_EQUAL)
             parse_error(lexem, "'=' expected after identifier\n");
         next(true);
         if(lexem.type == LEX_STRING)
         {
-            src->is_extern = false;
-            src->filename = lexem.str;
-            next(false); /* lexem string is kept as file name */
+            db_add_source(cmd_file, srcid, lexem.str);
+            next(true);
         }
         else if(lexem.type == LEX_IDENTIFIER && !strcmp(lexem.str, "extern"))
         {
-            src->is_extern = true;
-            src->filename = strdup("<extern>"); /* duplicate because it will be free'd */
             next(true);
             if(lexem.type != LEX_LPAREN)
                 parse_error(lexem, "'(' expected after 'extern'\n");
             next(true);
-            src->extern_nr = parse_intexpr(&lctx, cmd_file->constant_list);
+            db_add_extern_source(cmd_file, srcid, parse_intexpr(&lctx, cmd_file->constant_list));
             if(lexem.type != LEX_RPAREN)
                 parse_error(lexem, "')' expected\n");
             next(true);
@@ -617,24 +676,14 @@ struct cmd_file_t *db_parse_file(const char *file)
             parse_error(lexem, "String or 'extern' expected after '='\n");
         if(lexem.type != LEX_SEMICOLON)
             parse_error(lexem, "';' expected\n");
-        if(db_find_source_by_id(cmd_file, src->identifier) != NULL)
-            parse_error(lexem, "Duplicate source identifier\n");
-        /* type filled later */
-        src->type = CMD_SRC_UNK;
-        src->next = cmd_file->source_list;
-        cmd_file->source_list = src;
     }
 
     /* sections */
-    struct cmd_section_t *end_sec = NULL;
     while(true)
     {
         next(true);
         if(lexem.type == LEX_EOF)
             break;
-        struct cmd_section_t *sec = xmalloc(sizeof(struct cmd_section_t));
-        struct cmd_inst_t *end_list = NULL;
-        memset(sec, 0, sizeof(struct cmd_section_t));
         if(lexem.type != LEX_IDENTIFIER || strcmp(lexem.str, "section") != 0)
             parse_error(lexem, "'section' expected\n");
         next(true);
@@ -642,35 +691,27 @@ struct cmd_file_t *db_parse_file(const char *file)
             parse_error(lexem, "'(' expected after 'section'\n");
         next(true);
         /* can be any number */
-        sec->identifier = parse_intexpr(&lctx, cmd_file->constant_list);
+        struct cmd_section_t *sec = db_add_section(cmd_file, parse_intexpr(&lctx, cmd_file->constant_list), false);
         /* options ? */
         if(lexem.type == LEX_SEMICOLON)
         {
             do
             {
                 next(true);
-                struct cmd_option_t *opt = xmalloc(sizeof(struct cmd_option_t));
-                memset(opt, 0, sizeof(struct cmd_option_t));
                 if(lexem.type != LEX_IDENTIFIER)
                     parse_error(lexem, "Identifier expected for section option\n");
-                opt->name = lexem.str;
+                const char *name = lexem.str;
                 next(false); /* lexem string is kept as option name */
                 if(lexem.type != LEX_EQUAL)
                     parse_error(lexem, "'=' expected after option identifier\n");
                 next(true);
                 if(lexem.type == LEX_STRING)
                 {
-                    opt->is_string = true;
-                    opt->str = lexem.str;
-                    next(false); /* lexem string is kept as option string */
+                    db_add_str_opt(&sec->opt_list, name, lexem.str);
+                    next(true);
                 }
                 else
-                {
-                    opt->is_string = false;
-                    opt->val = parse_intexpr(&lctx, cmd_file->constant_list);
-                }
-                opt->next = sec->opt_list;
-                sec->opt_list = opt;
+                    db_add_int_opt(&sec->opt_list, name, parse_intexpr(&lctx, cmd_file->constant_list));
             }while(lexem.type == LEX_COLON);
         }
         if(lexem.type != LEX_RPAREN)
@@ -685,8 +726,7 @@ struct cmd_file_t *db_parse_file(const char *file)
                 next(true);
                 if(lexem.type == LEX_RBRACE)
                     break;
-                struct cmd_inst_t *inst = xmalloc(sizeof(struct cmd_inst_t));
-                memset(inst, 0, sizeof(struct cmd_inst_t));
+                struct cmd_inst_t *inst = db_add_inst(&sec->inst_list, CMD_LOAD, 0);
                 if(lexem.type != LEX_IDENTIFIER)
                     parse_error(lexem, "Instruction expected in section\n");
                 if(strcmp(lexem.str, "load") == 0)
@@ -753,16 +793,6 @@ struct cmd_file_t *db_parse_file(const char *file)
                 }
                 else
                     parse_error(lexem, "Internal error");
-                if(end_list == NULL)
-                {
-                    sec->inst_list = inst;
-                    end_list = inst;
-                }
-                else
-                {
-                    end_list->next = inst;
-                    end_list = inst;
-                }
             }
         }
         else if(lexem.type == LEX_LE)
@@ -778,28 +808,12 @@ struct cmd_file_t *db_parse_file(const char *file)
         }
         else
             parse_error(lexem, "'{' or '<=' expected after section directive\n");
-
-        if(end_sec == NULL)
-        {
-            cmd_file->section_list = sec;
-            end_sec = sec;
-        }
-        else
-        {
-            end_sec->next = sec;
-            end_sec = sec;
-        }
     }
     #undef lexem
     #undef next
 
     free(buf);
     return cmd_file;
-}
-
-void db_generate_default_sb_version(struct sb_version_t *ver)
-{
-    ver->major = ver->minor = ver->revision = 0x999;
 }
 
 void db_free_option_list(struct cmd_option_t *opt_list)
@@ -813,6 +827,134 @@ void db_free_option_list(struct cmd_option_t *opt_list)
         free(opt_list);
         opt_list = next;
     }
+}
+
+static bool db_generate_options(FILE *f, const char *secname, struct cmd_option_t *list)
+{
+    fprintf(f, "%s\n", secname);
+    fprintf(f, "{\n");
+    while(list)
+    {
+        fprintf(f, "    %s = ", list->name);
+        if(list->is_string)
+            fprintf(f, "\"%s\";\n", list->str); // FIXME handle escape
+        else
+            fprintf(f, "0x%x;\n", list->val);
+        list = list->next;
+    }
+    fprintf(f, "}\n");
+    return true;
+}
+
+static bool db_generate_section_options(FILE *f, struct cmd_option_t *list)
+{
+    bool first = true;
+    while(list)
+    {
+        fprintf(f, "%c %s = ", first ? ';' : ',', list->name);
+        if(list->is_string)
+            fprintf(f, "\"%s\"", list->str); // FIXME handle escape
+        else
+            fprintf(f, "0x%x", list->val);
+        first = false;
+        list = list->next;
+    }
+    return true;
+}
+
+static bool db_generate_sources(FILE *f, struct cmd_source_t *list)
+{
+    fprintf(f, "sources\n"),
+    fprintf(f, "{\n");
+    while(list)
+    {
+        fprintf(f, "    %s = ", list->identifier);
+        if(list->is_extern)
+            fprintf(f, "extern(%d);\n", list->extern_nr);
+        else
+            fprintf(f, "\"%s\";\n", list->filename); // FIXME handle escape
+        list = list->next;
+    }
+    fprintf(f, "}\n");
+    return true;
+}
+
+static bool db_generate_section(FILE *f, struct cmd_section_t *section)
+{
+    fprintf(f, "section(%#x", section->identifier);
+    db_generate_section_options(f, section->opt_list);
+    if(section->is_data)
+    {
+        fprintf(f, ") <= %s;\n", section->source_id);
+        return true;
+    }
+    fprintf(f, ")\n{\n");
+    struct cmd_inst_t *inst = section->inst_list;
+    while(inst)
+    {
+        fprintf(f, "    ");
+        switch(inst->type)
+        {
+            case CMD_LOAD:
+                fprintf(f, "load %s;\n", inst->identifier);
+                break;
+            case CMD_LOAD_AT:
+                fprintf(f, "load %s > %#x;\n", inst->identifier, inst->addr);
+                break;
+            case CMD_CALL:
+                fprintf(f, "call %s(%#x);\n", inst->identifier, inst->argument);
+                break;
+            case CMD_CALL_AT:
+                fprintf(f, "call %#x(%#x);\n", inst->addr, inst->argument);
+                break;
+            case CMD_JUMP:
+                fprintf(f, "jump %s(%#x);\n", inst->identifier, inst->argument);
+                break;
+            case CMD_JUMP_AT:
+                fprintf(f, "jump %#x(%#x);\n", inst->addr, inst->argument);
+                break;
+            case CMD_MODE:
+                fprintf(f, "mode %#x;\n", inst->argument);
+                break;
+            default:
+                bug("die");
+        }
+        inst = inst->next;
+    }
+    fprintf(f, "}\n");
+    return true;
+}
+
+static bool db_generate_sections(FILE *f, struct cmd_section_t *section)
+{
+    while(section)
+        if(!db_generate_section(f, section))
+            return false;
+        else
+            section = section->next;
+    return true;
+}
+
+bool db_generate_file(struct cmd_file_t *file, const char *filename, void *user, db_color_printf printf)
+{
+    FILE *f = fopen(filename, "w");
+    if(f == NULL)
+        return printf(user, true, GREY, "Cannot open '%s' for writing: %m\n", filename), false;
+    if(!db_generate_options(f, "constants", file->constant_list))
+        goto Lerr;
+    if(!db_generate_options(f, "options", file->opt_list))
+        goto Lerr;
+    if(!db_generate_sources(f, file->source_list))
+        goto Lerr;
+    if(!db_generate_sections(f, file->section_list))
+        goto Lerr;
+
+    fclose(f);
+    return true;
+
+    Lerr:
+    fclose(f);
+    return false;
 }
 
 void db_free(struct cmd_file_t *file)

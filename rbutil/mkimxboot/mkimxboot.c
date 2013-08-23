@@ -94,11 +94,13 @@ static const char *imx_fw_variant[] =
 
 static const struct imx_md5sum_t imx_sums[] =
 {
+    /** Fuze+ */
     {
         /* Version 2.38.6 */
         MODEL_FUZEPLUS, "c3e27620a877dc6b200b97dcb3e0ecc7", "2.38.6",
         { [VARIANT_DEFAULT] = { 0, 34652624 } }
     },
+    /** Zen X-Fi2 */
     {
         /* Version 1.23.01 */
         MODEL_ZENXFI2, "e37e2c24abdff8e624d0a29f79157850", "1.23.01",
@@ -117,6 +119,7 @@ static const struct imx_md5sum_t imx_sums[] =
             [VARIANT_ZENXFI2_SD] = { 0x29ac380, 42304208 }
         }
     },
+    /** Zen X-Fi3 */
     {
         /* Version 1.00.15e */
         MODEL_ZENXFI3, "658a24eeef5f7186ca731085d8822a87", "1.00.15e",
@@ -127,6 +130,12 @@ static const struct imx_md5sum_t imx_sums[] =
         MODEL_ZENXFI3, "a5114cd45ea4554ec221f51a71083862", "1.00.22e",
         { [VARIANT_DEFAULT] = {0, 18110576} }
     },
+    {
+        /* Version 1.00.25e */
+        MODEL_ZENXFI3, "7aa036a349feb93d2ec397b1149c9260", "1.00.25e",
+        { [VARIANT_DEFAULT] = {0, 18110576 } }
+    },
+    /** Zen X-Fi Style */
     {
         /* Version 1.03.04e */
         MODEL_ZENXFISTYLE, "32a731b7f714e9f99a95991003759c98", "1.03.04",
@@ -393,22 +402,6 @@ static enum imx_error_t patch_firmware(enum imx_model_t model,
     }
 }
 
-static void imx_printf(void *user, bool error, color_t c, const char *fmt, ...)
-{
-    (void) user;
-    (void) c;
-    va_list args;
-    va_start(args, fmt);
-    /*
-    if(error)
-        printf("[ERR] ");
-    else
-        printf("[INFO] ");
-    */
-    vprintf(fmt, args);
-    va_end(args);
-}
-
 static uint32_t get_uint32be(unsigned char *p)
 {
     return (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
@@ -532,24 +525,11 @@ static enum imx_error_t compute_md5sum_buf(void *buf, size_t sz, uint8_t file_md
 /* compute MD5 of a file */
 static enum imx_error_t compute_md5sum(const char *file, uint8_t file_md5sum[16])
 {
-    FILE *f = fopen(file, "rb");
-    if(f == NULL)
-    {
-        printf("[ERR] Cannot open input file\n");
-        return IMX_OPEN_ERROR;
-    }
-    fseek(f, 0, SEEK_END);
-    size_t sz = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    void *buf = xmalloc(sz);
-    if(fread(buf, sz, 1, f) != 1)
-    {
-        fclose(f);
-        free(buf);
-        printf("[ERR] Cannot read file\n");
-        return IMX_READ_ERROR;
-    }
-    fclose(f);
+    void *buf;
+    size_t sz;
+    enum imx_error_t err = read_file(file, &buf, &sz);
+    if(err != IMX_SUCCESS)
+        return err;
     compute_md5sum_buf(buf, sz, file_md5sum);
     free(buf);
     return IMX_SUCCESS;
@@ -569,7 +549,7 @@ static enum imx_error_t load_sb_file(const char *file, int md5_idx,
     clear_keys();
     add_keys(imx_models[model].keys, imx_models[model].nr_keys);
     *sb_file = sb_read_file_ex(file, imx_sums[md5_idx].fw_variants[opt.fw_variant].offset,
-                              imx_sums[md5_idx].fw_variants[opt.fw_variant].size, false, NULL, &imx_printf, &err);
+                              imx_sums[md5_idx].fw_variants[opt.fw_variant].size, false, NULL, generic_std_printf, &err);
     if(*sb_file == NULL)
     {
         clear_keys();
@@ -636,16 +616,6 @@ static bool elf_read(void *user, uint32_t addr, void *buf, size_t count)
         return false;
 }
 
-static void elf_printf(void *user, bool error, const char *fmt, ...)
-{
-    if(!g_debug && !error)
-        return;
-    (void) user;
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-}
 /* Load a rockbox firwmare from a buffer. Data is copied. Assume firmware is
  * using ELF format. */
 static enum imx_error_t rb_fw_load_buf_elf(struct rb_fw_t *fw, uint8_t *buf,
@@ -656,13 +626,12 @@ static enum imx_error_t rb_fw_load_buf_elf(struct rb_fw_t *fw, uint8_t *buf,
     user.buf = buf;
     user.sz = sz;
     elf_init(&elf);
-    if(!elf_read_file(&elf, &elf_read, &elf_printf, &user))
+    if(!elf_read_file(&elf, elf_read, generic_std_printf, &user))
     {
         elf_release(&elf);
         printf("[ERR] Error parsing ELF file\n");
         return IMX_BOOT_INVALID;
     }
-    elf_translate_addresses(&elf);
     fw->nr_insts = elf_get_nr_sections(&elf) + 1;
     fw->insts = xmalloc(fw->nr_insts * sizeof(struct sb_inst_t));
     fw->entry_idx = fw->nr_insts - 1;
@@ -670,7 +639,7 @@ static enum imx_error_t rb_fw_load_buf_elf(struct rb_fw_t *fw, uint8_t *buf,
     struct elf_section_t *sec = elf.first_section;
     for(int i = 0; sec; i++, sec = sec->next)
     {
-        fw->insts[i].addr = sec->addr;
+        fw->insts[i].addr = elf_translate_virtual_address(&elf, sec->addr);
         fw->insts[i].size = sec->size;
         if(sec->type == EST_LOAD)
         {
@@ -748,7 +717,7 @@ enum imx_error_t mkimxboot(const char *infile, const char *bootfile,
     if(ret != IMX_SUCCESS)
         return ret;
     printf("[INFO] MD5 sum of the file: ");
-    print_hex(file_md5sum, 16, true);
+    print_hex(NULL, misc_std_printf, file_md5sum, 16, true);
     /* find model */
     int md5_idx;
     ret = find_model_by_md5sum(file_md5sum, &md5_idx);
@@ -774,7 +743,7 @@ enum imx_error_t mkimxboot(const char *infile, const char *bootfile,
     ret = patch_firmware(model, opt.fw_variant, opt.output,
         sb_file, boot_fw, opt.force_version);
     if(ret == IMX_SUCCESS)
-        ret = sb_write_file(sb_file, outfile);
+        ret = sb_write_file(sb_file, outfile, NULL, generic_std_printf);
 
     clear_keys();
     rb_fw_free(&boot_fw);
@@ -804,7 +773,7 @@ enum imx_error_t extract_firmware(const char *infile,
         return ret;
     }
     printf("[INFO] MD5 sum of the file: ");
-    print_hex(file_md5sum, 16, true);
+    print_hex(NULL, misc_std_printf, file_md5sum, 16, true);
     /* find model */
     int md5_idx;
     ret = find_model_by_md5sum(file_md5sum, &md5_idx);

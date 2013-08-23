@@ -46,6 +46,7 @@ void audiohw_close(void)
     imx233_audioin_close();
 }
 
+/* volume in centibels */
 void audiohw_set_volume(int vol_l, int vol_r)
 {
     imx233_audioout_set_hp_vol(vol_l / 5, vol_r / 5);
@@ -61,6 +62,9 @@ void audiohw_enable_recording(bool source_mic)
     imx233_audioin_open();
     /* if source is microhpone we need to power the microphone too */
     imx233_audioin_enable_mic(source_mic);
+    int src = source_mic ? AUDIOIN_SELECT_MICROPHONE : AUDIOIN_SELECT_LINE1;
+    imx233_audioin_select_mux_input(false, src);
+    imx233_audioin_select_mux_input(true, src);
 }
 
 void audiohw_disable_recording(void)
@@ -68,8 +72,11 @@ void audiohw_disable_recording(void)
     imx233_audioin_close();
 }
 
+/* volume in centibels */
 void audiohw_set_recvol(int left, int right, int type)
 {
+    left /= 5;
+    right /= 5;
     if(type == AUDIO_GAIN_LINEIN)
     {
         imx233_audioin_set_vol(false, left, AUDIOIN_SELECT_LINE1);

@@ -37,10 +37,12 @@
  * Global variables
  */
 bool g_quiet = false;
+bool g_exit = false;
 struct hwstub_device_t g_hwdev;
 struct usb_resp_info_version_t g_hwdev_ver;
 struct usb_resp_info_layout_t g_hwdev_layout;
 struct usb_resp_info_features_t g_hwdev_features;
+struct usb_resp_info_target_t g_hwdev_target;
 struct usb_resp_info_stmp_t g_hwdev_stmp;
 lua_State *g_lua;
 
@@ -209,6 +211,39 @@ int my_lua_printlog(lua_State *state)
     return 0;
 }
 
+int my_lua_atexit(lua_State *state)
+{
+    int n = lua_gettop(state);
+    if(n != 1)
+        luaL_error(state, "atexit takes one argument");
+    const char *arg = luaL_checkstring(state, 1);
+    int ret = -1;
+    if(strcmp(arg, "nop") == 0)
+        ret = hwstub_atexit(&g_hwdev, HWSTUB_ATEXIT_NOP);
+    else if(strcmp(arg, "reboot") == 0)
+        ret = hwstub_atexit(&g_hwdev, HWSTUB_ATEXIT_REBOOT);
+    else if(strcmp(arg, "off") == 0)
+        ret = hwstub_atexit(&g_hwdev, HWSTUB_ATEXIT_OFF);
+    else
+        luaL_error(state, "unknown atexit method '%s'", arg);
+    if(ret < 0)
+        luaL_error(state, "fail to set atexit method");
+    return 0;
+}
+
+int my_lua_exit(lua_State *state)
+{
+    if(hwstub_exit(&g_hwdev) < 0)
+        luaL_error(state, "fail to exit hwstub");
+    return 0;
+}
+
+int my_lua_quit(lua_State *state)
+{
+    g_exit = true;
+    return 0;
+}
+
 bool my_lua_import_hwstub()
 {
     int oldtop = lua_gettop(g_lua);
@@ -253,12 +288,22 @@ bool my_lua_import_hwstub()
     lua_setfield(g_lua, -2, "ocram");
     lua_setfield(g_lua, -2, "layout");
 
-    lua_newtable(g_lua); // stmp
-    lua_pushinteger(g_lua, g_hwdev_stmp.chipid);
-    lua_setfield(g_lua, -2, "chipid");
-    lua_pushinteger(g_lua, g_hwdev_stmp.rev);
-    lua_setfield(g_lua, -2, "rev");
-    lua_setfield(g_lua, -2, "stmp");
+    lua_newtable(g_lua); // target
+    lua_pushstring(g_lua, g_hwdev_target.name);
+    lua_setfield(g_lua, -2, "name");
+    lua_pushinteger(g_lua, g_hwdev_target.id);
+    lua_setfield(g_lua, -2, "id");
+    lua_setfield(g_lua, -2, "target");
+
+    if(g_hwdev_target.id == HWSTUB_TARGET_STMP)
+    {
+        lua_newtable(g_lua); // stmp
+        lua_pushinteger(g_lua, g_hwdev_stmp.chipid);
+        lua_setfield(g_lua, -2, "chipid");
+        lua_pushinteger(g_lua, g_hwdev_stmp.rev);
+        lua_setfield(g_lua, -2, "rev");
+        lua_setfield(g_lua, -2, "stmp");
+    }
 
     lua_newtable(g_lua); // features
     lua_pushboolean(g_lua, !!(g_hwdev_features.feature_mask & HWSTUB_FEATURE_LOG));
@@ -269,8 +314,6 @@ bool my_lua_import_hwstub()
     lua_setfield(g_lua, -2, "call");
     lua_pushboolean(g_lua, !!(g_hwdev_features.feature_mask & HWSTUB_FEATURE_JUMP));
     lua_setfield(g_lua, -2, "jump");
-    lua_pushboolean(g_lua, !!(g_hwdev_features.feature_mask & HWSTUB_FEATURE_AES_OTP));
-    lua_setfield(g_lua, -2, "aes_otp");
     lua_setfield(g_lua, -2, "features");
 
     lua_pushlightuserdata(g_lua, (void *)&hw_read8);
@@ -294,6 +337,10 @@ bool my_lua_import_hwstub()
     lua_setfield(g_lua, -2, "write32");
     lua_pushcclosure(g_lua, my_lua_printlog, 0);
     lua_setfield(g_lua, -2, "print_log");
+    lua_pushcclosure(g_lua, my_lua_atexit, 0);
+    lua_setfield(g_lua, -2, "atexit");
+    lua_pushcclosure(g_lua, my_lua_exit, 0);
+    lua_setfield(g_lua, -2, "exit");
 
     lua_setfield(g_lua, -2, "dev");
 
@@ -330,6 +377,12 @@ bool my_lua_import_hwstub()
 
     lua_pushcfunction(g_lua, my_lua_help);
     lua_setglobal(g_lua, "help");
+
+    lua_pushcfunction(g_lua, my_lua_quit);
+    lua_setglobal(g_lua, "exit");
+
+    lua_pushcfunction(g_lua, my_lua_quit);
+    lua_setglobal(g_lua, "quit");
 
     if(lua_gettop(g_lua) != oldtop)
     {
@@ -751,12 +804,23 @@ int main(int argc, char **argv)
         goto Lerr;
     }
 
-    // get STMP specific information
-    ret = hwstub_get_info(&g_hwdev, HWSTUB_INFO_STMP, &g_hwdev_stmp, sizeof(g_hwdev_stmp));
-    if(ret != sizeof(g_hwdev_stmp))
+    // get target
+    ret = hwstub_get_info(&g_hwdev, HWSTUB_INFO_TARGET, &g_hwdev_target, sizeof(g_hwdev_target));
+    if(ret != sizeof(g_hwdev_target))
     {
-        printf("Cannot get stmp: %d\n", ret);
+        printf("Cannot get target: %d\n", ret);
         goto Lerr;
+    }
+
+    // get STMP specific information
+    if(g_hwdev_target.id == HWSTUB_TARGET_STMP)
+    {
+        ret = hwstub_get_info(&g_hwdev, HWSTUB_INFO_STMP, &g_hwdev_stmp, sizeof(g_hwdev_stmp));
+        if(ret != sizeof(g_hwdev_stmp))
+        {
+            printf("Cannot get stmp: %d\n", ret);
+            goto Lerr;
+        }
     }
 
     // dump ROM
@@ -775,48 +839,6 @@ int main(int argc, char **argv)
         fwrite(rom, 64 * 1024, 1, f);
         fclose(f);
     }
-
-    // test DCP
-#if 0
-    if(!g_quiet)
-    {
-        struct
-        {
-            uint8_t iv[16];
-            uint8_t data[16];
-        } __attribute__((packed)) dcp_test;
-
-        for(int i = 0; i < 16; i++)
-            dcp_test.iv[i] = rand();
-        for(int i = 0; i < 16; i++)
-            dcp_test.data[i] = rand();
-        printf("DCP\n");
-        printf("  IN\n");
-        printf("    IV:");
-        for(int i = 0; i < 16; i++)
-            printf(" %02x", dcp_test.iv[i]);
-        printf("\n");
-        printf("    IV:");
-        for(int i = 0; i < 16; i++)
-            printf(" %02x", dcp_test.data[i]);
-        printf("\n");
-
-        if(!hwstub_aes_otp(&g_hwdev, &dcp_test, sizeof(dcp_test), HWSTUB_AES_OTP_ENCRYPT))
-        {
-            printf("  OUT\n");
-            printf("    IV:");
-            for(int i = 0; i < 16; i++)
-                printf(" %02x", dcp_test.iv[i]);
-            printf("\n");
-            printf("    IV:");
-            for(int i = 0; i < 16; i++)
-                printf(" %02x", dcp_test.data[i]);
-            printf("\n");
-        }
-        else
-            printf("DCP error!\n");
-    }
-#endif
 
     /** Init lua */
 
@@ -846,7 +868,7 @@ int main(int argc, char **argv)
 
     // use readline to provide some history and completion
     rl_bind_key('\t', rl_complete);
-    while(1)
+    while(!g_exit)
     {
         char *input = readline("> ");
         if(!input)

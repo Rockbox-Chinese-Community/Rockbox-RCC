@@ -19,7 +19,6 @@
  *
  ****************************************************************************/
 
-#define _ISOC99_SOURCE
 #define _POSIX_C_SOURCE 200809L /* for strdup */
 #include <stdio.h>
 #include <errno.h>
@@ -67,24 +66,6 @@ static char *cmd_line_next_arg(void *user)
     uu->argc--;
     uu->argv++;
     return *(uu->argv - 1);
-}
-
-static bool elf_read(void *user, uint32_t addr, void *buf, size_t count)
-{
-    if(fseek((FILE *)user, addr, SEEK_SET) == -1)
-        return false;
-    return fread(buf, 1, count, (FILE *)user) == count;
-}
-
-static void elf_printf(void *user, bool error, const char *fmt, ...)
-{
-    if(!g_debug && !error)
-        return;
-    (void) user;
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
 }
 
 static int sb1_add_inst(struct sb1_file_t *sb, struct sb1_inst_t *insts, int nr_insts)
@@ -403,11 +384,10 @@ static int load_elf(struct sb1_file_t *sb, const char *filename, int act)
     if(g_debug)
         printf("Loading elf file '%s'...\n", filename);
     elf_init(&elf);
-    bool loaded = elf_read_file(&elf, elf_read, elf_printf, fd);
+    bool loaded = elf_read_file(&elf, elf_std_read, generic_std_printf, fd);
     fclose(fd);
     if(!loaded)
         bug("error loading elf file '%s'\n", filename);
-    elf_translate_addresses(&elf);
     elf_sort_by_address(&elf);
 
     struct elf_section_t *esec = elf.first_section;

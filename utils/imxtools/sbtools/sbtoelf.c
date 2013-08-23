@@ -27,6 +27,7 @@
  */
 
 #define _ISOC99_SOURCE /* snprintf() */
+#define _POSIX_C_SOURCE 200809L /* for strdup */
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -42,6 +43,7 @@
 #include "sb.h"
 #include "sb1.h"
 #include "misc.h"
+#include "dbparser.h"
 
 /* all blocks are sized as a multiple of 0x1ff */
 #define PAD_TO_BOUNDARY(x) (((x) + 0x1ff) & ~0x1ff)
@@ -60,30 +62,21 @@
 static char *g_out_prefix;
 static bool g_elf_simplify = true;
 
-static void elf_printf(void *user, bool error, const char *fmt, ...)
-{
-    if(!g_debug && !error)
-        return;
-    (void) user;
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-}
-
-static void elf_write(void *user, uint32_t addr, const void *buf, size_t count)
-{
-    FILE *f = user;
-    fseek(f, addr, SEEK_SET);
-    fwrite(buf, count, 1, f);
-}
-
-static void extract_elf_section(struct elf_params_t *elf, int count, uint32_t id)
+static void extract_elf_section(struct elf_params_t *elf, int count, uint32_t id,
+    struct cmd_file_t *cmd_file, struct cmd_section_t *section, bool is_call, uint32_t arg)
 {
     char name[5];
+    char fileid[16];
     char *filename = xmalloc(strlen(g_out_prefix) + 32);
     sb_fill_section_name(name, id);
+    sb_fill_section_name(fileid, id);
+    sprintf(fileid + strlen(fileid), "%d", count);
     sprintf(filename, "%s%s.%d.elf", g_out_prefix, name, count);
+    db_add_source(cmd_file, fileid, filename + strlen(g_out_prefix));
+    db_add_inst_id(section, CMD_LOAD, fileid, 0);
+    if(elf_get_start_addr(elf, NULL))
+        db_add_inst_id(section, is_call ? CMD_CALL : CMD_JUMP, fileid, arg);
+
     if(g_debug)
         printf("Write boot section %s to %s\n", name, filename);
 
@@ -94,18 +87,26 @@ static void extract_elf_section(struct elf_params_t *elf, int count, uint32_t id
         return;
     if(g_elf_simplify)
         elf_simplify(elf);
-    elf_write_file(elf, elf_write, elf_printf, fd);
+    elf_write_file(elf, elf_std_write, generic_std_printf, fd);
     fclose(fd);
 }
 
-static void extract_sb_section(struct sb_section_t *sec)
+static void extract_sb_section(struct sb_section_t *sec, struct cmd_file_t *cmd_file)
 {
+    struct cmd_section_t *db_sec = db_add_section(cmd_file, sec->identifier, sec->is_data);
+    db_add_int_opt(&db_sec->opt_list, "alignment", sec->alignment);
+    db_add_int_opt(&db_sec->opt_list, "cleartext", sec->is_cleartext);
+    db_add_int_opt(&db_sec->opt_list, "sectionFlags", sec->other_flags);
+
     if(sec->is_data)
     {
         char sec_name[5];
         char *filename = xmalloc(strlen(g_out_prefix) + 32);
         sb_fill_section_name(sec_name, sec->identifier);
         sprintf(filename, "%s%s.bin", g_out_prefix, sec_name);
+        db_add_source(cmd_file, sec_name, filename + strlen(g_out_prefix));
+        db_sec->source_id = strdup(sec_name);
+
         FILE *fd = fopen(filename, "wb");
         if(fd == NULL)
             bugp("Cannot open %s for writing\n", filename);
@@ -125,23 +126,29 @@ static void extract_sb_section(struct sb_section_t *sec)
     struct elf_params_t elf;
     elf_init(&elf);
 
+    int bss_idx = 0, text_idx = 0;
+    char secname[32];
     for(int i = 0; i < sec->nr_insts; i++)
     {
         struct sb_inst_t *inst = &sec->insts[i];
         switch(inst->inst)
         {
             case SB_INST_LOAD:
-                elf_add_load_section(&elf, inst->addr, inst->size, inst->data);
+                sprintf(secname, ".text%d", text_idx++);
+                elf_add_load_section(&elf, inst->addr, inst->size, inst->data, secname);
                 break;
             case SB_INST_FILL:
-                elf_add_fill_section(&elf, inst->addr, inst->size, inst->pattern);
+                sprintf(secname, ".bss%d", bss_idx++);
+                elf_add_fill_section(&elf, inst->addr, inst->size, inst->pattern, secname);
                 break;
             case SB_INST_CALL:
             case SB_INST_JUMP:
                 elf_set_start_addr(&elf, inst->addr);
-                extract_elf_section(&elf, elf_count++, sec->identifier);
+                extract_elf_section(&elf, elf_count++, sec->identifier, cmd_file, db_sec,
+                    inst->inst == SB_INST_CALL, inst->argument);
                 elf_release(&elf);
                 elf_init(&elf);
+                bss_idx = text_idx = 0;
                 break;
             default:
                 /* ignore mode and nop */
@@ -150,20 +157,40 @@ static void extract_sb_section(struct sb_section_t *sec)
     }
 
     if(!elf_is_empty(&elf))
-        extract_elf_section(&elf, elf_count, sec->identifier);
+        extract_elf_section(&elf, elf_count, sec->identifier, cmd_file, db_sec, false, 0);
     elf_release(&elf);
 }
 
 static void extract_sb_file(struct sb_file_t *file)
 {
+    char buffer[64];
+    struct cmd_file_t *cmd_file = xmalloc(sizeof(struct cmd_file_t));
+    memset(cmd_file, 0, sizeof(struct cmd_file_t));
+    db_generate_sb_version(&file->product_ver, buffer, sizeof(buffer));
+    db_add_str_opt(&cmd_file->opt_list, "productVersion", buffer);
+    db_generate_sb_version(&file->component_ver, buffer, sizeof(buffer));
+    db_add_str_opt(&cmd_file->opt_list, "componentVersion", buffer);
+    db_add_int_opt(&cmd_file->opt_list, "driveTag", file->drive_tag);
+    db_add_int_opt(&cmd_file->opt_list, "flags", file->flags);
+    db_add_int_opt(&cmd_file->opt_list, "timestampLow", file->timestamp & 0xffffffff);
+    db_add_int_opt(&cmd_file->opt_list, "timestampHigh", file->timestamp >> 32);
+    db_add_int_opt(&cmd_file->opt_list, "sbMinorVersion", file->minor_version);
+
     for(int i = 0; i < file->nr_sections; i++)
-        extract_sb_section(&file->sections[i]);
+        extract_sb_section(&file->sections[i], cmd_file);
+
+    char *filename = xmalloc(strlen(g_out_prefix) + 32);
+    sprintf(filename, "%smake.db", g_out_prefix);
+    if(g_debug)
+        printf("Write command file to %s\n", filename);
+    db_generate_file(cmd_file, filename, NULL, generic_std_printf);
+    db_free(cmd_file);
 }
 
 static void extract_elf(struct elf_params_t *elf, int count)
 {
     char *filename = xmalloc(strlen(g_out_prefix) + 32);
-    sprintf(filename, "%s.%d.elf", g_out_prefix, count);
+    sprintf(filename, "%s%d.elf", g_out_prefix, count);
     if(g_debug)
         printf("Write boot content to %s\n", filename);
 
@@ -174,7 +201,7 @@ static void extract_elf(struct elf_params_t *elf, int count)
         return;
     if(g_elf_simplify)
         elf_simplify(elf);
-    elf_write_file(elf, elf_write, elf_printf, fd);
+    elf_write_file(elf, elf_std_write, generic_std_printf, fd);
     fclose(fd);
 }
 
@@ -184,16 +211,20 @@ static void extract_sb1_file(struct sb1_file_t *file)
     struct elf_params_t elf;
     elf_init(&elf);
 
+    int bss_idx = 0, text_idx = 0;
+    char secname[32];
     for(int i = 0; i < file->nr_insts; i++)
     {
         struct sb1_inst_t *inst = &file->insts[i];
         switch(inst->cmd)
         {
             case SB1_INST_LOAD:
-                elf_add_load_section(&elf, inst->addr, inst->size, inst->data);
+                sprintf(secname, ".text%d", text_idx++);
+                elf_add_load_section(&elf, inst->addr, inst->size, inst->data, secname);
                 break;
             case SB1_INST_FILL:
-                elf_add_fill_section(&elf, inst->addr, inst->size, inst->pattern);
+                sprintf(secname, ".bss%d", bss_idx++);
+                elf_add_fill_section(&elf, inst->addr, inst->size, inst->pattern, secname);
                 break;
             case SB1_INST_CALL:
             case SB1_INST_JUMP:
@@ -234,73 +265,6 @@ static void usage(void)
     printf("  -b                    Brute force key\n");
     printf("Options marked with a * are for debug purpose only\n");
     exit(1);
-}
-
-static void sb_printf(void *user, bool error, color_t c, const char *fmt, ...)
-{
-    (void) user;
-    (void) error;
-    va_list args;
-    va_start(args, fmt);
-    color(c);
-    vprintf(fmt, args);
-    va_end(args);
-}
-
-static struct crypto_key_t g_zero_key =
-{
-    .method = CRYPTO_KEY,
-    .u.key = {0}
-};
-
-
-
-enum sb_version_guess_t
-{
-    SB_VERSION_1,
-    SB_VERSION_2,
-    SB_VERSION_UNK,
-};
-
-enum sb_version_guess_t guess_sb_version(const char *filename)
-{
-#define ret(x) do { fclose(f); return x; } while(0)
-    FILE *f = fopen(filename, "rb");
-    if(f == NULL)
-        bugp("Cannot open file for reading\n");
-    // check signature
-    uint8_t sig[4];
-    if(fseek(f, 20, SEEK_SET))
-        ret(SB_VERSION_UNK);
-    if(fread(sig, 4, 1, f) != 1)
-        ret(SB_VERSION_UNK);
-    if(memcmp(sig, "STMP", 4) != 0)
-        ret(SB_VERSION_UNK);
-    // check header size (v1)
-    uint32_t hdr_size;
-    if(fseek(f, 8, SEEK_SET))
-        ret(SB_VERSION_UNK);
-    if(fread(&hdr_size, 4, 1, f) != 1)
-        ret(SB_VERSION_UNK);
-    if(hdr_size == 0x34)
-        ret(SB_VERSION_1);
-    // check header params relationship
-    struct
-    {
-        uint16_t nr_keys; /* Number of encryption keys */
-        uint16_t key_dict_off; /* Offset to key dictionary (in blocks) */
-        uint16_t header_size; /* In blocks */
-        uint16_t nr_sections; /* Number of sections */
-        uint16_t sec_hdr_size; /* Section header size (in blocks) */
-    } __attribute__((packed)) u;
-    if(fseek(f, 0x28, SEEK_SET))
-        ret(SB_VERSION_UNK);
-    if(fread(&u, sizeof(u), 1, f) != 1)
-        ret(SB_VERSION_UNK);
-    if(u.sec_hdr_size == 1 && u.header_size == 6 && u.key_dict_off == u.header_size + u.nr_sections)
-        ret(SB_VERSION_2);
-    ret(SB_VERSION_UNK);
-#undef ret
 }
 
 int main(int argc, char **argv)
@@ -361,8 +325,12 @@ int main(int argc, char **argv)
                 break;
             }
             case 'z':
+            {
+                struct crypto_key_t g_zero_key;
+                sb_get_zero_key(&g_zero_key);
                 add_keys(&g_zero_key, 1);
                 break;
+            }
             case 'x':
             {
                 struct crypto_key_t key;
@@ -397,7 +365,7 @@ int main(int argc, char **argv)
                 brute_force = true;
                 break;
             default:
-                abort();
+                bug("Internal error: unknown option '%c'\n", c);
         }
     }
 
@@ -413,11 +381,16 @@ int main(int argc, char **argv)
     const char *sb_filename = argv[optind];
 
     enum sb_version_guess_t ver = guess_sb_version(sb_filename);
+    if(ver == SB_VERSION_ERR)
+    {
+        printf("Cannot open/read SB file: %m\n");
+        return 1;
+    }
 
     if(force_sb2 || ver == SB_VERSION_2)
     {
         enum sb_error_t err;
-        struct sb_file_t *file = sb_read_file(sb_filename, raw_mode, NULL, sb_printf, &err);
+        struct sb_file_t *file = sb_read_file(sb_filename, raw_mode, NULL, generic_std_printf, &err);
         if(file == NULL)
         {
             color(OFF);
@@ -432,7 +405,7 @@ int main(int argc, char **argv)
         {
             color(GREY);
             printf("[Debug output]\n");
-            sb_dump(file, NULL, sb_printf);
+            sb_dump(file, NULL, generic_std_printf);
         }
         if(loopback)
         {
@@ -441,7 +414,7 @@ int main(int argc, char **argv)
             * garbage */
             file->override_real_key = false;
             file->override_crypto_iv = false;
-            sb_write_file(file, loopback);
+            sb_write_file(file, loopback, 0, generic_std_printf);
         }
         sb_free(file);
     }
@@ -451,7 +424,7 @@ int main(int argc, char **argv)
         {
             struct crypto_key_t key;
             enum sb1_error_t err;
-            if(!sb1_brute_force(sb_filename, NULL, sb_printf, &err, &key))
+            if(!sb1_brute_force(sb_filename, NULL, generic_std_printf, &err, &key))
             {
                 color(OFF);
                 printf("Brute force failed: %d\n", err);
@@ -475,7 +448,7 @@ int main(int argc, char **argv)
         }
 
         enum sb1_error_t err;
-        struct sb1_file_t *file = sb1_read_file(sb_filename, NULL, sb_printf, &err);
+        struct sb1_file_t *file = sb1_read_file(sb_filename, NULL, generic_std_printf, &err);
         if(file == NULL)
         {
             color(OFF);
@@ -490,7 +463,7 @@ int main(int argc, char **argv)
         {
             color(GREY);
             printf("[Debug output]\n");
-            sb1_dump(file, NULL, sb_printf);
+            sb1_dump(file, NULL, generic_std_printf);
         }
         if(loopback)
             sb1_write_file(file, loopback);

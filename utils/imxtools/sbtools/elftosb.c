@@ -52,24 +52,6 @@ int g_extern_count;
  * command file to sb conversion
  */
 
-static bool elf_read(void *user, uint32_t addr, void *buf, size_t count)
-{
-    if(fseek((FILE *)user, addr, SEEK_SET) == -1)
-        return false;
-    return fread(buf, 1, count, (FILE *)user) == count;
-}
-
-static void elf_printf(void *user, bool error, const char *fmt, ...)
-{
-    if(!g_debug && !error)
-        return;
-    (void) user;
-    va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
-}
-
 static void resolve_extern(struct cmd_source_t *src)
 {
     if(!src->is_extern)
@@ -102,11 +84,10 @@ static void load_elf_by_id(struct cmd_file_t *cmd_file, const char *id)
     if(g_debug)
         printf("Loading ELF file '%s'...\n", src->filename);
     elf_init(&src->elf);
-    src->loaded = elf_read_file(&src->elf, elf_read, elf_printf, fd);
+    src->loaded = elf_read_file(&src->elf, elf_std_read, generic_std_printf, fd);
     fclose(fd);
     if(!src->loaded)
         bug("error loading elf file '%s' (id '%s')\n", src->filename, id);
-    elf_translate_addresses(&src->elf);
 }
 
 static void load_bin_by_id(struct cmd_file_t *cmd_file, const char *id)
@@ -137,13 +118,51 @@ static void load_bin_by_id(struct cmd_file_t *cmd_file, const char *id)
     src->loaded = true;
 }
 
+static const char *get_str_opt(struct cmd_option_t *opt_list, const char *id, const char *dflt)
+{
+    struct cmd_option_t *opt = db_find_option_by_id(opt_list, id);
+    if(!opt)
+        return dflt;
+    if(!opt->is_string)
+        bug("'%s' option must be a string\n", id);
+    return opt->str;
+}
+
+static uint32_t get_int_opt(struct cmd_option_t *opt_list, const char *id, uint32_t dflt)
+{
+    struct cmd_option_t *opt = db_find_option_by_id(opt_list, id);
+    if(!opt)
+        return dflt;
+    if(opt->is_string)
+        bug("'%s' option must be an integer\n", id);
+    return opt->val;
+}
+
 static struct sb_file_t *apply_cmd_file(struct cmd_file_t *cmd_file)
 {
     struct sb_file_t *sb = xmalloc(sizeof(struct sb_file_t));
     memset(sb, 0, sizeof(struct sb_file_t));
+    sb_build_default_image(sb);
 
-    db_generate_default_sb_version(&sb->product_ver);
-    db_generate_default_sb_version(&sb->component_ver);
+    if(db_find_option_by_id(cmd_file->opt_list, "componentVersion") &&
+            !db_parse_sb_version(&sb->component_ver, get_str_opt(cmd_file->opt_list, "componentVersion", "")))
+        bug("Invalid 'componentVersion' format\n");
+    if(db_find_option_by_id(cmd_file->opt_list, "productVersion") &&
+            !db_parse_sb_version(&sb->product_ver, get_str_opt(cmd_file->opt_list, "productVersion", "")))
+        bug("Invalid 'productVersion' format\n");
+    if(db_find_option_by_id(cmd_file->opt_list, "sbMinorVersion"))
+        sb->minor_version = get_int_opt(cmd_file->opt_list, "sbMinorVersion", 0);
+    if(db_find_option_by_id(cmd_file->opt_list, "flags"))
+        sb->flags = get_int_opt(cmd_file->opt_list, "flags", 0);
+    if(db_find_option_by_id(cmd_file->opt_list, "driveTag"))
+        sb->drive_tag = get_int_opt(cmd_file->opt_list, "driveTag", 0);
+    if(db_find_option_by_id(cmd_file->opt_list, "timestampLow"))
+    {
+        if(!db_find_option_by_id(cmd_file->opt_list, "timestampHigh"))
+            bug("Option 'timestampLow' and 'timestampHigh' must both specified\n");
+        sb->timestamp = (uint64_t)get_int_opt(cmd_file->opt_list, "timestampHigh", 0) << 32 |
+            get_int_opt(cmd_file->opt_list, "timestampLow", 0);
+    }
 
     if(g_debug)
         printf("Applying command file...\n");
@@ -168,32 +187,16 @@ static struct sb_file_t *apply_cmd_file(struct cmd_file_t *cmd_file)
         do
         {
             /* cleartext */
-            struct cmd_option_t *opt = db_find_option_by_id(csec->opt_list, "cleartext");
-            if(opt != NULL)
-            {
-                if(opt->is_string)
-                    bug("Cleartext section attribute must be an integer\n");
-                if(opt->val != 0 && opt->val != 1)
-                    bug("Cleartext section attribute must be 0 or 1\n");
-                sec->is_cleartext = opt->val;
-            }
+            sec->is_cleartext = get_int_opt(csec->opt_list, "cleartext", false);
             /* alignment */
-            opt = db_find_option_by_id(csec->opt_list, "alignment");
-            if(opt != NULL)
-            {
-                if(opt->is_string)
-                    bug("Cleartext section attribute must be an integer\n");
-                // n is a power of 2 iff n & (n - 1) = 0
-                // alignement cannot be lower than block size
-                if((opt->val & (opt->val - 1)) != 0)
-                    bug("Cleartext section attribute must be a power of two\n");
-                if(opt->val < BLOCK_SIZE)
-                    sec->alignment = BLOCK_SIZE;
-                else
-                    sec->alignment = opt->val;
-            }
-            else
+            sec->alignment = get_int_opt(csec->opt_list, "alignment", BLOCK_SIZE);
+            // alignement cannot be lower than block size
+            if((sec->alignment & (sec->alignment - 1)) != 0)
+                bug("Alignment section attribute must be a power of two\n");
+            if(sec->alignment < BLOCK_SIZE)
                 sec->alignment = BLOCK_SIZE;
+            /* other flags */
+            sec->other_flags = get_int_opt(csec->opt_list, "sectionFlags", 0) & ~SECTION_STD_MASK;
         }while(0);
 
         if(csec->is_data)
@@ -333,12 +336,6 @@ static void usage(void)
     exit(1);
 }
 
-static struct crypto_key_t g_zero_key =
-{
-    .method = CRYPTO_KEY,
-    .u.key = {0}
-};
-
 int main(int argc, char **argv)
 {
     char *cmd_filename = NULL;
@@ -385,6 +382,8 @@ int main(int argc, char **argv)
             }
             case 'z':
             {
+                struct crypto_key_t g_zero_key;
+                sb_get_zero_key(&g_zero_key);
                 add_keys(&g_zero_key, 1);
                 break;
             }
@@ -407,7 +406,7 @@ int main(int argc, char **argv)
                 break;
             }
             default:
-                abort();
+                bug("Internal error: unknown option '%c'\n", c);
         }
     }
 
@@ -425,7 +424,7 @@ int main(int argc, char **argv)
         for(int i = 0; i < g_nr_keys; i++)
         {
             printf("  ");
-            print_key(&g_key_array[i], true);
+            print_key(NULL, misc_std_printf, &g_key_array[i], true);
         }
 
         for(int i = 0; i < g_extern_count; i++)
@@ -447,13 +446,7 @@ int main(int argc, char **argv)
         memcpy(sb_file->crypto_iv, crypto_iv.u.key, 16);
     }
 
-    /* fill with default parameters since there is no command file support for them */
-    sb_file->drive_tag = 0;
-    sb_file->first_boot_sec_id = sb_file->sections[0].identifier;
-    sb_file->flags = 0;
-    sb_file->minor_version = 1;
-
-    sb_write_file(sb_file, output_filename);
+    sb_write_file(sb_file, output_filename, 0, generic_std_printf);
     sb_free(sb_file);
     clear_keys();
 

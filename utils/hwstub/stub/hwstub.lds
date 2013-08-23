@@ -19,50 +19,55 @@
  *
  ****************************************************************************/
 #include "config.h"
-#include "logf.h"
-#include "format.h"
-#include "string.h"
 
-static unsigned char logfbuffer[MAX_LOGF_SIZE];
-static int logfread = 0;
-static int logfwrite = 0;
-static int logfen = true;
+ENTRY(start)
+OUTPUT_FORMAT(elf32-littlearm)
+OUTPUT_ARCH(arm)
+STARTUP(crt0.o)
 
-void enable_logf(bool en)
+#define IRAM_END_ADDR   (IRAM_ORIG + IRAM_SIZE)
+
+MEMORY
 {
-    logfen = en;
+    OCRAM : ORIGIN = IRAM_ORIG, LENGTH = IRAM_SIZE
 }
 
-static int logf_push(void *userp, unsigned char c)
+SECTIONS
 {
-    (void)userp;
-    
-    logfbuffer[logfwrite++] = c;
-    if(logfwrite == MAX_LOGF_SIZE)
-        logfwrite = 0;
-    return true;
-}
+    .octext :
+    {
+        _copystart = .;
+        oc_codestart = .;
+        *(.text*)
+        *(.icode*)
+        *(.data*)
+        *(.rodata*)
+        _copyend = .;
+    } > OCRAM
 
-void logf(const char *fmt, ...)
-{
-    if(!logfen) return;
-    va_list ap;
-    va_start(ap, fmt);
-    vuprintf(logf_push, NULL, fmt, ap);
-    va_end(ap);
-}
+    .bss (NOLOAD) :
+    {
+        bss_start = .;
+        *(.bss)
+        bss_end = .;
+    } > OCRAM
 
-size_t logf_readback(char *buf, size_t max_size)
-{
-    if(logfread == logfwrite)
-        return 0;
-    if(logfread < logfwrite)
-        max_size = MIN(max_size, (size_t)(logfwrite - logfread));
-    else
-        max_size = MIN(max_size, (size_t)(MAX_LOGF_SIZE - logfread));
-    memcpy(buf, &logfbuffer[logfread], max_size);
-    logfread += max_size;
-    if(logfread == MAX_LOGF_SIZE)
-        logfread = 0;
-    return max_size;
+    .stack (NOLOAD) :
+    {
+        oc_codeend = .;
+        oc_stackstart = .;
+        . += STACK_SIZE;
+        oc_stackend = .;
+        oc_bufferstart = .;
+    } > OCRAM
+
+    .ocend IRAM_END_ADDR (NOLOAD) :
+    {
+        oc_bufferend = .;
+    } > OCRAM
+
+    /DISCARD/ :
+    {
+        *(.eh_frame)
+    } 
 }

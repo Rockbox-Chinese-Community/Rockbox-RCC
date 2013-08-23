@@ -183,7 +183,7 @@ int main(void)
 #ifdef AUTOROCK
     {
         char filename[MAX_PATH];
-        const char *file = 
+        const char *file =
 #ifdef APPLICATION
                                 ROCKBOX_DIR
 #else
@@ -210,15 +210,15 @@ static int init_dircache(bool preinit)
 #ifdef HAVE_DIRCACHE
     int result = 0;
     bool clear = false;
-    
+
     if (preinit)
         dircache_init();
-    
+
     if (!global_settings.dircache)
         return 0;
-    
+
 # ifdef HAVE_EEPROM_SETTINGS
-    if (firmware_settings.initialized && firmware_settings.disk_clean 
+    if (firmware_settings.initialized && firmware_settings.disk_clean
         && preinit)
     {
         result = dircache_load();
@@ -233,7 +233,7 @@ static int init_dircache(bool preinit)
                 splash(0, str(LANG_SCANNING_DISK));
                 clear = true;
             }
-            
+
             dircache_build(global_status.dircache_size);
         }
     }
@@ -242,7 +242,7 @@ static int init_dircache(bool preinit)
     {
         if (preinit)
             return -1;
-        
+
         if (!dircache_is_enabled()
             && !dircache_is_initializing())
         {
@@ -253,7 +253,7 @@ static int init_dircache(bool preinit)
             }
             result = dircache_build(global_status.dircache_size);
         }
-        
+
         if (result < 0)
         {
             /* Initialization of dircache failed. Manual action is
@@ -263,7 +263,7 @@ static int init_dircache(bool preinit)
             global_settings.dircache = false;
         }
     }
-    
+
     if (clear)
     {
         backlight_on();
@@ -271,7 +271,7 @@ static int init_dircache(bool preinit)
         global_status.dircache_size = dircache_get_cache_size();
         status_save();
     }
-    
+
     return result;
 #else
     (void)preinit;
@@ -288,7 +288,7 @@ static void init_tagcache(void)
     long talked_tick = 0;
 #endif
     tagcache_init();
-    
+
     while (!tagcache_is_initialized())
     {
         int ret = tagcache_get_commit_step();
@@ -322,7 +322,7 @@ static void init_tagcache(void)
             }
 #else
             lcd_double_height(false);
-            lcd_putsf(0, 1, " DB [%d/%d]", ret, 
+            lcd_putsf(0, 1, " DB [%d/%d]", ret,
                 tagcache_get_max_commit_step());
             lcd_update();
 #endif
@@ -370,7 +370,7 @@ static void init(void)
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)
     notification_init();
 #endif
-    lang_init(core_language_builtin, language_strings, 
+    lang_init(core_language_builtin, language_strings,
               LANG_LAST_INDEX_IN_ARRAY);
 #ifdef DEBUG
     debug_init();
@@ -420,7 +420,8 @@ static void init(void)
               global_settings.superbass);
 #endif /* CONFIG_CODEC != SWCODEC */
 
-    scrobbler_init();
+    if (global_settings.audioscrobbler)
+        scrobbler_init();
 
     audio_init();
 
@@ -452,7 +453,7 @@ static void init(void)
 #endif
 
     i2c_init();
-    
+
     power_init();
 
     enable_irq();
@@ -471,13 +472,13 @@ static void init(void)
         global_status.font_id[i] = FONT_SYSFIXED;
     font_init();
 #endif
-    
+
     settings_reset();
 
     CHART(">show_logo");
     show_logo();
     CHART("<show_logo");
-    lang_init(core_language_builtin, language_strings, 
+    lang_init(core_language_builtin, language_strings,
               LANG_LAST_INDEX_IN_ARRAY);
 
 #ifdef DEBUG
@@ -486,10 +487,6 @@ static void init(void)
 #ifdef HAVE_SERIAL
     serial_setup();
 #endif
-#endif
-
-#ifdef ROCKBOX_HAS_LOGDISKF
-    init_logdiskf();
 #endif
 
 #if CONFIG_RTC
@@ -676,7 +673,7 @@ static void init(void)
     }
 
     CHART(">settings_apply(true)");
-    settings_apply(true);        
+    settings_apply(true);
     CHART("<settings_apply(true)");
     CHART(">init_dircache(false)");
     init_dircache(false);
@@ -700,7 +697,10 @@ static void init(void)
     playlist_init();
     tree_mem_init();
     filetype_init();
-    scrobbler_init();
+
+    if (global_settings.audioscrobbler)
+        scrobbler_init();
+
     shortcuts_init();
 
 #if CONFIG_CODEC != SWCODEC

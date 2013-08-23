@@ -18,54 +18,32 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#include "config.h"
+#ifndef __HWSTUB_CONFIG__
+#define __HWSTUB_CONFIG__
 
-ENTRY(start)
-OUTPUT_FORMAT(elf32-littlearm)
-OUTPUT_ARCH(arm)
-STARTUP(crt0.o)
+#include "target-config.h"
 
-#define IRAM_END_ADDR   (IRAM_ORIG + IRAM_SIZE)
+#define STACK_SIZE      0x1000
+#define MAX_LOGF_SIZE   128
 
-MEMORY
-{
-    OCRAM : ORIGIN = IRAM_ORIG, LENGTH = IRAM_SIZE
-}
+#if defined(CPU_ARM) && defined(__ASSEMBLER__)
+/* ARMv4T doesn't switch the T bit when popping pc directly, we must use BX */
+.macro ldmpc cond="", order="ia", regs
+#if ARM_ARCH == 4 && defined(USE_THUMB)
+    ldm\cond\order sp!, { \regs, lr }
+    bx\cond lr
+#else
+    ldm\cond\order sp!, { \regs, pc }
+#endif
+.endm
+.macro ldrpc cond=""
+#if ARM_ARCH == 4 && defined(USE_THUMB)
+    ldr\cond lr, [sp], #4
+    bx\cond  lr
+#else
+    ldr\cond pc, [sp], #4
+#endif
+.endm
+#endif
 
-SECTIONS
-{
-    .octext :
-    {
-        oc_codestart = .;
-        *(.text*)
-        *(.icode*)
-        *(.data*)
-        *(.rodata*)
-    } > OCRAM
-
-    .bss (NOLOAD) :
-    {
-        bss_start = .;
-        *(.bss)
-        bss_end = .;
-    } > OCRAM
-
-    .stack (NOLOAD) :
-    {
-        oc_codeend = .;
-        oc_stackstart = .;
-        . += STACK_SIZE;
-        oc_stackend = .;
-        oc_bufferstart = .;
-    } > OCRAM
-
-    .ocend IRAM_END_ADDR (NOLOAD) :
-    {
-        oc_bufferend = .;
-    } > OCRAM
-
-    /DISCARD/ :
-    {
-        *(.eh_frame)
-    } 
-}
+#endif /* __HWSTUB_CONFIG__ */
