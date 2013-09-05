@@ -101,40 +101,6 @@
 # Samsung
 # YH820/YH920/YH925 samsungyh*
 #ext_lang
-<phrase>
-  id: LANG_SURROUND
-  desc: in the sound settings menu
-  user: core
-  <source>
-    *: none
-    swcodec: "Surround"
-  </source>
-  <dest>
-    *: none
-    swcodec: "Surround"
-  </dest>
-  <voice>
-    *: none
-    swcodec: "Surround"
-  </voice>
-</phrase>
-<phrase>
-  id: LANG_ANTIALIAS_WARM
-  desc: in the sound settings menu
-  user: core
-  <source>
-    *: none
-    swcodec: "AntiAlias"
-  </source>
-  <dest>
-    *: none
-    swcodec: "AntiAlias(Tube)"
-  </dest>
-  <voice>
-    *: none
-    swcodec: "tube"
-  </voice>
-</phrase>
  <phrase>
   id: LANG_ONPLAY_LYRICS
   desc: Onplay snclrc/lycplayer

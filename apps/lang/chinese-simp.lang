@@ -22,40 +22,6 @@
 # - Purling Nayuki
 #ext_lang
 <phrase>
-  id: LANG_SURROUND
-  desc: in the sound settings menu
-  user: core
-  <source>
-    *: none
-    swcodec: "Surround"
-  </source>
-  <dest>
-    *: none
-    swcodec: "差分环绕（Beta）"
-  </dest>
-  <voice>
-    *: none
-    swcodec: ""
-  </voice>
-</phrase>
-<phrase>
-  id: LANG_ANTIALIAS_WARM
-  desc: in the sound settings menu
-  user: core
-  <source>
-    *: none
-    swcodec: "AntiAlias"
-  </source>
-  <dest>
-    *: none
-    swcodec: "抗锯齿(Tube)"
-  </dest>
-  <voice>
-    *: none
-    swcodec: ""
-  </voice>
-</phrase>
-<phrase>
   id: LANG_ONPLAY_LYRICS
   desc: Onplay snclrc/lycplayer
   user: core
