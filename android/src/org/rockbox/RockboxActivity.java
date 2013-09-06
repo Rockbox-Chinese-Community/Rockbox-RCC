@@ -50,7 +50,6 @@ public class RockboxActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         UMFeedbackService.enableNewReplyNotification(this, NotificationType.AlertDialog);
-	Toast.makeText(this, "Rockbox中文社区精心定制", Toast.LENGTH_LONG).show();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         if (RockboxAppSetting.getTitlebarStatus())
         {
