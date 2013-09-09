@@ -100,7 +100,7 @@ struct sdmmc_config_t sdmmc_config[] =
         .mode = MMC_MODE,
     },
 #elif defined(CREATIVE_ZENXFI2)
-    /* The Zen X-Fi2 uses pin B1P29 for power*/
+    /* The Zen X-Fi2 uses pin B1P29 for power */
     {
         .name = "microSD",
         .flags = POWER_PIN | REMOVABLE | DETECT_INVERTED,
@@ -115,7 +115,7 @@ struct sdmmc_config_t sdmmc_config[] =
         .ssp = 2,
         .mode = SD_MODE,
     },
-    /* The Zen X-Fi3 uses pin #B0P07 for power*/
+    /* The Zen X-Fi3 uses pin #B0P07 for power */
     {
         .name = "microSD",
         .flags = POWER_PIN | POWER_INVERTED | REMOVABLE | POWER_DELAY,
@@ -865,7 +865,7 @@ int mmc_init(void)
     int ret = sdmmc_init();
     if(ret < 0) return ret;
 
-    _sd_num_drives = 0;
+    _mmc_num_drives = 0;
     for(unsigned drive = 0; drive < SDMMC_NUM_DRIVES; drive++)
         if(SDMMC_MODE(drive) == MMC_MODE)
         {
@@ -936,8 +936,9 @@ bool mmc_disk_is_active(void)
     return false;
 }
 
-bool mmc_usb_active(void)
+bool mmc_usb_active(int delayticks)
 {
+    (void) delayticks;
     return mmc_disk_is_active();
 }
 
@@ -979,6 +980,11 @@ int mmc_write_sectors(IF_MD(int mmc_drive,) unsigned long start, int count, cons
     int mmc_drive = 0;
 #endif
     return transfer_sectors(mmc_map[mmc_drive], start, count, (void *)buf, false);
+}
+
+tCardInfo *mmc_card_info(int card_no)
+{
+    return &SDMMC_INFO(mmc_map[card_no]);
 }
 
 #endif
