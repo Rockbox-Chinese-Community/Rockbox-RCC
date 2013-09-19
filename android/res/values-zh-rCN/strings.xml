@@ -16,7 +16,7 @@
 <string name="rockbox_wakelock_off_toast">关闭待机后继续播放功能</string>
 <string name="rockbox_about">关于</string>
 <string name="rockbox_about_title">关于 Rockbox</string>
-<string name="rockbox_about_message">Rockbox-RCC\nRockbox中文社区精心定制\nhttp://bbs.rockboxcn.org\n\n*转载注明出处*</string>
+<string name="rockbox_about_message">Rockbox-RCC\nRockbox中文社区精心定制\nhttp://www.rockboxcn.org/\n\n*转载注明出处*</string>
 <string name="rockbox_vollock_on">设置锁定音量</string>
 <string name="rockbox_vollock_info">请输入锁定音量值（范围：1-100）</string>
 <string name="rockbox_vollock_hint1">当前值：</string>
@@ -56,7 +56,7 @@
 <string name="pre_rockbox_backup_backup">备份</string>
 <string name="pre_rockbox_backup_restore">恢复</string>
 <string name="pre_rockbox_display">界面设置</string>
-<string name="pre_rockbox_show_titlebar">显示系统状态栏</string>
+<string name="pre_rockbox_show_titlebar">显示通知栏</string>
 <string name="pre_rockbox_show_titlebar_summary">下次进入生效</string>
 <string name="rockbox_sdcard_notfound">SD卡不存在或未挂载</string>
 <string name="rockbox_backupfile_notfound">备份文件不存在</string>
