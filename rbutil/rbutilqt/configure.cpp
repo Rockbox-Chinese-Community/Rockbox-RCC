@@ -734,9 +734,28 @@ void Config::autodetect()
     this->unsetCursor();
     if(detected.size() > 1) {
         // FIXME: handle multiple found players.
-        QMessageBox::information(this, tr("Device Detection"),
-                tr("Multiple devices have been detected. Please disconnect "
-                   "all players but one and try again."));
+        QString msg;
+        msg = tr("Multiple devices have been detected. Please disconnect "
+                 "all players but one and try again.");
+        msg += "<br/>";
+        msg += tr("Detected devices:");
+        msg += "<ul>";
+        for(int i = 0; i < detected.size(); ++i) {
+            QString mp = detected.at(i).mountpoint;
+            if(mp.isEmpty()) {
+                mp = tr("(unknown)");
+            }
+            msg += QString("<li>%1 at %2</li>").arg(
+                        SystemInfo::platformValue(detected.at(i).device,
+                                      SystemInfo::CurPlatformName).toString(),
+                        QDir::toNativeSeparators(mp));
+        }
+        msg += "</ul>";
+        msg += tr("Note: detecting connected devices might be ambiguous. "
+                  "You might have less devices connected than listed. "
+                  "In this case it might not be possible to detect your "
+                  "player unambiguously.");
+        QMessageBox::information(this, tr("Device Detection"), msg);
         ui.treeDevices->setEnabled(true);
     }
     else if(detected.size() == 0) {
@@ -746,7 +765,8 @@ void Config::autodetect()
                    QMessageBox::Ok ,QMessageBox::Ok);
         ui.treeDevices->setEnabled(true);
     }
-    else if(detected.at(0).status != Autodetection::PlayerOk) {
+    else if(detected.at(0).status != Autodetection::PlayerOk
+            && detected.at(0).status != Autodetection::PlayerAmbiguous) {
         QString msg;
         switch(detected.at(0).status) {
             case Autodetection::PlayerIncompatible:
@@ -777,9 +797,8 @@ void Config::autodetect()
                 }
                 break;
             case Autodetection::PlayerError:
-                msg += tr("An unknown error occured during player detection.");
-                break;
             default:
+                msg += tr("An unknown error occured during player detection.");
                 break;
         }
         QMessageBox::information(this, tr("Device Detection"), msg);
