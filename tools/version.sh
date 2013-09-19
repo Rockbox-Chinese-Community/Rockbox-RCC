@@ -85,7 +85,7 @@ if [ -z $VERSION ]; then
         fi
     fi
 
-manufacturer="Rockbox中文社区"
+manufacturer="Rockbox-RCC "
 gitver=`git rev-parse --verify --short HEAD`
 VERSION=$manufacturer-$gitver-`date -u +%y%m%d`$mod
 fi
