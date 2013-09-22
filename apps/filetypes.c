@@ -55,6 +55,7 @@
 
 /* a table for the known file types */
 static const struct filetype inbuilt_filetypes[] = {
+    { "ofl", FILE_ATTR_AUDIO, Icon_Audio, VOICE_EXT_MPA },
     { "mp3", FILE_ATTR_AUDIO, Icon_Audio, VOICE_EXT_MPA },
     { "mp2", FILE_ATTR_AUDIO, Icon_Audio, VOICE_EXT_MPA },
     { "mpa", FILE_ATTR_AUDIO, Icon_Audio, VOICE_EXT_MPA },

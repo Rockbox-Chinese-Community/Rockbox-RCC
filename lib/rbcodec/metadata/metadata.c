@@ -70,12 +70,12 @@ const struct afmt_entry audio_formats[AFMT_NUM_CODECS] =
 #if CONFIG_CODEC != SWCODEC
     /* MPEG Audio layer 3 on HWCODEC: .talk clips, no encoder  */
     [AFMT_MPA_L3] =
-        AFMT_ENTRY("MP3",   "mpa",  NULL,       get_mp3_metadata,   "mp3\0talk\0"),
+        AFMT_ENTRY("MP3",   "mpa",  NULL,       get_mp3_metadata,   "mp3\0talk\0ofl\0"),
 
 #else /* CONFIG_CODEC == SWCODEC */
     /* MPEG Audio layer 3 on SWCODEC */
     [AFMT_MPA_L3] =
-        AFMT_ENTRY("MP3",   "mpa",  "mp3_enc",  get_mp3_metadata,   "mp3\0"),
+        AFMT_ENTRY("MP3",   "mpa",  "mp3_enc",  get_mp3_metadata,   "mp3\0ofl\0"),
 
     /* MPEG Audio layer 1 */
     [AFMT_MPA_L1] =
