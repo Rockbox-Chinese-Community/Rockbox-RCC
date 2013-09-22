@@ -85,9 +85,9 @@ if [ -z $VERSION ]; then
         fi
     fi
 
-manufacturer="Rockbox-RCC "
+manufacturer="Rockbox-RCC"
 gitver=`git rev-parse --verify --short HEAD`
-VERSION=$manufacturer-$gitver-`date -u +%y%m%d`$mod
+VERSION="$manufacturer $gitver-`date -u +%y%m%d`$mod"
 fi
 echo $VERSION
 
