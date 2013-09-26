@@ -603,7 +603,6 @@ static void eq_load_from_cfg(void *setting, char *value)
 static char* eq_write_to_cfg(void *setting, char *buf, int buf_len)
 {
     struct eq_band_setting *eq = setting;
-
     snprintf(buf, buf_len, "%d, %d, %d", eq->cutoff, eq->q, eq->gain);
     return buf;
 }
@@ -2117,95 +2116,99 @@ const struct settings_list settings[] = {
                   eq_load_from_cfg, eq_write_to_cfg,            \
                   eq_is_changed, eq_set_default)
     EQ_BAND(0, "eq low shelf filter"),
+#if EQ_NUM_BANDS > 1
     EQ_BAND(1, "eq peak filter 1"),
-#if EQ_NUM_BANDS > 3
+#endif
+#if EQ_NUM_BANDS > 2
     EQ_BAND(2, "eq peak filter 2"),
 #endif
-#if EQ_NUM_BANDS > 4
+#if EQ_NUM_BANDS > 3
     EQ_BAND(3, "eq peak filter 3"),
 #endif
-#if EQ_NUM_BANDS > 5
+#if EQ_NUM_BANDS > 4
     EQ_BAND(4, "eq peak filter 4"),
 #endif
-#if EQ_NUM_BANDS > 6
+#if EQ_NUM_BANDS > 5
     EQ_BAND(5, "eq peak filter 5"),
 #endif
-#if EQ_NUM_BANDS > 7
+#if EQ_NUM_BANDS > 6
     EQ_BAND(6, "eq peak filter 6"),
 #endif
-#if EQ_NUM_BANDS > 8
+#if EQ_NUM_BANDS > 7
     EQ_BAND(7, "eq peak filter 7"),
 #endif
-#if EQ_NUM_BANDS > 9
+#if EQ_NUM_BANDS > 8
     EQ_BAND(8, "eq peak filter 8"),
 #endif
-#if EQ_NUM_BANDS > 10
+#if EQ_NUM_BANDS > 9
     EQ_BAND(9, "eq peak filter 9"),
 #endif
-#if EQ_NUM_BANDS > 11
+#if EQ_NUM_BANDS > 10
     EQ_BAND(10, "eq peak filter 10"),
 #endif
-#if EQ_NUM_BANDS > 12
+#if EQ_NUM_BANDS > 11
     EQ_BAND(11, "eq peak filter 11"),
 #endif
-#if EQ_NUM_BANDS > 13
+#if EQ_NUM_BANDS > 12
     EQ_BAND(12, "eq peak filter 12"),
 #endif
-#if EQ_NUM_BANDS > 14
+#if EQ_NUM_BANDS > 13
     EQ_BAND(13, "eq peak filter 13"),
 #endif
-#if EQ_NUM_BANDS > 15
+#if EQ_NUM_BANDS > 14
     EQ_BAND(14, "eq peak filter 14"),
 #endif
-#if EQ_NUM_BANDS > 16
+#if EQ_NUM_BANDS > 15
     EQ_BAND(15, "eq peak filter 15"),
 #endif
-#if EQ_NUM_BANDS > 17
+#if EQ_NUM_BANDS > 16
     EQ_BAND(16, "eq peak filter 16"),
 #endif
-#if EQ_NUM_BANDS > 18
+#if EQ_NUM_BANDS > 17
     EQ_BAND(17, "eq peak filter 17"),
 #endif
-#if EQ_NUM_BANDS > 19
+#if EQ_NUM_BANDS > 18
     EQ_BAND(18, "eq peak filter 18"),
 #endif
-#if EQ_NUM_BANDS > 20
+#if EQ_NUM_BANDS > 19
     EQ_BAND(19, "eq peak filter 19"),
 #endif
-#if EQ_NUM_BANDS > 21
+#if EQ_NUM_BANDS > 20
     EQ_BAND(20, "eq peak filter 20"),
 #endif
-#if EQ_NUM_BANDS > 22
+#if EQ_NUM_BANDS > 21
     EQ_BAND(21, "eq peak filter 21"),
 #endif
-#if EQ_NUM_BANDS > 23
+#if EQ_NUM_BANDS > 22
     EQ_BAND(22, "eq peak filter 22"),
 #endif
-#if EQ_NUM_BANDS > 24
+#if EQ_NUM_BANDS > 23
     EQ_BAND(23, "eq peak filter 23"),
 #endif
-#if EQ_NUM_BANDS > 25
+#if EQ_NUM_BANDS > 24
     EQ_BAND(24, "eq peak filter 24"),
 #endif
-#if EQ_NUM_BANDS > 26
+#if EQ_NUM_BANDS > 25
     EQ_BAND(25, "eq peak filter 25"),
 #endif
-#if EQ_NUM_BANDS > 27
+#if EQ_NUM_BANDS > 26
     EQ_BAND(26, "eq peak filter 26"),
 #endif
-#if EQ_NUM_BANDS > 28
+#if EQ_NUM_BANDS > 27
     EQ_BAND(27, "eq peak filter 27"),
 #endif
-#if EQ_NUM_BANDS > 29
+#if EQ_NUM_BANDS > 28
     EQ_BAND(28, "eq peak filter 28"),
 #endif
-#if EQ_NUM_BANDS > 30
+#if EQ_NUM_BANDS > 29
     EQ_BAND(29, "eq peak filter 29"),
 #endif
-#if EQ_NUM_BANDS > 31
+#if EQ_NUM_BANDS > 30
     EQ_BAND(30, "eq peak filter 30"),
 #endif
+#if EQ_NUM_BANDS > 31
     EQ_BAND(EQ_NUM_BANDS-1, "eq high shelf filter"),
+#endif
 #undef EQ_BAND
 
     /* dithering */
