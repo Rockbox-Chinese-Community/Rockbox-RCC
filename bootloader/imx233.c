@@ -50,6 +50,8 @@
 extern char loadaddress[];
 extern char loadaddressend[];
 
+#define MSG(width, short, long) (LCD_WIDTH < (width) ? short : long)
+
 #ifdef HAVE_BOOTLOADER_USB_MODE
 static void usb_mode(int connect_timeout)
 {
@@ -98,7 +100,7 @@ static void usb_mode(int connect_timeout)
             if(button == SYS_USB_DISCONNECTED)
                 break;
             struct imx233_powermgmt_info_t info = imx233_powermgmt_get_info();
-            lcd_putsf(0, 7, "Charging status: %s",
+            lcd_putsf(0, 7, "%s: %s", MSG(240, "Status", "Charging status"),
                 info.state == CHARGE_STATE_DISABLED ? "disabled" :
                 info.state == CHARGE_STATE_ERROR ? "error" :
                 info.state == DISCHARGING ? "discharging" :
@@ -106,11 +108,11 @@ static void usb_mode(int connect_timeout)
                 info.state == TOPOFF ? "topoff" :
                 info.state == CHARGING ? "charging" : "<unknown>");
             lcd_putsf(0, 8, "Battery: %d%% (%d mV)", battery_level(), battery_voltage());
-            lcd_putsf(0, 9, "Die temp: %d°C [%d, %d]",
+            lcd_putsf(0, 9, "%s: %d 'C [%d, %d]", MSG(240, "Die", "Die temp"),
                 adc_read(ADC_DIE_TEMP), IMX233_DIE_TEMP_HIGH,
                 IMX233_DIE_TEMP_LOW);
             #ifdef ADC_BATT_TEMP
-            lcd_putsf(0, 10, "Batt temp: %d [%d, %d]",
+            lcd_putsf(0, 10, "%s: %d 'C [%d, %d]", MSG(240, "Batt", "Batt temp"),
                 adc_read(ADC_BATT_TEMP), IMX233_BATT_TEMP_HIGH,
                 IMX233_BATT_TEMP_LOW);
             #endif
@@ -139,6 +141,11 @@ void main(uint32_t arg, uint32_t addr)
     system_init();
     kernel_init();
 
+    /* some ixm233 targets needs this because the cpu and/or memory is clocked
+     * at 24MHz, resulting in terribly slow boots and unusable usb mode.
+     * While we are at it, clock at maximum speed to minimise boot time. */
+    imx233_set_cpu_frequency(CPUFREQ_MAX);
+
     power_init();
     enable_irq();
 
@@ -150,15 +157,16 @@ void main(uint32_t arg, uint32_t addr)
 
     button_init();
 
-    printf("Boot version: %s", RBVERSION);
-    printf("arg=%x addr=%x", arg, addr);
+    printf("%s: %s", MSG(240, "Ver", "Boot version"), RBVERSION);
+    printf("%s: %x ", MSG(240, "Arg", "Boot arg"), arg);
+    printf("%s: %x", MSG(240, "Addr", "Boot addr"), addr);
 #if IMX233_SUBTARGET >= 3780
-    printf("power up source: %x", BF_RD(POWER_STS, PWRUP_SOURCE));
+    printf("Power up source: %x", BF_RD(POWER_STS, PWRUP_SOURCE));
 #endif
 
     if(arg == 0xfee1dead)
     {
-        printf("Disable partitions window.");
+        printf("%s", MSG(240, "Disable window", "Disable partitions window"));
         imx233_partitions_enable_window(false);
     }
 
