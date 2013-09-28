@@ -22,6 +22,34 @@
 # - Purling Nayuki
 #ext_lang
 <phrase>
+  id: LANG_EQUALIZER_DONE_RESET_GAIN
+  desc: in EQ settings
+  user: core
+  <source>
+    *: "Gain cleared"
+  </source>
+  <dest>
+    *: "增益重置完成"
+  </dest>
+  <voice>
+    *: "所有频段增益重置已经完成"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_EQUALIZER_RESET_GAIN
+  desc: in EQ settings
+  user: core
+  <source>
+    *: "Reset gain"
+  </source>
+  <dest>
+    *: "重置增益"
+  </dest>
+  <voice>
+    *: "重置均衡器频段增益"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_ONPLAY_LYRICS
   desc: Onplay snclrc/lycplayer
   user: core

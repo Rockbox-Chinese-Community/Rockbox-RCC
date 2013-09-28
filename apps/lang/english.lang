@@ -101,7 +101,35 @@
 # Samsung
 # YH820/YH920/YH925 samsungyh*
 #ext_lang
- <phrase>
+<phrase>
+  id: LANG_EQUALIZER_DONE_RESET_GAIN
+  desc: in EQ settings
+  user: core
+  <source>
+    *: "Gain cleared"
+  </source>
+  <dest>
+    *: "Gain cleared"
+  </dest>
+  <voice>
+    *: "Gain cleared"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_EQUALIZER_RESET_GAIN
+  desc: in EQ settings
+  user: core
+  <source>
+    *: "Reset gain"
+  </source>
+  <dest>
+    *: "Reset gain"
+  </dest>
+  <voice>
+    *: "Reset equalizer bands gain"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_ONPLAY_LYRICS
   desc: Onplay snclrc/lycplayer
   user: core

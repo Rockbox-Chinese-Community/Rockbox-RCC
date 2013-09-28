@@ -39,6 +39,7 @@
 #include "talk.h"
 #include "misc.h"
 #include "sound.h"
+#include "splash.h"
 #include "dsp_proc_settings.h"
 #include "tree.h"
 #include "screen_access.h"
@@ -783,6 +784,7 @@ static void eq_reset_gain(void)
 {
     for(int i = 0;i<EQ_NUM_BANDS;i++)
         global_settings.eq_band_settings[i].gain = 0;
+    splash(HZ, ID2P(LANG_EQUALIZER_DONE_RESET_GAIN));
     return eq_apply();
 }
 
@@ -803,8 +805,10 @@ MENUITEM_FUNCTION(eq_save, 0, ID2P(LANG_EQUALIZER_SAVE),
 MENUITEM_FUNCTION(eq_browse, 0, ID2P(LANG_EQUALIZER_BROWSE),
                     (int(*)(void))eq_browse_preset, NULL, NULL,
 		    Icon_NOICON);
-
+MENUITEM_FUNCTION(eq_reset, 0, ID2P(LANG_EQUALIZER_RESET_GAIN),
+                    (int(*)(void))eq_reset_gain, NULL, NULL,
+		    Icon_NOICON);
 MAKE_MENU(equalizer_menu, ID2P(LANG_EQUALIZER), NULL, Icon_EQ,
         &eq_enable, &eq_graphical, &eq_precut, &gain_menu,
-        &advanced_menu, &eq_save, &eq_browse);
+        &advanced_menu, &eq_save, &eq_reset, &eq_browse);
 
