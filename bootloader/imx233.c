@@ -185,6 +185,24 @@ void main(uint32_t arg, uint32_t addr)
     if(usb_detect() == USB_INSERTED)
         usb_mode(HZ);
 
+    /* dummy read, might be necessary to init things */
+#ifdef HAVE_BUTTON_DATA
+    int data;
+    button_read_device(&data);
+#else
+    button_read_device();
+#endif
+
+#ifdef HAS_BUTTON_HOLD
+    if(button_hold())
+    {
+        printf("Hold switch on");
+        printf("Shutting down...");
+        sleep(HZ);
+        power_off();
+    }
+#endif
+
     printf("Loading firmware");
 
     loadbuffer = (unsigned char*)loadaddress;
