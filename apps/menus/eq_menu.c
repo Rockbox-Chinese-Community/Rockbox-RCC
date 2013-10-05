@@ -791,9 +791,6 @@ static void eq_reset_gain(void)
 static bool eq_browse_preset(void)
 {
     static struct browse_folder_info eqs = { EQS_DIR, SHOW_CFG };
-
-    /*Reset all the bands gain before loding presets*/
-    eq_reset_gain();
     return browse_folder((void*)&eqs);
 }
 
