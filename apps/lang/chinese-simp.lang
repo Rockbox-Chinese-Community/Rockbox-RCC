@@ -12485,7 +12485,7 @@
   </source>
   <dest>
     *: none
-    gigabeats,mpiohd200,mpiohd300,sansafuzeplus,creativezenxfi2,creativezenxfi3: "3-D增强"
+    gigabeats,mpiohd200,mpiohd300,sansafuzeplus,creativezenxfi2,creativezenxfi3: "3D增强"
   </dest>
   <voice>
     *: none
@@ -12722,11 +12722,11 @@
   </source>
   <dest>
     *: none
-    gigabeats: "高级音调控制设置"
+    gigabeats: "高级硬件均衡器"
   </dest>
   <voice>
     *: none
-    gigabeats: "高级音调控制设置"
+    gigabeats: "高级硬件均衡器"
   </voice>
 </phrase>
 <phrase>
@@ -12798,11 +12798,11 @@
   </source>
   <dest>
     *: none
-    gigabeats: "音调控制"
+    gigabeats: "硬件均衡器"
   </dest>
   <voice>
     *: none
-    gigabeats: "音调控制"
+    gigabeats: "硬件均衡器"
   </voice>
 </phrase>
 <phrase>
