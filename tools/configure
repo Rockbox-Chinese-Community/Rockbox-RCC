@@ -2564,7 +2564,6 @@ fi
     t_manufacturer="as3525"
     t_model="sansa-clipv2"
     arm926ejscc
-    app_set_eq_num_bands
     ;;
 
    61|sansaview)
@@ -2610,7 +2609,6 @@ fi
     t_manufacturer="as3525"
     t_model="sansa-clipplus"
     arm926ejscc
-    app_set_eq_num_bands
     ;;
 
    63|sansafuzev2)
@@ -2631,7 +2629,6 @@ fi
     t_manufacturer="as3525"
     t_model="sansa-fuzev2"
     arm926ejscc
-    app_set_eq_num_bands
     ;;
 
    64|sansafuzeplus)
@@ -2672,7 +2669,6 @@ fi
     t_manufacturer="as3525"
     t_model="sansa-clipzip"
     arm926ejscc
-    app_set_eq_num_bands
     ;;
 
    66|sansaconnect)
@@ -3262,7 +3258,6 @@ fi
     target="ANDROID"
     app_type="android"
     app_set_lcd_size
-    app_set_eq_num_bands
     sharedir="/data/data/org.rockbox/app_rockbox/rockbox"
     bindir="/data/data/org.rockbox/lib"
     libdir="/data/data/org.rockbox/app_rockbox"
@@ -3710,6 +3705,7 @@ fi
       debug=""
       btype="N" # set it explicitly since RET only gets here as well
       echo "Normal build selected"
+      app_set_eq_num_bands
       ;;
 
   esac
