@@ -84,6 +84,15 @@ static struct current_step_bit_t g_4p2_charge_limit_bits[] =
 #define USE_VBUSVALID
 #endif
 
+bool imx233_power_usb_detect(void)
+{
+#ifdef USE_VBUSVALID
+    return BF_RD(POWER_STS, VBUSVALID);
+#else
+    return BF_RD(POWER_STS, VDD5V_GT_VDDIO);
+#endif
+}
+
 void INT_VDD5V(void)
 {
 #ifdef USE_VBUSVALID
@@ -111,6 +120,26 @@ void INT_VDD5V(void)
         BF_CLR(POWER_CTRL, VDD5V_GT_VDDIO_IRQ);
     }
 #endif
+#if IMX233_SUBTARGET >= 3700
+    /* this IRQ is shared by several sources, disable them */
+    if(BF_RD(POWER_CTRL, PSWITCH_IRQ))
+    {
+        BF_CLR(POWER_CTRL, ENIRQ_PSWITCH);
+        BF_CLR(POWER_CTRL, PSWITCH_IRQ);
+    }
+#if IMX233_SUBTARGET < 3780
+    if(BF_RD(POWER_CTRL, LINREG_OK_IRQ))
+    {
+        BF_CLR(POWER_CTRL, ENIRQ_LINREG_OK);
+        BF_CLR(POWER_CTRL, LINREG_OK_IRQ);
+    }
+#endif /* IMX233_SUBTARGET < 3780 */
+    if(BF_RD(POWER_CTRL, DC_OK_IRQ))
+    {
+        BF_CLR(POWER_CTRL, ENIRQ_DC_OK);
+        BF_CLR(POWER_CTRL, DC_OK_IRQ);
+    }
+#endif /* IMX233_SUBTARGET >= 3700 */
 }
 
 void imx233_power_init(void)

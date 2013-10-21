@@ -205,6 +205,7 @@ enum imx233_i2c_error_t imx233_i2c_end(unsigned timeout)
     if(semaphore_wait(&i2c_sema, timeout) == OBJ_WAIT_TIMEDOUT)
     {
         imx233_dma_reset_channel(APB_I2C);
+        imx233_i2c_reset();
         ret = I2C_TIMEOUT;
     }
     else if(BF_RD(I2C_CTRL1, MASTER_LOSS_IRQ))
@@ -239,7 +240,7 @@ int i2c_write(int device, const unsigned char* buf, int count)
     imx233_i2c_begin();
     imx233_i2c_add(true, true, &addr, 1, false); /* start + dev addr */
     imx233_i2c_add(false, true, (void *)buf, count, true); /* data + stop */
-    return imx233_i2c_end(TIMEOUT_BLOCK);
+    return imx233_i2c_end(1);
 }
 
 int i2c_read(int device, unsigned char* buf, int count)
@@ -248,7 +249,7 @@ int i2c_read(int device, unsigned char* buf, int count)
     imx233_i2c_begin();
     imx233_i2c_add(true, true, &addr, 1, false); /* start + dev addr */
     imx233_i2c_add(false, false, buf, count, true); /* data + stop */
-    return imx233_i2c_end(TIMEOUT_BLOCK);
+    return imx233_i2c_end(1);
 }
 
 int i2c_readmem(int device, int address, unsigned char* buf, int count)
@@ -259,7 +260,7 @@ int i2c_readmem(int device, int address, unsigned char* buf, int count)
     imx233_i2c_add(true, true, start, 2, false); /* start + dev addr + addr */
     imx233_i2c_add(true, true, &addr_rd, 1, false); /* start + dev addr */
     imx233_i2c_add(false, false, buf, count, true); /* data + stop */
-    return imx233_i2c_end(TIMEOUT_BLOCK);
+    return imx233_i2c_end(1);
 }
 
 int i2c_writemem(int device, int address, const unsigned char* buf, int count)
@@ -268,5 +269,5 @@ int i2c_writemem(int device, int address, const unsigned char* buf, int count)
     imx233_i2c_begin();
     imx233_i2c_add(true, true, start, 2, false); /* start + dev addr + addr */
     imx233_i2c_add(false, true, (void *)buf, count, true); /* data + stop */
-    return imx233_i2c_end(TIMEOUT_BLOCK);
+    return imx233_i2c_end(1);
 }

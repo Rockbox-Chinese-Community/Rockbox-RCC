@@ -314,7 +314,7 @@ simcc () {
    FreeBSD)
    sigaltstack=`check_sigaltstack`
    echo "FreeBSD host detected"
-   LDOPTS="$LDOPTS -ldl"
+   LDOPTS="$LDOPTS"
    ;;
 
    Darwin)
