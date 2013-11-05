@@ -20,11 +20,12 @@
 #define ZIPUTIL_H
 
 #include <QtCore>
+#include "archiveutil.h"
 #include "quazip/quazip.h"
 #include "quazip/quazipfile.h"
 #include "quazip/quazipfileinfo.h"
 
-class ZipUtil : public QObject
+class ZipUtil : public ArchiveUtil
 {
     Q_OBJECT
 
@@ -32,12 +33,12 @@ class ZipUtil : public QObject
         ZipUtil(QObject* parent);
         ~ZipUtil();
         bool open(QString& zipfile, QuaZip::Mode mode = QuaZip::mdUnzip);
-        bool close(void);
-        bool extractArchive(QString& dest, QString file = "");
+        virtual bool close(void);
+        virtual bool extractArchive(const QString& dest, QString file = "");
         bool appendDirToArchive(QString& source, QString& basedir);
         bool appendFileToArchive(QString& file, QString& basedir);
         qint64 totalUncompressedSize(unsigned int clustersize = 0);
-        QStringList files(void);
+        virtual QStringList files(void);
 
     signals:
        void logProgress(int, int);

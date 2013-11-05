@@ -107,9 +107,9 @@ void usage(void)
     printf("\t-ipod3g ipod firmware partition format (3rd Gen)\n"
            "\t-ipod4g ipod firmware partition format (4th Gen, Mini, Nano, Photo/Color)\n"
            "\t-ipod5g ipod firmware partition format (5th Gen - aka Video)\n"
-           "\t-creative=X Creative firmware structure format\n"
-           "\t            (X values: zvm, zvm60, zenvision\n"
-           "\t                       zenv, zen\n");
+           "\t-creative=X [-no-ciff] Creative firmware structure format\n"
+           "\t            (X values: zvm, zvm60, zenvision, zenv, zen,\n"
+           "\t             zenxfi, zenmozaic)\n");
     printf("\t-gigabeat Toshiba Gigabeat F/X format\n"
            "\t-gigabeats Toshiba Gigabeat S format\n"
            "\t-mi4v2  PortalPlayer .mi4 format (revision 010201)\n"
@@ -128,7 +128,8 @@ void usage(void)
            "\t                   9200, 1630, 6330, ldax, m200, c100, clip, e2v2,\n"
            "\t                   m2v4, fuze, c2v2, clv2, y820, y920, y925, x747,\n"
            "\t                   747p, x777, nn2g, m244, cli+, fuz2, hd20, hd30,\n"
-           "\t                   ip6g, rk27, clzp, zxf2, zxf3, fuz+, e370, e360)\n");
+           "\t                   ip6g, rk27, clzp, zxf2, zxf3, fuz+, e370, e360,\n"
+           "\t                   zxfi, zmoz, zen)\n");
     printf("\nNo option results in Archos standard player/recorder format.\n");
 
     exit(1);
@@ -365,10 +366,16 @@ int main (int argc, char** argv)
             modelnum = 82;
         else if (!strcmp(&argv[1][5], "zxf3")) /* Creative Zen X-Fi3 */
             modelnum = 83;
+        else if (!strcmp(&argv[1][5], "zxfi")) /* Creative ZEN X-Fi */
+            modelnum = 86;
+        else if (!strcmp(&argv[1][5], "zmoz")) /* Creative ZEN Mozaic*/
+            modelnum = 87;
         else if (!strcmp(&argv[1][5], "e370")) /* Sony NWZ-E370 series */
             modelnum = 88;
         else if (!strcmp(&argv[1][5], "e360")) /* Sony NWZ-E360 series */
             modelnum = 89;
+        else if (!strcmp(&argv[1][5], "zen")) /* Creative ZEN */
+            modelnum = 90;
         else {
             fprintf(stderr, "unsupported model: %s\n", &argv[1][5]);
             return 2;
@@ -455,6 +462,10 @@ int main (int argc, char** argv)
             return zvm_encode(iname, oname, ZENV, creative_enable_ciff);
         else if(!strcmp(&argv[1][10], "zen"))
             return zvm_encode(iname, oname, ZEN, creative_enable_ciff);
+        else if(!strcmp(&argv[1][10], "zenxfi"))
+            return zvm_encode(iname, oname, ZENXFI, creative_enable_ciff);
+        else if(!strcmp(&argv[1][10], "zenmozaic"))
+            return zvm_encode(iname, oname, ZENMOZAIC, creative_enable_ciff);
         else
         {
             fprintf(stderr, "unsupported Creative device: %s\n", &argv[1][10]);

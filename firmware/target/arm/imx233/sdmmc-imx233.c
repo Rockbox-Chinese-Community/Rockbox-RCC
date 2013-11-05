@@ -59,6 +59,7 @@ struct sdmmc_config_t
     int flags; /* flags */
     int power_pin; /* power pin */
     int power_delay; /* extra power up delay */
+    int wp_pin; /* write protect pin */
     int ssp; /* associated ssp block */
     int mode; /* mode (SD vs MMC) */
 };
@@ -70,6 +71,8 @@ struct sdmmc_config_t
 #define DETECT_INVERTED (1 << 3)
 #define POWER_DELAY     (1 << 4)
 #define WINDOW          (1 << 5)
+#define WP_PIN          (1 << 6)
+#define WP_INVERTED     (1 << 7)
 
 /* modes */
 #define SD_MODE         0
@@ -124,6 +127,30 @@ struct sdmmc_config_t sdmmc_config[] =
         .ssp = 1,
         .mode = SD_MODE,
     },
+#elif defined(CREATIVE_ZENXFI) || defined(CREATIVE_ZEN)
+    {
+        .name = "internal/SD",
+        .flags = WINDOW,
+        .ssp = 2,
+        .mode = SD_MODE,
+    },
+    /* The Zen X-Fi uses pin #B0P10 for power*/
+    {
+        .name = "microSD",
+        .flags = POWER_PIN | REMOVABLE | DETECT_INVERTED | POWER_DELAY | WP_PIN,
+        .power_pin = PIN(0, 10),
+        .wp_pin = PIN(0, 11),
+        .power_delay = HZ / 10, /* extra delay, to ramp up voltage? */
+        .ssp = 1,
+        .mode = SD_MODE,
+    },
+#elif defined(CREATIVE_ZENMOZAIC)
+    {
+        .name = "internal/SD",
+        .flags = WINDOW,
+        .ssp = 2,
+        .mode = SD_MODE,
+    }
 #elif defined(SONY_NWZE370) || defined(SONY_NWZE360)
     /* The Sony NWZ-E370 uses #B1P29 for power */
     {
@@ -645,6 +672,12 @@ static int transfer_sectors(int drive, unsigned long start, int count, void *buf
     return ret;
 }
 
+// user specificies the sdmmc drive
+static int part_read_fn(intptr_t user, unsigned long start, int count, void* buf)
+{
+    return transfer_sectors(user, start, count, buf, true);
+}
+
 static int init_drive(int drive)
 {
     int ret;
@@ -664,12 +697,10 @@ static int init_drive(int drive)
     /* compute window */
     if((SDMMC_FLAGS(drive) & WINDOW) && imx233_partitions_is_window_enabled())
     {
-        uint8_t mbr[512];
-        int ret = transfer_sectors(drive, 0, 1, mbr, true);
-        if(ret)
-            panicf("Cannot read MBR: %d", ret);
-        ret = imx233_partitions_compute_window(mbr, &window_start[drive],
-            &window_end[drive]);
+        /* NOTE: at this point the window shows the whole disk so raw disk
+         * accesses can be made to lookup partitions */
+        ret = imx233_partitions_compute_window(IF_MD_DRV(drive), part_read_fn,
+            IMX233_PART_USER, &window_start[drive], &window_end[drive]);
         if(ret)
             panicf("cannot compute partitions window: %d", ret);
         SDMMC_INFO(drive).numblocks = window_end[drive] - window_start[drive];

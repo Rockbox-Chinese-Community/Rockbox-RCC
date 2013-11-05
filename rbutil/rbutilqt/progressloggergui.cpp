@@ -142,9 +142,9 @@ void ProgressLoggerGui::show()
 
 void ProgressLoggerGui::saveErrorLog()
 {
-    QString filename = QFileDialog::getSaveFileName(downloadProgress, tr("Save system trace log"),
-                        QDir::homePath(), "*.log");
-    if(filename == "")
+    QString filename = QFileDialog::getSaveFileName(downloadProgress,
+            tr("Save system trace log"), QDir::homePath(), "*.log");
+    if(filename.isEmpty())
         return;
 
     QFile file(filename);
@@ -155,6 +155,7 @@ void ProgressLoggerGui::saveErrorLog()
     QString loggerTexts = "\n*********************************************\n"
                           "***************  Logger   *******************\n"
                           "*********************************************\n";
+
     file.write(loggerTexts.toUtf8(), loggerTexts.size());
 
 
@@ -174,8 +175,7 @@ void ProgressLoggerGui::saveErrorLog()
                    "*********************************************\n";
 
     file.write(info.toUtf8(), info.size());
-    info = Sysinfo::getInfo();
-    info.replace(QRegExp("(<[^>]+>)+"),"\n");
+    info = Sysinfo::getInfo(Sysinfo::InfoText);
     file.write(info.toUtf8(), info.size());
 
     // trace

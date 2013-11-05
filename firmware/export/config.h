@@ -149,6 +149,7 @@
 #define CREATIVE_ZENXFI3_PAD 55
 #define MA_PAD            56
 #define SONY_NWZ_PAD       57
+#define CREATIVE_ZEN_PAD   58
 
 /* CONFIG_REMOTE_KEYPAD */
 #define H100_REMOTE   1
@@ -253,6 +254,9 @@
 #define LCD_ILI9342   50 /* as used by HiFi E.T MA9/MA8 */
 #define LCD_NWZE370   51 /* as used by Sony NWZ-E370 series */
 #define LCD_NWZE360   52 /* as used by Sony NWZ-E360 series */
+#define LCD_CREATIVEZEN  55 /* as used by the Creative ZEN (X-Fi) (LMS250GF03-001(S6D0139)) */
+#define LCD_CREATIVEZENMOZAIC 56 /* as used by the Creative ZEN Mozaic (FGD0801) */
+#define LCD_ILI9342C   57 /* another type of lcd used by HiFi E.T MA9/MA8 */
 
 /* LCD_PIXELFORMAT */
 #define HORIZONTAL_PACKING 1
@@ -344,6 +348,17 @@ Lyre prototype 1 */
 /* Multiple cores */
 #define CPU 0
 #define COP 1
+
+/* imx233 specific: IMX233_PACKAGE */
+#define IMX233_BGA100   0
+#define IMX233_BGA169   1
+#define IMX233_TQFP100  2
+#define IMX233_TQFP128  3
+#define IMX233_LQFP100  4
+
+/* IMX233_PARTITIONS */
+#define IMX233_FREESCALE    (1 << 0) /* Freescale I.MX233 nonstandard two-level MBR */
+#define IMX233_CREATIVE     (1 << 1) /* Creative MBLK windowing */
 
 /* now go and pick yours */
 #if defined(ARCHOS_PLAYER)
@@ -510,8 +525,20 @@ Lyre prototype 1 */
 #include "config/pandora.h"
 #elif defined(SAMSUNG_YPR0)
 #include "config/samsungypr0.h"
+#elif defined(CREATIVE_ZENXFI)
+#include "config/creativezenxfi.h"
+#elif defined(CREATIVE_ZENMOZAIC)
+#include "config/creativezenmozaic.h"
+#elif defined(CREATIVE_ZEN)
+#include "config/creativezen.h"
 #elif defined(MA9)
 #include "config/hifietma9.h"
+#elif defined(MA9C)
+#include "config/hifietma9c.h"
+#elif defined(MA8)
+#include "config/hifietma8.h"
+#elif defined(MA8C)
+#include "config/hifietma8c.h"
 #elif defined(SONY_NWZE370)
 #include "config/sonynwze370.h"
 #elif defined(SONY_NWZE360)

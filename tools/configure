@@ -1337,29 +1337,31 @@ cat <<EOF
  92) Zen Vision                HDD1830           56) Sansa e200v2
  93) Zen X-Fi2            102) GoGear HDD6330    57) Sansa m200v4
  94) Zen X-Fi3                                   58) Sansa Fuze
-                          ==Meizu==              59) Sansa c200v2
- ==Onda==                 110) M6SL              60) Sansa Clipv2
- 120) VX747               111) M6SP              61) Sansa View
- 121) VX767               112) M3                62) Sansa Clip+
- 122) VX747+                                     63) Sansa Fuze v2
- 123) VX777               ==Tatung==             64) Sansa Fuze+
-                          150) Elio TPJ-1022     65) Sansa Clip Zip
- ==Samsung==                                     66) Sansa Connect
- 140) YH-820              ==Packard Bell==
- 141) YH-920              160) Vibe 500          ==Logik==
- 142) YH-925                                     80) DAX 1GB MP3/DAB
- 143) YP-S3               ==MPIO==
-                          170) HD200             ==Lyre project==
- ==Application==          171) HD300             130) Lyre proto 1
- 200) SDL                                        131) Mini2440
- 201) Android             ==ROCKCHIP==
- 202) Nokia N8xx          180) rk27xx generic    ==HiFiMAN==
- 203) Nokia N900                                 190) HM-60x
- 204) Pandora             ==HiFi E.T.==          191) HM-801
- 205) Samsung YP-R0       210) MA9
- 206) Android MIPS                               ==Sony==
- 207) Android x86                                220) NWZ-E370 series
-                                                 221) NWZ-E360 series
+ 96) Zen X-Fi             ==Meizu==              59) Sansa c200v2
+ 97) Zen X-Mozaic         110) M6SL              60) Sansa Clipv2
+ 98) Zen                  111) M6SP              61) Sansa View
+                          112) M3                62) Sansa Clip+
+ ==Onda==                                        63) Sansa Fuze v2
+ 120) VX747               ==Tatung==             64) Sansa Fuze+
+ 121) VX767               150) Elio TPJ-1022     65) Sansa Clip Zip
+ 122) VX747+                                     66) Sansa Connect
+ 123) VX777               ==Packard Bell==
+                          160) Vibe 500          ==Logik==
+ ==Samsung==                                     80) DAX 1GB MP3/DAB
+ 140) YH-820              ==MPIO==
+ 141) YH-920              170) HD200             ==Lyre project==
+ 142) YH-925              171) HD300             130) Lyre proto 1
+ 143) YP-S3                                      131) Mini2440
+                          ==ROCKCHIP==
+ ==Application==          180) rk27xx generic    ==HiFiMAN==
+ 200) SDL                                        190) HM-60x
+ 201) Android             ==HiFi E.T.==          191) HM-801
+ 202) Nokia N8xx          210) MA9
+ 203) Nokia N900          211) MA9C              ==Sony==
+ 204) Pandora             212) MA8               220) NWZ-E370 series
+ 205) Samsung YP-R0       213) MA8C              221) NWZ-E360 series
+ 206) Android MIPS
+ 207) Android x86
 EOF
 
   buildfor=`input`;
@@ -2306,6 +2308,67 @@ fi
     t_model="creative-zenxfi3"
     arm926ejscc
     ;;
+
+   96|creativezenxfi)
+    target_id=86
+    modelname="creativezenxfi"
+    target="CREATIVE_ZENXFI"
+    memory=64
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    tool="$rootdir/tools/scramble -add=zxfi"
+    output="rockbox.creative"
+    bootoutput="bootloader-zenxfi.creative"
+    appextra="gui:recorder:radio"
+    plugins=""
+    swcodec="yes"
+    toolset=$scramblebitmaptools
+    t_cpu="arm"
+    t_manufacturer="imx233"
+    t_model="creative-zen"
+    arm926ejscc
+    ;;
+
+   97|creativezenmozaic)
+    target_id=87
+    modelname="creativezenmozaic"
+    target="CREATIVE_ZENMOZAIC"
+    memory=32
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    tool="$rootdir/tools/scramble -add=zmoz"
+    output="rockbox.creative"
+    bootoutput="bootloader-zenmozaic.creative"
+    appextra="gui:recorder:radio"
+    plugins=""
+    swcodec="yes"
+    toolset=$scramblebitmaptools
+    t_cpu="arm"
+    t_manufacturer="imx233"
+    t_model="creative-zenmozaic"
+    arm926ejscc
+    ;;
+
+  98|creativezen)
+    target_id=90
+    modelname="creativezen"
+    target="CREATIVE_ZEN"
+    memory=32
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    tool="$rootdir/tools/scramble -add=zen"
+    output="rockbox.creative"
+    bootoutput="bootloader-zen.creative"
+    appextra="gui:recorder:radio"
+    plugins=""
+    swcodec="yes"
+    toolset=$scramblebitmaptools
+    t_cpu="arm"
+    t_manufacturer="imx233"
+    t_model="creative-zen"
+    arm926ejscc
+    ;;
+
 
    50|sansae200)
     target_id=23
@@ -3446,6 +3509,75 @@ fi
     memory=16
     arm7ejscc
     tool="$rootdir/tools/scramble -rkw -modelnum=83"
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    output="rockbox.rkw"
+    bootoutput="bootloader.rkw"
+    appextra="recorder:gui"
+    plugins=""
+    swcodec="yes"
+    # toolset is the tools within the tools directory that we build for
+    # this particular target.
+    toolset="$genericbitmaptools"
+    # architecture, manufacturer and model for the target-tree build
+    t_cpu="arm"
+    t_manufacturer="rk27xx"
+    t_model="ma"
+    ;;
+
+   211|hifietma9c)
+    target_id=84
+    modelname="hifietma9c"
+    target="MA9C"
+    memory=16
+    arm7ejscc
+    tool="$rootdir/tools/scramble -rkw -modelnum=84"
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    output="rockbox.rkw"
+    bootoutput="bootloader.rkw"
+    appextra="recorder:gui"
+    plugins=""
+    swcodec="yes"
+    # toolset is the tools within the tools directory that we build for
+    # this particular target.
+    toolset="$genericbitmaptools"
+    # architecture, manufacturer and model for the target-tree build
+    t_cpu="arm"
+    t_manufacturer="rk27xx"
+    t_model="ma"
+    ;;
+
+   212|hifietma8)
+    target_id=85
+    modelname="hifietma8"
+    target="MA8"
+    memory=16
+    arm7ejscc
+    tool="$rootdir/tools/scramble -rkw -modelnum=85"
+    bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
+    bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
+    output="rockbox.rkw"
+    bootoutput="bootloader.rkw"
+    appextra="recorder:gui"
+    plugins=""
+    swcodec="yes"
+    # toolset is the tools within the tools directory that we build for
+    # this particular target.
+    toolset="$genericbitmaptools"
+    # architecture, manufacturer and model for the target-tree build
+    t_cpu="arm"
+    t_manufacturer="rk27xx"
+    t_model="ma"
+    ;;
+
+   213|hifietma8c)
+    target_id=91
+    modelname="hifietma8c"
+    target="MA8C"
+    memory=16
+    arm7ejscc
+    tool="$rootdir/tools/scramble -rkw -modelnum=91"
     bmp2rb_mono="$rootdir/tools/bmp2rb -f 0"
     bmp2rb_native="$rootdir/tools/bmp2rb -f 4"
     output="rockbox.rkw"

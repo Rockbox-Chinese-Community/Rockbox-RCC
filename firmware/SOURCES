@@ -411,6 +411,8 @@ drivers/audio/aic3x.c
 drivers/audio/dummy_codec.c
 #elif defined (HAVE_DF1704_CODEC)
 drivers/audio/df1704.c
+#elif defined (HAVE_PCM1792_CODEC)
+drivers/audio/pcm1792.c
 #endif /* defined(HAVE_*) */
 #else /* PLATFORM_HOSTED */
 #if defined(SAMSUNG_YPR0) && defined(HAVE_AS3514)
@@ -705,7 +707,7 @@ target/arm/ipod/lcd-gray.c
 target/arm/imx31/gigabeat-s/lcd-gigabeat-s.c
 #elif CONFIG_LCD == LCD_GIGABEAT || CONFIG_LCD == LCD_MINI2440
 target/arm/s3c2440/lcd-s3c2440.c
-#elif CONFIG_LCD == LCD_ILI9342
+#elif CONFIG_LCD == LCD_ILI9342 || CONFIG_LCD == LCD_ILI9342C
 target/arm/rk27xx/ma/lcd-ma.c
 #endif
 
@@ -1161,6 +1163,18 @@ target/arm/tms320dm320/creative-zvm/powermgmt-creativezvm.c
 target/arm/tms320dm320/creative-zvm/usb-creativezvm.c
 #endif /* CREATIVE_ZVx */
 
+#if defined(CREATIVE_ZEN) || defined(CREATIVE_ZENXFI)
+target/arm/imx233/creative-zen/fmradio-i2c-zen.c
+target/arm/imx233/creative-zen/backlight-zen.c
+target/arm/imx233/creative-zen/lcd-zen.c
+target/arm/imx233/creative-zen/button-zen.c
+target/arm/imx233/creative-zen/debug-zen.c
+target/arm/imx233/creative-zen/power-zen.c
+target/arm/imx233/creative-zen/adc-zen.c
+target/arm/imx233/creative-zen/powermgmt-zen.c
+target/arm/imx233/button-lradc-imx233.c
+#endif
+
 #ifdef CREATIVE_ZENXFI2
 target/arm/imx233/creative-zenxfi2/fmradio-i2c-zenxfi2.c
 target/arm/imx233/creative-zenxfi2/backlight-zenxfi2.c
@@ -1182,6 +1196,18 @@ target/arm/imx233/creative-zenxfi3/debug-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/power-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/adc-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/powermgmt-zenxfi3.c
+#endif
+
+#ifdef CREATIVE_ZENMOZAIC
+target/arm/imx233/creative-zenmozaic/fmradio-i2c-zenmozaic.c
+target/arm/imx233/creative-zenmozaic/backlight-zenmozaic.c
+target/arm/imx233/creative-zenmozaic/lcd-zenmozaic.c
+target/arm/imx233/creative-zenmozaic/button-zenmozaic.c
+target/arm/imx233/creative-zenmozaic/debug-zenmozaic.c
+target/arm/imx233/creative-zenmozaic/power-zenmozaic.c
+target/arm/imx233/creative-zenmozaic/adc-zenmozaic.c
+target/arm/imx233/creative-zenmozaic/powermgmt-zenmozaic.c
+target/arm/imx233/button-lradc-imx233.c
 #endif
 
 #if defined(SONY_NWZE360) || defined(SONY_NWZE370)
@@ -1721,7 +1747,7 @@ target/arm/rk27xx/hm801/powermgmt-hm801.c
 target/arm/rk27xx/hm801/power-hm801.c
 #endif
 
-#if defined(MA9)
+#if defined(MA9) || defined(MA9C) || defined(MA8) || defined(MA8C)
 target/arm/rk27xx/ma/button-ma.c
 target/arm/rk27xx/ma/powermgmt-ma.c
 target/arm/rk27xx/ma/power-ma.c

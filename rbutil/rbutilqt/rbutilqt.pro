@@ -110,6 +110,7 @@ INCLUDEPATH = $$_PRO_FILE_PWD_ $$_PRO_FILE_PWD_/irivertools \
             $$_PRO_FILE_PWD_/zlib $$_PRO_FILE_PWD_/gui
 INCLUDEPATH += $$RBBASE_DIR/rbutil/ipodpatcher $$RBBASE_DIR/rbutil/sansapatcher \
             $$RBBASE_DIR/tools/rbspeex $$RBBASE_DIR/tools
+INCLUDEPATH += logger
 
 DEPENDPATH = $$INCLUDEPATH
 
@@ -143,21 +144,19 @@ contains(QT_MAJOR_VERSION, 5) {
 
 dbg {
     CONFIG += debug thread qt warn_on
-    DEFINES -= QT_NO_DEBUG_OUTPUT
     DEFINES += DBG
     message("debug")
 }
 !dbg {
     CONFIG += release thread qt
-    DEFINES -= QT_NO_DEBUG_OUTPUT
     DEFINES += NODEBUG
     message("release")
 }
 
-DEFINES += RBUTIL _LARGEFILE64_SOURCE
+DEFINES += RBUTIL _LARGEFILE64_SOURCE CUTELOGGER_STATIC
 
 # check version of Qt installation
-!contains(QT_MAJOR_VERSION, 5):!macx {
+!contains(QT_MAJOR_VERSION, 5):!macx:!*-msvc* {
     # suppress warnings in Qt 4.8 shown by gcc 4.8
     QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
 }
