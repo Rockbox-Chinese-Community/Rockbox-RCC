@@ -27,6 +27,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -34,12 +36,18 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewConfiguration;
 
+
+
 public class RockboxFramebuffer extends SurfaceView 
                                  implements SurfaceHolder.Callback
 {
     private final DisplayMetrics metrics;
     private final ViewConfiguration view_config;
     private Bitmap btm;
+    private int srcWidth, srcHeight, desWidth, desHeight;
+    private float scaleWidth,scaleHeight;
+    private Matrix myMatrix;
+    private Paint myPaint;
 
     /* first stage init; needs to run from a thread that has a Looper 
      * setup stuff that needs a Context */
@@ -55,45 +63,79 @@ public class RockboxFramebuffer extends SurfaceView
         setClickable(true);
         /* don't draw until native is ready (2nd stage) */
         setEnabled(false);
+
+        desWidth = metrics.widthPixels;
+        desHeight = metrics.heightPixels;
     }
 
+
+   
     /* second stage init; called from Rockbox with information about the 
      * display framebuffer */
     private void initialize(int lcd_width, int lcd_height)
     {
-        btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565);
-        setEnabled(true);
-    }
+       srcWidth = lcd_width;
+       srcHeight = lcd_height; 
+       scaleWidth = ((float)desWidth) / srcWidth;
+       scaleHeight = ((float)desHeight) / srcHeight;
+       myMatrix = new Matrix();
+       myMatrix.postScale(scaleWidth,scaleHeight);
+       myPaint = new Paint();
+       myPaint.setFlags(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
 
+       btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565); 
+       setEnabled(true);
+    }
+    
+         
     private void update(ByteBuffer framebuffer)
     {
+          
         SurfaceHolder holder = getHolder();                            
         Canvas c = holder.lockCanvas();
+        
         btm.copyPixelsFromBuffer(framebuffer);
+        
+        if (c == null) return;
+        
         synchronized (holder)
-        { /* draw */
-            c.drawBitmap(btm, 0.0f, 0.0f, null);
+        { /* draw */    
+            c.drawBitmap(btm,myMatrix,myPaint);
         }
         holder.unlockCanvasAndPost(c);
+        
     }
     
     private void update(ByteBuffer framebuffer, Rect dirty)
     {
+       
         SurfaceHolder holder = getHolder();         
-        Canvas c = holder.lockCanvas(dirty);
+        Rect scaledDirty = new Rect();
+        scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
+                        (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
+        
+        Canvas c = holder.lockCanvas(scaledDirty);
         /* can't copy a partial buffer, but it doesn't make a noticeable difference anyway */
+       
         btm.copyPixelsFromBuffer(framebuffer);
+        
+        if (c == null) return;
+        
         synchronized (holder)
-        {   /* draw */
-            c.drawBitmap(btm, dirty, dirty, null);   
+        {   /* draw */          
+            c.drawBitmap(btm,myMatrix,myPaint);    
         }
         holder.unlockCanvasAndPost(c);
+        
     }
 
     public boolean onTouchEvent(MotionEvent me)
     {
         int x = (int) me.getX();
         int y = (int) me.getY();
+     
+        x=(int)(x / scaleWidth);
+        y=(int)(y / scaleHeight);
 
         switch (me.getAction())
         {
@@ -131,6 +173,7 @@ public class RockboxFramebuffer extends SurfaceView
         return view_config.getScaledTouchSlop();
     }
 
+
     private native void touchHandler(boolean down, int x, int y);
     public native static boolean buttonHandler(int keycode, boolean state);
 
@@ -138,5 +181,6 @@ public class RockboxFramebuffer extends SurfaceView
     public native void surfaceDestroyed(SurfaceHolder holder);
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
+       
     }
 }
