@@ -57,6 +57,33 @@ struct imx233_button_lradc_mapping_t imx233_button_lradc_mapping[] =
     {2945, BUTTON_PLAYPAUSE},
     {3400, 0},
     {0, IMX233_BUTTON_LRADC_END},
+#elif defined(CREATIVE_ZENV)
+    {190, IMX233_BUTTON_LRADC_HOLD},
+    {250, BUTTON_PLAYPAUSE},
+    {530, BUTTON_BACK},
+    {785, BUTTON_VOL_UP},
+    {1040, BUTTON_VOL_DOWN},
+    {1295, BUTTON_MENU},
+    {1540, BUTTON_UP},
+    {1800, BUTTON_SELECT},
+    {2070, BUTTON_LEFT},
+    {2315, BUTTON_RIGHT},
+    {2550, BUTTON_DOWN},
+    {3450, 0},
+    {0, IMX233_BUTTON_LRADC_END},
+#elif defined(CREATIVE_ZENMOZAIC)
+    {0, IMX233_BUTTON_LRADC_HOLD},
+    {200, BUTTON_MENU},
+    {445, BUTTON_SHORTCUT},
+    {645, BUTTON_UP},
+    {860, BUTTON_LEFT},
+    {1060, BUTTON_RIGHT},
+    {1260, BUTTON_DOWN},
+    {1480, BUTTON_SELECT},
+    {2700, BUTTON_BACK},
+    {2945, BUTTON_PLAYPAUSE},
+    {3400, 0},
+    {0, IMX233_BUTTON_LRADC_END},
 #else
 #error wrong target
 #endif
@@ -65,6 +92,11 @@ struct imx233_button_lradc_mapping_t imx233_button_lradc_mapping[] =
 void button_init_device(void)
 {
     imx233_button_lradc_init();
+#if defined(CREATIVE_ZENXFI) || defined(CREATIVE_ZENMOZAIC)
+    imx233_pinctrl_acquire(2, 8, "jack_detect");
+    imx233_pinctrl_set_function(2, 8, PINCTRL_FUNCTION_GPIO);
+    imx233_pinctrl_enable_gpio(2, 8, false);
+#endif
 }
 
 bool button_hold(void)
@@ -72,7 +104,7 @@ bool button_hold(void)
     return imx233_button_lradc_hold();
 }
 
-#ifdef CREATIVE_ZENXFI
+#if defined(CREATIVE_ZENXFI) || defined(CREATIVE_ZENMOZAIC)
 bool headphones_inserted(void)
 {
     return !imx233_pinctrl_get_gpio(2, 8);
@@ -82,7 +114,7 @@ bool headphones_inserted(void)
 int button_read_device(void)
 {
     int btn = 0;
-    if(BF_RD(POWER_STS, PSWITCH) == 1)
+    if(imx233_power_read_pswitch() == 1)
         btn |= BUTTON_POWER;
     return imx233_button_lradc_read(btn);
 }

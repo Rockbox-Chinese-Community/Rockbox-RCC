@@ -21,23 +21,13 @@
 
 #include "system.h"
 #include "power.h"
-#include "tuner.h"
-#include "fmradio_i2c.h"
-#include "pinctrl-imx233.h"
-#include "power-imx233.h"
 
-static bool tuner_enable = false;
-
-bool tuner_power(bool enable)
+void ide_power_enable(bool on)
 {
-    if(enable != tuner_enable)
-    {
-        tuner_enable = enable;
-    }
-    return tuner_enable;
+    (void) on;
 }
 
-bool tuner_powered(void)
+bool ide_powered(void)
 {
-    return tuner_enable;
+    return true;
 }

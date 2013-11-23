@@ -216,6 +216,7 @@ static void lcd_display_on_seq(void)
     spi_write_reg(0x7, 0x103);
 }
 
+#ifdef HAVE_LCD_ENABLE
 static void lcd_display_off_seq(void)
 {
     spi_write_reg(0xb, 0x30e1);
@@ -238,6 +239,7 @@ static void lcd_standby_out_seq(void)
     lcd_power_seq();
     lcd_display_on_seq();
 }
+#endif
 
 /**
  * Rockbox
@@ -278,15 +280,15 @@ void lcd_init_device(void)
     imx233_pinctrl_acquire(1, 8, "lcd_power");
     imx233_pinctrl_set_function(1, 8, PINCTRL_FUNCTION_GPIO);
     imx233_pinctrl_enable_gpio(1, 8, true);
-    // power up
-    lcd_power(true);
     // reset lcd
     imx233_lcdif_reset_lcd(true);
-    mdelay(1);
+    mdelay(10);
     imx233_lcdif_reset_lcd(false);
-    mdelay(1);
+    mdelay(10);
     imx233_lcdif_reset_lcd(true);
-    mdelay(1);
+    mdelay(10);
+    // power up
+    lcd_power(true);
     // setup registers
     imx233_lcdif_enable_sync_signals(true); // we need frame signals during init
     lcd_power_seq();

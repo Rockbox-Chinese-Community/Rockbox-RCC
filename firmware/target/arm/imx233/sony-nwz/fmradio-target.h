@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (c) 2013 by Amaury Pouly
+ * Copyright (C) 2013 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +18,11 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef LCD_TARGET_H
-#define LCD_TARGET_H
+#ifndef _FMRADIO_TARGET_H_
+#define _FMRADIO_TARGET_H_
 
-bool lcd_debug_screen(void);
-void lcd_set_contrast(int val);
+#define IMX233_FMRADIO_I2C  FMI_HW
 
-#endif /* LCD_TARGET_H */
+#define IMX233_FMRADIO_POWER    FMP_NONE
+
+#endif /* _FMRADIO_TARGET_H_ */

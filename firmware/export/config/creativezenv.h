@@ -1,19 +1,29 @@
 /*
- * This config file is for the Sony NWZ-E360 series
+ * This config file is for the Creative ZEN V
  */
-#define IMX233_SUBTARGET    3780
+#define IMX233_SUBTARGET    3600
 #define IMX233_PACKAGE      IMX233_BGA169
-#define IMX233_PARTITIONS   IMX233_FREESCALE
+#define IMX233_PARTITIONS   IMX233_CREATIVE
 
 /* For Rolo and boot loader */
-#define MODEL_NUMBER 89
-#define MODEL_NAME   "Sony NWZ-E360 series"
+#define MODEL_NUMBER 85
+#define MODEL_NAME   "Creative ZEN V"
 
 #define HW_SAMPR_CAPS       SAMPR_CAP_ALL
 
+/* define this if you have recording possibility */
+#define HAVE_RECORDING
+
+#define REC_SAMPR_CAPS      SAMPR_CAP_ALL
+
+/* Default recording levels */
+#define DEFAULT_REC_MIC_GAIN    23
+#define DEFAULT_REC_LEFT_GAIN   23
+#define DEFAULT_REC_RIGHT_GAIN  23
+
 /* Define bitmask of input sources - recordable bitmask can be defined
    explicitly if different */
-#define INPUT_SRC_CAPS SRC_CAP_FMRADIO
+#define INPUT_SRC_CAPS SRC_CAP_MIC
 
 /* define this if you have a bitmap LCD display */
 #define HAVE_LCD_BITMAP
@@ -35,8 +45,6 @@
 /* define this if you have access to the quickscreen */
 #define HAVE_QUICKSCREEN
 
-/* define this if you have a light associated with the buttons */
-
 /* define this if you would like tagcache to build on this target */
 #define HAVE_TAGCACHE
 
@@ -44,7 +52,7 @@
 #define HAVE_VOLUME_IN_LIST
 
 /* define this if you have LCD enable function */
-#define HAVE_LCD_ENABLE
+//#define HAVE_LCD_ENABLE
 
 /* Define this if your LCD can be put to sleep. HAVE_LCD_ENABLE
    should be defined as well.
@@ -71,12 +79,10 @@
 /* define this if you have an i.MX23 codec */
 #define HAVE_IMX233_CODEC
 
-#define CONFIG_TUNER STFM1000
-
 /* There is no hardware tone control */
 #define HAVE_SW_TONE_CONTROLS
 
-#define CONFIG_KEYPAD SONY_NWZ_PAD
+#define CONFIG_KEYPAD CREATIVE_ZEN_PAD
 
 /* Define this to enable morse code input */
 #define HAVE_MORSE_INPUT
@@ -85,13 +91,16 @@
 #define CONFIG_CODEC SWCODEC
 
 /* LCD dimensions */
-#define LCD_WIDTH  240
-#define LCD_HEIGHT 320
+#define LCD_WIDTH  132
+#define LCD_HEIGHT 132
 #define LCD_DEPTH  16   /* 65536 colours */
 #define LCD_PIXELFORMAT RGB565 /* rgb565 */
 
 /* Define this if you have a software controlled poweroff */
 #define HAVE_SW_POWEROFF
+
+/* Some devices seem to be FAT16 formatted */
+#define HAVE_FAT16SUPPORT
 
 /* The number of bytes reserved for loadable codecs */
 #define CODEC_SIZE 0x100000
@@ -107,8 +116,8 @@
 
 /* Main LCD backlight brightness range and defaults */
 #define MIN_BRIGHTNESS_SETTING      0
-#define MAX_BRIGHTNESS_SETTING      100
-#define DEFAULT_BRIGHTNESS_SETTING  50
+#define MAX_BRIGHTNESS_SETTING      16
+#define DEFAULT_BRIGHTNESS_SETTING  10
 
 /* Which backlight fading type? */
 #define CONFIG_BACKLIGHT_FADING BACKLIGHT_FADING_SW_SETTING
@@ -117,7 +126,7 @@
 #define HAVE_FLASH_STORAGE
 
 /* define this if the flash memory uses the SecureDigital Memory Card protocol */
-#define CONFIG_STORAGE STORAGE_MMC
+#define CONFIG_STORAGE STORAGE_ATA
 
 /* todo */
 #define BATTERY_CAPACITY_DEFAULT 550    /* default battery capacity */
@@ -129,6 +138,7 @@
 #define CONFIG_BATTERY_MEASURE VOLTAGE_MEASURE
 
 /* Charging implemented in a target-specific algorithm */
+//#warning FIXME change this to CHARGING_TARGET when powermgmt is ready
 #define CONFIG_CHARGING CHARGING_TARGET
 
 /* define this if the unit can be powered or charged via USB */
@@ -152,7 +162,7 @@
 #define CPU_FREQ      454000000
 
 /* Type of LCD */
-#define CONFIG_LCD LCD_NWZE360
+#define CONFIG_LCD LCD_CREATIVEZENV
 
 /* Offset ( in the firmware file's header ) to the file CRC and data. These are
    only used when loading the old format rockbox.e200 file */
@@ -166,22 +176,21 @@
 #define HAVE_USBSTACK
 //#define USB_HANDLED_BY_OF
 #define USE_ROCKBOX_USB
-#define USB_VENDOR_ID 0x054c
-#define USB_PRODUCT_ID 0x059b
+#define USB_VENDOR_ID 0x041e
+#define USB_PRODUCT_ID 0x4133
 #define HAVE_USB_HID_MOUSE
 #define HAVE_BOOTLOADER_USB_MODE
 
-/* The fuze+ actually interesting partition table does not use 512-byte sector
- * (usually 2048 logical sector size) */
-#define MAX_LOG_SECTOR_SIZE 2048
-
 /* Define this if you have adjustable CPU frequency */
-#define HAVE_ADJUSTABLE_CPU_FREQ
+//#define HAVE_ADJUSTABLE_CPU_FREQ
 
-#define BOOTFILE_EXT    "sony"
+/* Virtual LED (icon) */
+#define CONFIG_LED LED_VIRTUAL
+
+#define BOOTFILE_EXT    "creative"
 #define BOOTFILE        "rockbox." BOOTFILE_EXT
 #define BOOTDIR "/.rockbox"
 
 #define INCLUDE_TIMEOUT_API
- 
+
  

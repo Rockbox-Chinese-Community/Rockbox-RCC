@@ -18,8 +18,11 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef __audio_target__
-#define __audio_target__
+#ifndef _FMRADIO_TARGET_H_
+#define _FMRADIO_TARGET_H_
 
-#endif /* __audio_target__ */
- 
+#define IMX233_FMRADIO_I2C  FMI_HW
+
+#define IMX233_FMRADIO_POWER    FMP_NONE
+
+#endif /* _FMRADIO_TARGET_H_ */

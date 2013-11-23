@@ -18,25 +18,27 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+#ifndef _ADC_IMX233_H_
+#define _ADC_IMX233_H_
 
-#include "system.h"
-#include "power.h"
-#include "tuner.h"
-#include "fmradio_i2c.h"
-#include "pinctrl-imx233.h"
+#include "adc.h"
+#include "powermgmt-target.h"
 
-static bool tuner_enable = false;
-
-bool tuner_power(bool enable)
+enum imx233_adc_channel_t
 {
-    if(enable != tuner_enable)
-    {
-        tuner_enable = enable;
-    }
-    return tuner_enable;
-}
+    ADC_BATTERY, /* Battery voltage (mV) */
+    ADC_DIE_TEMP, /* Die temperature (°C) */
+    ADC_VDDIO, /* VDDIO (mV) */
+#if IMX233_SUBTARGET >= 3700
+    ADC_VDD5V, /* VDD5V (mV) */
+#endif
+#ifdef IMX233_BATT_TEMP_SENSOR
+    ADC_BATT_TEMP, /* Battery temperature (°C) */
+#endif
+    NUM_ADC_CHANNELS,
+};
 
-bool tuner_powered(void)
-{
-    return tuner_enable;
-}
+/* Return channel name */
+const char *adc_name(int channel);
+
+#endif

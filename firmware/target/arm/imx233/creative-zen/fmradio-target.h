@@ -18,32 +18,19 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#include "config.h"
-#include "powermgmt-target.h"
-#include "power-imx233.h"
+#ifndef _FMRADIO_TARGET_H_
+#define _FMRADIO_TARGET_H_
 
-#warning FIXME calibrate
+#define IMX233_FMRADIO_I2C  FMI_HW
 
-const unsigned short battery_level_dangerous[BATTERY_TYPES_COUNT] =
-{
-    0
-};
+#ifdef CREATIVE_ZENMOZAIC
+#define IMX233_FMRADIO_POWER    FMP_GPIO
+#define FMP_GPIO_BANK   2
+#define FMP_GPIO_PIN    15
+#define FMP_GPIO_DELAY  (HZ / 5)
+#else
+#define IMX233_FMRADIO_POWER    FMP_NONE
+#endif
 
-const unsigned short battery_level_shutoff[BATTERY_TYPES_COUNT] =
-{
-    0
-};
-
-/* voltages (millivolt) of 0%, 10%, ... 100% when charging disabled */
-const unsigned short percent_to_volt_discharge[BATTERY_TYPES_COUNT][11] =
-{
-    /* Sansa Fuze+ Li Ion 600mAH figured from discharge curve */
-    { 3100, 3650, 3720, 3750, 3780, 3820, 3880, 4000, 4040, 4125, 4230 },
-};
-
-/* voltages (millivolt) of 0%, 10%, ... 100% when charging enabled */
-const unsigned short percent_to_volt_charge[11] =
-{
-    /* Sansa Fuze+ Li Ion 600mAH figured from charge curve */
-    3480, 3790, 3845, 3880, 3900, 3935, 4005, 4070, 4150, 4250, 4335
-};
+#endif /* _FMRADIO_TARGET_H_ */
+ 
