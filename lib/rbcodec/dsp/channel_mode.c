@@ -137,11 +137,17 @@ void channel_mode_proc_swap(struct dsp_proc_entry *this,
                             struct dsp_buffer **buf_p)
 {
     struct dsp_buffer *buf = *buf_p;
-    int32_t tmp[buf->remcount];
+    int32_t *sl = buf->p32[0];
+    int32_t *sr = buf->p32[1];
+    int count = buf->remcount;
 
-    memcpy(tmp        , buf->p32[1], buf->remcount * sizeof (int32_t));
-    memcpy(buf->p32[1], buf->p32[0], buf->remcount * sizeof (int32_t));
-    memcpy(buf->p32[0], tmp        , buf->remcount * sizeof (int32_t));
+    do
+    {
+        int32_t swap = *sl;
+        *sl++ = *sr;
+        *sr++ = swap;
+    }
+    while (--count > 0);
 
     (void)this;
 }
