@@ -19,9 +19,8 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#define ASM
-#include "config.h"
-#include "cpu.h"
+
+    .extern INT_UDC
 
     .global start
     .global entry_point
@@ -29,20 +28,19 @@
     /* Exception vectors */
     .section .intvect,"ax",%progbits
     ldr     pc, =start
-    ldr     pc, =undef_instr_handler
-    ldr     pc, =software_int_handler
-    ldr     pc, =prefetch_abort_handler
-    ldr     pc, =data_abort_handler
-    ldr     pc, =reserved_handler
+    ldr     pc, =start
+    ldr     pc, =start
+    ldr     pc, =start
+    ldr     pc, =start
+    ldr     pc, =start
     ldr     pc, =irq_handler
-    ldr     pc, =fiq_handler
+    ldr     pc, =start
     .ltorg
 
-    .text
+    .section .text,"ax",%progbits
 start:
     msr     cpsr_c, #0xd3      /* enter supervisor mode, disable IRQ/FIQ */
 
-#ifdef BOOTLOADER
     sub     r4, pc, #12         /* copy running address, accomodate
                                  * for prefetch (-8) and msr instr (-4)
                                  */
@@ -64,7 +62,6 @@ start:
 
 entry_point_jmp:
     ldr     pc, =entry_point
-#endif
 
 entry_point:
     mov     r0, #0x18000000
@@ -97,47 +94,10 @@ entry_point:
     ldr     r1, [r0,#0x14]   /* SCU_DIVCON1 */
     bic     r1, #1           /* leave ARM slow mode */
     str     r1, [r0,#0x14]
-  
-#if defined(BOOTLOADER)
+
     /* remap iram to 0x00000000 */
     ldr     r1,=0xdeadbeef
     str     r1, [r0, #4]
-#endif
-
-    /* setup caches */
-    ldr     r0, =0xefff0000    /* cache controler base address */
-    ldrh    r1, [r0]
-    strh    r1, [r0]          /* global cache disable */
-
-    /* setup uncached regions */
-    mov     r1, #0x18000000
-    orr     r1, r1, #0xfe
-    str     r1, [r0,#0x10]     /* MemMapA BUS0IP, 32MB */
-    str     r1, [r0,#0x14]     /* MemMapB BUS0IP, 32MB */
-    mov     r1, #0x30000000
-    orr     r1, r1, #0xfe
-    str     r1, [r0,#0x18]     /* MemMapC DSPMEM, 32MB */
-    mov     r1, #0xee000000    /* 0xefff0000 & 0xfe000000 */
-    orr     r1, r1, #0xfe
-    str     r1, [r0,#0x1c]     /* MemMapD cache controller, 32MB */
-
-    mov     r1, #2             /* invalidate way opcode */
-    str     r1, [r0,#4]        /* invalidate way0 */
-1:
-    ldr     r2, [r0,#4]
-    tst     r2, #3
-    bne     1b                 /* wait for invalidate to complete */
-
-    orr     r1, r1, #0x80000000
-    str     r1, [r0,#4]        /* invalidate way1 */
-1:
-    ldr     r2, [r0,#4]
-    tst     r2, #3
-    bne     1b                 /* wait for invalidate to complete */
-
-    ldr     r1, [r0]
-    orr     r1, r1, #0x80000000
-    str     r1, [r0]           /* global cache enable */
 
     /* Copy interrupt vectors to iram */
     ldr     r2, =_intvectstart
@@ -149,7 +109,7 @@ entry_point:
     strhi   r1, [r2], #4
     bhi     1b
 
-    /* Initialise bss, ibss section to zero */
+    /* Initialise bss section to zero */
     ldr     r2, =_edata
     ldr     r3, =_end
     mov     r4, #0
@@ -158,11 +118,11 @@ entry_point:
     strhi   r4, [r2], #4
     bhi     1b
 
-    /* Set up stack for IRQ mode */ 
+    /* Set up stack for IRQ mode */
     msr     cpsr_c, #0xd2
     ldr     sp, =_irqstackend
 
-    /* Set up stack for FIQ mode */ 
+    /* Set up stack for FIQ mode */
     msr     cpsr_c, #0xd1
     ldr     sp, =_fiqstackend
 
@@ -186,4 +146,19 @@ entry_point:
     strhi   r3, [r2], #4
     bhi     1b
 
-    b       main
+    /* Jump to C code */
+    b      main
+
+/* copy from rockbox code - context save may be excessive but who cares */
+irq_handler:
+    stmfd sp!, {r0-r5, ip, lr}   /* store context */
+    ldr   r4, =0x18080000        /* INTC base */
+    ldr   r5, [r4, #0x104]       /* INTC_ISR */
+    and   r5, r5, #0x1f          /* irq_no = INTC_ISR & 0x1f */
+    cmp   r5, #0x10              /* UDC irq */
+    bleq INT_UDC                /* handle it */
+    mov   r3, #1
+    lsl   r5, r3, r5             /* clear interrupt */
+    str   r5, [r4, #0x118]       /* INTC_ICCR = (1<<irq_no) */
+    ldmfd sp!, {r0-r5, ip, lr}   /* restore context */
+    subs  pc, lr, #4
