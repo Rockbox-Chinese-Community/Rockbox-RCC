@@ -189,6 +189,8 @@ void draw_progressbar(struct gui_wps *gwps, int line, struct progressbar *pb)
     {
         /* we want to fill upwards which is technically inverted. */
         flags = INVERTFILL;
+        if (pb->type == SKIN_TOKEN_SETTINGBAR)
+            flags ^= INVERTFILL;
     }
     
     if (pb->invert_fill_direction)
