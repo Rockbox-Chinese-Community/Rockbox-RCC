@@ -19,6 +19,7 @@
 # - Xinlu Huang
 # - Harry Tu
 # - Tse-Hsien Chiang
+# - papaloco 
 <phrase>
   id: LANG_SET_BOOL_YES
   desc: bool true representation
@@ -2759,10 +2760,10 @@
     *: "Replaygain Type"
   </source>
   <dest>
-    *: "Replaygain 種類"
+    *: "播放增益種類"
   </dest>
   <voice>
-    *: "Replaygain Type"
+    *: "播放增益種類"
   </voice>
 </phrase>
 <phrase>
@@ -2773,10 +2774,10 @@
     *: "Album Gain"
   </source>
   <dest>
-    *: "Album Gain"
+    *: "專輯增益"
   </dest>
   <voice>
-    *: "Album Gain"
+    *: "專輯增益"
   </voice>
 </phrase>
 <phrase>
@@ -2787,10 +2788,10 @@
     *: "Track Gain"
   </source>
   <dest>
-    *: "Track Gain"
+    *: "單曲增益"
   </dest>
   <voice>
-    *: "Track Gain"
+    *: "單曲增益"
   </voice>
 </phrase>
 <phrase>
@@ -2801,7 +2802,7 @@
     *: "Track Gain if Shuffling"
   </source>
   <dest>
-    *: "亂序播放時使用 Track Gain"
+    *: "亂序播放時使用單曲增益"
   </dest>
   <voice>
     *: "Track Gain if Shuffling"
@@ -2815,7 +2816,7 @@
     *: "Pre-amp"
   </source>
   <dest>
-    *: "前置放大"
+    *: "前級放大器"
   </dest>
   <voice>
     *: "Preamp"
@@ -4033,7 +4034,7 @@
   desc: in onplay menu.  append a track/playlist into dynamic playlist.
   user: core
   <source>
-    *: "Insert Last"
+    *: "st"
   </source>
   <dest>
     *: "插入到最後"
@@ -8479,7 +8480,7 @@
     *: "Channel Configuration"
   </source>
   <dest>
-    *: "聲道設置"
+    *: "聲道"
   </dest>
   <voice>
     *: "Channel Configuration"
@@ -8680,7 +8681,7 @@
     *: "Add to Shortcuts"
   </source>
   <dest>
-    *: "添加到快捷"
+    *: "添加到捷徑中"
   </dest>
   <voice>
     *: "Add to Shortcuts"
@@ -11169,10 +11170,10 @@
     *: "Prevent Track Skipping"
   </source>
   <dest>
-    *: "不要讓歌化"
+    *: "禁止曲目跳轉"
   </dest>
   <voice>
-    *: "不要讓歌化"
+    *: "禁止曲目跳轉"
   </voice>
 </phrase>
 <phrase>
@@ -11185,11 +11186,11 @@
   </source>
   <dest>
     *: none
-    touchscreen: "那個地方"
+    touchscreen: "具體位置"
   </dest>
   <voice>
     *: none
-    touchscreen: "那個地方"
+    touchscreen: "具體位置"
   </voice>
 </phrase>
 <phrase>
@@ -11219,11 +11220,62 @@
   </source>
   <dest>
     *: none
-    touchscreen: "Touchscreen 選擇"
+    touchscreen: "觸控面板操作模式"
   </dest>
   <voice>
     *: none
-    touchscreen: "Touchscreen 選擇"
+    touchscreen: "觸控面板操作模式"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_TOUCHSCREEN_CALIBRATE
+  desc: in Settings -> General -> Display -> Touchscreen Settings
+  user: core
+  <source>
+    *: none
+    touchscreen: "Calibrate"
+  </source>
+  <dest>
+    *: none
+    touchscreen: "觸控面板校正"
+  </dest>
+  <voice>
+    *: none
+    touchscreen: "觸控面板校正"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_TOUCHSCREEN_RESET_CALIBRATION
+  desc: in Settings -> General -> Display -> Touchscreen Settings
+  user: core
+  <source>
+    *: none
+    touchscreen: "Reset Calibration"
+  </source>
+  <dest>
+    *: none
+    touchscreen: "重新校正觸控"
+  </dest>
+  <voice>
+    *: none
+    touchscreen: "重新校正觸控"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_USE_SHORTCUTS_INSTEAD_OF_QS
+  desc: in settings_menu.
+  user: core
+  <source>
+    *: none
+    quickscreen: "Use Shortcuts Menu Instead of Quick Screen"
+  </source>
+  <dest>
+    *: none
+    quickscreen: "用捷徑取代快速選單"
+  </dest>
+  <voice>
+    *: none
+    quickscreen: "用捷徑取代快速選單"
   </voice>
 </phrase>
 <phrase>
@@ -11238,5 +11290,719 @@
   </dest>
   <voice>
     *: "檔案大小"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_GLYPHS
+  desc: in settings_menu
+  user: core
+  <source>
+    *: "Glyphs To Cache"
+  </source>
+  <dest>
+    *: "快取字型容納數量"
+  </dest>
+  <voice>
+    *: "快取字型容納數量"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_STARTUP_SHUTDOWN
+  desc: in the general settings menu
+  user: core
+  <source>
+    *: "Startup/Shutdown"
+  </source>
+  <dest>
+    *: "啟動/關機設定"
+  </dest>
+  <voice>
+    *: "啟動/關機"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SLEEP_TIMER_START_CURRENT
+  desc: shown when a sleep timer isn't running
+  user: core
+  <source>
+    *: "Start Sleep Timer"
+  </source>
+  <dest>
+    *: "啟動睡眠計時器"
+  </dest>
+  <voice>
+    *: "啟動睡眠計時器"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SLEEP_TIMER_DURATION
+  desc: default sleep timer duration in minutes
+  user: core
+  <source>
+    *: "Default Sleep Timer Duration"
+  </source>
+  <dest>
+    *: "預設睡眠計時器時間"
+  </dest>
+  <voice>
+    *: "預設睡眠計時器時間"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_KEYPRESS_RESTARTS_SLEEP_TIMER
+  desc: whether to restart running sleep timer on keypress
+  user: core
+  <source>
+    *: "Restart Sleep Timer On Keypress"
+  </source>
+  <dest>
+    *: "按鍵時重置睡眠計時器"
+  </dest>
+  <voice>
+    *: "按鍵時重置睡眠計時器"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SLEEP_TIMER_ON_POWER_UP
+  desc: whether sleep timer starts on power up
+  user: core
+  <source>
+    *: "Start Sleep Timer On Boot"
+  </source>
+  <dest>
+    *: "開機時啟動睡眠計時器"
+  </dest>
+  <voice>
+    *: "開機時啟動睡眠計時器"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SHORTCUTS
+  desc: Title in the shortcuts menu
+  user: core
+  <source>
+    *: "Shortcuts"
+  </source>
+  <dest>
+    *: "捷徑"
+  </dest>
+  <voice>
+    *: "捷徑"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AUTORESUME
+  desc: resume settings menu
+  user: core
+  <source>
+    *: "Automatic resume"
+  </source>
+  <dest>
+    *: "自動斷點續撥"
+  </dest>
+  <voice>
+    *: "自動斷點續撥"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AUTORESUME_AUTOMATIC
+  desc: resume on automatic track change
+  user: core
+  <source>
+    *: "Resume on automatic track change"
+  </source>
+  <dest>
+    *: "自動跳轉時續撥"
+  </dest>
+  <voice>
+    *: "自動跳轉時續撥"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AUTORESUME_CUSTOM
+  desc: enable customization of resume on automatic track change
+  user: core
+  <source>
+    *: "In custom directories only"
+  </source>
+  <dest>
+    *: "僅在指定目錄中"
+  </dest>
+  <voice>
+    *: "僅在指定目錄中"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_QUIT_ROCKBOX
+  desc: Quit Rockbox item in root menu
+  user: core
+  <source>
+    *: "Quit Rockbox"
+  </source>
+  <dest>
+    *: "退出"
+  </dest>
+  <voice>
+    *: "Quit Rockbox"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Compressor"
+  </source>
+  <dest>
+    *: none
+    swcodec: "壓縮器"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "壓縮器"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_RATIO
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Ratio"
+  </source>
+  <dest>
+    *: none
+    swcodec: "壓縮比例"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "壓縮比例"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_RELEASE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Release Time"
+  </source>
+  <dest>
+    *: none
+    swcodec: "壓縮釋放時間"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "壓縮釋放時間"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_THRESHOLD
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Threshold"
+  </source>
+  <dest>
+    *: none
+    swcodec: "閥值"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "閥值"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_GAIN
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Makeup Gain"
+  </source>
+  <dest>
+    *: none
+    swcodec: "增益"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "增益"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_KNEE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Knee"
+  </source>
+  <dest>
+    *: none
+    swcodec: "拐點"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "拐點"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_SOFT_KNEE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Soft Knee"
+  </source>
+  <dest>
+    *: none
+    swcodec: "軟拐點"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "軟拐點"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_HARD_KNEE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Hard Knee"
+  </source>
+  <dest>
+    *: none
+    swcodec: "硬拐點"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "硬拐點"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AUTO
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Auto"
+  </source>
+  <dest>
+    *: none
+    swcodec: "自動"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "自動"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_TIMESTRETCH
+  desc: timestretch enable
+  user: core
+  <source>
+    *: none
+    swcodec: "Timestretch"
+  </source>
+  <dest>
+    *: none
+    swcodec: "時間伸縮"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "時間伸縮"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_RESUME_REWIND
+  desc: in playback settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "Rewind Before Resume"
+  </source>
+  <dest>
+    *: none
+    swcodec: "退回到從曲子開始處再恢复播放"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "退回到從曲子開始處再恢复播放"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_PAUSE_REWIND
+  desc: Seconds to rewind when rewind on pause is enabled.
+  user: core
+  <source>
+    *: "Rewind on Pause"
+  </source>
+  <dest>
+    *: "暫停後退回到曲子開始處"
+  </dest>
+  <voice>
+    *: "暫停後退回到曲子開始處"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_REPLAYGAIN
+  desc: in replaygain
+  user: core
+  <source>
+    *: "Replaygain"
+  </source>
+  <dest>
+    *: "播放增益"
+  </dest>
+  <voice>
+    *: "播放增益"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_RESET_START_DIR
+  desc: reset the browser start directory
+  user: core
+  <source>
+    *: "Start File Browser at /"
+  </source>
+  <dest>
+    *: "重設檔案瀏覽起始路徑（/）"
+  </dest>
+  <voice>
+    *: "重設檔案瀏覽起始路徑（/）"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SELECT_DATABASE_DIRS
+  desc: in settings_menu
+  user: core
+  <source>
+    *: "Select directories to scan"
+  </source>
+  <dest>
+    *: "指定掃描路徑"
+  </dest>
+  <voice>
+    *: "Select directories to scan"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_PM_RELEASE
+  desc: in the peak meter menu
+  user: core
+  <source>
+    *: "Peak Release"
+    masd: none
+  </source>
+  <dest>
+    *: "峰值釋放速度"
+    masd: none
+  </dest>
+  <voice>
+    *: "峰值釋放速度"
+    masd: none
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_TOUCHSCREEN_SETTINGS
+  desc: in Settings -> General -> Display menu
+  user: core
+  <source>
+    *: none
+    touchscreen: "Touchscreen Settings"
+  </source>
+  <dest>
+    *: none
+    touchscreen: "觸控面板設定"
+  </dest>
+  <voice>
+    *: none
+    touchscreen: "觸控面板設定"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_LINE_PADDING
+  desc: list padding, in display settings
+  user: core
+  <source>
+    *: none
+    touchscreen: "Line Padding in Lists"
+  </source>
+  <dest>
+    *: none
+    touchscreen: "列表行間填充"
+  </dest>
+  <voice>
+    *: none
+    touchscreen: "列表行間填充"
+  </voice>
+</phrase>
+
+<phrase>
+  id: LANG_SPACE80
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Space'80 Reverb"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Space'80空間效果器"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Space 80空間效果器"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_DECAY
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Decay"
+  </source>
+  <dest>
+    *: none
+    swcodec: "衰減"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "衰減"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_FREQ
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Frequency Compensation"
+  </source>
+  <dest>
+    *: none
+    swcodec: "頻率補償"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "頻率補償"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_GAIN
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Gain"
+  </source>
+  <dest>
+    *: none
+    swcodec: "增益"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "增益百分比"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SPACE80_MIX
+  desc: in space80 settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Dry / Wet Mix"
+  </source>
+  <dest>
+    *: none
+    swcodec: "乾濕度混合"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "乾濕度混合"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_SEPARATOR
+  desc: line between lines in lists
+  user: core
+  <source>
+    *: "Line Separator"
+  </source>
+  <dest>
+    *: "行分隔線"
+  </dest>
+  <voice>
+    *: "Line Separator"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIST_SEPARATOR_COLOR
+  desc: line between lines in lists
+  user: core
+  <source>
+    *: "Color of Line Separator"
+  </source>
+  <dest>
+    *: "行分隔線顏色"
+  </dest>
+  <voice>
+    *: "Color of Line Separator"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SCROLLBAR_WIDTH
+  desc: in Settings -> General -> Display -> Status-/Scrollbar
+  user: core
+  <source>
+    *: none
+    lcd_bitmap: "Scroll Bar Width"
+  </source>
+  <dest>
+    *: none
+    lcd_bitmap: "捲動軸寬度"
+  </dest>
+  <voice>
+    *: none
+    lcd_bitmap: "捲動軸寬度"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CONSTRAIN_NEXT_FOLDER
+  desc: in settings_menu. Whether LANG_NEXT_FOLDER should be constrained to directories within LANG_SET_AS_START_DIR
+  user: core
+  <source>
+    *: "Constrain Auto-Change"
+  </source>
+  <dest>
+    *: "限制自動跳轉"
+  </dest>
+  <voice>
+    *: "限制自動跳轉"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_HOTKEY
+  desc: hotkey menu
+  user: core
+  <source>
+    *: none
+    hotkey: "Hotkey"
+  </source>
+  <dest>
+    *: none
+    hotkey: "熱鍵"
+  </dest>
+  <voice>
+    *: none
+    hotkey: "熱鍵"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_HOTKEY_FILE_BROWSER
+  desc: hotkey menu
+  user: core
+  <source>
+    *: none
+    hotkey: "File Browser Hotkey"
+  </source>
+  <dest>
+    *: none
+    hotkey: "檔案瀏覽器的熱鍵"
+  </dest>
+  <voice>
+    *: none
+    hotkey: "檔案瀏覽器的熱鍵"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_HOTKEY_WPS
+  desc: hotkey menu
+  user: core
+  <source>
+    *: none
+    hotkey: "WPS Hotkey"
+  </source>
+  <dest>
+    *: none
+    hotkey: "音樂播放介面熱鍵"
+  </dest>
+  <voice>
+    *: none
+    hotkey: "音樂播放介面熱鍵"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SET_AS_START_DIR
+  desc: used in the onplay menu to set a starting browser dir
+  user: core
+  <source>
+    *: "Start File Browser Here"
+  </source>
+  <dest>
+    *: "設定為檔案瀏覽起始目錄"
+  </dest>
+  <voice>
+    *: "設定為檔案瀏覽起始目錄"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CURRENT_PLAYLIST
+  desc: Used when you need to say playlist, also voiced
+  user: core
+  <source>
+    *: "Current Playlist"
+  </source>
+  <dest>
+    *: "當前播放清單"
+  </dest>
+  <voice>
+    *: "當前播放清單"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_INSERT_LAST_SHUFFLED
+  desc: in onplay menu.  insert a playlist randomly at end of dynamic playlist
+  user: core
+  <source>
+    *: "Insert Last Shuffled"
+  </source>
+  <dest>
+    *: "隨機插入到播放清單最後位置"
+  </dest>
+  <voice>
+    *: "隨機插入到播放清單最後位置"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_QUEUE_LAST_SHUFFLED
+  desc: in onplay menu.  queue a playlist randomly at end of dynamic playlist
+  user: core
+  <source>
+    *: "Queue Last Shuffled"
+  </source>
+  <dest>
+    *: "清單播放完畢後重新隨機隊列"
+  </dest>
+  <voice>
+    *: "清單播放完畢後重新隨機隊列"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SET_AS_PLAYLISTCAT_DIR
+  desc: used in the onplay menu to set a playlist catalogue dir
+  user: core
+  <source>
+    *: "Set As Playlist Catalogue Directory"
+  </source>
+  <dest>
+    *: "設定為播放清單目錄位置"
+  </dest>
+  <voice>
+    *: "設定為播放清單目錄位置"
   </voice>
 </phrase>
