@@ -37,9 +37,6 @@
 int remote_type(void);
 #endif
 
-#define STYLE_DEFAULT    0x00000000
-#define STYLE_INVERT     0x20000000
-
 #if LCD_REMOTE_DEPTH <= 8
 #if (LCD_REMOTE_PIXELFORMAT == VERTICAL_INTERLEAVED) \
  || (LCD_REMOTE_PIXELFORMAT == HORIZONTAL_INTERLEAVED)
@@ -187,9 +184,6 @@ extern void lcd_remote_puts_style_offset(int x, int y, const unsigned char *str,
 extern void lcd_remote_puts_style_xyoffset(int x, int y, const unsigned char *str,
                                          int style, int x_offset, int y_offset);
 extern void lcd_remote_putc(int x, int y, unsigned short ch);
-extern void lcd_remote_stop_scroll(void);
-extern void lcd_remote_scroll_speed(int speed);
-extern void lcd_remote_scroll_delay(int ms);
 extern void lcd_remote_puts_scroll(int x, int y, const unsigned char *str);
 extern void lcd_remote_puts_scroll_style(int x, int y, const unsigned char *str,
                                          int style);

@@ -119,12 +119,13 @@ enum screen_type {
 #define STRIDE(screen, w, h) (screen==SCREEN_MAIN?STRIDE_MAIN((w), \
                                         (h)):STRIDE_REMOTE((w),(h)))
 
-#define STYLE_DEFAULT    0x00000000
-#define STYLE_COLORED    0x10000000
-#define STYLE_INVERT     0x20000000
-#define STYLE_COLORBAR   0x40000000
-#define STYLE_GRADIENT   0x80000000
-#define STYLE_MODE_MASK  0xF0000000
+#define STYLE_NONE       0x00000000
+#define STYLE_DEFAULT    0x01000000
+#define STYLE_COLORED    0x02000000
+#define STYLE_INVERT     0x04000000
+#define STYLE_COLORBAR   0x08000000
+#define STYLE_GRADIENT   0x10000000
+#define STYLE_MODE_MASK  0xFF000000
 /* HACK: This isnt really a style, We need to be able to tell some of
  * the lcd API that we want to draw text to a specific pixel instead
  * of a char. Remove this hack when the whole LCD api goes to fully
@@ -194,6 +195,7 @@ extern int  lcd_getstringsize(const unsigned char *str, int *w, int *h);
 extern void lcd_set_viewport(struct viewport* vp);
 extern void lcd_update(void);
 extern void lcd_update_viewport(void);
+extern void lcd_update_viewport_rect(int x, int y, int width, int height);
 extern void lcd_clear_viewport(void);
 extern void lcd_clear_display(void);
 extern void lcd_putsxy(int x, int y, const unsigned char *string);
@@ -207,10 +209,6 @@ extern void lcd_puts_offset(int x, int y, const unsigned char *str, int offset);
 extern void lcd_puts_scroll_offset(int x, int y, const unsigned char *string,
                                   int offset);
 extern void lcd_putc(int x, int y, unsigned long ucs);
-extern void lcd_stop_scroll(void);
-extern void lcd_bidir_scroll(int threshold);
-extern void lcd_scroll_speed(int speed);
-extern void lcd_scroll_delay(int ms);
 extern void lcd_puts_scroll(int x, int y, const unsigned char* string);
 extern void lcd_puts_scroll_style(int x, int y, const unsigned char* string,
                                   int style);
@@ -237,7 +235,6 @@ extern void lcd_blit_grey_phase(unsigned char *values, unsigned char *phases,
 
 /* update a fraction of the screen */
 extern void lcd_update_rect(int x, int y, int width, int height);
-extern void lcd_update_viewport_rect(int x, int y, int width, int height);
 
 #ifdef HAVE_REMOTE_LCD
 extern void lcd_remote_update(void);

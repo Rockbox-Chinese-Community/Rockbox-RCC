@@ -143,7 +143,7 @@ static const struct plugin_api rockbox_api = {
     lcd_puts,
     lcd_putsf,
     lcd_puts_scroll,
-    lcd_stop_scroll,
+    lcd_scroll_stop,
 #ifdef HAVE_LCD_CHARCELLS
     lcd_define_pattern,
     lcd_get_locked_pattern,
@@ -246,7 +246,7 @@ static const struct plugin_api rockbox_api = {
     lcd_remote_clear_display,
     lcd_remote_puts,
     lcd_remote_puts_scroll,
-    lcd_remote_stop_scroll,
+    lcd_remote_scroll_stop,
     lcd_remote_set_drawmode,
     lcd_remote_get_drawmode,
     lcd_remote_setfont,
@@ -589,6 +589,8 @@ static const struct plugin_api rockbox_api = {
     mixer_channel_set_amplitude,
     mixer_channel_get_bytes_waiting,
     mixer_channel_set_buffer_hook,
+    mixer_set_frequency,
+    mixer_get_frequency,
 
     system_sound_play,
     keyclick_click,
@@ -798,11 +800,6 @@ static const struct plugin_api rockbox_api = {
 
     /* new stuff at the end, sort into place next time
        the API gets incompatible */
-
-#if CONFIG_CODEC == SWCODEC
-    mixer_set_frequency,
-    mixer_get_frequency,
-#endif
 };
 
 int plugin_load(const char* plugin, const void* parameter)
