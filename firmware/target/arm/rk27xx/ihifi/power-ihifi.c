@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2009 Jeffrey Goode
+ * Copyright © 2013 Andrew Ryabinin
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,19 +18,34 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef COMPRESSOR_H
-#define COMPRESSOR_H
+#include <stdbool.h>
+#include "config.h"
+#include "inttypes.h"
+#include "power.h"
+#include "panic.h"
+#include "system.h"
+#include "usb_core.h"   /* for usb_charging_maxcurrent_change */
 
-struct compressor_settings
+void power_off(void)
 {
-    int threshold;
-    int makeup_gain;
-    int ratio;
-    int knee;
-    int release_time;
-    int attack_time;
-};
+    GPIO_PCCON &= ~(1<<0);
+    while(1);
+}
 
-void dsp_set_compressor(const struct compressor_settings *settings);
+void power_init(void)
+{
+    GPIO_PCDR |= (1<<0);
+    GPIO_PCCON |= (1<<0);
+}
 
-#endif /* COMPRESSOR_H */
+unsigned int power_input_status(void)
+{
+    unsigned int status = POWER_INPUT_NONE;
+    /* TODO: implement */
+    return status;
+}
+
+bool charging_state(void)
+{
+    return true;
+}

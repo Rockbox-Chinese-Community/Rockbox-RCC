@@ -7,7 +7,8 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2009 Jeffrey Goode
+ * Copyright (C)  2012 Andrew Ryabinin
+ *
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,19 +19,8 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef COMPRESSOR_H
-#define COMPRESSOR_H
+#ifndef LCD_TARGET_H
+#define LCD_TARGET_H
 
-struct compressor_settings
-{
-    int threshold;
-    int makeup_gain;
-    int ratio;
-    int knee;
-    int release_time;
-    int attack_time;
-};
-
-void dsp_set_compressor(const struct compressor_settings *settings);
-
-#endif /* COMPRESSOR_H */
+#define LCD_DATABUS_WIDTH LCDIF_16BIT
+#endif

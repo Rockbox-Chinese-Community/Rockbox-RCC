@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2009 Jeffrey Goode
+ * Copyright (C) 2013 Andrew Ryabinin
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,19 +18,23 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef COMPRESSOR_H
-#define COMPRESSOR_H
+#ifndef _BUTTON_TARGET_H_
+#define _BUTTON_TARGET_H_
 
-struct compressor_settings
-{
-    int threshold;
-    int makeup_gain;
-    int ratio;
-    int knee;
-    int release_time;
-    int attack_time;
-};
+#define BUTTON_FWD         0x00000001
+#define BUTTON_PLAY        0x00000002
+#define BUTTON_BWD         0x00000004
+#define BUTTON_RETURN      0x00000008
+#define BUTTON_MENU        0x00000010
 
-void dsp_set_compressor(const struct compressor_settings *settings);
+#define BUTTON_LEFT BUTTON_RETURN
+#define BUTTON_RIGHT BUTTON_MENU
 
-#endif /* COMPRESSOR_H */
+#define BUTTON_MAIN (BUTTON_FWD|BUTTON_PLAY| \
+                     BUTTON_BWD|BUTTON_RETURN| \
+                     BUTTON_MENU)
+
+#define POWEROFF_BUTTON BUTTON_PLAY
+#define POWEROFF_COUNT 30
+
+#endif /* _BUTTON_TARGET_H_ */
