@@ -117,6 +117,32 @@ buflib_init(struct buflib_context *ctx, void *buf, size_t size)
             (unsigned long)size / 1024, ((unsigned long)size%1000)/10);
 }
 
+bool buflib_context_relocate(struct buflib_context *ctx, void *buf)
+{
+    union buflib_data *handle, *bd_buf = buf;
+    ptrdiff_t diff = bd_buf - ctx->buf_start;
+
+    /* cannot continue if the buffer is not aligned, since we would need
+     * to reduce the size of the buffer for aligning */
+    if ((uintptr_t)buf & 0x3)
+        return false;
+
+    /* relocate the handle table entries  */
+    for (handle = ctx->last_handle; handle < ctx->handle_table; handle++)
+    {
+        if (handle->alloc)
+            handle->alloc += diff * sizeof(union buflib_data);
+    }
+    /* relocate the pointers in the context */
+    ctx->handle_table       += diff;
+    ctx->last_handle        += diff;
+    ctx->first_free_handle  += diff;
+    ctx->buf_start          += diff;
+    ctx->alloc_end          += diff;
+
+    return true;
+}
+
 /* Allocate a new handle, returning 0 on failure */
 static inline
 union buflib_data* handle_alloc(struct buflib_context *ctx)
@@ -724,7 +750,18 @@ buflib_alloc_maximum(struct buflib_context* ctx, const char* name, size_t *size,
     /* limit name to 16 since that's what buflib_available() accounts for it */
     char buf[16];
 
-    *size = buflib_available(ctx);
+    /* ignore ctx->compact because it's true if all movable blocks are contiguous
+     * even if the buffer has holes due to unmovable allocations */
+    unsigned hints;
+    size_t bufsize = ctx->handle_table - ctx->buf_start;
+    bufsize = MIN(BUFLIB_SHRINK_SIZE_MASK, bufsize*sizeof(union buflib_data)); /* make it bytes */
+    /* try as hard as possible to free up space. allocations are
+     * welcome to give up some or all of their memory */
+    hints = BUFLIB_SHRINK_POS_BACK | BUFLIB_SHRINK_POS_FRONT | bufsize;
+    /* compact until no space can be gained anymore */
+    while (buflib_compact_and_shrink(ctx, hints));
+
+    *size = buflib_allocatable(ctx);
     if (*size <= 0) /* OOM */
         return -1;
 
