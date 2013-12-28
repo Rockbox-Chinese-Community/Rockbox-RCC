@@ -43,11 +43,14 @@ public class RockboxFramebuffer extends SurfaceView
 {
     private final DisplayMetrics metrics;
     private final ViewConfiguration view_config;
-    private Bitmap btm;
+    private Bitmap btm,tmp_bmp;
     private int srcWidth, srcHeight, desWidth, desHeight;
     private float scaleWidth,scaleHeight;
     private Matrix myMatrix;
     private Paint myPaint;
+    private Rect scaledDirty;
+    private boolean upscaled =false;
+    private float stretch_ratio=0;
 
     /* first stage init; needs to run from a thread that has a Looper 
      * setup stuff that needs a Context */
@@ -78,29 +81,47 @@ public class RockboxFramebuffer extends SurfaceView
        srcHeight = lcd_height; 
        scaleWidth = ((float)desWidth) / srcWidth;
        scaleHeight = ((float)desHeight) / srcHeight;
+       
        myMatrix = new Matrix();
-       myMatrix.postScale(scaleWidth,scaleHeight);
-       myPaint = new Paint();
-       myPaint.setFlags(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
+       upscaled = (desWidth > lcd_width) ? true:false;
 
+       if (upscaled) 
+       {
+           stretch_ratio = (scaleWidth < scaleHeight)? scaleWidth: scaleHeight;
+           myMatrix.postScale((float)stretch_ratio,(float)stretch_ratio);
+           myPaint = new Paint(Paint.DITHER_FLAG);
+       }
+       else
+       {
+           myMatrix.postScale(scaleWidth,scaleHeight);
+           myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
+       }
+
+       scaledDirty = new Rect();
        btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565); 
+       
        setEnabled(true);
     }
-    
-         
+  
+
     private void update(ByteBuffer framebuffer)
     {
-          
         SurfaceHolder holder = getHolder();                            
         Canvas c = holder.lockCanvas();
-        
+        if (c==null) 
+            return;
+
         btm.copyPixelsFromBuffer(framebuffer);
-        
-        if (c == null) return;
-        
+      
         synchronized (holder)
         { /* draw */    
-            c.drawBitmap(btm,myMatrix,myPaint);
+            if (upscaled){
+                tmp_bmp =Bitmap.createScaledBitmap(btm,(int)(desWidth/stretch_ratio),(int)(desHeight/stretch_ratio),true);
+                c.drawBitmap(tmp_bmp,myMatrix,myPaint);
+                tmp_bmp.recycle();
+            }else{
+                c.drawBitmap(btm,myMatrix,myPaint); 
+            }  
         }
         holder.unlockCanvasAndPost(c);
         
@@ -108,22 +129,26 @@ public class RockboxFramebuffer extends SurfaceView
     
     private void update(ByteBuffer framebuffer, Rect dirty)
     {
-       
         SurfaceHolder holder = getHolder();         
-        Rect scaledDirty = new Rect();
+        
         scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
                         (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
-        
         Canvas c = holder.lockCanvas(scaledDirty);
-        /* can't copy a partial buffer, but it doesn't make a noticeable difference anyway */
-       
+         if (c==null) 
+            return; 
+         /* can't copy a partial buffer, but it doesn't make a noticeable difference anyway */       
         btm.copyPixelsFromBuffer(framebuffer);
         
-        if (c == null) return;
-        
         synchronized (holder)
-        {   /* draw */          
-            c.drawBitmap(btm,myMatrix,myPaint);    
+        {    
+            /* draw */          
+            if (upscaled){
+                tmp_bmp =Bitmap.createScaledBitmap(btm,(int)(desWidth/stretch_ratio),(int)(desHeight/stretch_ratio),true);
+                c.drawBitmap(tmp_bmp,myMatrix,myPaint);
+                tmp_bmp.recycle();
+            }else{
+                c.drawBitmap(btm,myMatrix,myPaint); 
+            }                 
         }
         holder.unlockCanvasAndPost(c);
         
@@ -131,12 +156,15 @@ public class RockboxFramebuffer extends SurfaceView
 
     public boolean onTouchEvent(MotionEvent me)
     {
+        
+
         int x = (int) me.getX();
         int y = (int) me.getY();
      
-        x=(int)(x / scaleWidth);
-        y=(int)(y / scaleHeight);
-
+        x = (int)( x / scaleWidth);
+        y = (int)( y / scaleHeight);
+        
+        
         switch (me.getAction())
         {
         case MotionEvent.ACTION_CANCEL:
@@ -152,6 +180,8 @@ public class RockboxFramebuffer extends SurfaceView
         return false;
     }
 
+    
+
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
         return buttonHandler(keyCode, true);
@@ -164,12 +194,12 @@ public class RockboxFramebuffer extends SurfaceView
  
     private int getDpi()
     {
-        return metrics.densityDpi;
+        return metrics.densityDpi;  
     }
     
 
     private int getScrollThreshold()
-    {
+    {  
         return view_config.getScaledTouchSlop();
     }
 
