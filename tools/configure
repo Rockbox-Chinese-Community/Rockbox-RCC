@@ -3862,6 +3862,7 @@ fi
     [Aa]*)
       echo "Advanced build selected"
       whichadvanced $btype
+      app_set_eq_num_bands
       ;;
     [Gg])
       extradefines="$extradefines -DSTUB" # for target makefile symbol EXTRA_DEFINES
