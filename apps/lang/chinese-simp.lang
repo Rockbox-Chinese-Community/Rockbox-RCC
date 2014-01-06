@@ -487,20 +487,6 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_VOLUME_LIMIT
-  desc: in sound_settings
-  user: core
-  <source>
-    *: "Maximum Volume Limit"
-  </source>
-  <dest>
-    *: "音量限制"
-  </dest>
-  <voice>
-    *: "音量限制"
-  </voice>
-</phrase>
-<phrase>
   id: LANG_BASS
   desc: in sound_settings
   user: core
