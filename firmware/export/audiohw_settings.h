@@ -85,7 +85,7 @@ AUDIOHW_SETTINGS(
     /* TODO: Volume shouldn't be needed if device doesn't have digital
        control */
     AUDIOHW_SETTING_ENT(VOLUME,             sound_set_volume)
-    AUDIOHW_SETTING_CLN(VOLUME_LIMIT,       VOLUME, sound_set_volume_limit)
+    AUDIOHW_SETTING_CLN(VOLUME_LIMIT,             VOLUME, NULL)
 #if defined(AUDIOHW_HAVE_BASS)
     AUDIOHW_SETTING_ENT(BASS,               sound_set_bass)
 #endif
