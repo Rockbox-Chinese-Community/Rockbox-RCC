@@ -200,7 +200,7 @@ void pcm_play_dma_init(void)
     JNIEnv e = *env_ptr;
     /* get the class and its constructor */
     jclass local_RockboxPCM_class = e->FindClass(env_ptr, "org/rockbox/RockboxPCM");
-    RockboxPCM_class = e->NewGlobalRef(env, local_RockboxPCM_class);
+    RockboxPCM_class = e->NewGlobalRef(env_ptr, local_RockboxPCM_class);
     jmethodID constructor = e->GetMethodID(env_ptr, RockboxPCM_class, "<init>", "()V");
     /* instance = new RockboxPCM() */
     RockboxPCM_instance = e->NewObject(env_ptr, RockboxPCM_class, constructor);
