@@ -280,7 +280,7 @@ static bool do_non_text_tags(struct gui_wps *gwps, struct skin_draw_info *info,
             if (do_refresh && aa)
             {
                 int handle = playback_current_aa_hid(data->playback_aa_slot);
-#if 0 /* FIXME: FS#12797*/
+#if CONFIG_TUNER
                 if (in_radio_screen() || (get_radio_status() != FMRADIO_OFF))
                 {
                     struct dim dim = {aa->width, aa->height};
@@ -427,7 +427,6 @@ static void do_tags_in_hidden_conditional(struct skin_element* branch,
 #endif
                             gwps->display->set_viewport(&skin_viewport->vp);
                             gwps->display->clear_viewport();
-                            gwps->display->scroll_stop(&skin_viewport->vp);
                             gwps->display->set_viewport(&info->skin_vp->vp);
                             skin_viewport->hidden_flags |= VP_DRAW_HIDDEN;
 
@@ -780,7 +779,9 @@ void skin_render_viewport(struct skin_element* viewport, struct gui_wps *gwps,
         if (refresh_type && needs_update)
         {
             if (info.force_redraw)
-                display->scroll_stop_line(&skin_viewport->vp, info.line_number);
+                display->scroll_stop_viewport_rect(&skin_viewport->vp,
+                    0, info.line_number*display->getcharheight(),
+                    skin_viewport->vp.width, display->getcharheight());
             write_line(display, align, info.line_number,
                     info.line_scrolls, info.text_style);
         }
@@ -968,8 +969,11 @@ void skin_render_playlistviewer(struct playlistviewer* viewer,
         /* only update if the line needs to be, and there is something to write */
         if (refresh_type && needs_update)
         {
+            struct viewport *vp = SKINOFFSETTOPTR(skin_buffer, viewer->vp);
             if (!info.force_redraw)
-                display->scroll_stop_line(&skin_viewport->vp, info.line_number);
+                display->scroll_stop_viewport_rect(vp,
+                    0, info.line_number*display->getcharheight(),
+                    vp->width, display->getcharheight());
             write_line(display, align, info.line_number,
                     info.line_scrolls, info.text_style);
         }

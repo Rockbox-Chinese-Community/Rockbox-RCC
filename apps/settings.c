@@ -72,6 +72,7 @@
 #include "viewport.h"
 #include "statusbar-skinned.h"
 #include "bootchart.h"
+#include "scroll_engine.h"
 
 #if CONFIG_CODEC == MAS3507D
 void dac_line_in(bool enable);
@@ -546,7 +547,10 @@ static bool settings_write_config(const char* filename, int options)
     if (fd < 0)
         return false;
     fdprintf(fd, "# .cfg file created by rockbox %s - "
-                 "http://www.rockbox.org\r\n\r\n", rbversion);
+                 "http://www.rockbox.org\r\n"
+                 "# customized by Rockbox-Chinese-Community - "
+                 "http://www.rockboxcn.org\r\n\r\n"
+                 , rbversion);
     for(i=0; i<nb_settings; i++)
     {
         if (settings[i].cfg_name == NULL)

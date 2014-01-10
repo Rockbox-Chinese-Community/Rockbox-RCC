@@ -566,7 +566,7 @@ bool set_time_screen(const char* title, struct tm *tm)
         }
     }
     FOR_NB_SCREENS(s)
-        screens[s].scroll_stop(&viewports[s]);
+        screens[s].scroll_stop_viewport(&viewports[s]);
 #ifdef HAVE_TOUCHSCREEN
     touchscreen_set_mode(old_mode);
 #endif
@@ -575,13 +575,14 @@ bool set_time_screen(const char* title, struct tm *tm)
 #endif /* defined(HAVE_LCD_BITMAP) && (CONFIG_RTC != 0) */
 
 #if (CONFIG_KEYPAD == RECORDER_PAD) && !defined(HAVE_SW_POWEROFF)
+#include "scroll_engine.h"
 bool shutdown_screen(void)
 {
     int button;
     bool done = false;
     long time_entered = current_tick;
 
-    lcd_stop_scroll();
+    lcd_scroll_stop();
 
     splash(0, str(LANG_CONFIRM_SHUTDOWN));
 

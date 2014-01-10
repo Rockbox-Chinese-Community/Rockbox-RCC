@@ -62,6 +62,7 @@ void* plugin_get_buffer(size_t *buffer_size);
 #include "usb.h"
 #include "font.h"
 #include "lcd.h"
+#include "scroll_engine.h"
 #include "metadata.h"
 #include "sound.h"
 #include "mpeg.h"
@@ -111,6 +112,7 @@ void* plugin_get_buffer(size_t *buffer_size);
 #include "timefuncs.h"
 #include "crc32.h"
 #include "rbpaths.h"
+#include "core_alloc.h"
 
 #ifdef HAVE_ALBUMART
 #include "albumart.h"
@@ -155,12 +157,12 @@ void* plugin_get_buffer(size_t *buffer_size);
 #define PLUGIN_MAGIC 0x526F634B /* RocK */
 
 /* increase this every time the api struct changes */
-#define PLUGIN_API_VERSION 224
+#define PLUGIN_API_VERSION 225
 
 /* update this to latest version if a change to the api struct breaks
    backwards compatibility (and please take the opportunity to sort in any
    new function which are "waiting" at the end of the function table) */
-#define PLUGIN_MIN_API_VERSION 223
+#define PLUGIN_MIN_API_VERSION 225
 
 /* plugin return codes */
 /* internal returns start at 0x100 to make exit(1..255) work */
@@ -195,7 +197,7 @@ struct plugin_api {
     void (*lcd_puts)(int x, int y, const unsigned char *string);
     void (*lcd_putsf)(int x, int y, const unsigned char *fmt, ...);
     void (*lcd_puts_scroll)(int x, int y, const unsigned char* string);
-    void (*lcd_stop_scroll)(void);
+    void (*lcd_scroll_stop)(void);
 #ifdef HAVE_LCD_CHARCELLS
     void (*lcd_define_pattern)(unsigned long ucs, const char *pattern);
     unsigned long (*lcd_get_locked_pattern)(void);
@@ -327,7 +329,7 @@ struct plugin_api {
     void (*lcd_remote_clear_display)(void);
     void (*lcd_remote_puts)(int x, int y, const unsigned char *string);
     void (*lcd_remote_puts_scroll)(int x, int y, const unsigned char* string);
-    void (*lcd_remote_stop_scroll)(void);
+    void (*lcd_remote_scroll_stop)(void);
     void (*lcd_remote_set_drawmode)(int mode);
     int  (*lcd_remote_get_drawmode)(void);
     void (*lcd_remote_setfont)(int font);
@@ -716,7 +718,8 @@ struct plugin_api {
     size_t (*mixer_channel_get_bytes_waiting)(enum pcm_mixer_channel channel);
     void (*mixer_channel_set_buffer_hook)(enum pcm_mixer_channel channel,
                                           chan_buffer_hook_fn_type fn);
-
+    void (*mixer_set_frequency)(unsigned int samplerate);
+    unsigned int (*mixer_get_frequency)(void);
     void (*system_sound_play)(enum system_sound sound);
     void (*keyclick_click)(bool rawbutton, int action);
 #endif /* CONFIG_CODEC == SWCODC */
@@ -970,11 +973,6 @@ struct plugin_api {
 
     /* new stuff at the end, sort into place next time
        the API gets incompatible */
-
-#if CONFIG_CODEC == SWCODEC
-    void (*mixer_set_frequency)(unsigned int samplerate);
-    unsigned int (*mixer_get_frequency)(void);
-#endif
 };
 
 /* plugin header */

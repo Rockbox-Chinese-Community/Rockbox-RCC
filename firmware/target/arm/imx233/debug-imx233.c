@@ -19,7 +19,9 @@
  *
  ****************************************************************************/
 
+#include "cpu.h"
 #include "system.h"
+#include "kernel.h"
 #include "dma-imx233.h"
 #include "lcd.h"
 #include "font.h"
@@ -947,6 +949,7 @@ bool dbg_hw_info(void)
         lcd_update();
         yield();
     }
+    return false;
 }
 
 bool dbg_ports(void)

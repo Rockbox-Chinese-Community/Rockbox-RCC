@@ -27,6 +27,7 @@
 #include "lang.h"
 #include "talk.h"
 #include "lcd.h"
+#include "scroll_engine.h"
 #include "button.h"
 #include "backlight.h"
 #include "sound.h"
@@ -2240,7 +2241,11 @@ const struct settings_list settings[] = {
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, compressor_settings.knee,
                    LANG_COMPRESSOR_KNEE, 1, "compressor knee",
                    "hard knee,soft knee", compressor_set, 2,
-                   ID2P(LANG_COMPRESSOR_HARD_KNEE), ID2P(LANG_COMPRESSOR_SOFT_KNEE)),
+                   ID2P(LANG_COMPRESSOR_HARD_KNEE), ID2P(LANG_COMPRESSOR_SOFT_KNEE)), 
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, compressor_settings.attack_time,
+                       LANG_COMPRESSOR_ATTACK, 5,
+                       "compressor attack time", UNIT_MS, 0, 30,
+                       5, NULL, NULL, compressor_set),                  
     INT_SETTING_NOWRAP(F_SOUNDSETTING, compressor_settings.release_time,
                        LANG_COMPRESSOR_RELEASE, 500,
                        "compressor release time", UNIT_MS, 100, 1000,
