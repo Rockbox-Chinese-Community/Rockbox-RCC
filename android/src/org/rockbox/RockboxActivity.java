@@ -138,19 +138,19 @@ public class RockboxActivity extends Activity
     {
         switch (item.getItemId())
         {
-           case 3:
-		MobclickAgent.onKillProcess(this);
-		RockboxNativeInterface.powerOff();
-		new Thread("Power-Off"){
-		    @Override
-		    public void run(){
-			    try {
-                    Thread.sleep(3500); //确保退出
-                } catch (InterruptedException ignored) { }
-		        android.os.Process.killProcess(android.os.Process.myPid());
-		        }
-		    }.start();
-            break;
+            case 3:
+		        MobclickAgent.onKillProcess(this);
+		        RockboxNativeInterface.powerOff();
+		        new Thread("Power-Off"){
+		            @Override
+		            public void run(){
+			            try {
+                            Thread.sleep(3500); //确保退出
+                        } catch (InterruptedException ignored) { }
+		                android.os.Process.killProcess(android.os.Process.myPid());
+                    }
+		        }.start();
+                break;
             case 2:
                 new AlertDialog.Builder(this)
             	                .setTitle(R.string.rockbox_about_title)
@@ -162,11 +162,7 @@ public class RockboxActivity extends Activity
                 RockboxFramebuffer.buttonHandler(0, true); //press
                 try {
                     Thread.sleep(400); //线程阻塞400ms，模拟长按菜单键（WPS_MENU），小于300ms即为WPS_CONTEXT。
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    Logger.e("Thread blocked!");
-                    }
+                } catch (InterruptedException e) {}
                 RockboxFramebuffer.buttonHandler(0, false); //release
                 break;
             case 1:

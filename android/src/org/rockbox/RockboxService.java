@@ -136,10 +136,6 @@ public class RockboxService extends Service
         rockbox_running = true;
     }
 
-    public void onStart(Intent intent, int startId) {
-        doStart(intent);
-    }
-
     public int onStartCommand(Intent intent, int flags, int startId)
     {
         /* if null, then the service was most likely restarted by android
