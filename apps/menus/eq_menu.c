@@ -570,7 +570,7 @@ static void draw_eq_sliders(struct screen * screen, int x, int y,
 /* Provides a graphical means of editing the EQ settings */
 bool eq_menu_graphical(void)
 {
-#if (CONFIG_PLATFORM&PLATFORM_ANDROID) || (HAVE_TOUCHSCREEN)
+#if (CONFIG_PLATFORM&PLATFORM_ANDROID) || defined (HAVE_TOUCHSCREEN)
     touchscreen_set_mode(TOUCHSCREEN_BUTTON);
 #endif
     bool exit_request = false;
@@ -764,7 +764,7 @@ bool eq_menu_graphical(void)
         screens[i].clear_display();
         screens[i].set_viewport(NULL);
         viewportmanager_theme_undo(i, false);
-#if (CONFIG_PLATFORM & PLATFORM_ANDROID) || (HAVE_TOUCHSCREEN)
+#if (CONFIG_PLATFORM & PLATFORM_ANDROID) || defined (HAVE_TOUCHSCREEN)
         touchscreen_set_mode(TOUCHSCREEN_POINT);
 #endif
     }
