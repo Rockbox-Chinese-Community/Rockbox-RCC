@@ -23,6 +23,7 @@ package org.rockbox;
 
 
 import org.rockbox.Helper.Logger;
+import org.rockbox.jni.RockboxNativeInterface;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -138,11 +139,18 @@ public class RockboxActivity extends Activity
         switch (item.getItemId())
         {
            case 3:
-                System.runFinalization();
 		MobclickAgent.onKillProcess(this);
-                android.os.Process.killProcess(android.os.Process.myPid());
-                System.exit(0);
-                break;
+		RockboxNativeInterface.powerOff();
+		new Thread("Power-Off"){
+		    @Override
+		    public void run(){
+			    try {
+                    Thread.sleep(3500); //确保退出
+                } catch (InterruptedException ignored) { }
+		        android.os.Process.killProcess(android.os.Process.myPid());
+		        }
+		    }.start();
+            break;
             case 2:
                 new AlertDialog.Builder(this)
             	                .setTitle(R.string.rockbox_about_title)

@@ -12,6 +12,11 @@ PACKAGE_PATH=org/rockbox
 BINLIB_DIR=$(BUILDDIR)/libs/$(ANDROID_ARCH)
 ANDROID_DIR=$(ROOTDIR)/android
 
+CUSTOMJNI_SRC=$(ROOTDIR)/firmware/target/hosted/android/jni
+CUSTOMJNI_PATH=$(ROOTDIR)/firmware/target/hosted/android/jni/power-manager.c
+CUSTOMJNIOBJS_PATH=$(BUILDDIR)/firmware/target/hosted/android/jni
+CUSTOMJNIOBJS = $(CUSTOMJNIOBJS_PATH)/power-manager.o
+
 # this is a glibc compatibility hack to provide a get_nprocs() replacement.
 # The NDK ships cpu-features.c which has a compatible function android_getCpuCount()
 CPUFEAT = $(ANDROID_NDK_PATH)/sources/android/cpufeatures
@@ -22,6 +27,9 @@ CLEANOBJS += $(CPUFEAT_BUILD)/cpu-features.o
 $(CPUFEAT_BUILD)/cpu-features.o: $(CPUFEAT)/cpu-features.c
 	$(SILENT)mkdir -p $(dir $@)
 	$(call PRINTS,CC $(subst $(CPUFEAT)/,,$<))$(CC) -o $@ -c $^ $(GCCOPTS) -Wno-unused
+$(CUSTOMJNIOBJS_PATH)/%.o: $(CUSTOMJNI_SRC)/%.c
+	$(SILENT)mkdir -p $(dir $@)
+	$(call PRINTS,CC $(subst $(CUSTOMJNI_SRC)/,,$<))$(CC) -o $@ -c $^ $(INCLUDES) $(GCCOPTS) -Wno-unused
 
 .SECONDEXPANSION: # $$(JAVA_OBJ) is not populated until after this
 .SECONDEXPANSION: # $$(OBJ) is not populated until after this
@@ -54,6 +62,7 @@ JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/Helper/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/widgets/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/monitors/*.java)
 JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/preference/*.java)
+JAVA_SRC	+= $(wildcard $(ANDROID_DIR)/src/$(PACKAGE_PATH)/jni/*.java)
 
 AIDL_SRC	:= $(wildcard $(ANDROID_DIR)/src)
 
@@ -130,7 +139,8 @@ dex: $(DEX)
 classes: $(R_OBJ) $(JAVA_OBJ)
 
 
-$(BUILDDIR)/$(BINARY): $$(OBJ) $(FIRMLIB) $(VOICESPEEXLIB) $(CORE_LIBS) $(CPUFEAT_BUILD)/cpu-features.o
+$(BUILDDIR)/$(BINARY): $$(OBJ) $(FIRMLIB) $(VOICESPEEXLIB) $(CORE_LIBS) $(CPUFEAT_BUILD)/cpu-features.o \
+		$(CUSTOMJNIOBJS)
 	$(call PRINTS,LD $(BINARY))$(CC) -o $@ $^ $(LDOPTS) $(GLOBAL_LDOPTS) -Wl,-Map,$(BUILDDIR)/rockbox.map
 	$(call PRINTS,OC $(@F))$(call objcopy,$@,$@)
 
