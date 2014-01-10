@@ -699,14 +699,14 @@ androidcc () {
     case $ANDROID_ARCH in
         armeabi)
             endian="little"
-            gccchoice="4.4.3"
+            gccchoice="4.8"
             gcctarget="arm-linux-androideabi-"
             # sigaltstack is not available in pre-android-9, however asm
             # threads work fine so far
             thread_support="ASSEMBLER_THREADS"
             GCCOPTS="$GCCOPTS -march=armv5te -mtune=xscale -msoft-float -fomit-frame-pointer \
-                    --sysroot=$ANDROID_NDK_PATH/platforms/android-5/arch-arm"
-            LDOPTS="$LDOPTS --sysroot=$ANDROID_NDK_PATH/platforms/android-5/arch-arm"
+                    --sysroot=$ANDROID_NDK_PATH/platforms/android-19/arch-arm"
+            LDOPTS="$LDOPTS --sysroot=$ANDROID_NDK_PATH/platforms/android-19/arch-arm"
             ;;
         mips)
             endian="little"
@@ -4059,7 +4059,7 @@ if [ -z "$arch" ]; then
     elif [ -n "$(echo $cpp_defines | grep -w __arm__)" ]; then
         arch="arm"
         # cpp defines like "#define __ARM_ARCH_4TE__ 1" (where we want to extract the 4)
-        arch_version="$(echo $cpp_defines | tr ' ' '\012' | grep __ARM_ARCH | sed -e 's,.*\([0-9]\).*,\1,')"
+        arch_version="$(echo $cpp_defines | tr ' ' '\012' | grep __ARM_ARCH[_a-zA-Z+][0-9+] | sed -e 's,.*\([0-9+]\).*,\1,')"
     elif [ -n "$(echo $cpp_defines | grep -w __mips__)" ]; then
         arch="mips"
         arch_version="$(echo $cpp_defines | tr ' ' '\012' | grep _MIPS_ARCH_MIPS | sed -e 's,.*\([0-9][0-9]\).*,\1,')"
