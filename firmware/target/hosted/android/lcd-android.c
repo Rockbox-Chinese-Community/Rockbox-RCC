@@ -72,7 +72,8 @@ static void connect_with_java(JNIEnv* env, jobject fb_instance)
 
         java_lcd_init        = e->GetMethodID(env, fb_class,
                                              "initialize", "(II)V");
-        AndroidRect_class    = e->FindClass(env, "android/graphics/Rect");
+        jclass local_AndroidRect_class = e->FindClass(env, "android/graphics/Rect");
+        AndroidRect_class    = e->NewGlobalRef(env, local_AndroidRect_class);
         AndroidRect_constructor = e->GetMethodID(env, AndroidRect_class,
                                              "<init>", "(IIII)V");
         have_class           = true;
