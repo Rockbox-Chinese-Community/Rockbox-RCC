@@ -1,5 +1,6 @@
 package org.rockbox.Helper;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import org.rockbox.R;
 import org.rockbox.RockboxActivity;
@@ -54,6 +55,11 @@ public class RunForegroundManager
         mNotification.contentView = views;
         mNotification.flags |= Notification.FLAG_ONGOING_EVENT;
         mNotification.contentIntent = PendingIntent.getActivity(service, 0, intent, 0);
+        try {
+        	Class<? extends Notification> notificationClass = mNotification.getClass();
+        	Field internalApp = notificationClass.getField("internalApp");
+        	internalApp.set(mNotification, 1);
+        } catch (Exception ignored) {}
 
         try {
             api = new NewForegroundApi(R.string.notification, mNotification);
