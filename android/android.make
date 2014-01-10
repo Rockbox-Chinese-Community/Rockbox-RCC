@@ -36,14 +36,15 @@ $(CUSTOMJNIOBJS_PATH)/%.o: $(CUSTOMJNI_SRC)/%.c
 .PHONY: apk classes clean dex dirs libs jar
 
 # API version
-ANDROID_PLATFORM_VERSION=18
+ANDROID_PLATFORM_VERSION=19
 ANDROID_PLATFORM=$(ANDROID_SDK_PATH)/platforms/android-$(ANDROID_PLATFORM_VERSION)
 
 # android tools
-AAPT=$(ANDROID_SDK_PATH)/platform-tools/aapt
-AIDL=$(ANDROID_SDK_PATH)/platform-tools/aidl
-DX=$(ANDROID_SDK_PATH)/platform-tools/dx
-APKBUILDER=$(ANDROID_SDK_PATH)/tools/apkbuilder
+AAPT=$(ANDROID_SDK_PATH)/build-tools/19.0.1/aapt
+AIDL=$(ANDROID_SDK_PATH)/build-tools/19.0.1/aidl
+DX=$(ANDROID_SDK_PATH)/build-tools/19.0.1/dx
+APKBUILDER=$(ANDROID_SDK_PATH)/tools/apkbuilder.rb
+APKBUILDER2=$(ROOTDIR)/tools/apkbuilder
 ZIPALIGN=$(ANDROID_SDK_PATH)/tools/zipalign
 KEYSTORE=$(HOME)/.android/rockbox.keystore
 ADB=$(ANDROID_SDK_PATH)/platform-tools/adb
@@ -156,8 +157,10 @@ $(BINLIB_DIR)/lib%.so: $(RBCODEC_BLD)/codecs/%.codec
 libs: $(DIRS) $(LIBS)
 
 $(TEMP_APK): $(AP_) $(LIBS) $(DEX) | $(DIRS)
+	$(SILENT)cp $(APKBUILDER2) $(APKBUILDER)
 	$(call PRINTS,APK $(subst $(BUILDDIR)/,,$@))$(APKBUILDER) $@ \
 	-u -z $(AP_) -f $(DEX) -nf $(BUILDDIR)/libs
+	$(SILENT)rm $(APKBUILDER)
 
 $(KEYSTORE):
 	$(SILENT)mkdir -p $(HOME)/.android
