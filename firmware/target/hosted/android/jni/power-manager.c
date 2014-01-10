@@ -9,5 +9,7 @@
 
 JNIEXPORT void JNICALL Java_org_rockbox_jni_RockboxNativeInterface_powerOff
   (JNIEnv *env, jclass thiz){
+    (void)env;
+    (void)thiz;
     sys_poweroff();
 }
