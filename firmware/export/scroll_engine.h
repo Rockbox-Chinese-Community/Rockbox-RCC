@@ -25,9 +25,11 @@
 #ifndef __SCROLL_ENGINE_H__
 #define __SCROLL_ENGINE_H__
 
+#include <stdbool.h>
 #include "config.h"
-#include <lcd.h>
 #include "file.h"
+
+struct viewport;
 
 extern void scroll_init(void) INIT_ATTR;
 
@@ -67,9 +69,6 @@ struct scrollinfo
     int width, height;
     /* pixel to skip from the beginning of the string, increments as the text scrolls */
     int offset;
-#ifdef HAVE_LCD_BITMAP
-    int style; /* line style */
-#endif /* HAVE_LCD_BITMAP */
     /* scroll presently forward or backward? */
     bool backward;
     bool bidir;

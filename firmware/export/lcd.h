@@ -43,17 +43,10 @@ struct viewport {
 #ifdef HAVE_LCD_BITMAP
     int flags;
     int font;
-    int line_height; /* 0 for using font height */
     int drawmode;
-#endif
-#if LCD_DEPTH > 1
+    /* needed for even for mono displays to support greylib */
     unsigned fg_pattern;
     unsigned bg_pattern;
-#ifdef HAVE_LCD_COLOR
-    unsigned lss_pattern;
-    unsigned lse_pattern;
-    unsigned lst_pattern;
-#endif
 #endif
 };
 
@@ -108,6 +101,8 @@ enum screen_type {
 #endif
 };
 
+struct scrollinfo;
+
 #if   defined(LCD_STRIDEFORMAT) && LCD_STRIDEFORMAT == VERTICAL_STRIDE
 #define STRIDE_MAIN(w, h)   (h)
 #else
@@ -119,27 +114,6 @@ enum screen_type {
 #define STRIDE(screen, w, h) (screen==SCREEN_MAIN?STRIDE_MAIN((w), \
                                         (h)):STRIDE_REMOTE((w),(h)))
 
-#define STYLE_NONE       0x00000000
-#define STYLE_DEFAULT    0x01000000
-#define STYLE_COLORED    0x02000000
-#define STYLE_INVERT     0x04000000
-#define STYLE_COLORBAR   0x08000000
-#define STYLE_GRADIENT   0x10000000
-#define STYLE_MODE_MASK  0xFF000000
-/* HACK: This isnt really a style, We need to be able to tell some of
- * the lcd API that we want to draw text to a specific pixel instead
- * of a char. Remove this hack when the whole LCD api goes to fully
- * pixel based positioning - jdgordon */
-#define STYLE_XY_PIXELS  0x00010000
-#define STYLE_COLOR_MASK 0x0000FFFF
-#ifdef HAVE_LCD_COLOR
-#define STYLE_CURLN_MASK 0x0000FF00
-#define STYLE_MAXLN_MASK 0x000000FF
-#define CURLN_PACK(x)    (((x)<<8) & STYLE_CURLN_MASK)
-#define CURLN_UNPACK(x)  ((unsigned char)(((x)&STYLE_CURLN_MASK) >> 8))
-#define NUMLN_PACK(x)    ((x) & STYLE_MAXLN_MASK)
-#define NUMLN_UNPACK(x)  ((unsigned char)((x) & STYLE_MAXLN_MASK))
-#endif
 
 #ifdef HAVE_LCD_BITMAP
 #if LCD_DEPTH <=8
@@ -204,14 +178,11 @@ extern void lcd_putsxy_style_offset(int x, int y, const unsigned char *str,
                                     int style, int offset);
 extern void lcd_puts(int x, int y, const unsigned char *string);
 extern void lcd_putsf(int x, int y, const unsigned char *fmt, ...);
-extern void lcd_puts_style(int x, int y, const unsigned char *string, int style);
-extern void lcd_puts_offset(int x, int y, const unsigned char *str, int offset);
-extern void lcd_puts_scroll_offset(int x, int y, const unsigned char *string,
-                                  int offset);
 extern void lcd_putc(int x, int y, unsigned long ucs);
 extern void lcd_puts_scroll(int x, int y, const unsigned char* string);
-extern void lcd_puts_scroll_style(int x, int y, const unsigned char* string,
-                                  int style);
+extern void lcd_putsxy_scroll_func(int x, int y, const unsigned char *string,
+                                   void (*scroll_func)(struct scrollinfo *),
+                                   void *data, int x_offset);
 
 #ifdef HAVE_LCD_BITMAP
 
@@ -279,6 +250,15 @@ void lcd_remove_cursor(void);
 extern void lcd_jump_scroll(int mode); /* 0=off, 1=once, ..., ALWAYS */
 extern void lcd_jump_scroll_delay(int ms);
 #endif /* HAVE_LCD_CHARCELLS */
+
+/* Bitmap formats */
+enum
+{
+    FORMAT_MONO,
+    FORMAT_NATIVE,
+    FORMAT_ANY   /* For passing to read_bmp_file() */
+};
+
 
 /* Draw modes */
 #define DRMODE_COMPLEMENT 0
@@ -455,14 +435,6 @@ extern bool lcd_active(void);
 extern void lcd_shutdown(void);
 #endif
 
-/* Bitmap formats */
-enum
-{
-    FORMAT_MONO,
-    FORMAT_NATIVE,
-    FORMAT_ANY   /* For passing to read_bmp_file() */
-};
-
 #define FORMAT_TRANSPARENT 0x40000000
 #define FORMAT_DITHER      0x20000000
 #define FORMAT_REMOTE      0x10000000
@@ -497,15 +469,6 @@ extern int  lcd_get_drawmode(void);
 extern void lcd_setfont(int font);
 extern int lcd_getfont(void);
 
-extern void lcd_puts_style_offset(int x, int y, const unsigned char *str,
-                                  int style, int x_offset);
-extern void lcd_puts_style_xyoffset(int x, int y, const unsigned char *str,
-                                  int style, int x_offset, int y_offset);
-extern void lcd_puts_scroll_style_offset(int x, int y, const unsigned char *string,
-                                  int style, int x_offset);
-extern void lcd_puts_scroll_style_xyoffset(int x, int y, const unsigned char *string,
-                                  int style, int x_offset, int y_offset);
-
 /* low level drawing function pointer arrays */
 #if LCD_DEPTH >= 8
 extern lcd_fastpixelfunc_type* const *lcd_fastpixelfuncs;
@@ -525,6 +488,8 @@ extern void lcd_drawrect(int x, int y, int width, int height);
 extern void lcd_fillrect(int x, int y, int width, int height);
 extern void lcd_gradient_fillrect(int x, int y, int width, int height,
         unsigned start_rgb, unsigned end_rgb);
+extern void lcd_gradient_fillrect_part(int x, int y, int width, int height,
+        unsigned start_rgb, unsigned end_rgb, int src_height, int row_skip);
 extern void lcd_draw_border_viewport(void);
 extern void lcd_fill_viewport(void);
 extern void lcd_bitmap_part(const fb_data *src, int src_x, int src_y,

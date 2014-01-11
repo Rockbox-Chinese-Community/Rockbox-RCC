@@ -48,6 +48,7 @@
 #include "list.h"
 #include "splash.h"
 #include "playlist_menu.h"
+#include "menus/exported_menus.h"
 #include "yesno.h"
 
 /* Maximum number of tracks we can have loaded at one time */
@@ -482,7 +483,8 @@ static int onplay_menu(int index)
     MENUITEM_STRINGLIST(menu_items, ID2P(LANG_PLAYLIST), NULL, 
                         ID2P(LANG_CURRENT_PLAYLIST), ID2P(LANG_CATALOG),
                         ID2P(LANG_REMOVE), ID2P(LANG_MOVE), ID2P(LANG_SHUFFLE),
-                        ID2P(LANG_SAVE_DYNAMIC_PLAYLIST));
+                        ID2P(LANG_SAVE_DYNAMIC_PLAYLIST),
+                        ID2P(LANG_PLAYLISTVIEWER_SETTINGS));
     bool current = (current_track->index == viewer.current_playing_track);
 
     result = do_menu(&menu_items, NULL, NULL, false);
@@ -546,6 +548,11 @@ static int onplay_menu(int index)
                 /* save playlist */
                 save_playlist_screen(viewer.playlist);
                 ret = 0;
+                break;
+            case 6:
+                /* playlist viewer settings */
+                result = do_menu(&viewer_settings_menu, NULL, NULL, false);
+                ret = (result == MENU_ATTACHED_USB) ? -1 : 0;
                 break;
         }
     }
@@ -817,6 +824,11 @@ enum playlist_viewer_result playlist_viewer_ex(const char* filename)
                         viewer.selected_track = viewer.num_tracks-1;
                     dirty = true;
                 }
+                /* the show_icons option in the playlist viewer settings
+                 * menu might have changed */
+                gui_synclist_set_icon_callback(&playlist_lists,
+                              global_settings.playlist_viewer_icons?
+                              &playlist_callback_icons:NULL);
                 gui_synclist_draw(&playlist_lists);
                 break;
             }
@@ -941,4 +953,3 @@ bool search_playlist(void)
     }
     return ret;
 }
-

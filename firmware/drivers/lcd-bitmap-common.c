@@ -40,83 +40,6 @@
 #define MAIN_LCD
 #endif
 
-#if defined(MAIN_LCD) && defined(HAVE_LCD_COLOR)
-void lcd_gradient_fillrect(int x, int y, int width, int height,
-        unsigned start_rgb, unsigned end_rgb)
-{
-    int old_pattern = current_vp->fg_pattern;
-    int step_mul, i;
-    int x1, x2;
-    x1 = x;
-    x2 = x + width;
-    
-    if (height == 0) return;
-
-    step_mul = (1 << 16) / height;
-    int h_r = RGB_UNPACK_RED(start_rgb);
-    int h_g = RGB_UNPACK_GREEN(start_rgb);
-    int h_b = RGB_UNPACK_BLUE(start_rgb);
-    int rstep = (h_r - RGB_UNPACK_RED(end_rgb)) * step_mul;
-    int gstep = (h_g - RGB_UNPACK_GREEN(end_rgb)) * step_mul;
-    int bstep = (h_b - RGB_UNPACK_BLUE(end_rgb)) * step_mul;
-    h_r = (h_r << 16) + (1 << 15);
-    h_g = (h_g << 16) + (1 << 15);
-    h_b = (h_b << 16) + (1 << 15);
-
-    for(i = y; i < y + height; i++) {
-        current_vp->fg_pattern = LCD_RGBPACK(h_r >> 16, h_g >> 16, h_b >> 16);
-        lcd_hline(x1, x2, i);
-        h_r -= rstep;
-        h_g -= gstep;
-        h_b -= bstep;
-    }
-
-    current_vp->fg_pattern = old_pattern;
-}
-
-/* Fill a text line with a gradient:
- * x1, x2 - x pixel coordinates to start/stop
- * y - y pixel to start from
- * h - line height
- * num_lines - number of lines to span the gradient over
- * cur_line - current line being draw
- */
-static void lcd_do_gradient_line(int x1, int x2, int y, unsigned h,
-                              int num_lines, int cur_line)
-{
-    int step_mul;
-    if (h == 0) return;
-
-    num_lines *= h;
-    cur_line *= h;
-    step_mul = (1 << 16) / (num_lines);
-    int h_r = RGB_UNPACK_RED(current_vp->lss_pattern);
-    int h_g = RGB_UNPACK_GREEN(current_vp->lss_pattern);
-    int h_b = RGB_UNPACK_BLUE(current_vp->lss_pattern);
-    int rstep = (h_r - RGB_UNPACK_RED(current_vp->lse_pattern)) * step_mul;
-    int gstep = (h_g - RGB_UNPACK_GREEN(current_vp->lse_pattern)) * step_mul;
-    int bstep = (h_b - RGB_UNPACK_BLUE(current_vp->lse_pattern)) * step_mul;
-    unsigned start_rgb, end_rgb;
-    h_r = (h_r << 16) + (1 << 15);
-    h_g = (h_g << 16) + (1 << 15);
-    h_b = (h_b << 16) + (1 << 15);
-    if (cur_line)
-    {
-        h_r -= cur_line * rstep;
-        h_g -= cur_line * gstep;
-        h_b -= cur_line * bstep;
-    }
-    start_rgb = LCD_RGBPACK(h_r >> 16, h_g >> 16, h_b >> 16);
-
-    h_r -= h * rstep;
-    h_g -= h * gstep;
-    h_b -= h * bstep;
-    end_rgb = LCD_RGBPACK(h_r >> 16, h_g >> 16, h_b >> 16);
-    lcd_gradient_fillrect(x1, y, x2 - x1, h, start_rgb, end_rgb);
-}
-
-#endif
-
 void LCDFN(set_framebuffer)(FBFN(data) *fb)
 {
     if (fb)
@@ -335,6 +258,8 @@ static void LCDFN(putsxyofs)(int x, int y, int ofs, const unsigned char *str)
     font_lock(current_vp->font, false);
 }
 
+/*** pixel oriented text output ***/
+
 /* put a string at a given pixel position */
 void LCDFN(putsxy)(int x, int y, const unsigned char *str)
 {
@@ -352,97 +277,14 @@ void LCDFN(putsxyf)(int x, int y, const unsigned char *fmt, ...)
     LCDFN(putsxy)(x, y, buf);
 }
 
-static void LCDFN(putsxyofs_style)(int xpos, int ypos,
-                                   const unsigned char *str, int style,
-                                   int h, int offset)
-{
-    int lastmode = current_vp->drawmode;
-    int text_ypos = ypos;
-    int line_height = font_get(current_vp->font)->height;
-    text_ypos += h/2 - line_height/2; /* center the text in the line */
-
-    if ((style & STYLE_MODE_MASK) == STYLE_NONE) {
-        if (str[0])
-            LCDFN(putsxyofs)(xpos, text_ypos, offset, str);
-        return;
-    }
-#if defined(MAIN_LCD) && defined(HAVE_LCD_COLOR)
-    int oldfgcolor = current_vp->fg_pattern;
-    int oldbgcolor = current_vp->bg_pattern;
-    current_vp->drawmode = DRMODE_SOLID | ((style & STYLE_INVERT) ?
-                                           DRMODE_INVERSEVID : 0);
-    if (style & STYLE_COLORED) {
-        if (current_vp->drawmode == DRMODE_SOLID)
-            current_vp->fg_pattern = style & STYLE_COLOR_MASK;
-        else
-            current_vp->bg_pattern = style & STYLE_COLOR_MASK;
-    }
-    current_vp->drawmode ^= DRMODE_INVERSEVID;
-    if (style & STYLE_GRADIENT) {
-        current_vp->drawmode = DRMODE_FG;
-        lcd_do_gradient_line(xpos, current_vp->width, ypos, h,
-                          NUMLN_UNPACK(style), CURLN_UNPACK(style));
-        current_vp->fg_pattern = current_vp->lst_pattern;
-    }
-    else if (style & STYLE_COLORBAR) {
-        current_vp->drawmode = DRMODE_FG;
-        current_vp->fg_pattern = current_vp->lss_pattern;
-        lcd_fillrect(xpos, ypos, current_vp->width - xpos, h);
-        current_vp->fg_pattern = current_vp->lst_pattern;
-    }
-    else {
-        lcd_fillrect(xpos, ypos, current_vp->width - xpos, h);
-        current_vp->drawmode = (style & STYLE_INVERT) ?
-        (DRMODE_SOLID|DRMODE_INVERSEVID) : DRMODE_SOLID;
-    }
-    if (str[0])
-        lcd_putsxyofs(xpos, text_ypos, offset, str);
-    current_vp->fg_pattern = oldfgcolor;
-    current_vp->bg_pattern = oldbgcolor;
-#else
-    current_vp->drawmode = DRMODE_SOLID | ((style & STYLE_INVERT) ?
-                                           0 : DRMODE_INVERSEVID);
-    LCDFN(fillrect)(xpos, ypos, current_vp->width - xpos, h);
-    current_vp->drawmode ^= DRMODE_INVERSEVID;
-    if (str[0])
-        LCDFN(putsxyofs)(xpos, text_ypos, offset, str);
-#endif
-    current_vp->drawmode = lastmode;
-}
-
 /*** Line oriented text output ***/
-
-void LCDFN(puts_style_xyoffset)(int x, int y, const unsigned char *str,
-                              int style, int x_offset, int y_offset)
-{
-    int xpos, ypos, h;
-    if(!str)
-        return;
-
-    h = current_vp->line_height ?: (int)font_get(current_vp->font)->height;
-    if ((style&STYLE_XY_PIXELS) == 0)
-    {
-        xpos = x * LCDFN(getstringsize)(" ", NULL, NULL);
-        ypos = y * h;
-    }
-    else
-    {
-        xpos = x;
-        ypos = y;
-    }
-    LCDFN(scroll_stop_viewport_rect)(current_vp, xpos, ypos, current_vp->width - xpos, h);
-    LCDFN(putsxyofs_style)(xpos, ypos+y_offset, str, style, h, x_offset);
-}
-
-void LCDFN(puts_style_offset)(int x, int y, const unsigned char *str,
-                              int style, int x_offset)
-{
-    LCDFN(puts_style_xyoffset)(x, y, str, style, x_offset, 0);
-}
 
 void LCDFN(puts)(int x, int y, const unsigned char *str)
 {
-    LCDFN(puts_style_offset)(x, y, str, STYLE_DEFAULT, 0);
+    int h;
+    x *= LCDFN(getstringsize)(" ", NULL, &h);
+    y *= h;
+    LCDFN(putsxyofs)(x, y, 0, str);
 }
 
 /* Formatting version of LCDFN(puts) */
@@ -454,16 +296,6 @@ void LCDFN(putsf)(int x, int y, const unsigned char *fmt, ...)
     vsnprintf(buf, sizeof (buf), fmt, ap);
     va_end(ap);
     LCDFN(puts)(x, y, buf);
-}
-
-void LCDFN(puts_style)(int x, int y, const unsigned char *str, int style)
-{
-    LCDFN(puts_style_offset)(x, y, str, style, 0);
-}
-
-void LCDFN(puts_offset)(int x, int y, const unsigned char *str, int offset)
-{
-    LCDFN(puts_style_offset)(x, y, str, STYLE_DEFAULT, offset);
 }
 
 /*** scrolling ***/
@@ -484,11 +316,16 @@ static struct scrollinfo* find_scrolling_line(int x, int y)
 
 void LCDFN(scroll_fn)(struct scrollinfo* s)
 {
-    LCDFN(putsxyofs_style)(s->x, s->y, s->line, s->style, s->height, s->offset);
+    /* Fill with background/backdrop to clear area.
+     * cannot use clear_viewport_rect() since stops scrolling as well */
+    LCDFN(set_drawmode)(DRMODE_SOLID|DRMODE_INVERSEVID);
+    LCDFN(fillrect)(s->x, s->y, s->width, s->height);
+    LCDFN(set_drawmode)(DRMODE_SOLID);
+    LCDFN(putsxyofs)(s->x, s->y, s->offset, s->line);
 }
 
 static void LCDFN(puts_scroll_worker)(int x, int y, const unsigned char *string,
-                                     int style, int x_offset, int y_offset,
+                                     int x_offset,
                                      bool linebased,
                                      void (*scroll_func)(struct scrollinfo *),
                                      void *data)
@@ -504,8 +341,8 @@ static void LCDFN(puts_scroll_worker)(int x, int y, const unsigned char *string,
     /* prepare rectangle for scrolling. x and y must be calculated early
      * for find_scrolling_line() to work */
     cwidth = font_get(current_vp->font)->maxwidth;
-    height = current_vp->line_height ?: (int)font_get(current_vp->font)->height;
-    y = y * (linebased ? height : 1) + y_offset;
+    height = font_get(current_vp->font)->height;
+    y = y * (linebased ? height : 1);
     x = x * (linebased ? cwidth : 1);
     width = current_vp->width - x;
 
@@ -518,7 +355,7 @@ static void LCDFN(puts_scroll_worker)(int x, int y, const unsigned char *string,
     if (restart) {
         /* remove any previously scrolling line at the same location */
         LCDFN(scroll_stop_viewport_rect)(current_vp, x, y, width, height);
-        LCDFN(putsxyofs_style)(x, y, string, style, height, x_offset);
+        LCDFN(putsxyofs)(x, y, x_offset, string);
 
         if (LCDFN(scroll_info).lines >= LCDM(SCROLLABLE_LINES))
             return;
@@ -554,7 +391,6 @@ static void LCDFN(puts_scroll_worker)(int x, int y, const unsigned char *string,
     if (restart) {
         s->offset = x_offset;
         s->backward = false;
-        s->style = style;
         /* assign the rectangle. not necessary if continuing an earlier line */
         s->x = x;
         s->y = y;
@@ -565,34 +401,19 @@ static void LCDFN(puts_scroll_worker)(int x, int y, const unsigned char *string,
     }
 }
 
-void LCDFN(puts_scroll_style_xyoffset)(int x, int y, const unsigned char *string,
-                                     int style, int x_offset, int y_offset)
+void LCDFN(putsxy_scroll_func)(int x, int y, const unsigned char *string,
+                                     void (*scroll_func)(struct scrollinfo *),
+                                     void *data, int x_offset)
 {
-    LCDFN(puts_scroll_worker)(x, y, string, style, x_offset, y_offset,
-                              true, LCDFN(scroll_fn), NULL);
+    if (!scroll_func)
+        LCDFN(putsxyofs)(x, y, x_offset, string);
+    else
+        LCDFN(puts_scroll_worker)(x, y, string, x_offset, false, scroll_func, data);
 }
 
 void LCDFN(puts_scroll)(int x, int y, const unsigned char *string)
 {
-    LCDFN(puts_scroll_style)(x, y, string, STYLE_DEFAULT);
-}
-
-void LCDFN(puts_scroll_style)(int x, int y, const unsigned char *string,
-                              int style)
-{
-     LCDFN(puts_scroll_style_offset)(x, y, string, style, 0);
-}
-
-void LCDFN(puts_scroll_offset)(int x, int y, const unsigned char *string,
-                               int offset)
-{
-     LCDFN(puts_scroll_style_offset)(x, y, string, STYLE_DEFAULT, offset);
-}
-
-void LCDFN(puts_scroll_style_offset)(int x, int y, const unsigned char *string,
-                                     int style, int x_offset)
-{
-    LCDFN(puts_scroll_style_xyoffset)(x, y, string, style, x_offset, 0);
+    LCDFN(puts_scroll_worker)(x, y, string, 0, true, LCDFN(scroll_fn), NULL);
 }
 
 #if !defined(HAVE_LCD_COLOR) || !defined(MAIN_LCD)
@@ -626,44 +447,67 @@ void LCDFN(bmp)(const struct bitmap* bm, int x, int y)
 void LCDFN(nine_segment_bmp)(const struct bitmap* bm, int x, int y,
                                 int width, int height)
 {
-    int seg_w = bm->width / 3;
-    int seg_h = bm->height / 3;
-    int src_x, src_y, dst_x, dst_y;
+    int seg_w, seg_h, src_x, src_y, dst_x, dst_y;
+    /* if the bitmap dimensions are not multiples of 3 bytes reduce the
+     * inner segments accordingly. A 8x8 image becomes 3x3 for each
+     * corner, and 2x2 for the inner segments */
+    int corner_w = (bm->width + 2) / 3;
+    int corner_h = (bm->height + 2) / 3;
+    seg_w = bm->width  - (2 * corner_w);
+    seg_h = bm->height - (2 * corner_h);
 
-    /* top */
-    src_x = seg_w; src_y = 0;
-    dst_x = seg_w; dst_y = 0;
+    /* top & bottom in a single loop*/
+    src_x = corner_w;
+    dst_x = corner_w;
+    int src_y_top = 0;
+    int dst_y_top = 0;
+    int src_y_btm = bm->height - corner_h;
+    int dst_y_btm = height - corner_h;
     for (; dst_x < width - seg_w; dst_x += seg_w)
-        LCDFN(bmp_part)(bm, src_x, src_y, dst_x, dst_y, seg_w, seg_h);
-    /* bottom */
-    src_x = seg_w; src_y = bm->height - seg_h;
-    dst_x = seg_w; dst_y = height - seg_h;
-    for (; dst_x < width - seg_w; dst_x += seg_w)
-        LCDFN(bmp_part)(bm, src_x, src_y, dst_x, dst_y, seg_w, seg_h);
+    {
+        /* cap the last segment to the remaining width */
+        int w = MIN(seg_w, (width - dst_x - seg_w));
+        LCDFN(bmp_part)(bm, src_x, src_y_top, dst_x, dst_y_top, w, seg_h);
+        LCDFN(bmp_part)(bm, src_x, src_y_btm, dst_x, dst_y_btm, w, seg_h);
+    }
         
-    /* left */
-    src_x = 0; src_y = seg_h;
-    dst_x = 0; dst_y = seg_h;
-    for (; dst_y < height - seg_h; dst_y += seg_h)
-        LCDFN(bmp_part)(bm, src_x, src_y, dst_x, dst_y, seg_w, seg_h);
-    /* right */
-    src_x = bm->width - seg_w; src_y = seg_h;
-    dst_x = width - seg_w; dst_y = seg_h;
-    for (; dst_y < height - seg_h; dst_y += seg_h)
-        LCDFN(bmp_part)(bm, src_x, src_y, dst_x, dst_y, seg_w, seg_h);
-    /* center */
-    dst_y = seg_h; src_y = seg_h; src_x = seg_w;
+    /* left & right in a single loop */
+    src_y = corner_h;
+    dst_y = corner_h;
+    int src_x_l = 0;
+    int dst_x_l = 0;
+    int src_x_r = bm->width - corner_w;
+    int dst_x_r = width - corner_w;
     for (; dst_y < height - seg_h; dst_y += seg_h)
     {
-        dst_x = seg_w;
-        for (; dst_x < width - seg_w; dst_x += seg_w)
-            LCDFN(bmp_part)(bm, src_x, src_y, dst_x, dst_y, seg_w, seg_h);
+        /* cap the last segment to the remaining height */
+        int h = MIN(seg_h, (height - dst_y - seg_h));
+        LCDFN(bmp_part)(bm, src_x_l, src_y, dst_x_l, dst_y, seg_w, h);
+        LCDFN(bmp_part)(bm, src_x_r, src_y, dst_x_r, dst_y, seg_w, h);
     }
-
+    /* center, need not be drawn if the desired rectangle is smaller than
+     * the sides. in that case the rect is completely filled already */
+    if (width > (2*corner_w) && height > (2*corner_h))
+    {
+        dst_y = src_y = corner_h;
+        src_x = corner_w;
+        for (; dst_y < height - seg_h; dst_y += seg_h)
+        {
+            /* cap the last segment to the remaining height */
+            int h = MIN(seg_h, (height - dst_y - seg_h));
+            dst_x = corner_w;
+            for (; dst_x < width - seg_w; dst_x += seg_w)
+            {
+                /* cap the last segment to the remaining width */
+                int w = MIN(seg_w, (width - dst_x - seg_w));
+                LCDFN(bmp_part)(bm, src_x, src_y, dst_x, dst_y, w, h);
+            }
+        }
+    }
     /* 4 corners */
-    LCDFN(bmp_part)(bm, 0, 0, x, y, seg_w, seg_h);
-    LCDFN(bmp_part)(bm, bm->width - seg_w, 0, width - seg_w, 0, seg_w, seg_h);
-    LCDFN(bmp_part)(bm, 0, bm->width - seg_h, 0, height - seg_h, seg_w, seg_h);
-    LCDFN(bmp_part)(bm, bm->width - seg_w, bm->width - seg_h,
-            width - seg_w, height - seg_h, seg_w, seg_h);
+    LCDFN(bmp_part)(bm, 0, 0, x, y, corner_w, corner_h);
+    LCDFN(bmp_part)(bm, bm->width - corner_w, 0, width - corner_w, 0, corner_w, corner_h);
+    LCDFN(bmp_part)(bm, 0, bm->width - corner_h, 0, height - corner_h, corner_w, corner_h);
+    LCDFN(bmp_part)(bm, bm->width - corner_w, bm->width - corner_h,
+            width - corner_w, height - corner_h, corner_w, corner_h);
 }
