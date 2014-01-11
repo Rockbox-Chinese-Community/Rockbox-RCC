@@ -54,8 +54,6 @@ my $font;
 my $remotefont;
 my $fgcolor;
 my $bgcolor;
-my $sepcolor;
-my $sep;
 my $statusbar;
 my $remotestatusbar;
 my $author;
@@ -285,7 +283,7 @@ MOO
     push @out, "selector type: $selecttype\n"   if (defined($selecttype));
     push @out, "backdrop: $backdrop\n"          if (defined($backdrop));
     push @out, "filetype colours: $filetylecolor\n" if (defined($filetylecolor));
-#------------此处master没有，添加补丁时注意添加
+
     if ($main_depth > 2) {
         push @out, "foreground color: $fgcolor\n"                     if($fgcolor);
         push @out, "background color: $bgcolor\n"                     if($bgcolor);
@@ -405,8 +403,6 @@ while(<WPS>) {
         undef $remotefont;
         undef $fgcolor;
         undef $bgcolor;
-        undef $sepcolor;
-        undef $sep;
         undef $statusbar;
         undef $remotestatusbar;
         undef $author;
@@ -479,7 +475,6 @@ while(<WPS>) {
             elsif($l =~ /^Background Color: *(.*)/i) {
                 $bgcolor = $1;
             }
-#------------此处master没有，添加补丁时注意添加
             elsif($l =~ /^line selector start color: *(.*)/i) {
                 $lineselectstart = $1;
             }
