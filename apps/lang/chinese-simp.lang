@@ -115,11 +115,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "Space'80混响效果"
+    swcodec: "Space'80混响"
   </dest>
   <voice>
     *: none
-    swcodec: "Space 80 混响效果"
+    swcodec: "Space 80 混响效果器"
   </voice>
 </phrase>
 <phrase>
