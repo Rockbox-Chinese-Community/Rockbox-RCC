@@ -25,9 +25,12 @@
 #ifndef __SCROLL_ENGINE_H__
 #define __SCROLL_ENGINE_H__
 
+#include <stdbool.h>
 #include "config.h"
-#include <lcd.h>
 #include "file.h"
+
+struct viewport;
+struct scrollinfo;
 
 extern void scroll_init(void) INIT_ATTR;
 
@@ -38,6 +41,7 @@ extern void lcd_scroll_delay(int ms);
 extern void lcd_scroll_stop(void);
 extern void lcd_scroll_stop_viewport(const struct viewport *vp);
 extern void lcd_scroll_stop_viewport_rect(const struct viewport *vp, int x, int y, int width, int height);
+extern bool lcd_scroll_now(struct scrollinfo *scroll);
 #ifdef HAVE_REMOTE_LCD
 extern void lcd_remote_scroll_speed(int speed);
 extern void lcd_remote_scroll_delay(int ms);
@@ -45,7 +49,10 @@ extern void lcd_remote_scroll_delay(int ms);
 extern void lcd_remote_scroll_stop(void);
 extern void lcd_remote_scroll_stop_viewport(const struct viewport *vp);
 extern void lcd_remote_scroll_stop_viewport_rect(const struct viewport *vp, int x, int y, int width, int height);
+extern bool lcd_remote_scroll_now(struct scrollinfo *scroll);
 #endif
+
+
 
 /* internal usage, but in multiple drivers
  * larger than the normal linebuffer since it holds the line a second
@@ -67,15 +74,15 @@ struct scrollinfo
     int width, height;
     /* pixel to skip from the beginning of the string, increments as the text scrolls */
     int offset;
-#ifdef HAVE_LCD_BITMAP
-    int style; /* line style */
-#endif /* HAVE_LCD_BITMAP */
     /* scroll presently forward or backward? */
     bool backward;
     bool bidir;
     long start_tick;
 
-    /* support for custom scrolling functions */
+    /* support for custom scrolling functions,
+     * must be called with ::line == NULL to indicate that the line
+     * stops scrolling or when the userdata pointer is going to be changed
+     * (the custom scroller can release the userdata then) */
     void (*scroll_func)(struct scrollinfo *s);
     void *userdata;
 };

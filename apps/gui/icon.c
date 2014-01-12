@@ -134,9 +134,6 @@ void screen_put_iconxy(struct screen * display,
     {
         iconset = inbuilt_iconset[screen];
     }
-    /* add some left padding to the icons if they are on the edge */
-    if (xpos == 0)
-        xpos++;
 
     if (is_rtl)
         xpos = display->getwidth() - xpos - width;
@@ -181,7 +178,7 @@ static void load_icons(const char* filename, enum Iconset iconset,
                         enum screen_type screen)
 {
     int size_read;
-    int bmpformat = (FORMAT_NATIVE|FORMAT_DITHER|FORMAT_TRANSPARENT);
+    int bmpformat = (FORMAT_ANY|FORMAT_DITHER|FORMAT_TRANSPARENT);
     struct iconset *ic = &iconsets[iconset][screen];
     int fd;
     
@@ -280,3 +277,17 @@ int get_icon_height(enum screen_type screen_type)
 {
     return ICON_HEIGHT(screen_type);
 }
+
+#if (LCD_DEPTH > 1) || defined(HAVE_REMOTE_LCD) && (LCD_REMOTE_DEPTH > 1)
+int get_icon_format(enum screen_type screen)
+{
+    const struct bitmap *iconset;
+
+    if (iconsets[Iconset_user][screen].loaded)
+        iconset = &iconsets[Iconset_user][screen].bmp;
+    else
+        iconset = inbuilt_iconset[screen];
+
+    return iconset->format;
+}
+#endif

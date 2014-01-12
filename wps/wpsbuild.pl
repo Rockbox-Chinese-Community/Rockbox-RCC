@@ -285,13 +285,16 @@ MOO
     push @out, "selector type: $selecttype\n"   if (defined($selecttype));
     push @out, "backdrop: $backdrop\n"          if (defined($backdrop));
     push @out, "filetype colours: $filetylecolor\n" if (defined($filetylecolor));
-#------------此处master没有，添加补丁时注意添加
+
     if ($main_depth > 2) {
         push @out, "foreground color: $fgcolor\n"                     if($fgcolor);
         push @out, "background color: $bgcolor\n"                     if($bgcolor);
         push @out, "line selector start color: $lineselectstart\n"    if($lineselectstart);
         push @out, "line selector end color: $lineselectend\n"        if($lineselectend);;
         push @out, "line selector text color: $lineselecttextcolor\n" if($lineselecttextcolor);
+        # list separator actually depends on HAVE_TOUCSCREEN
+        push @out, "list separator: $sep\n"                           if($sep);
+        push @out, "list separator color: $sepcolor\n"                if($sepcolor);
     }
 
     push @out, "font: $font\n"                  if (defined($font));
@@ -479,7 +482,12 @@ while(<WPS>) {
             elsif($l =~ /^Background Color: *(.*)/i) {
                 $bgcolor = $1;
             }
-#------------此处master没有，添加补丁时注意添加
+            elsif($l =~ /^list separator color: *(.*)/i) {
+                $sepcolor = $1;
+            }
+            elsif($l =~ /^list separator: *(.*)/i) {
+                $sep = $1;
+            }
             elsif($l =~ /^line selector start color: *(.*)/i) {
                 $lineselectstart = $1;
             }

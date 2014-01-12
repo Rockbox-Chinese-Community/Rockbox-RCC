@@ -59,13 +59,14 @@ struct skin_draw_info {
     struct skin_viewport *skin_vp;
     int line_number;
     unsigned long refresh_type;
-    unsigned text_style;
+    struct line_desc line_desc;
     
     char* cur_align_start;
     struct align_pos align;
     bool no_line_break;
     bool line_scrolls;
     bool force_redraw;
+    bool viewport_change;
     
     char *buf;
     size_t buf_size;
@@ -94,15 +95,16 @@ get_child(OFFSETTYPE(struct skin_element**) children, int child)
 
 
 static bool do_non_text_tags(struct gui_wps *gwps, struct skin_draw_info *info,
-                             struct skin_element *element, struct viewport* vp)
+                             struct skin_element *element, struct skin_viewport* skin_vp)
 {
 #ifndef HAVE_LCD_BITMAP
-    (void)vp; /* silence warnings */
+    (void)skin_vp; /* silence warnings */
     (void)info;
-#endif    
+#endif
     struct wps_token *token = (struct wps_token *)SKINOFFSETTOPTR(skin_buffer, element->data);
 
 #ifdef HAVE_LCD_BITMAP
+    struct viewport *vp = &skin_vp->vp;
     struct wps_data *data = gwps->data;
     bool do_refresh = (element->tag->flags & info->refresh_type) > 0;
 #endif
@@ -114,6 +116,7 @@ static bool do_non_text_tags(struct gui_wps *gwps, struct skin_draw_info *info,
             struct viewport_colour *col = SKINOFFSETTOPTR(skin_buffer, token->value.data);
             struct viewport *vp = SKINOFFSETTOPTR(skin_buffer, col->vp);
             vp->fg_pattern = col->colour;
+            skin_vp->fgbg_changed = true;
         }
         break;
         case SKIN_TOKEN_VIEWPORT_BGCOLOUR:
@@ -121,19 +124,39 @@ static bool do_non_text_tags(struct gui_wps *gwps, struct skin_draw_info *info,
             struct viewport_colour *col = SKINOFFSETTOPTR(skin_buffer, token->value.data);
             struct viewport *vp = SKINOFFSETTOPTR(skin_buffer, col->vp);
             vp->bg_pattern = col->colour;
+            skin_vp->fgbg_changed = true;
         }
         break;
         case SKIN_TOKEN_VIEWPORT_TEXTSTYLE:
-            info->text_style = token->value.l;
-            break;
+        {
+            struct line_desc *data = SKINOFFSETTOPTR(skin_buffer, token->value.data);
+            struct line_desc *linedes = &info->line_desc;
+            /* gradient colors are handled with a separate tag
+             * (SKIN_TOKEN_VIEWPORT_GRADIENT_SETUP, see below). since it may
+             * come before the text style tag color fields need to be preserved */
+            if (data->style & STYLE_GRADIENT)
+            {
+                fb_data tc  = linedes->text_color,
+                        lc  = linedes->line_color,
+                        lec = linedes->line_end_color;
+                *linedes = *data;
+                linedes->text_color     = tc;
+                linedes->line_color     = lc;
+                linedes->line_end_color = lec;
+            }
+            else
+                *linedes = *data;
+        }
+        break;
 #endif
 #ifdef HAVE_LCD_COLOR
         case SKIN_TOKEN_VIEWPORT_GRADIENT_SETUP:
         {
             struct gradient_config *cfg = SKINOFFSETTOPTR(skin_buffer, token->value.data);
-            vp->lss_pattern = cfg->start;
-            vp->lse_pattern = cfg->end;
-            vp->lst_pattern = cfg->text;
+            struct line_desc *linedes = &info->line_desc;
+            linedes->text_color     = cfg->text;
+            linedes->line_color     = cfg->start;
+            linedes->line_end_color = cfg->end;
         }
         break;
 #endif
@@ -569,7 +592,7 @@ static bool skin_render_line(struct skin_element* line, struct skin_draw_info *i
                 {
                     break;
                 }
-                if (!do_non_text_tags(info->gwps, info, child, &info->skin_vp->vp))
+                if (!do_non_text_tags(info->gwps, info, child, info->skin_vp))
                 {
                     static char tempbuf[128];
                     const char *valuestr = get_token_value(info->gwps, SKINOFFSETTOPTR(skin_buffer, child->data),
@@ -713,11 +736,11 @@ void skin_render_viewport(struct skin_element* viewport, struct gui_wps *gwps,
         .refresh_type = refresh_type,
         .skin_vp = skin_viewport,
         .offset = 0,
-        .text_style = STYLE_DEFAULT
+        .line_desc = LINE_DESC_DEFINIT,
     };
     
     struct align_pos * align = &info.align;
-    bool needs_update;
+    bool needs_update, update_all = false;
     skin_buffer = get_skin_buffer(gwps->data);
 #ifdef HAVE_LCD_BITMAP
     /* Set images to not to be displayed */
@@ -734,6 +757,8 @@ void skin_render_viewport(struct skin_element* viewport, struct gui_wps *gwps,
     if (skin_viewport->parsed_fontid == 1)
         skin_viewport->vp.font = display->getuifont();
 #endif
+
+
     
     while (line)
     {
@@ -741,17 +766,16 @@ void skin_render_viewport(struct skin_element* viewport, struct gui_wps *gwps,
         info.no_line_break = false;
         info.line_scrolls = false;
         info.force_redraw = false;
+#if (LCD_DEPTH > 1) || (defined(HAVE_REMOTE_LCD) && (LCD_REMOTE_DEPTH > 1))
+        skin_viewport->fgbg_changed = false;
 #ifdef HAVE_LCD_COLOR
-        if (info.text_style&STYLE_GRADIENT)
+        if (info.line_desc.style&STYLE_GRADIENT)
         {
-            int cur = CURLN_UNPACK(info.text_style);
-            int num = NUMLN_UNPACK(info.text_style);
-            if (cur+1 == num)
-                info.text_style = STYLE_DEFAULT;
-            else
-                info.text_style = STYLE_GRADIENT|CURLN_PACK(cur+1)|NUMLN_PACK(num);
+            if (++info.line_desc.line > info.line_desc.nlines)
+                info.line_desc.style = STYLE_DEFAULT;
         }
 #endif    
+#endif
         info.cur_align_start = info.buf;
         align->left = info.buf;
         align->center = NULL;
@@ -762,28 +786,30 @@ void skin_render_viewport(struct skin_element* viewport, struct gui_wps *gwps,
             func = skin_render_alternator;
         else if (line->type == LINE)
             func = skin_render_line;
-        
+
         needs_update = func(line, &info);
 #if (LCD_DEPTH > 1) || (defined(HAVE_REMOTE_LCD) && (LCD_REMOTE_DEPTH > 1))
-        if (skin_viewport->vp.fg_pattern != skin_viewport->start_fgcolour ||
-            skin_viewport->vp.bg_pattern != skin_viewport->start_bgcolour)
+        if (skin_viewport->fgbg_changed)
         {
-            /* 2bit lcd drivers need lcd_set_viewport() to be called to change
-             * the colour, 16bit doesnt. But doing this makes static text
-             * get the new colour also */
-            needs_update = true;
-            display->set_viewport(&skin_viewport->vp);
+            /* if fg/bg changed due to a conditional tag the colors
+             * need to be set (2bit displays requires set_{fore,back}ground
+             * for this. the rest of the viewport needs to be redrawn
+             * to get the new colors */
+            display->set_foreground(skin_viewport->vp.fg_pattern);
+            display->set_background(skin_viewport->vp.bg_pattern);
+            if (needs_update)
+                update_all = true;
         }
 #endif
         /* only update if the line needs to be, and there is something to write */
-        if (refresh_type && needs_update)
+        if (refresh_type && (needs_update || update_all))
         {
             if (info.force_redraw)
                 display->scroll_stop_viewport_rect(&skin_viewport->vp,
                     0, info.line_number*display->getcharheight(),
                     skin_viewport->vp.width, display->getcharheight());
             write_line(display, align, info.line_number,
-                    info.line_scrolls, info.text_style);
+                    info.line_scrolls, &info.line_desc);
         }
         if (!info.no_line_break)
             info.line_number++;
@@ -832,8 +858,6 @@ void skin_render(struct gui_wps *gwps, unsigned refresh_mode)
         skin_viewport = SKINOFFSETTOPTR(skin_buffer, viewport->data);
         unsigned vp_refresh_mode = refresh_mode;
 #if (LCD_DEPTH > 1) || (defined(HAVE_REMOTE_LCD) && LCD_REMOTE_DEPTH > 1)
-        skin_viewport->vp.fg_pattern = skin_viewport->start_fgcolour;
-        skin_viewport->vp.bg_pattern = skin_viewport->start_bgcolour;
         if (skin_viewport->output_to_backdrop_buffer)
         {
             display->set_framebuffer(skin_backdrop_get_buffer(data->backdrop_id));
@@ -844,11 +868,6 @@ void skin_render(struct gui_wps *gwps, unsigned refresh_mode)
             display->set_framebuffer(NULL);
             skin_backdrop_show(data->backdrop_id);
         }
-#endif
-#ifdef HAVE_LCD_COLOR
-        skin_viewport->vp.lss_pattern = skin_viewport->start_gradient.start;
-        skin_viewport->vp.lse_pattern = skin_viewport->start_gradient.end;
-        skin_viewport->vp.lst_pattern = skin_viewport->start_gradient.text;
 #endif
         
         /* dont redraw the viewport if its disabled */
@@ -917,7 +936,7 @@ void skin_render_playlistviewer(struct playlistviewer* viewer,
         .refresh_type = refresh_type,
         .skin_vp = skin_viewport,
         .offset = viewer->start_offset,
-        .text_style = STYLE_DEFAULT
+        .line_desc = LINE_DESC_DEFINIT,
     };
     
     struct align_pos * align = &info.align;
@@ -975,7 +994,7 @@ void skin_render_playlistviewer(struct playlistviewer* viewer,
                     0, info.line_number*display->getcharheight(),
                     vp->width, display->getcharheight());
             write_line(display, align, info.line_number,
-                    info.line_scrolls, info.text_style);
+                    info.line_scrolls, &info.line_desc);
         }
         info.line_number++;
         info.offset++;

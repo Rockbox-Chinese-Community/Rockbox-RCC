@@ -589,20 +589,22 @@ static int parse_viewporttextstyle(struct skin_element *element,
                                    struct wps_data *wps_data)
 {
     (void)wps_data;
-    int style;
     char *mode = get_param_text(element, 0);
+    struct line_desc *line = skin_buffer_alloc(sizeof(*line));
+    *line = (struct line_desc)LINE_DESC_DEFINIT;
     unsigned colour;
 
     if (!strcmp(mode, "invert"))
     {
-        style = STYLE_INVERT;
+        line->style = STYLE_INVERT;
     }
     else if (!strcmp(mode, "colour") || !strcmp(mode, "color"))
     {
         if (element->params_count < 2 ||
             !parse_color(curr_screen, get_param_text(element, 1), &colour))
             return 1;
-        style = STYLE_COLORED|(STYLE_COLOR_MASK&colour);
+        line->style = STYLE_COLORED;
+        line->text_color = colour;
     }
 #ifdef HAVE_LCD_COLOR
     else if (!strcmp(mode, "gradient"))
@@ -614,16 +616,18 @@ static int parse_viewporttextstyle(struct skin_element *element,
               * will select the number for something which looks like a colour
               * making the "colour" case (above) harder to parse */
             num_lines = atoi(get_param_text(element, 1));
-        style = STYLE_GRADIENT|NUMLN_PACK(num_lines)|CURLN_PACK(0);
+        line->style = STYLE_GRADIENT;
+        line->nlines = num_lines;
     }
 #endif
     else if (!strcmp(mode, "clear"))
     {
-        style = STYLE_DEFAULT;
+        line->style = STYLE_DEFAULT;
     }
     else
         return 1;
-    token->value.l = style;
+
+    token->value.data = PTRTOSKINOFFSET(skin_buffer, line);
     return 0;
 }
 
@@ -696,15 +700,9 @@ static int parse_viewportcolour(struct skin_element *element,
     if (element->line == curr_viewport_element->line)
     {
         if (token->type == SKIN_TOKEN_VIEWPORT_FGCOLOUR)
-        {
-            curr_vp->start_fgcolour = colour->colour;
             curr_vp->vp.fg_pattern = colour->colour;
-        }
         else
-        {
-            curr_vp->start_bgcolour = colour->colour;
             curr_vp->vp.bg_pattern = colour->colour;
-        }
     }
     return 0;
 }
@@ -1949,13 +1947,11 @@ static int convert_viewport(struct wps_data *data, struct skin_element* element)
 
 #if (LCD_DEPTH > 1) || (defined(HAVE_REMOTE_LCD) && (LCD_REMOTE_DEPTH > 1))
     skin_vp->output_to_backdrop_buffer = false;
-    skin_vp->start_fgcolour = skin_vp->vp.fg_pattern;
-    skin_vp->start_bgcolour = skin_vp->vp.bg_pattern;
 #endif
 #ifdef HAVE_LCD_COLOR
-    skin_vp->start_gradient.start = skin_vp->vp.lss_pattern;
-    skin_vp->start_gradient.end = skin_vp->vp.lse_pattern;
-    skin_vp->start_gradient.text = skin_vp->vp.lst_pattern;
+    skin_vp->start_gradient.start = global_settings.lss_color;
+    skin_vp->start_gradient.end = global_settings.lse_color;
+    skin_vp->start_gradient.text = global_settings.lst_color;
 #endif
 
 
