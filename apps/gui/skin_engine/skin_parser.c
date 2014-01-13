@@ -901,6 +901,7 @@ static int parse_progressbar_tag(struct skin_element* element,
     pb->vp = PTRTOSKINOFFSET(skin_buffer, vp);
     pb->follow_lang_direction = follow_lang_direction > 0;
     pb->nofill = false;
+    pb->noborder = false;
     pb->nobar = false;
     pb->image = PTRTOSKINOFFSET(skin_buffer, NULL);
     pb->slider = PTRTOSKINOFFSET(skin_buffer, NULL);
@@ -921,30 +922,43 @@ static int parse_progressbar_tag(struct skin_element* element,
 
     /* (x, y, width, height, ...) */
     if (!isdefault(param))
+    {
         pb->x = param->data.number;
+        if (pb->x < 0 || pb->x >= vp->width)
+            return WPS_ERROR_INVALID_PARAM;
+    }
     else
         pb->x = 0;
     param++;
 
     if (!isdefault(param))
+    {
         pb->y = param->data.number;
+        if (pb->y < 0 || pb->y >= vp->height)
+            return WPS_ERROR_INVALID_PARAM;
+    }
     else
         pb->y = -1; /* computed at rendering */
     param++;
 
     if (!isdefault(param))
+    {
         pb->width = param->data.number;
+        if (pb->width <= 0 || (pb->x + pb->width) > vp->width)
+            return WPS_ERROR_INVALID_PARAM;
+    }
     else
         pb->width = vp->width - pb->x;
     param++;
 
     if (!isdefault(param))
     {
-        /* A zero height makes no sense - reject it */
-        if (param->data.number == 0)
-            return WPS_ERROR_INVALID_PARAM;
-
+        int max;
         pb->height = param->data.number;
+        /* include y in check only if it was non-default */
+        max = (pb->y > 0) ? pb->y + pb->height : pb->height;
+        if (pb->height <= 0 || max > vp->height)
+            return WPS_ERROR_INVALID_PARAM;
     }
     else
     {
@@ -978,6 +992,8 @@ static int parse_progressbar_tag(struct skin_element* element,
             pb->invert_fill_direction = true;
         else if (!strcmp(text, "nofill"))
             pb->nofill = true;
+        else if (!strcmp(text, "noborder"))
+            pb->noborder = true;
         else if (!strcmp(text, "nobar"))
             pb->nobar = true;
         else if (!strcmp(text, "slider"))
@@ -1051,6 +1067,11 @@ static int parse_progressbar_tag(struct skin_element* element,
 
     if (image_filename)
     {
+        /* noborder is incompatible together with image. There is no border
+         * anyway. */
+        if (pb->noborder)
+            return WPS_ERROR_INVALID_PARAM;
+
         pb->image = PTRTOSKINOFFSET(skin_buffer,
                 skin_find_item(image_filename, SKIN_FIND_IMAGE, wps_data));
         if (!SKINOFFSETTOPTR(skin_buffer, pb->image)) /* load later */
