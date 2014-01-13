@@ -303,6 +303,7 @@ static void style_line(struct screen *display,
     int height = line->height == -1 ? display->getcharheight() : line->height;
     int bar_height = height;
 
+#ifdef HAVE_TOUCHSCREEN
     /* mask out gradient and colorbar styles for non-color displays */
     if (display->depth < 16 && (style & (STYLE_COLORBAR|STYLE_GRADIENT)))
     {
@@ -317,6 +318,7 @@ static void style_line(struct screen *display,
         bar_height -= line->separator_height;
         display->set_foreground(global_settings.fg_color);
     }
+#endif /* HAVE_TOUCHSCREEN */
 
     /* mask out gradient and colorbar styles for non-color displays */
     if (display->depth < 16)
