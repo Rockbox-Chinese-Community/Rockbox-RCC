@@ -187,6 +187,7 @@ public class RockboxActivity extends Activity
         super.onResume();
         RockboxAppSetting.releaseWakeLock();
         MobclickAgent.onResume(this);
+        setServiceActivity(true);
         setVisible(true);
     }
     
