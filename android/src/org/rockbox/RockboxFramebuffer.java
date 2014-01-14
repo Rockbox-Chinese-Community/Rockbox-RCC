@@ -91,6 +91,8 @@ public class RockboxFramebuffer extends SurfaceView
        
        setEnabled(true);
        thread = new Thread(this);
+       firstrun = false;
+       thread.start();
     }
   
 
@@ -100,11 +102,6 @@ public class RockboxFramebuffer extends SurfaceView
         {
             btm.copyPixelsFromBuffer(framebuffer);
         }
-        if (firstrun == true)
-        {
-            firstrun = false;
-            thread.start();
-        }  
     }
     
     private void update(ByteBuffer framebuffer, Rect dirty)
