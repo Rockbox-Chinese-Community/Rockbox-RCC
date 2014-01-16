@@ -7958,11 +7958,11 @@
   </source>
   <dest>
     *: none
-    swcodec: "截止频率"
+    swcodec: "Cutoff"
   </dest>
   <voice>
     *: none
-    swcodec: "截止频率"
+    swcodec: ""
   </voice>
 </phrase>
 <phrase>
@@ -7975,11 +7975,11 @@
   </source>
   <dest>
     *: none
-    recording_hwcodec: "品质"
+    recording_hwcodec: "Q"
   </dest>
   <voice>
     *: none
-    recording_hwcodec: "品质"
+    recording_hwcodec: ""
   </voice>
 </phrase>
 <phrase>
@@ -7992,7 +7992,7 @@
   </source>
   <dest>
     *: none
-    recording: "频率"
+    recording: "Frequency"
   </dest>
   <voice>
     *: none
