@@ -40,6 +40,7 @@
 #include "usb_screen.h"
 #include "skin_engine/skin_engine.h"
 #include "playlist.h"
+#include "misc.h"
 
 #ifdef HAVE_LCD_BITMAP
 #include "bitmaps/usblogo.h"
@@ -134,7 +135,6 @@ struct usb_screen_vps_t
 static void usb_screen_fix_viewports(struct screen *screen,
         struct usb_screen_vps_t *usb_screen_vps)
 {
-    bool disable = true;
     int logo_width, logo_height;
     struct viewport *parent = &usb_screen_vps->parent;
     struct viewport *logo = &usb_screen_vps->logo;
@@ -152,11 +152,12 @@ static void usb_screen_fix_viewports(struct screen *screen,
         logo_height = BMPHEIGHT_usblogo;
     }
 
-    viewport_set_defaults(parent, screen->screen_type);
-    disable = (parent->width < logo_width || parent->height < logo_height);
-    viewportmanager_theme_enable(screen->screen_type, !disable, parent);
-    screen->clear_display();
-    screen->scroll_stop();
+    viewportmanager_theme_enable(screen->screen_type, true, parent);
+
+    if (logo_width  > parent->width)
+        logo_width  = parent->width;
+    if (logo_height > parent->height)
+        logo_height = parent->height;
 
     *logo = *parent;
     logo->x = parent->x + parent->width - logo_width;
@@ -243,6 +244,7 @@ static void usb_screens_draw(struct usb_screen_vps_t *usb_screen_vps_ar)
 
 void gui_usb_screen_run(bool early_usb)
 {
+    (void) early_usb;
     struct usb_screen_vps_t usb_screen_vps_ar[NB_SCREENS];
 #if defined HAVE_TOUCHSCREEN
     enum touchscreen_mode old_mode = touchscreen_get_mode();
@@ -252,23 +254,12 @@ void gui_usb_screen_run(bool early_usb)
     touchscreen_set_mode(TOUCHSCREEN_BUTTON);
 #endif
 
+    push_current_activity(ACTIVITY_USBSCREEN);
+
 #ifdef USB_ENABLE_HID
     usb_hid = global_settings.usb_hid;
     usb_keypad_mode = global_settings.usb_keypad_mode;
 #endif
-
-    if(!early_usb)
-    {
-        /* The font system leaves the .fnt fd's open, so we need for force close them all */
-#ifdef HAVE_LCD_BITMAP
-        FOR_NB_SCREENS(i)
-        {
-            font_unload(screens[i].getuifont());
-            screens[i].setuifont(FONT_SYSFIXED);
-        }
-        skin_unload_all();
-#endif
-    }
 
     FOR_NB_SCREENS(i)
     {
@@ -282,6 +273,17 @@ void gui_usb_screen_run(bool early_usb)
         usb_screen_fix_viewports(screen, &usb_screen_vps_ar[i]);
 #endif
     }
+
+    /* update the UI before disabling fonts, this maximizes the propability
+     * that font cache lookups succeed during USB */
+    send_event(GUI_EVENT_ACTIONUPDATE, NULL);
+#ifdef HAVE_LCD_BITMAP
+    if(!early_usb)
+    {
+        /* The font system leaves the .fnt fd's open, so we need for force close them all */
+        font_disable_all();
+    }
+#endif
 
     usb_acknowledge(SYS_USB_CONNECTED_ACK);
 
@@ -325,12 +327,13 @@ void gui_usb_screen_run(bool early_usb)
 #ifdef HAVE_LCD_CHARCELLS
     status_set_usb(false);
 #endif /* HAVE_LCD_CHARCELLS */
+
 #ifdef HAVE_LCD_BITMAP
     if(!early_usb)
     {
+        font_enable_all();
         /* Not pretty, reload all settings so fonts are loaded again correctly */
         settings_apply(true);
-        settings_apply_skins();
         /* Reload playlist */
         playlist_resume();
     }
@@ -342,5 +345,5 @@ void gui_usb_screen_run(bool early_usb)
         viewportmanager_theme_undo(i, false);
     }
 
+    pop_current_activity();
 }
-

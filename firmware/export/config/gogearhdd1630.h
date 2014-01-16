@@ -1,5 +1,5 @@
 /*
- * This config file is for the Philips GoGear HDD16x0/HDD18x0
+ * This config file is for the Philips GoGear HDD14x0/HDD16x0/HDD18x0
  */
 
 /* For Rolo and boot loader */
@@ -56,7 +56,7 @@
 
 #ifndef BOOTLOADER
 /* Define this if your LCD can be enabled/disabled */
-/* #define HAVE_LCD_ENABLE */
+#define HAVE_LCD_ENABLE
 
 /* Define this if your LCD can be put to sleep. HAVE_LCD_ENABLE
  * should be defined as well.
@@ -129,6 +129,9 @@
 /* define this if you have a light associated with the buttons */
 #define HAVE_BUTTON_LIGHT
 #define HAVE_BUTTONLIGHT_BRIGHTNESS
+
+/* Define this if you can detect headphones */
+#define HAVE_HEADPHONE_DETECTION
 
 #define BATTERY_CAPACITY_DEFAULT 630 /* default battery capacity */
 #define BATTERY_CAPACITY_MIN     630 /* min. capacity selectable */
