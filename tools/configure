@@ -100,7 +100,7 @@ app_set_eq_num_bands () {
            echo "Enter the number of the EQ bands (3~32, inclusive, default:24)"
             tmp=`input`
             if [ -z "$tmp" ]; then
-                app_eq_bands_num="24";
+                app_eq_bands_num="30";
             else
                 app_eq_bands_num=$tmp;
             fi
