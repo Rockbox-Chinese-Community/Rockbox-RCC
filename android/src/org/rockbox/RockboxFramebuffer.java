@@ -108,7 +108,9 @@ public class RockboxFramebuffer extends SurfaceView
     {  
         synchronized(btm)
         {
+            try{
             btm.copyPixelsFromBuffer(framebuffer);
+            }catch(Exception e){}
         }
     }
 

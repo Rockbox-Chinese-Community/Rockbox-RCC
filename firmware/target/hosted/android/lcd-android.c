@@ -121,7 +121,9 @@ void lcd_update_rect(int x, int y, int width, int height)
                                         x, y, x + width, y + height);
         e->CallVoidMethod(env_ptr, RockboxFramebuffer_instance,
                                    java_lcd_update_rect, buffer, rect);
-
+        if(e->ExceptionOccurred(env_ptr)){
+            e->ExceptionClear(env_ptr);
+        } 
         e->DeleteLocalRef(env_ptr, buffer);
         e->DeleteLocalRef(env_ptr, rect);
     }
