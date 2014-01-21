@@ -825,6 +825,7 @@ const unsigned char* font_get_bits(struct font* pf, unsigned short char_code)
             (unsigned char*)font_cache_get(&pf->cache, char_code,
                                 false, load_cache_entry, data)->bitmap;
     }
+#ifndef PLATFORM_ANDROID
     else if (data->disabled)
     {
         /* the font handle is closed, but the cache is intact. Attempt
@@ -842,6 +843,7 @@ const unsigned char* font_get_bits(struct font* pf, unsigned short char_code)
             bits = pf->buffer_start;
         }
     }
+#endif
     else
     {
         /* This font is entirely in RAM */
