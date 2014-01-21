@@ -674,6 +674,12 @@ static inline void power_thread_step(void)
 
 static void power_thread(void)
 {
+#ifdef PLATFORM_ANDROID
+       /* Android does not support USB charging, needless to handle battery levels as well  
+        * Since Power thread crashes in 4.4.2 Kitkat ART mode, we will exit the entire function from here. 
+        */
+       return;   
+#endif
     long next_power_hist;
 
     /* Delay reading the first battery level */
