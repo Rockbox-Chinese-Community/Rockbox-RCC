@@ -601,20 +601,27 @@ int battery_voltage(void)
     return -1;
 }
 
+#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
 static void average_init(void) {}
+#endif
 static void average_step(void) {}
 static void average_step_low(void) {}
+#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
 static void init_battery_percent(void)
 {
     battery_percent = _battery_level();
 }
+#endif
 
+#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
 static int power_hist_item(void)
 {
     return battery_percent;
 }
 #endif
+#endif
 
+#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
 static void collect_power_history(void)
 {
     /* rotate the power history */
@@ -622,6 +629,7 @@ static void collect_power_history(void)
             sizeof(power_history) - sizeof(power_history[0]));
     power_history[0] = power_hist_item();
 }
+#endif
 
 /*
  * Monitor the presence of a charger and perform critical frequent steps
@@ -674,6 +682,11 @@ static inline void power_thread_step(void)
 
 static void power_thread(void)
 {
+    /*
+     * No need to handle battery levels on Android targets
+     * and this crash the hole application on Android 4.4.x Kitkat.
+     */
+#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
     long next_power_hist;
 
     /* Delay reading the first battery level */
@@ -735,6 +748,7 @@ static void power_thread(void)
             collect_power_history();
         }
     }
+#endif
 } /* power_thread */
 
 void powermgmt_init(void)
