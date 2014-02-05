@@ -54,6 +54,17 @@ struct buflib_context
 };
 
 /**
+ * This declares the minimal overhead that is required per alloc. These
+ * are bytes that are allocated from the context's pool in addition
+ * to the actually requested number of bytes.
+ *
+ * The total number of bytes consumed by an allocation is
+ * BUFLIB_ALLOC_OVERHEAD + requested bytes + strlen(<name passed to
+ * buflib_alloc_ex()) + pad to pointer size
+ */
+#define BUFLIB_ALLOC_OVERHEAD (6*sizeof(union buflib_data))
+
+/**
  * Callbacks used by the buflib to inform allocation that compaction
  * is happening (before data is moved)
  *
@@ -237,10 +248,14 @@ int buflib_alloc_maximum(struct buflib_context* ctx, const char* name,
  *
  * Returns: The start pointer of the allocation
  */
-static inline void* buflib_get_data(struct buflib_context *context, int handle)
+#ifdef DEBUG
+void* buflib_get_data(struct buflib_context *ctx, int handle);
+#else
+static inline void* buflib_get_data(struct buflib_context *ctx, int handle)
 {
-    return (void*)(context->handle_table[-handle].alloc);
+    return (void*)(ctx->handle_table[-handle].alloc);
 }
+#endif
 
 /**
  * Shrink the memory allocation associated with the given handle
@@ -299,12 +314,14 @@ void buflib_buffer_in(struct buflib_context *ctx, int size);
 /* debugging */
 
 /**
- * Returns the name, as given to core_alloc() and core_allloc_ex(), of the
- * allocation associated with the given handle
+ * Returns the name, as given to buflib_alloc() and buflib_allloc_ex(), of the
+ * allocation associated with the given handle. As naming allocations
+ * is optional, there might be no name associated.
  *
  * handle: The handle indicating the allocation
  *
- * Returns: A pointer to the string identifier of the allocation
+ * Returns: A pointer to the string identifier of the allocation, or NULL
+ * if none was specified with buflib_alloc_ex/(.
  */
 const char* buflib_get_name(struct buflib_context *ctx, int handle);
 

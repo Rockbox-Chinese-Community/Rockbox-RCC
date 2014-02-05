@@ -25,6 +25,7 @@
 *
 ****************************************************************************/
 
+#include <stdarg.h>
 #include <stdlib.h> /* for abs() */
 #include <stdio.h> /* for snprintf() */
 #include <stddef.h> /* for ptrdiff_t */
@@ -53,6 +54,8 @@
  * this length marker (counted in n*sizeof(union buflib_data)), which allows
  * to find the start of the character array (and therefore the start of the
  * entire block) when only the handle or payload start is known.
+ *
+ * UPDATE BUFLIB_ALLOC_OVERHEAD (buflib.h) WHEN THIS COOKIE CHANGES!
  *
  * Example:
  * |<- alloc block #1 ->|<- unalloc block ->|<- alloc block #2      ->|<-handle table->|
@@ -92,6 +95,8 @@
     #define BDEBUGF(...) do { } while(0)
 #endif
 
+#define BPANICF panicf
+
 #define IS_MOVABLE(a) (!a[2].ops || a[2].ops->move_callback)
 static union buflib_data* find_first_free(struct buflib_context *ctx);
 static union buflib_data* find_block_before(struct buflib_context *ctx,
@@ -102,6 +107,8 @@ void
 buflib_init(struct buflib_context *ctx, void *buf, size_t size)
 {
     union buflib_data *bd_buf = buf;
+    BDEBUGF("buflib initialized with %lu.%02lu kiB",
+            (unsigned long)size / 1024, ((unsigned long)size%1000)/10);
 
     /* Align on sizeof(buflib_data), to prevent unaligned access */
     ALIGN_BUFFER(bd_buf, size, sizeof(union buflib_data));
@@ -116,9 +123,6 @@ buflib_init(struct buflib_context *ctx, void *buf, size_t size)
      */
     ctx->alloc_end = bd_buf;
     ctx->compact = true;
-
-    BDEBUGF("buflib initialized with %lu.%2lu kiB",
-            (unsigned long)size / 1024, ((unsigned long)size%1000)/10);
 }
 
 bool buflib_context_relocate(struct buflib_context *ctx, void *buf)
@@ -145,6 +149,19 @@ bool buflib_context_relocate(struct buflib_context *ctx, void *buf)
     ctx->alloc_end          += diff;
 
     return true;
+}
+
+static void buflib_panic(struct buflib_context *ctx, const char *message, ...)
+{
+    char buf[128];
+    va_list ap;
+
+    va_start(ap, message);
+    vsnprintf(buf, sizeof(buf), message, ap);
+    va_end(ap);
+
+    BPANICF("buflib error (CTX:%p, %zd bytes):\n%s", ctx,
+        (ctx->handle_table - ctx->buf_start) * sizeof(union buflib_data), buf);
 }
 
 /* Allocate a new handle, returning 0 on failure */
@@ -190,12 +207,16 @@ void handle_free(struct buflib_context *ctx, union buflib_data *handle)
 }
 
 /* Get the start block of an allocation */
-static union buflib_data* handle_to_block(struct buflib_context* ctx, int handle)
+static inline
+union buflib_data* handle_to_block(struct buflib_context* ctx, int handle)
 {
-    union buflib_data* name_field =
-                (union buflib_data*)buflib_get_name(ctx, handle);
-
-    return name_field ? name_field - 3 : NULL;
+    union buflib_data *data = ALIGN_DOWN(buflib_get_data(ctx, handle), sizeof (*data));
+    /* this is a valid case, e.g. during buflib_alloc_ex() when the handle
+     * has already been allocated but not the data */
+    if (!data)
+        return NULL;
+    volatile size_t len = data[-2].val;
+    return data - (len + 4);
 }
 
 /* Shrink the handle table, returning true if its size was reduced, false if
@@ -235,7 +256,7 @@ move_block(struct buflib_context* ctx, union buflib_data* block, int shift)
 
     /* check for cookie validity */
     if (crc != crc_slot->crc)
-        panicf("buflib cookie corrupted, crc: 0x%08x, expected: 0x%08x",
+        buflib_panic(ctx, "buflib cookie corrupted, crc: 0x%08x, expected: 0x%08x",
                (unsigned int)crc, (unsigned int)crc_slot->crc);
 
     if (!IS_MOVABLE(block))
@@ -464,7 +485,7 @@ buflib_buffer_in(struct buflib_context *ctx, int size)
 int
 buflib_alloc(struct buflib_context *ctx, size_t size)
 {
-    return buflib_alloc_ex(ctx, size, "<anonymous>", NULL);
+    return buflib_alloc_ex(ctx, size, NULL, NULL);
 }
 
 /* Allocate a buffer of size bytes, returning a handle for it.
@@ -572,7 +593,8 @@ buffer_alloc:
     block->val = size;
     block[1].handle = handle;
     block[2].ops = ops;
-    strcpy(block[3].name, name);
+    if (name_len > 0)
+        strcpy(block[3].name, name);
     name_len_slot = (union buflib_data*)B_ALIGN_UP(block[3].name + name_len);
     name_len_slot->val = 1 + name_len/sizeof(union buflib_data);
     crc_slot = (union buflib_data*)(name_len_slot + 1);
@@ -583,7 +605,7 @@ buffer_alloc:
 
     BDEBUGF("buflib_alloc_ex: size=%d handle=%p clb=%p crc=0x%0x name=\"%s\"\n",
             (unsigned int)size, (void *)handle, (void *)ops,
-            (unsigned int)crc_slot->crc, block[3].name);
+            (unsigned int)crc_slot->crc, name ? block[3].name:"");
 
     block += size;
     /* alloc_end must be kept current if we're taking the last block. */
@@ -873,8 +895,6 @@ buflib_shrink(struct buflib_context* ctx, int handle, void* new_start, size_t ne
 const char* buflib_get_name(struct buflib_context *ctx, int handle)
 {
     union buflib_data *data = ALIGN_DOWN(buflib_get_data(ctx, handle), sizeof (*data));
-    if (!data)
-        return NULL;
     size_t len = data[-2].val;
     if (len <= 1)
         return NULL;
@@ -882,6 +902,15 @@ const char* buflib_get_name(struct buflib_context *ctx, int handle)
 }
 
 #ifdef DEBUG
+
+void *buflib_get_data(struct buflib_context *ctx, int handle)
+{
+    if (handle <= 0)
+        buflib_panic(ctx, "invalid handle access: %d", handle);
+
+    return (void*)(ctx->handle_table[-handle].alloc);
+}
+
 void buflib_check_valid(struct buflib_context *ctx)
 {
     union buflib_data *crc_slot;
@@ -901,7 +930,7 @@ void buflib_check_valid(struct buflib_context *ctx)
         crc = crc_32((void *)this, cookie_size, 0xffffffff);
 
         if (crc != crc_slot->crc)
-            panicf("buflib check crc: 0x%08x, expected: 0x%08x",
+            buflib_panic(ctx, "crc mismatch: 0x%08x, expected: 0x%08x",
                    (unsigned int)crc, (unsigned int)crc_slot->crc);
     }
 }
