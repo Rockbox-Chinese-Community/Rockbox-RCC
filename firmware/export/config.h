@@ -152,6 +152,7 @@
 #define CREATIVE_ZEN_PAD   58
 #define SAMSUNG_YPZ5_PAD   59
 #define IHIFI_PAD          60
+#define SAMSUNG_YPR1_PAD  61
 
 /* CONFIG_REMOTE_KEYPAD */
 #define H100_REMOTE   1
@@ -259,9 +260,11 @@
 #define LCD_CREATIVEZEN  55 /* as used by the Creative ZEN (X-Fi) (LMS250GF03-001(S6D0139)) */
 #define LCD_CREATIVEZENMOZAIC 56 /* as used by the Creative ZEN Mozaic (FGD0801) */
 #define LCD_ILI9342C   57 /* another type of lcd used by HiFi E.T MA9/MA8 */
-#define LCD_CREATIVEZENV  58 /* as used by the Creativr Zen V (Plus) */
+#define LCD_CREATIVEZENV  58 /* as used by the Creative Zen V (Plus) */
 #define LCD_SAMSUNGYPZ5   59 /* as used by Samsung YP-Z5 */
 #define LCD_IHIFI         60 /* as used by IHIFI 760/960 */
+#define LCD_CREATIVEZENXFISTYLE 61 /* as used by Creative Zen X-Fi Style */
+#define LCD_SAMSUNGYPR1   62 /* as used by Samsung YP-R1 */
 
 /* LCD_PIXELFORMAT */
 #define HORIZONTAL_PACKING 1
@@ -556,6 +559,10 @@ Lyre prototype 1 */
 #include "config/ihifi760.h"
 #elif defined(IHIFI960)
 #include "config/ihifi960.h"
+#elif defined(CREATIVE_ZENXFISTYLE)
+#include "config/creativezenxfistyle.h"
+#elif defined(SAMSUNG_YPR1)
+#include "config/samsungypr1.h"
 #else
 /* no known platform */
 #endif
@@ -982,7 +989,7 @@ Lyre prototype 1 */
 
 #if (defined(CPU_PP) || (CONFIG_CPU == AS3525) || (CONFIG_CPU == AS3525v2) || \
     (CONFIG_CPU == IMX31L) || (CONFIG_CPU == IMX233) || \
-    (CONFIG_CPU == RK27XX)) \
+    (CONFIG_CPU == RK27XX) || defined(CPU_COLDFIRE)) \
     && (CONFIG_PLATFORM & PLATFORM_NATIVE) && !defined(BOOTLOADER)
 /* Functions that have INIT_ATTR attached are NOT guaranteed to survive after
  * root_menu() has been called. Their code may be overwritten by other data or

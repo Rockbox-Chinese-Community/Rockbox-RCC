@@ -2989,7 +2989,6 @@ void audio_init(void)
 {
     mpeg_errno = 0;
 
-    talk_init();
     audio_reset_buffer();
 
 #ifndef SIMULATOR

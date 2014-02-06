@@ -46,6 +46,7 @@
 #include "structec.h"
 #include "plugin.h" /* plugin_get_buffer() */
 #include "debug.h"
+#include "panic.h"
 
 /* Memory layout varies between targets because the
    Archos (MASCODEC) devices cannot mix voice and audio playback
@@ -79,13 +80,7 @@ const char* const file_thumbnail_ext = ".talk";
 
 #define LOADED_MASK 0x80000000 /* MSB */
 
-/* swcodec: cap thumbnail buffer to MAX_THUMNAIL_BUFSIZE since audio keeps
- * playing while voice
- * hwcodec: just use whatever is left in the audiobuffer, music
- * playback is impossible => no cap */
-#if CONFIG_CODEC == SWCODEC    
-#define MAX_THUMBNAIL_BUFSIZE 0x10000
-#endif
+#define DEFAULT_VOICE_LANG "english"
 
 /***************** Data types *****************/
 
@@ -113,22 +108,22 @@ struct voicefile_header /* file format of our voice file */
  * together with codecs, so we load clips each time they are accessed.
  * The Ondios have slow storage access and loading the entire voice file would
  * take several seconds, so we use the same mechanism. */
-#define TALK_PARTIAL_LOAD
+#define TALK_PROGRESSIVE_LOAD
+#if !defined(ONDIO_SERIES)
+/* 70+ clips should fit into 100k */
+#define MAX_CLIP_BUFFER_SIZE (100000)
+#endif
 #endif
 
-#ifdef TALK_PARTIAL_LOAD
-static long           max_clipsize; /* size of the biggest clip */
-static long           buffered_id[QUEUE_SIZE];  /* IDs of the talk clips */
-static uint8_t        clip_age[QUEUE_SIZE];
-#if QUEUE_SIZE > 255
-#   error clip_age[] type too small
+#ifndef MAX_CLIP_BUFFER_SIZE
+/* 1GB should be enough for everybody; will be capped to voicefile size */
+#define MAX_CLIP_BUFFER_SIZE (1<<30)
 #endif
-#endif
+#define THUMBNAIL_RESERVE (50000)
 
 /* Multiple thumbnails can be loaded back-to-back in this buffer. */
 static volatile int thumbnail_buf_used SHAREDBSS_ATTR; /* length of data in
                                                           thumbnail buffer */
-static long size_for_thumbnail; /* total thumbnail buffer size */
 static struct voicefile_header voicefile; /* loaded voicefile */
 static bool has_voicefile; /* a voicefile file is present */
 static bool need_shutup; /* is there possibly any voice playing to be shutup */
@@ -146,40 +141,60 @@ static struct mutex queue_mutex SHAREDBSS_ATTR;
 #endif /* CONFIG_CODEC */
 static int sent; /* how many bytes handed over to playback, owned by ISR */
 static unsigned char curr_hd[3]; /* current frame header, for re-sync */
-static int silence_offset; /* VOICE_PAUSE clip, used for termination */
-static long silence_length; /* length of the VOICE_PAUSE clip */
-static unsigned long lastclip_offset; /* address of latest clip, for silence add */
 static unsigned char last_lang[MAX_FILENAME+1]; /* name of last used lang file (in talk_init) */
 static bool talk_initialized; /* true if talk_init has been called */
 static bool give_buffer_away; /* true if we should give the buffers away in shrink_callback if requested */
 static int talk_temp_disable_count; /* if positive, temporarily disable voice UI (not saved) */
- /* size of the loaded voice file
-  * offsets smaller than this denote a clip from teh voice file,
-  * offsets larger than this denote a thumbnail clip */
-static unsigned long voicefile_size;
+ /* size of the voice data in the voice file and the actually allocated buffer
+  * for it. voicebuf_size is always smaller or equal to voicefile_size */
+static unsigned long voicefile_size, voicebuf_size;
 
 struct queue_entry /* one entry of the internal queue */
 {
-    int offset, length;
+    int handle;    /* buflib handle to the clip data */
+    int length;    /* total length of the clip */
+    int remaining; /* bytes that still need to be deoded */
 };
 
-static struct queue_entry queue[QUEUE_SIZE]; /* queue of scheduled clips */
+static struct buflib_context clip_ctx;
 
+struct clip_cache_metadata {
+    long tick;
+    int handle, voice_id;
+};
+
+static int metadata_table_handle;
+static unsigned max_clips;
+static int cache_hits, cache_misses;
+
+static struct queue_entry queue[QUEUE_SIZE]; /* queue of scheduled clips */
+static struct queue_entry silence, *last_clip;
 
 /***************** Private implementation *****************/
 
-static int thumb_handle;
-static int talk_handle, talk_handle_locked;
+static int index_handle, talk_handle;
 
-#if CONFIG_CODEC != SWCODEC
+static int move_callback(int handle, void *current, void *new)
+{
+    (void)handle; (void)current; (void)new;
+    if (handle == talk_handle && !buflib_context_relocate(&clip_ctx, new))
+        return BUFLIB_CB_CANNOT_MOVE;
+    return BUFLIB_CB_OK;
+}
+
+
+static struct mutex read_buffer_mutex;
+
 
 /* on HWCODEC only voice xor audio can be active at a time */
 static bool check_audio_status(void)
 {
+#if CONFIG_CODEC != SWCODEC
     if (audio_status()) /* busy, buffer in use */
         return false;
     /* ensure playback is given up on the buffer */
     audio_hard_stop();
+#endif
     return true;
 }
 
@@ -188,40 +203,74 @@ static bool check_audio_status(void)
 static void sync_callback(int handle, bool sync_on)
 {
     (void) handle;
-    (void) sync_on;
+    if (sync_on)
+        mutex_lock(&read_buffer_mutex);
+    else
+        mutex_unlock(&read_buffer_mutex);
 #if CONFIG_CPU == SH7034
+    /* DMA must not interrupt during buffer move or commit_buffer copies
+     * from inconsistent buflib buffer */
     if (sync_on)
         CHCR3 &= ~0x0001; /* disable the DMA (and therefore the interrupt also) */
     else
         CHCR3 |=  0x0001; /* re-enable the DMA */
 #endif
 }
-#else
-#define check_audio_status() (true)
-#endif
 
-static int move_callback(int handle, void *current, void *new)
+static ssize_t read_to_handle_ex(int fd, struct buflib_context *ctx, int handle,
+                                 int handle_offset, size_t count)
 {
-    (void)handle;(void)current;(void)new;
-    if (UNLIKELY(talk_handle_locked))
-        return BUFLIB_CB_CANNOT_MOVE;
-    return BUFLIB_CB_OK;
+    unsigned char *buf;
+    ssize_t ret;
+    mutex_lock(&read_buffer_mutex);
+
+    if (!ctx)
+        buf = core_get_data(handle);
+    else
+        buf = buflib_get_data(ctx, handle);
+
+    buf += handle_offset;
+    ret = read(fd, buf, count);
+
+    mutex_unlock(&read_buffer_mutex);
+
+    return ret;
 }
+
+static ssize_t read_to_handle(int fd, int handle, int handle_offset, size_t count)
+{
+    return read_to_handle_ex(fd, NULL, handle, handle_offset, count);
+}
+
 
 static int shrink_callback(int handle, unsigned hints, void *start, size_t old_size)
 {
-    (void)start;(void)old_size;
+    (void)start;(void)old_size;(void)hints;
     int *h;
-    if (handle == talk_handle)
-        h = &talk_handle;
-    else // if (handle == thumb_handle)
-        h = &thumb_handle;
-
-    if (LIKELY(!talk_handle_locked)
-            && give_buffer_away
+#if (MAX_CLIP_BUFFER_SIZE < (MEMORYSIZE<<20) || (MEMORYSIZE > 2))
+    /* on low-mem and when the voice buffer size is not limited (i.e.
+     * on 2MB HWCODEC) we effectively own the entire buffer because
+     * the voicefile takes up all RAM. This blocks other Rockbox parts
+     * from allocating, especially during bootup. Therefore always give
+     * up the buffer and reload when clips are played back. On high-mem
+     * or when the clip buffer is limited to a few 100K this provision is
+     * not necessary. */
+    if (give_buffer_away
             && (hints & BUFLIB_SHRINK_POS_MASK) == BUFLIB_SHRINK_POS_MASK)
+#endif
     {
+        if (handle == talk_handle)
+            h = &talk_handle;
+        else //if (handle == index_handle)
+            h = &index_handle;
+
+        mutex_lock(&read_buffer_mutex);
+        /* the clip buffer isn't usable without index table */
+        if (handle == index_handle && talk_handle > 0)
+            talk_handle = core_free(talk_handle);
         *h = core_free(handle);
+        mutex_unlock(&read_buffer_mutex);
+
         return BUFLIB_CB_OK;
     }
     return BUFLIB_CB_CANNOT_SHRINK;
@@ -229,47 +278,15 @@ static int shrink_callback(int handle, unsigned hints, void *start, size_t old_s
 
 static struct buflib_callbacks talk_ops = {
     .move_callback = move_callback,
-#if CONFIG_CODEC != SWCODEC
     .sync_callback = sync_callback,
-#endif
     .shrink_callback = shrink_callback,
 };
 
 
-static int index_handle, index_handle_locked;
-static int index_move_callback(int handle, void *current, void *new)
-{
-    (void)handle;(void)current;(void)new;
-    if (UNLIKELY(index_handle_locked))
-        return BUFLIB_CB_CANNOT_MOVE;
-    return BUFLIB_CB_OK;
-}
-
-static int index_shrink_callback(int handle, unsigned hints, void *start, size_t old_size)
-{
-    (void)start;(void)old_size;
-    if (LIKELY(!index_handle_locked)
-            && give_buffer_away
-            && (hints & BUFLIB_SHRINK_POS_MASK) == BUFLIB_SHRINK_POS_MASK)
-    {
-        index_handle = core_free(handle);
-        /* the clip buffer isn't usable without index table */
-        if (LIKELY(!talk_handle_locked))
-            talk_handle = core_free(talk_handle);
-        return BUFLIB_CB_OK;
-    }
-    return BUFLIB_CB_CANNOT_SHRINK;
-}
-
-static struct buflib_callbacks index_ops = {
-    .move_callback = index_move_callback,
-    .shrink_callback = index_shrink_callback,
-};
-
 static int open_voicefile(void)
 {
     char buf[64];
-    char* p_lang = "english"; /* default */
+    char* p_lang = DEFAULT_VOICE_LANG; /* default */
 
     if ( global_settings.lang_file[0] &&
          global_settings.lang_file[0] != 0xff ) 
@@ -283,112 +300,220 @@ static int open_voicefile(void)
 }
 
 
-/* fetch a clip from the voice file */
-static int get_clip(long id, long* p_size)
+static int id2index(int id)
 {
-    int retval = -1;
-    struct clip_entry* clipbuf;
-    size_t clipsize;
-
+    int index = id;
     if (id > VOICEONLY_DELIMITER)
     {   /* voice-only entries use the second part of the table.
            The first string comes after VOICEONLY_DELIMITER so we need to
            substract VOICEONLY_DELIMITER + 1 */
-        id -= VOICEONLY_DELIMITER + 1;
-        if (id >= voicefile.id2_max)
+        index -= VOICEONLY_DELIMITER + 1;
+        if (index >= voicefile.id2_max)
             return -1; /* must be newer than we have */
-        id += voicefile.id1_max; /* table 2 is behind table 1 */
+        index += voicefile.id1_max; /* table 2 is behind table 1 */
     }
     else
     {   /* normal use of the first table */
         if (id >= voicefile.id1_max)
             return -1; /* must be newer than we have */
     }
+    return index;
+}
+
+#ifndef TALK_PROGRESSIVE_LOAD
+static int index2id(int index)
+{
+    int id = index;
+
+    if (index >= voicefile.id2_max + voicefile.id1_max)
+        return -1;
+
+    if (index >= voicefile.id1_max)
+    {   /* must be voice-only if it exceeds table 1 */
+        id -= voicefile.id1_max;
+        /* The first string comes after VOICEONLY_DELIMITER so we need to
+           add VOICEONLY_DELIMITER + 1 */
+        id += VOICEONLY_DELIMITER + 1;
+    }
+
+    return id;
+}
+#endif
+
+static int free_oldest_clip(void)
+{
+    unsigned i;
+    int oldest = 0;
+    long age, now;
+    struct clip_entry* clipbuf;
+    struct clip_cache_metadata *cc = buflib_get_data(&clip_ctx, metadata_table_handle);
+    for(age = i = 0, now = current_tick; i < max_clips; i++)
+    {
+        if (cc[i].handle)
+        {
+            if ((now - cc[i].tick) > age && cc[i].voice_id != VOICE_PAUSE)
+            {
+                /* find the last-used clip but never consider silence */
+                age = now - cc[i].tick;
+                oldest = i;
+            }
+            else if (cc[i].voice_id == VOICEONLY_DELIMITER)
+            {
+                /* thumb clips are freed immediately */
+                oldest = i;
+                break;
+            }
+        }
+    }
+    /* free the last one if no oldest one could be determined */
+    cc = &cc[oldest];
+    cc->handle = buflib_free(&clip_ctx, cc->handle);
+    /* need to clear the LOADED bit too (not for thumb clips) */
+    if (cc->voice_id != VOICEONLY_DELIMITER)
+    {
+        clipbuf = core_get_data(index_handle);
+        clipbuf[id2index(cc->voice_id)].size &= ~LOADED_MASK;
+    }
+    return oldest;
+}
+
+
+/* common code for load_initial_clips() and get_clip() */
+static void add_cache_entry(int clip_handle, int table_index, int id)
+{
+    unsigned i;
+    struct clip_cache_metadata *cc = buflib_get_data(&clip_ctx, metadata_table_handle);
+
+    if (table_index != -1)
+    {
+        /* explicit slot; use that */
+        cc = &cc[table_index];
+        if (cc->handle > 0) panicf("%s(): Slot already used", __func__);
+    }
+    else
+    {   /* find an empty slot */
+        for(i = 0; cc[i].handle && i < max_clips; i++) ;
+        if (i == max_clips) /* no free slot in the cache table? */
+            i = free_oldest_clip();
+        cc = &cc[i];
+    }
+    cc->handle = clip_handle;
+    cc->tick = current_tick;
+    cc->voice_id = id;
+}
+
+static ssize_t read_clip_data(int fd, int index, int clip_handle)
+{
+    struct clip_entry* clipbuf;
+    size_t clipsize;
+    ssize_t ret;
+
+    if (fd < 0)
+    {
+        buflib_free(&clip_ctx, clip_handle);
+        return -1; /* open error */
+    }
 
     clipbuf = core_get_data(index_handle);
-    clipsize = clipbuf[id].size;
+    /* this must not be called with LOADED_MASK set in clipsize */
+    clipsize = clipbuf[index].size;
+    lseek(fd, clipbuf[index].offset, SEEK_SET);
+    ret = read_to_handle_ex(fd, &clip_ctx, clip_handle, 0, clipsize);
+
+    if (ret < 0 || clipsize != (size_t)ret)
+    {
+        buflib_free(&clip_ctx, clip_handle);
+        return -2; /* read error */
+    }
+
+    clipbuf = core_get_data(index_handle);
+    clipbuf[index].size |= LOADED_MASK; /* mark as loaded */
+
+    return ret;
+}
+
+static void load_initial_clips(int fd)
+{
+    (void) fd;
+#ifndef TALK_PROGRESSIVE_LOAD
+    unsigned index, i;
+    unsigned num_clips = voicefile.id1_max + voicefile.id2_max;
+
+    for(index = i = 0; index < num_clips && i < max_clips; index++)
+    {
+        int handle;
+        struct clip_entry* clipbuf = core_get_data(index_handle);
+        size_t clipsize = clipbuf[index].size;
+        ssize_t ret;
+
+        if (clipsize == 0) /* clip not included in voicefile */
+            continue;
+
+        handle = buflib_alloc(&clip_ctx, clipsize);
+        if (handle < 0)
+            break;
+
+        ret = read_clip_data(fd, index, handle);
+        if (ret < 0)
+            break;
+
+        add_cache_entry(handle, i++, index2id(index));
+    }
+#endif
+}
+
+/* fetch a clip from the voice file */
+static int get_clip(long id, struct queue_entry *q)
+{
+    int index;
+    int retval = -1;
+    struct clip_entry* clipbuf;
+    size_t clipsize;
+
+    index = id2index(id);
+    if (index == -1)
+        return -1;
+
+    clipbuf = core_get_data(index_handle);
+    clipsize = clipbuf[index].size;
     if (clipsize == 0) /* clip not included in voicefile */
         return -1;
 
-#ifndef TALK_PARTIAL_LOAD
-    retval = clipbuf[id].offset;
-
-#else
     if (!(clipsize & LOADED_MASK))
     {   /* clip needs loading */
+        int fd, handle, oldest = -1;
         ssize_t ret;
-        int fd, idx = 0;
-        unsigned char *voicebuf;
-        if (id == VOICE_PAUSE) {
-            idx = QUEUE_SIZE;   /* we keep VOICE_PAUSE loaded */
-        } else {
-            int oldest = 0, i;
-            for(i=0; i<QUEUE_SIZE; i++) {
-                if (buffered_id[i] < 0) {
-                    /* found a free entry, that means the buffer isn't
-                     * full yet. */
-                    idx = i;
-                    break;
-                }
-
-                /* find the oldest clip */
-                if(clip_age[i] > oldest) {
-                    idx = i;
-                    oldest = clip_age[i];
-                }
-
-                /* increment age of each loaded clip */
-                clip_age[i]++;
-            }
-            clip_age[idx] = 0; /* reset clip's age */
-        }
-        retval = idx * max_clipsize;
+        cache_misses++;
+        /* free clips from cache until this one succeeds to allocate */
+        while ((handle = buflib_alloc(&clip_ctx, clipsize)) < 0)
+            oldest = free_oldest_clip();
+        /* handle should now hold a valid alloc. Load from disk
+         * and insert into cache */
         fd = open_voicefile();
-        if (fd < 0)
-            return -1; /* open error */
-
-        talk_handle_locked++;
-        voicebuf = core_get_data(talk_handle);
-        clipbuf = core_get_data(index_handle);
-        lseek(fd, clipbuf[id].offset, SEEK_SET);
-        ret = read(fd, &voicebuf[retval], clipsize);
+        ret = read_clip_data(fd, index, handle);
         close(fd);
-        talk_handle_locked--;
-
-        if (ret < 0 || clipsize != (size_t)ret)
-            return -1; /* read error */
-
-        clipbuf = core_get_data(index_handle);
-        clipbuf[id].size |= LOADED_MASK; /* mark as loaded */
-
-        if (id != VOICE_PAUSE) {
-            if (buffered_id[idx] >= 0) {
-                /* mark previously loaded clip as unloaded */
-                clipbuf[buffered_id[idx]].size &= ~LOADED_MASK;
-            }
-            buffered_id[idx] = id;
-        }
+        if (ret < 0)
+            return ret;
+        /* finally insert into metadata table */
+        add_cache_entry(handle, oldest, id);
+        retval = handle;
     }
     else
-    {   /* clip is in memory already */
-        /* Find where it was loaded */
-        if (id == VOICE_PAUSE) {
-            retval = QUEUE_SIZE * max_clipsize;
-        } else {
-            int idx;
-            for (idx=0; idx<QUEUE_SIZE; idx++)
-                if (buffered_id[idx] == id) {
-                    retval = idx * max_clipsize;
-                    clip_age[idx] = 0; /* reset clip's age */
-                    break;
-                }
-        }
+    {   /* clip is in memory already; find where it was loaded */
+        cache_hits++;
+        struct clip_cache_metadata *cc;
+        static int i;
+        cc = buflib_get_data(&clip_ctx, metadata_table_handle);
+        for (i = 0; cc[i].voice_id != id || !cc[i].handle; i++) ;
+        cc[i].tick = current_tick; /* reset age */
         clipsize &= ~LOADED_MASK; /* without the extra bit gives true size */
+        retval = cc[i].handle;
     }
-#endif /* TALK_PARTIAL_LOAD */
 
-    *p_size = clipsize;
-    return retval;
+    q->handle    = retval;
+    q->length    = clipsize;
+    q->remaining = clipsize;
+    return 0;
 }
 
 static bool load_index_table(int fd, const struct voicefile_header *hdr)
@@ -400,37 +525,24 @@ static bool load_index_table(int fd, const struct voicefile_header *hdr)
         return true;
 
     ssize_t alloc_size = (hdr->id1_max + hdr->id2_max) * sizeof(struct clip_entry);
-    index_handle = core_alloc_ex("voice index", alloc_size, &index_ops);
+    index_handle = core_alloc_ex("voice index", alloc_size, &talk_ops);
     if (index_handle < 0)
         return false;
 
-    index_handle_locked++;
-    buf = core_get_data(index_handle);
-    ret = read(fd, buf, alloc_size);
+    ret = read_to_handle(fd, index_handle, 0, alloc_size);
 
-#ifndef TALK_PARTIAL_LOAD
-    int clips_offset, num_clips;
-    /* adjust the offsets of the clips, they are relative to the file
-     * TALK_PARTUAL_LOAD needs the file offset instead as it loads
-     * the clips later */
-    clips_offset = hdr->table;
-    num_clips = hdr->id1_max + hdr->id2_max;
-    clips_offset += num_clips * sizeof(struct clip_entry); /* skip index */
-#endif
     if (ret == alloc_size)
+    {
+        buf = core_get_data(index_handle);
         for (int i = 0; i < hdr->id1_max + hdr->id2_max; i++)
         {
 #ifdef ROCKBOX_LITTLE_ENDIAN
+            /* doesn't yield() */
             structec_convert(&buf[i], "ll", 1, true);
 #endif
-#ifndef TALK_PARTIAL_LOAD
-            buf[i].offset -= clips_offset;
-#endif
         }
-
-    index_handle_locked--;
-
-    if (ret != alloc_size)
+    }
+    else
         index_handle = core_free(index_handle);
 
     return ret == alloc_size;
@@ -449,55 +561,26 @@ static bool load_header(int fd, struct voicefile_header *hdr)
     return true;
 }
 
-#ifndef TALK_PARTIAL_LOAD
-static bool load_data(int fd, ssize_t size_to_read)
+static bool create_clip_buffer(size_t max_size)
 {
-    unsigned char *buf;
-    ssize_t ret;
-
-    if (size_to_read < 0)
-        return false;
-
-    talk_handle = core_alloc_ex("voice data", size_to_read, &talk_ops);
+    size_t alloc_size;
+    /* just allocate, populate on an as-needed basis later */
+    talk_handle = core_alloc_ex("voice data", max_size, &talk_ops);
     if (talk_handle < 0)
-        return false;
+        goto alloc_err;
 
-    talk_handle_locked++;
-    buf = core_get_data(talk_handle);
-    ret = read(fd, buf, size_to_read);
-    talk_handle_locked--;
+    buflib_init(&clip_ctx, core_get_data(talk_handle), max_size);
 
-    if (ret != size_to_read)
-        talk_handle = core_free(talk_handle);
+    /* the first alloc is the clip metadata table */
+    alloc_size = max_clips * sizeof(struct clip_cache_metadata);
+    metadata_table_handle = buflib_alloc(&clip_ctx, alloc_size);
+    memset(buflib_get_data(&clip_ctx, metadata_table_handle), 0, alloc_size);
 
-    return ret == size_to_read;
-}
-#endif
+    return true;
 
-static bool alloc_thumbnail_buf(void)
-{
-    int handle;
-    size_t size;
-    if (thumb_handle > 0)
-        return true; /* nothing to do? */
-#if CONFIG_CODEC == SWCODEC
-    /* try to allocate the max. first, and take whatever we can get if that
-     * fails */
-    size = MAX_THUMBNAIL_BUFSIZE;
-    handle = core_alloc_ex("voice thumb", MAX_THUMBNAIL_BUFSIZE, &talk_ops);
-    if (handle < 0)
-    {
-        size = core_allocatable();
-        handle = core_alloc_ex("voice thumb", size, &talk_ops);
-    }
-#else
-    /* on HWCODEC, just use the rest of the remaining buffer,
-     * normal playback cannot happen anyway */
-    handle = core_alloc_maximum("voice thumb", &size, &talk_ops);
-#endif
-    thumb_handle = handle;
-    size_for_thumbnail = (handle > 0) ? size : 0;
-    return handle > 0;
+alloc_err:
+    index_handle = core_free(index_handle);
+    return false;
 }
 
 /* load the voice file into the mp3 buffer */
@@ -525,108 +608,123 @@ static bool load_voicefile_index(int fd)
     return false;
 }
 
-static bool load_voicefile_data(int fd, size_t max_size)
+/* this function caps the voicefile buffer and allocates it. It can
+ * be called after talk_init(), e.g. when the voice was temporarily disabled.
+ * The buffer size has to be capped again each time because the available
+ * audio buffer changes over time */
+static bool load_voicefile_data(int fd)
 {
-#ifdef TALK_PARTIAL_LOAD
-    (void)fd;
-    /* just allocate, populate on an as-needed basis later */
-    talk_handle = core_alloc_ex("voice data", max_size, &talk_ops);
-    if (talk_handle < 0)
-        goto load_err_free;
-#else
-    size_t load_size, clips_size;
-    /* load the entire file into memory */
-    clips_size = (voicefile.id1_max+voicefile.id2_max) * sizeof(struct clip_entry);
-    load_size  = max_size - voicefile.table - clips_size;
-    if (!load_data(fd, load_size))
-        goto load_err_free;
-#endif
+    voicebuf_size = voicefile_size;
+    /* cap to the max. number of clips or the size of the available audio
+     * buffer which we grab. We leave some to the rest of the system.
+     * While that reduces our buffer size it improves the chance that
+     * other allocs succeed without disabling voice which would require
+     * reloading the voice from disk (as we do not shrink our buffer when
+     * other code attempts new allocs these would fail) */
+    ssize_t cap = MIN(MAX_CLIP_BUFFER_SIZE, audio_buffer_available() - (64<<10));
+    if (UNLIKELY(cap < 0))
+    {
+        logf("Not enough memory for voice. Disabling...\n");
+        return false;
+    }
+    else if (voicebuf_size > (size_t)cap)
+        voicebuf_size = cap;
 
-    /* make sure to have the silence clip, if available
-     * return value can be cached globally even for TALK_PARTIAL_LOAD because
-     * the VOICE_PAUSE clip is specially handled */
-    silence_offset = get_clip(VOICE_PAUSE, &silence_length);
+    /* just allocate, populate on an as-needed basis later
+     * re-create the clip buffer to ensure clip_ctx is up-to-date */
+    if (talk_handle > 0)
+        talk_handle = core_free(talk_handle);
+    if (!create_clip_buffer(voicebuf_size))
+        return false;
 
-    /* not an error if this fails here, might try again when the
-     * actual thumbnails are attempted to be played back */
-    alloc_thumbnail_buf();
+    load_initial_clips(fd);
+    /* make sure to have the silence clip, if available return value can
+     * be cached globally even for TALK_PROGRESSIVE_LOAD because the
+     * VOICE_PAUSE clip is specially handled */
+    get_clip(VOICE_PAUSE, &silence);
 
     return true;
-
-load_err_free:
-    index_handle = core_free(index_handle);
-    return false;
 }
 
+/* Use a static buffer to avoid difficulties with buflib during DMA
+ * (hwcodec)/buffer passing to the voice_thread (swcodec). Clips
+ * can be played in chunks so the size is not that important */
+static unsigned char commit_buffer[2<<10];
+
+static void* commit_transfer(struct queue_entry *qe, size_t *size)
+{
+    void *buf = NULL; /* shut up gcc */
+    static unsigned char *bufpos = commit_buffer;
+#if CONFIG_CODEC != SWCODEC
+    sent = MIN(qe->remaining, 0xFFFF);
+#else
+    sent = qe->remaining;
+#endif
+    sent = MIN((size_t)sent, sizeof(commit_buffer));
+    buf = buflib_get_data(&clip_ctx, qe->handle);
+    /* adjust buffer position to what has been played already */
+    buf += (qe->length - qe->remaining);
+    memcpy(bufpos, buf, sent);
+    *size = sent;
+
+    return commit_buffer;
+}
+
+static inline bool is_silence(struct queue_entry *qe)
+{
+    if (silence.handle > 0) /* silence clip available? */
+        return (qe->handle == silence.handle);
+    else
+        return false;
+}
 
 /* called in ISR context (on HWCODEC) if mp3 data got consumed */
 static void mp3_callback(const void** start, size_t* size)
 {
-    queue[queue_read].length -= sent; /* we completed this */
-    queue[queue_read].offset += sent;
-
-    if (queue[queue_read].length > 0) /* current clip not finished? */
-    {   /* feed the next 64K-1 chunk */
-        int offset;
-#if CONFIG_CODEC != SWCODEC
-        sent = MIN(queue[queue_read].length, 0xFFFF);
-#else
-        sent = queue[queue_read].length;
+    struct queue_entry *qe = &queue[queue_read];
+#if CONFIG_CODEC == SWCODEC
+    /* voice_thread.c hints us how many of the buffer we provided it actually
+     * consumed. Because buffers have to be frame-aligned for speex
+     * it might be less than what we presented */
+    if (*size)
+        sent = *size;
 #endif
-        offset = queue[queue_read].offset;
-        if ((unsigned long)offset >= voicefile_size)
-            *start = core_get_data(thumb_handle) + offset - voicefile_size;
-        else
-            *start = core_get_data(talk_handle) + offset;
-        *size = sent;
+    qe->remaining -= sent; /* we completed this */
+
+    if (qe->remaining > 0) /* current clip not finished? */
+    {   /* feed the next 64K-1 chunk */
+        *start = commit_transfer(qe, size);
         return;
     }
-    talk_queue_lock();
-    if(thumb_handle && (unsigned long)queue[queue_read].offset == voicefile_size+thumbnail_buf_used)
-        thumbnail_buf_used = 0;
-    if (sent > 0) /* go to next entry */
-    {
-        queue_read = (queue_read + 1) & QUEUE_MASK;
-    }
 
-re_check:
+    talk_queue_lock();
+
+    /* increment read position for the just played clip */
+    queue_read = (queue_read + 1) & QUEUE_MASK;
+
+    if (QUEUE_LEVEL == 0)
+    {
+        if (!is_silence(last_clip))
+        {   /* add silence clip when queue runs empty playing a voice clip,
+             * only if the previous clip wasn't already silence */
+            queue[queue_write] = silence;
+            queue_write = (queue_write + 1) & QUEUE_MASK;
+        }
+        else
+        {
+            *size = 0; /* end of data */
+        }
+    }
 
     if (QUEUE_LEVEL != 0) /* queue is not empty? */
     {   /* start next clip */
-        unsigned char *buf;
-#if CONFIG_CODEC != SWCODEC
-        sent = MIN(queue[queue_read].length, 0xFFFF);
-#else
-        sent = queue[queue_read].length;
-#endif
-        lastclip_offset = queue[queue_read].offset;
-        /* offsets larger than voicefile_size denote thumbnail clips */
-        if (lastclip_offset >= voicefile_size)
-            buf = core_get_data(thumb_handle) + lastclip_offset - voicefile_size;
-        else
-            buf = core_get_data(talk_handle) + lastclip_offset;
-        *start = buf;
-        *size = sent;
-        curr_hd[0] = buf[1];
-        curr_hd[1] = buf[2];
-        curr_hd[2] = buf[3];
+        last_clip = &queue[queue_read];
+        *start = commit_transfer(last_clip, size);
+        curr_hd[0] = commit_buffer[1];
+        curr_hd[1] = commit_buffer[2];
+        curr_hd[2] = commit_buffer[3];
     }
-    else if (silence_offset > 0               /* silence clip available */
-             && lastclip_offset != (unsigned long)silence_offset  /* previous clip wasn't silence */
-             && !(lastclip_offset >= voicefile_size   /* ..or thumbnail */
-                 && lastclip_offset < voicefile_size +size_for_thumbnail))
-    {   /* add silence clip when queue runs empty playing a voice clip */
-        queue[queue_write].offset = silence_offset;
-        queue[queue_write].length = silence_length;
-        queue_write = (queue_write + 1) & QUEUE_MASK;
-
-        goto re_check;
-    }
-    else
-    {
-        *size = 0; /* end of data */
-        talk_handle_locked--;
-    }
+    
     talk_queue_unlock();
 }
 
@@ -644,7 +742,6 @@ void talk_force_shutup(void)
     unsigned char* search;
     unsigned char* end;
     int len;
-    unsigned clip_offset;
     if (QUEUE_LEVEL == 0) /* has ended anyway */
         return;
 
@@ -653,11 +750,7 @@ void talk_force_shutup(void)
 #endif /* CONFIG_CPU == SH7034 */
     /* search next frame boundary and continue up to there */
     pos = search = mp3_get_pos();
-    clip_offset = queue[queue_read].offset;
-    if (clip_offset >= voicefile_size)
-        end = core_get_data(thumb_handle) + clip_offset - voicefile_size;
-    else
-        end = core_get_data(talk_handle) + clip_offset;
+    end = buflib_get_data(&clip_ctx, queue[queue_read].handle);
     len = queue[queue_read].length;
 
     if (pos >= end && pos <= (end+len)) /* really our clip? */
@@ -699,7 +792,6 @@ void talk_force_shutup(void)
     mp3_play_stop();
     talk_queue_lock();
     queue_write = queue_read = 0; /* reset the queue */
-    talk_handle_locked = MAX(talk_handle_locked-1, 0);
     thumbnail_buf_used = 0;
     talk_queue_unlock();
     need_shutup = false;
@@ -713,9 +805,9 @@ void talk_shutup(void)
 }
 
 /* schedule a clip, at the end or discard the existing queue */
-static void queue_clip(unsigned long clip_offset, long size, bool enqueue)
+static void queue_clip(struct queue_entry *clip, bool enqueue)
 {
-    unsigned char *buf;
+    struct queue_entry *qe;
     int queue_level;
 
     if (!enqueue)
@@ -724,7 +816,7 @@ static void queue_clip(unsigned long clip_offset, long size, bool enqueue)
        longer in effect. */
     force_enqueue_next = false;
     
-    if (!size)
+    if (!clip->length)
         return; /* safety check */
 #if CONFIG_CPU == SH7034
     /* disable the DMA temporarily, to be safe of race condition */
@@ -732,32 +824,24 @@ static void queue_clip(unsigned long clip_offset, long size, bool enqueue)
 #endif
     talk_queue_lock();
     queue_level = QUEUE_LEVEL; /* check old level */
+    qe = &queue[queue_write];
 
     if (queue_level < QUEUE_SIZE - 1) /* space left? */
     {
-        queue[queue_write].offset = clip_offset; /* populate an entry */
-        queue[queue_write].length = size;
+        queue[queue_write] = *clip;
         queue_write = (queue_write + 1) & QUEUE_MASK;
     }
     talk_queue_unlock();
 
     if (queue_level == 0)
     {   /* queue was empty, we have to do the initial start */
-        lastclip_offset = clip_offset;
-#if CONFIG_CODEC != SWCODEC
-        sent = MIN(size, 0xFFFF); /* DMA can do no more */
-#else
-        sent = size;
-#endif
-        talk_handle_locked++;
-        if (clip_offset >= voicefile_size)
-            buf = core_get_data(thumb_handle) + clip_offset - voicefile_size;
-        else
-            buf = core_get_data(talk_handle) + clip_offset;
-        mp3_play_data(buf, sent, mp3_callback);
-        curr_hd[0] = buf[1];
-        curr_hd[1] = buf[2];
-        curr_hd[2] = buf[3];
+        size_t size;
+        void *buf = commit_transfer(qe, &size);
+        last_clip = qe;
+        mp3_play_data(buf, size, mp3_callback);
+        curr_hd[0] = commit_buffer[1];
+        curr_hd[1] = commit_buffer[2];
+        curr_hd[2] = commit_buffer[3];
         mp3_play_pause(true); /* kickoff audio */
     }
     else
@@ -772,6 +856,14 @@ static void queue_clip(unsigned long clip_offset, long size, bool enqueue)
     return;
 }
 
+/* return if a voice codec is required or not */
+static bool talk_voice_required(void)
+{
+    return (has_voicefile) /* Voice file is available */
+        || (global_settings.talk_dir_clip)  /* Thumbnail clips are required */
+        || (global_settings.talk_file_clip);
+}
+
 /***************** Public implementation *****************/
 
 void talk_init(void)
@@ -784,11 +876,13 @@ void talk_init(void)
         return;
     }
 
-#if CONFIG_CODEC == SWCODEC
     if(!talk_initialized)
+    {
+#if CONFIG_CODEC == SWCODEC
         mutex_init(&queue_mutex);
 #endif /* CONFIG_CODEC == SWCODEC */
-
+        mutex_init(&read_buffer_mutex);
+    }
     talk_initialized = true;
     strlcpy((char *)last_lang, (char *)global_settings.lang_file,
         MAX_FILENAME);
@@ -797,12 +891,7 @@ void talk_init(void)
     queue_write = queue_read = 0; /* reset the queue */
     memset(&voicefile, 0, sizeof(voicefile));
 
-#ifdef TALK_PARTIAL_LOAD
-    for(int i=0; i<QUEUE_SIZE; i++)
-        buffered_id[i] = -1;
-#endif
-
-    silence_offset = -1; /* pause clip not accessible */
+    silence.handle = -1; /* pause clip not accessible */
     voicefile_size = has_voicefile = 0;
     /* need to free these as their size depends on the voice file, and
      * this function is called when the talk voice file changes */
@@ -812,74 +901,62 @@ void talk_init(void)
      * and so we can re-use it if it's already allocated in any event */
 
     filehandle = open_voicefile();
-    if (filehandle < 0)
-        return;
-
-    if (!load_voicefile_index(filehandle))
-        goto out;
-
-#ifdef TALK_PARTIAL_LOAD
-    /* TALK_PARTIAL_LOAD loads the actual clip data later, and not all
-     * at once */
-    unsigned num_clips = voicefile.id1_max + voicefile.id2_max;
-    struct clip_entry *clips = core_get_data(index_handle);
-    int silence_size = 0;
-
-    for(unsigned i=0; i<num_clips; i++) {
-        int size = clips[i].size;
-        if (size > max_clipsize)
-            max_clipsize = size;
-        if (i == VOICE_PAUSE)
-            silence_size = size;
-    }
-
-    voicefile_size = voicefile.table + num_clips * sizeof(struct clip_entry);
-    voicefile_size += max_clipsize * QUEUE_SIZE + silence_size;
-
-    /* test if we can open and if it fits in the audiobuffer */
-    size_t audiobufsz = audio_buffer_available();
-    has_voicefile = audiobufsz >= voicefile_size;
-
-#else
-    /* load the compressed clip data into memory, in its entirety */
-    voicefile_size = filesize(filehandle);
-    if (!load_voicefile_data(filehandle, voicefile_size))
+    if (filehandle > 0)
     {
-        voicefile_size = 0;
-        goto out;
+        if (!load_voicefile_index(filehandle))
+            goto out;
+
+        /* Now determine the maximum buffer size needed for the voicefile.
+         * The below pretends the entire voicefile would be loaded. The buffer
+         * size is eventually capped later on in load_voicefile_data() */
+        int num_clips = voicefile.id1_max + voicefile.id2_max;
+        int non_empty = num_clips;
+        int total_size = 0, avg_size;
+        struct clip_entry *clips = core_get_data(index_handle);
+        /* check for the average clip size to estimate the maximum number of
+         * clips the buffer can hold */
+        for (int i = 0; i<num_clips; i++)
+        {
+            if (clips[i].size)
+                total_size += ALIGN_UP(clips[i].size, sizeof(void *));
+            else
+                non_empty -= 1;
+        }
+        avg_size = total_size / non_empty;
+        max_clips = MIN((int)(MAX_CLIP_BUFFER_SIZE/avg_size) + 1, non_empty);
+        /* account for possible thumb clips */        
+        total_size += THUMBNAIL_RESERVE;
+        max_clips += 16;
+        voicefile_size = total_size;
+        has_voicefile = true;
     }
-    has_voicefile = true;
-#endif
+    else if (talk_voice_required())
+    {
+        /* create buffer just for thumb clips */
+        max_clips = 16;
+        voicefile_size = THUMBNAIL_RESERVE;
+    }
+    /* additionally to the clip we need a table to record the age of the clips
+     * so that, when memory is tight, only the most recently used ones are kept */
+    voicefile_size += sizeof(struct clip_cache_metadata) * max_clips;
+    /* compensate a bit for buflib alloc overhead. */
+    voicefile_size += BUFLIB_ALLOC_OVERHEAD * max_clips + 64;
+
+    load_voicefile_data(filehandle);
 
 #if CONFIG_CODEC == SWCODEC
-    /* Safe to init voice playback engine now since we now know if talk is
-       required or not */
-    voice_thread_init();
+    /* Initialize the actual voice clip playback engine as well */
+    if (talk_voice_required())
+        voice_thread_init();
 #endif
 
 out:
     close(filehandle); /* close again, this was just to detect presence */
-    filehandle = -1;
 }
-
-#if CONFIG_CODEC == SWCODEC
-/* return if a voice codec is required or not */
-bool talk_voice_required(void)
-{
-    return (has_voicefile) /* Voice file is available */
-        || (global_settings.talk_dir_clip)  /* Thumbnail clips are required */
-        || (global_settings.talk_file_clip);
-}
-#endif
 
 /* somebody else claims the mp3 buffer, e.g. for regular play/record */
 void talk_buffer_set_policy(int policy)
 {
-#if CONFIG_CODEC != SWCODEC
-    /* always grab the voice buffer for now */
-    (void) policy;
-    give_buffer_away = true;
-#else
     switch(policy)
     {
         case TALK_BUFFER_DEFAULT:
@@ -887,29 +964,29 @@ void talk_buffer_set_policy(int policy)
         case TALK_BUFFER_LOOSE: give_buffer_away = true;             break;
         default:           DEBUGF("Ignoring unknown policy\n"); break;
     }
-#endif
 }
 
 /* play a voice ID from voicefile */
 int talk_id(int32_t id, bool enqueue)
 {
-    int clip;
-    long clipsize;
     int32_t unit;
     int decimals;
+    struct queue_entry clip;
 
+    if (!has_voicefile)
+        return 0; /* no voicefile loaded, not an error -> pretent success */
     if (talk_temp_disable_count > 0)
         return -1;  /* talking has been disabled */
     if (!check_audio_status())
         return -1;
 
-    if (has_voicefile && (talk_handle <= 0 || index_handle <= 0)) /* reload needed? */
+    if (talk_handle <= 0 || index_handle <= 0) /* reload needed? */
     {
         int fd = open_voicefile();
-        if (fd < 0
-                || !load_voicefile_index(fd)
-                || !load_voicefile_data(fd, voicefile_size))
+        if (fd < 0 || !load_voicefile_index(fd))
             return -1;
+        load_voicefile_data(fd);
+        close(fd);
     }
 
     if (id == -1) /* -1 is an indication for silence */
@@ -928,8 +1005,7 @@ int talk_id(int32_t id, bool enqueue)
         return 0; /* and stop, end of special case */
     }
 
-    clip = get_clip(id, &clipsize);
-    if (clip < 0)
+    if (get_clip(id, &clip) < 0)
         return -1; /* not present */
 
 #ifdef LOGF_ENABLE
@@ -939,7 +1015,7 @@ int talk_id(int32_t id, bool enqueue)
         logf("\ntalk_id: Say '%s'\n", str(id));
 #endif
 
-    queue_clip(clip, clipsize, enqueue);
+    queue_clip(&clip, enqueue);
 
     return 0;
 }
@@ -972,19 +1048,18 @@ static int _talk_file(const char* filename,
 {
     int fd;
     int size;
-    int thumb_used;
-    char *buf;
+    int handle, oldest = -1;
 #if CONFIG_CODEC != SWCODEC
     struct mp3entry info;
 #endif
 
+    /* reload needed? */
     if (talk_temp_disable_count > 0)
         return -1;  /* talking has been disabled */
     if (!check_audio_status())
         return -1;
-
-    if (!alloc_thumbnail_buf())
-        return -1;
+    if (talk_handle <= 0)
+        load_voicefile_data(-1);
 
 #if CONFIG_CODEC != SWCODEC
     if(mp3info(&info, filename)) /* use this to find real start */
@@ -1002,42 +1077,43 @@ static int _talk_file(const char* filename,
     {
         return 0;
     }
-
-    thumb_used = thumbnail_buf_used;
-    if(filesize(fd) > size_for_thumbnail -thumb_used)
-    {   /* Don't play truncated  clips */
-        close(fd);
-        return 0;
-    }
+    size = filesize(fd);
 
 #if CONFIG_CODEC != SWCODEC
-    lseek(fd, info.first_frame_offset, SEEK_SET); /* behind ID data */
+    size -= lseek(fd, info.first_frame_offset, SEEK_SET); /* behind ID data */
 #endif
 
-    talk_handle_locked++;
-    buf = core_get_data(thumb_handle);
-    size = read(fd, buf+thumb_used, size_for_thumbnail - thumb_used);
-    talk_handle_locked--;
+    /* free clips from cache until this one succeeds to allocate */
+    while ((handle = buflib_alloc(&clip_ctx, size)) < 0)
+        oldest = free_oldest_clip();
+
+    size = read_to_handle_ex(fd, &clip_ctx, handle, 0, size);
     close(fd);
 
     /* ToDo: find audio, skip ID headers and trailers */
 
     if (size > 0)    /* Don't play missing clips */
     {
+        struct queue_entry clip;
+        clip.handle = handle;
+        clip.length = clip.remaining = size;
 #if CONFIG_CODEC != SWCODEC && !defined(SIMULATOR)
         /* bitswap doesnt yield() */
-        bitswap(core_get_data(thumb_handle), size);
+        bitswap(buflib_get_data(&clip_ctx, handle), size);
 #endif
         if(prefix_ids)
             /* prefix thumbnail by speaking these ids, but only now
                that we know there's actually a thumbnail to be
                spoken. */
             talk_idarray(prefix_ids, true);
-        talk_queue_lock();
-        thumbnail_buf_used = thumb_used + size;
-        talk_queue_unlock();
-        queue_clip(voicefile_size + thumb_used, size, true);
+        /* finally insert into metadata table. thumb clips go under the
+         * VOICEONLY_DELIMITER id so the cache can distinguish them from
+         * normal clips */
+        add_cache_entry(handle, oldest, VOICEONLY_DELIMITER);
+        queue_clip(&clip, true);
     }
+    else
+        buflib_free(&clip_ctx, handle);
 
     return size;
 }
@@ -1435,3 +1511,56 @@ void talk_time(const struct tm *tm, bool enqueue)
 }
 
 #endif /* CONFIG_RTC */
+
+bool talk_get_debug_data(struct talk_debug_data *data)
+{
+    char* p_lang = DEFAULT_VOICE_LANG; /* default */
+    struct clip_cache_metadata *cc;
+
+    memset(data, 0, sizeof(*data));
+
+    if (!has_voicefile || index_handle <= 0)
+        return false;
+
+    if (global_settings.lang_file[0] && global_settings.lang_file[0] != 0xff)
+        p_lang = (char *)global_settings.lang_file;
+
+    struct clip_entry *clips = core_get_data(index_handle);
+    int cached = 0;
+    int real_clips = 0;
+
+    strlcpy(data->voicefile, p_lang, sizeof(data->voicefile));
+    data->num_clips = voicefile.id1_max + voicefile.id2_max;
+    data->avg_clipsize = data->max_clipsize = 0;
+    data->min_clipsize = INT_MAX;
+    for(int i = 0; i < data->num_clips; i++)
+    {
+        int size = clips[i].size & (~LOADED_MASK);
+        if (!size) continue;
+        real_clips += 1;
+        if (size < data->min_clipsize)
+            data->min_clipsize = size;
+        if (size > data->max_clipsize)
+            data->max_clipsize = size;
+        data->avg_clipsize += size;
+    }
+    cc = buflib_get_data(&clip_ctx, metadata_table_handle);
+    for (int i = 0; i < (int) max_clips; i++)
+    {
+        if (cc[i].handle > 0)
+            cached += 1;
+    }
+    data->avg_clipsize /= real_clips;
+    data->num_empty_clips = data->num_clips - real_clips;
+    data->memory_allocated = sizeof(commit_buffer) + sizeof(voicefile)
+                         + data->num_clips * sizeof(struct clip_entry)
+                         + voicebuf_size;
+    data->memory_used = 0;
+    if (talk_handle > 0)
+        data->memory_used = data->memory_allocated - buflib_available(&clip_ctx);
+    data->cached_clips = cached;
+    data->cache_hits   = cache_hits;
+    data->cache_misses = cache_misses;
+
+    return true;
+}

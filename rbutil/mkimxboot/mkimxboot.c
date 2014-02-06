@@ -131,8 +131,13 @@ static const struct imx_md5sum_t imx_sums[] =
         { [VARIANT_DEFAULT] = {0, 18110576} }
     },
     {
+        /* Version 1.00.25 */
+        MODEL_ZENXFI3, "a41a3a78f86a4ac2879d194c6d528059", "1.00.25",
+        { [VARIANT_DEFAULT] = {0, 18110576 } }
+    },
+    {
         /* Version 1.00.25e */
-        MODEL_ZENXFI3, "7aa036a349feb93d2ec397b1149c9260", "1.00.25e",
+        MODEL_ZENXFI3, "c180f57e2b2d62620f87a1d853f349ff", "1.00.25e",
         { [VARIANT_DEFAULT] = {0, 18110576 } }
     },
     /** Zen X-Fi Style */
@@ -193,13 +198,13 @@ static struct crypto_key_t zero_key =
 
 static const struct imx_model_desc_t imx_models[] =
 {
-    [MODEL_FUZEPLUS] = { "Fuze+",  dualboot_fuzeplus, sizeof(dualboot_fuzeplus), "fuz+", 72,
+    [MODEL_FUZEPLUS] = {"Fuze+",  dualboot_fuzeplus, sizeof(dualboot_fuzeplus), "fuz+", 72,
                           1, &zero_key, 0, 0x40000000 },
     [MODEL_ZENXFI2] = {"Zen X-Fi2", dualboot_zenxfi2, sizeof(dualboot_zenxfi2), "zxf2", 82,
                        1, &zero_key, 0, 0x40000000 },
     [MODEL_ZENXFI3] = {"Zen X-Fi3", dualboot_zenxfi3, sizeof(dualboot_zenxfi3), "zxf3", 83,
                        1, &zero_key, 0, 0x40000000 },
-    [MODEL_ZENXFISTYLE] = {"Zen X-Fi Style", NULL, 0, "", -1,
+    [MODEL_ZENXFISTYLE] = {"Zen X-Fi Style", dualboot_zenxfistyle, sizeof(dualboot_zenxfistyle), "zxfs", 94,
                        1, &zero_key, 0, 0x40000000 },
     [MODEL_ZENSTYLE] = {"Zen Style 100/300", NULL, 0, "", -1,
                        1, &zero_key, 0, 0x40000000 },
@@ -215,6 +220,7 @@ static const struct imx_model_desc_t imx_models[] =
 #define MAGIC_ROCK      0x726f636b /* 'rock' */
 #define MAGIC_RECOVERY  0xfee1dead
 #define MAGIC_NORMAL    0xcafebabe
+#define MAGIC_CHARGE    0x67726863 /* 'chrg' */
 
 static int rb_fw_get_sb_inst_count(struct rb_fw_t *fw)
 {
@@ -338,6 +344,39 @@ static enum imx_error_t patch_std_zero_host_play(int jump_before, int model,
 
         return IMX_SUCCESS;
     }
+    else if(type == IMX_CHARGE)
+    {
+        /* throw away everything except the dualboot stub with a special argument */
+        struct sb_inst_t *new_insts = xmalloc(sizeof(struct sb_inst_t) * 2);
+        /* first instruction is be a load */
+        struct sb_inst_t *load = &new_insts[0];
+        memset(load, 0, sizeof(struct sb_inst_t));
+        load->inst = SB_INST_LOAD;
+        load->size = imx_models[model].dualboot_size;
+        load->addr = imx_models[model].dualboot_addr;
+        /* duplicate memory because it will be free'd */
+        load->data = memdup(imx_models[model].dualboot, imx_models[model].dualboot_size);
+        /* second instruction is a call */
+        struct sb_inst_t *call = &new_insts[1];
+        memset(call, 0, sizeof(struct sb_inst_t));
+        call->inst = SB_INST_CALL;
+        call->addr = imx_models[model].dualboot_addr;
+        call->argument = MAGIC_CHARGE;
+        /* free old instruction array */
+        free(sec->insts);
+        sec->insts = new_insts;
+        sec->nr_insts = 2;
+        /* remove all other sections */
+        for(int i = 1; i < sb_file->nr_sections; i++)
+            sb_free_section(sb_file->sections[i]);
+        struct sb_section_t *new_sec = xmalloc(sizeof(struct sb_section_t));
+        memcpy(new_sec, &sb_file->sections[0], sizeof(struct sb_section_t));
+        free(sb_file->sections);
+        sb_file->sections = new_sec;
+        sb_file->nr_sections = 1;
+
+        return IMX_SUCCESS;
+    }
     else
     {
         printf("[ERR] Bad output type !\n");
@@ -429,6 +468,10 @@ static enum imx_error_t patch_firmware(enum imx_model_t model,
                     return IMX_DONT_KNOW_HOW_TO_PATCH;
             }
             break;
+        case MODEL_ZENXFISTYLE:
+            /* The ZEN X-Fi Style uses the standard ____, host, play sections, patch after first
+             * call in ____ section. */
+            return patch_std_zero_host_play(1, model, type, sb_file, boot_fw);
         default:
             return IMX_DONT_KNOW_HOW_TO_PATCH;
     }

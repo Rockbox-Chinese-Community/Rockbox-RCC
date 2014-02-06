@@ -96,9 +96,6 @@ extern const char* const dir_thumbnail_name; /* "_dirname.talk" */
 extern const char* const file_thumbnail_ext; /* ".talk" for file voicing */
 
 void talk_init(void);
-#if CONFIG_CODEC == SWCODEC
-bool talk_voice_required(void); /* returns true if voice codec required */
-#endif
 int talk_get_bufsize(void); /* get the loaded voice file size */
 size_t talkbuf_init(char* bufstart);
 bool is_voice_queued(void); /* Are there more voice clips to be spoken? */
@@ -164,5 +161,17 @@ int talk_idarray(const long *idarray, bool enqueue);
             talk_force_enqueue_next(); \
         } \
     }while(0)
+
+struct talk_debug_data {
+    char voicefile[32];
+    long memory_allocated, memory_used;
+    int  num_clips, num_empty_clips;
+    int  min_clipsize, avg_clipsize, max_clipsize;
+    int  cached_clips;
+    int  cache_hits;
+    int  cache_misses;
+};
+
+bool talk_get_debug_data(struct talk_debug_data *data);
 
 #endif /* __TALK_H__ */

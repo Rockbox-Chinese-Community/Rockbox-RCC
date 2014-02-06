@@ -20,9 +20,9 @@ extern unsigned char audiobufend[];
 extern unsigned char audiobuffer[];
 #else /* PLATFORM_HOSTED */
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID) /* PLATFORM_ANDROID */
-unsigned char audiobuffer[(9*1024-256)*1024+(MEMORYSIZE-8)*1024*1024];
+unsigned char audiobuffer[(9*1024-768)*1024+(MEMORYSIZE-8)*1024*1024];
 #else
-unsigned char audiobuffer[(MEMORYSIZE*1024-256)*1024];
+unsigned char audiobuffer[(MEMORYSIZE*1024-768)*1024];
 #endif
 unsigned char *audiobufend = audiobuffer + sizeof(audiobuffer);
 extern unsigned char *audiobufend;
@@ -89,6 +89,12 @@ int core_alloc_maximum(const char* name, size_t *size, struct buflib_callbacks *
 bool core_shrink(int handle, void* new_start, size_t new_size)
 {
     return buflib_shrink(&core_ctx, handle, new_start, new_size);
+}
+
+const char* core_get_name(int handle)
+{
+    const char *name = buflib_get_name(&core_ctx, handle);
+    return name ?: "<anonymous>";
 }
 
 int core_get_num_blocks(void)
