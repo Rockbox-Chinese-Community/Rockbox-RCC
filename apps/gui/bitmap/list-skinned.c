@@ -187,11 +187,11 @@ bool skinlist_draw(struct screen *display, struct gui_synclist *list)
     const int screen = display->screen_type;
     struct viewport *parent = (list->parent[screen]);
     char* label = NULL;
-    const int list_start_item = list->start_item[screen];
     struct gui_wps wps;
     if (!skinlist_is_configured(screen, list))
         return false;
-
+    if (list->nb_items < 1 || list->start_item[screen] < 0  || list->start_item[screen] >= list->nb_items)
+        return false;
     current_list = list;
     wps.display = display;
     wps.data = listcfg[screen]->data;
@@ -201,7 +201,35 @@ bool skinlist_draw(struct screen *display, struct gui_synclist *list)
     display->clear_viewport();
     current_item = list->selected_item;
     current_nbitems = list->nb_items;
+    int tmp_list_start_item = list->start_item[screen];
+    static struct gui_synclist *prev_list=NULL;
+    if (prev_list != list )
+       current_item = list->selected_item = tmp_list_start_item;  
+    prev_list=list; 
+    if (list->selected_item < tmp_list_start_item || list->selected_item > tmp_list_start_item + display_lines )
+    {
+        current_item = list->selected_item = tmp_list_start_item;    
+    }
     needs_scrollbar[screen] = list->nb_items > display_lines;
+
+    if (list->nb_items <= display_lines)
+    {
+        int item_offset = list->selected_item - tmp_list_start_item;
+        tmp_list_start_item = 0;
+        current_item = list->selected_item = tmp_list_start_item + item_offset;
+    }
+    if (listcfg[screen]->tile == true)
+    {
+        int left_shift = 0;
+        left_shift = tmp_list_start_item % (parent->width / listcfg[screen]->width); 
+        if (left_shift != 0)
+        {
+            int item_offset = list->selected_item - tmp_list_start_item;
+            tmp_list_start_item = tmp_list_start_item - left_shift; 
+            current_item = list->selected_item =   tmp_list_start_item + item_offset +left_shift;    
+        }    
+    }
+    const int list_start_item = tmp_list_start_item;
 
     for (cur_line = 0; cur_line < display_lines; cur_line++)
     {
@@ -274,6 +302,10 @@ bool skinlist_draw(struct screen *display, struct gui_synclist *list)
                 skin_viewport->vp.y = original_y;
             }
         }
+    }
+    if (listcfg[screen]->tile == true && tmp_list_start_item + display_lines >= list->nb_items)
+    {
+        list->start_item[screen] = tmp_list_start_item;
     }
     current_column = -1;
     current_row = -1;
