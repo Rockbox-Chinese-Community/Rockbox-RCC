@@ -11,6 +11,11 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QListWidget>
+#include <QValidator>
+#include <QGroupBox>
+#include <QToolButton>
+#include <QMenu>
+#include <QCheckBox>
 #include <soc_desc.hpp>
 #include "backend.h"
 #include "settings.h"
@@ -21,48 +26,132 @@ enum
     RegTreeRegType
 };
 
-enum
+class DevTreeItem : public QTreeWidgetItem
 {
-    DataSelNothing,
-    DataSelFile,
+public:
+    DevTreeItem(const QString& string, const SocDevRef& ref)
+        :QTreeWidgetItem(QStringList(string), RegTreeDevType), m_ref(ref) {}
+
+    const SocDevRef& GetRef() { return m_ref; }
+private:
+    SocDevRef m_ref;
 };
 
 class RegTreeItem : public QTreeWidgetItem
 {
 public:
-    RegTreeItem(const QString& string, int type);
+    RegTreeItem(const QString& string, const SocRegRef& ref)
+        :QTreeWidgetItem(QStringList(string), RegTreeRegType), m_ref(ref) {}
 
-    void SetPath(int dev_idx, int dev_addr_idx, int reg_idx = -1, int reg_addr_idx = -1);
-    int GetDevIndex() const { return m_dev_idx; }
-    int GetDevAddrIndex() const { return m_dev_addr_idx; }
-    int GetRegIndex() const { return m_reg_idx; }
-    int GetRegAddrIndex() const { return m_reg_addr_idx; }
+    const SocRegRef& GetRef() { return m_ref; }
 private:
-    int m_dev_idx, m_dev_addr_idx, m_reg_idx, m_reg_addr_idx;
+    SocRegRef m_ref;
 };
 
-class RegTab : public QObject
+class SocFieldValidator : public QValidator
 {
     Q_OBJECT
 public:
-    RegTab(Backend *backend, QTabWidget *parent);
+    SocFieldValidator(QObject *parent = 0);
+    SocFieldValidator(const soc_reg_field_t& field, QObject *parent = 0);
+
+    virtual void fixup(QString& input) const;
+    virtual State validate(QString& input, int& pos) const;
+    /* validate and return the interpreted value */
+    State parse(const QString& input, soc_word_t& val) const;
 
 protected:
-    void FillDevSubTree(RegTreeItem *item);
+    soc_reg_field_t m_field;
+};
+
+class RegLineEdit : public QWidget
+{
+    Q_OBJECT
+public:
+    enum EditMode
+    {
+        Write, Set, Clear, Toggle
+    };
+
+    RegLineEdit(QWidget *parent = 0);
+    ~RegLineEdit();
+    void SetReadOnly(bool ro);
+    void EnableSCT(bool en);
+    void SetMode(EditMode mode);
+    EditMode GetMode();
+    QLineEdit *GetLineEdit();
+
+protected slots:
+    void OnWriteAct();
+    void OnSetAct();
+    void OnClearAct();
+    void OnToggleAct();
+protected:
+    void ShowMode(bool show);
+
+    QHBoxLayout *m_layout;
+    QToolButton *m_button;
+    QLineEdit *m_edit;
+    EditMode m_mode;
+    bool m_has_sct;
+    bool m_readonly;
+    QMenu *m_menu;
+};
+
+class RegDisplayPanel : public QGroupBox
+{
+    Q_OBJECT
+public:
+    RegDisplayPanel(QWidget *parent, IoBackend *io_backend, const SocRegRef& reg);
+    void AllowWrite(bool en);
+
+protected:
+    IoBackend::WriteMode EditModeToWriteMode(RegLineEdit::EditMode mode);
+
+    IoBackend *m_io_backend;
+    const SocRegRef& m_reg;
+    bool m_allow_write;
+    RegLineEdit *m_raw_val_edit;
+
+private slots:
+    void OnRawRegValueReturnPressed();
+};
+
+class RegTab : public QSplitter
+{
+    Q_OBJECT
+public:
+    RegTab(Backend *backend);
+    ~RegTab();
+
+protected:
+    enum
+    {
+        DataSelNothing,
+        DataSelFile,
+    #ifdef HAVE_HWSTUB
+        DataSelDevice,
+    #endif
+    };
+
+    void FillDevSubTree(DevTreeItem *item);
     void FillRegTree();
     void FillAnalyserList();
     void UpdateSocList();
-    void DisplayRegister(soc_dev_t& dev, soc_dev_addr_t& dev_addr,
-        soc_reg_t& reg, soc_reg_addr_t& reg_addr);
+    void DisplayRegister(const SocRegRef& ref);
     void SetDataSocName(const QString& socname);
     QComboBox *m_soc_selector;
+#ifdef HAVE_HWSTUB
+    QComboBox *m_dev_selector;
+    HWStubBackendHelper m_hwstub_helper;
+#endif
     Backend *m_backend;
     QTreeWidget *m_reg_tree;
-    soc_t m_cur_soc;
+    SocRef m_cur_soc;
     QVBoxLayout *m_right_panel;
     QWidget *m_right_content;
-    QSplitter *m_splitter;
     QLineEdit *m_data_sel_edit;
+    QCheckBox *m_readonly_check;
     QLabel *m_data_soc_label;
     QPushButton *m_data_sel_reload;
     QComboBox *m_data_selector;
@@ -71,6 +160,11 @@ protected:
     QListWidget *m_analysers_list;
 
 private slots:
+#ifdef HAVE_HWSTUB
+    void OnDevListChanged();
+    void OnDevChanged(int index);
+#endif
+    void SetReadOnlyIndicator();
     void OnSocChanged(const QString& text);
     void OnSocListChanged();
     void OnRegItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
@@ -80,6 +174,7 @@ private slots:
     void OnDataSocActivated(const QString&);
     void OnAnalyserChanged(QListWidgetItem *current, QListWidgetItem *previous);
     void OnAnalyserClicked(QListWidgetItem *clicked);
+    void OnReadOnlyClicked(bool);
 };
 
 #endif /* REGTAB_H */
