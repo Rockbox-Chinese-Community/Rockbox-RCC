@@ -47,6 +47,7 @@
 #define CPUFREQ_MAX         IMX233_CPUFREQ_454_MHz
 #define CPUFREQ_SLEEP       IMX233_CPUFREQ_64_MHz
 
+void system_prepare_fw_start(void);
 void udelay(unsigned us);
 bool imx233_us_elapsed(uint32_t ref, unsigned us_delay);
 void imx233_reset_block(volatile uint32_t *block_reg);
@@ -67,5 +68,8 @@ void usb_insert_int(void);
 void usb_remove_int(void);
 
 bool dbg_hw_target_info(void);
+
+/* for watchdog */
+void imx233_keep_alive(void);
 
 #endif /* SYSTEM_TARGET_H */

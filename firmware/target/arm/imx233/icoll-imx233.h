@@ -44,7 +44,6 @@
 #define INT_SRC_TOUCH_DETECT    36
 #define INT_SRC_LRADC_CHx(x)    (37 + (x))
 #define INT_SRC_RTC_1MSEC   48
-#define INT_SRC_NR_SOURCES  64
 /* STMP3700+ specific */
 #if IMX233_SUBTARGET >= 3700
 #define INT_SRC_SSP2_ERROR  2
@@ -55,23 +54,47 @@
 #endif
 /* STMP3780+ specific */
 #if IMX233_SUBTARGET >= 3780
+#endif
 
+/* Software IRQ and IRQ count*/
+#if IMX233_SUBTARGET >= 3780
+#define INT_SRC_SOFTWARE(x) (66 + (x))
+#define INT_SRC_COUNT       128
+#elif IMX233_SUBTARGET >= 3700
+#define INT_SRC_SOFTWARE(x) (55 + (x))
+#define INT_SRC_COUNT       64
+#elif IMX233_SUBTARGET >= 3600
+#define INT_SRC_SOFTWARE(x) (60 + (x))
+#define INT_SRC_COUNT       64
 #endif
 
 /* helpers */
 #if IMX233_SUBTARGET >= 3600 && IMX233_SUBTARGET < 3780
 #define BP_ICOLL_PRIORITYn_ENABLEx(x)   (2 + 8 * (x))
 #define BM_ICOLL_PRIORITYn_ENABLEx(x)   (1 << (2 + 8 * (x)))
+#define BP_ICOLL_PRIORITYn_PRIORITYx(x) (0 + 8 * (x))
+#define BM_ICOLL_PRIORITYn_PRIORITYx(x) (3 << (0 + 8 * (x)))
+#define BP_ICOLL_PRIORITYn_SOFTIRQx(x)  (3 + 8 * (x))
+#define BM_ICOLL_PRIORITYn_SOFTIRQx(x)  (1 << (3 + 8 * (x)))
 #endif
+
+/* Interrupt priorities for typical tasks */
+#define ICOLL_PRIO_NORMAL   0
+#define ICOLL_PRIO_AUDIO    1
+#define ICOLL_PRIO_DPC      2
+#define ICOLL_PRIO_WATCHDOG 3
 
 struct imx233_icoll_irq_info_t
 {
     bool enabled;
     unsigned freq;
+    unsigned priority;
 };
 
 void imx233_icoll_init(void);
 void imx233_icoll_enable_interrupt(int src, bool enable);
+void imx233_icoll_set_priority(int src, unsigned prio);
 struct imx233_icoll_irq_info_t imx233_icoll_get_irq_info(int src);
+void imx233_icoll_force_irq(unsigned src, bool enable);
 
 #endif /* ICOLL_IMX233_H */

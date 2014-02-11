@@ -37,9 +37,11 @@
 #include "emi-imx233.h"
 #include "audioin-imx233.h"
 #include "audioout-imx233.h"
+#include "timrot-imx233.h"
 #include "string.h"
 #include "stdio.h"
 #include "button.h"
+#include "button-lradc-imx233.h"
 
 #define ACT_NONE    0
 #define ACT_CANCEL  1
@@ -174,7 +176,7 @@ bool dbg_hw_info_dma(void)
         {
             struct imx233_dma_info_t info = imx233_dma_get_info(dbg_channels[i].chan, DMA_INFO_ALL);
             lcd_putsf(0, i + 1, "%c %c %4s %8x %3x %3x %3x",
-                info.gated ? 'g' : info.freezed ? 'f' : ' ',
+                info.gated ? 'g' : info.frozen ? 'f' : ' ',
                 !info.int_enabled ? '-' : info.int_error ? 'e' : info.int_cmdcomplt ? 'c' : ' ',
                 dbg_channels[i].name, info.bar, info.apb_bytes, info.ahb_bytes,
                 info.nr_unaligned);
@@ -482,9 +484,50 @@ bool dbg_hw_info_dcp(void)
 }
 #endif
 
+/** Nested IRQ check code */
+void INT_SOFTWARE(unsigned nr)
+{
+    imx233_icoll_force_irq(INT_SRC_SOFTWARE(nr), false);
+    HW_DIGCTL_SCRATCH0 = nr;
+    if(nr < 3)
+    {
+        imx233_icoll_force_irq(INT_SRC_SOFTWARE(nr + 1), true);
+        udelay(10);
+        if(HW_DIGCTL_SCRATCH0 == nr)
+            panicf("Nestes IRQ bug (%d)", nr);
+    }
+}
+
+void INT_SOFTWARE0(void) { INT_SOFTWARE(0); }
+void INT_SOFTWARE1(void) { INT_SOFTWARE(1); }
+void INT_SOFTWARE2(void) { INT_SOFTWARE(2); }
+void INT_SOFTWARE3(void) { INT_SOFTWARE(3); }
+
+static void check_nested_irq(void)
+{
+    /* Test protocol: setup SOFTWAREn IRQ as level n and apply:
+     * - enable SOFTWARE0 and soft IRQ'it
+     * - in SOFTWAREn, enable SOFTWARE(n+1) and soft IRQ'it, check it ran
+     */
+    for(int i = 0; i < 4; i++)
+    {
+        imx233_icoll_enable_interrupt(INT_SRC_SOFTWARE(i), true);
+        imx233_icoll_set_priority(INT_SRC_SOFTWARE(i), i);
+    }
+    HW_DIGCTL_SCRATCH0 = 0;
+    imx233_icoll_force_irq(INT_SRC_SOFTWARE(0), true);
+    udelay(100);
+    if(HW_DIGCTL_SCRATCH0 != 3)
+        panicf("Nested IRQ broken (%lu)", HW_DIGCTL_SCRATCH0);
+    for(int i = 0; i < 4; i++)
+        imx233_icoll_enable_interrupt(INT_SRC_SOFTWARE(i), false);
+}
+
 bool dbg_hw_info_icoll(void)
 {
     lcd_setfont(FONT_SYSFIXED);
+
+    check_nested_irq();
 
     int first_irq = 0;
     int dbg_irqs_count = sizeof(dbg_irqs) / sizeof(dbg_irqs[0]);
@@ -517,7 +560,8 @@ bool dbg_hw_info_icoll(void)
         for(int i = first_irq, j = 0; i < dbg_irqs_count && j < line_count; i++, j++)
         {
             struct imx233_icoll_irq_info_t info = imx233_icoll_get_irq_info(dbg_irqs[i].src);
-            lcd_putsf(0, j, "%s", dbg_irqs[i].name);
+            static char prio[4] = {'-', '+', '^', '!'};
+            lcd_putsf(0, j, "%c%s", prio[info.priority & 3], dbg_irqs[i].name);
             if(info.enabled || info.freq > 0)
                 lcd_putsf(10, j, "%d", info.freq);
         }
@@ -872,6 +916,162 @@ bool dbg_hw_info_audio(void)
     }
 }
 
+bool dbg_hw_info_timrot(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+
+    while(1)
+    {
+        int button = my_get_action(HZ / 10);
+        switch(button)
+        {
+            case ACT_NEXT:
+            case ACT_PREV:
+            case ACT_OK:
+                lcd_setfont(FONT_UI);
+                return true;
+            case ACT_CANCEL:
+                lcd_setfont(FONT_UI);
+                return false;
+        }
+
+        lcd_clear_display();
+        int line = 0;
+        for(int i = 0; i < 4; i++)
+        {
+            struct imx233_timrot_info_t info = imx233_timrot_get_info(i);
+            const char *unit = NULL;
+            const char *unit_prefix = "";
+            int src_freq = 1;
+            switch(info.src)
+            {
+                case BV_TIMROT_TIMCTRLn_SELECT__NEVER_TICK: src_freq = 0; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__PWM0: unit = "PWM0"; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__PWM1: unit = "PWM1"; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__PWM2: unit = "PWM2"; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__PWM3: unit = "PWM3"; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__PWM4: unit = "PWM4"; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__ROTARYA: unit = "ROTA"; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__ROTARYB: unit = "ROTB"; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__32KHZ_XTAL: src_freq = 32000; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__8KHZ_XTAL: src_freq = 8000; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__4KHZ_XTAL: src_freq = 4000; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__1KHZ_XTAL: src_freq = 1000; break;
+                case BV_TIMROT_TIMCTRLn_SELECT__TICK_ALWAYS: 
+                default: src_freq = 24000000 / (1 << info.prescale); break;
+            }
+            int count = info.reload ? info.fixed_count + 1 : info.run_count;
+            if(src_freq == 0 || count == 0)
+                continue;
+            unsigned long long freq;
+            if(info.reload)
+                freq = (unsigned long long)src_freq * 1000 / count;
+            else
+                freq = count * 1000 / src_freq;
+
+            if(freq >= 1000000000)
+            {
+                unit_prefix = "M";
+                freq /= 1000000;
+            }
+            else if(freq >= 1000000)
+            {
+                unit_prefix = "k";
+                freq /= 1000;
+            }
+            char str[32];
+            if(freq % 1000)
+                snprintf(str, sizeof(str), "%lu.%lu", (unsigned long)freq / 1000, (unsigned long)freq % 1000);
+            else
+                snprintf(str, sizeof(str), "%lu", (unsigned long)freq / 1000);
+            char str2[32];
+            if(unit)
+                snprintf(str2, sizeof(str2), "%s%s(%s)", unit_prefix, info.reload ? "H" : "", unit);
+            else
+                snprintf(str2, sizeof(str2), "%s%s", unit_prefix, info.reload ? "Hz" : "s");
+            lcd_putsf(0, line++, "%ctimer %d: %s %s", info.polarity ? '+' : '-', i, str, str2);
+        }
+
+        lcd_update();
+        yield();
+    }
+}
+
+bool dbg_hw_info_button(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+    int orig_vddio_val, orig_vddio_brownout;
+    imx233_power_get_regulator(REGULATOR_VDDIO, &orig_vddio_val, &orig_vddio_brownout);
+    int vddio_val = orig_vddio_val;
+    int vddio_brownout = orig_vddio_brownout;
+#endif
+
+    while(1)
+    {
+        int btn = my_get_action(0);
+        switch(btn)
+        {
+#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+            case ACT_PREV:
+                vddio_val -= 100; /* mV */
+                vddio_brownout -= 100; /* mV */
+                imx233_power_set_regulator(REGULATOR_VDDIO, vddio_val, vddio_brownout);
+                break;
+            case ACT_NEXT:
+                vddio_val += 100; /* mV */
+                vddio_brownout += 100; /* mV */
+                imx233_power_set_regulator(REGULATOR_VDDIO, vddio_val, vddio_brownout);
+                break;
+#endif
+            case ACT_OK:
+#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+                imx233_power_set_regulator(REGULATOR_VDDIO, orig_vddio_val, orig_vddio_brownout);
+#endif
+                lcd_setfont(FONT_UI);
+                return true;
+            case ACT_CANCEL:
+#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+                imx233_power_set_regulator(REGULATOR_VDDIO, orig_vddio_val, orig_vddio_brownout);
+#endif
+                lcd_setfont(FONT_UI);
+                return false;
+        }
+
+        lcd_clear_display();
+        int line = 0;
+
+#ifdef HAVE_BUTTON_DATA
+        int data;
+        btn = button_read_device(&data);
+#else
+        btn = button_read_device();
+#endif
+        lcd_putsf(0, line++, "raw buttons: %x", btn);
+#ifdef IMX233_BUTTON_LRADC_CHANNEL
+        lcd_putsf(0, line++, "raw lradc: %d", imx233_button_lradc_read_raw());
+#ifdef IMX233_BUTTON_LRADC_VDDIO
+        lcd_putsf(0, line++, "vddio: %d", imx233_button_lradc_read_vddio());
+#endif
+#endif
+#ifdef HAS_BUTTON_HOLD
+        lcd_putsf(0, line++, "hold: %d", button_hold());
+#endif
+#ifdef HAVE_HEADPHONE_DETECTION
+        lcd_putsf(0, line++, "headphones: %d", headphones_inserted());
+#endif
+#ifdef HAVE_BUTTON_DATA
+#ifdef HAVE_TOUCHSCREEN
+        lcd_putsf(0, line++, "touch: x=%d y=%d", data >> 16, data & 0xffff);
+#else
+        lcd_putsf(0, line++, "data: %d", data);
+#endif
+#endif
+        lcd_update();
+        yield();
+    }
+}
+
 static struct
 {
     const char *name;
@@ -892,6 +1092,8 @@ static struct
     {"usb", dbg_hw_info_usb},
     {"emi", dbg_hw_info_emi},
     {"audio", dbg_hw_info_audio},
+    {"timrot", dbg_hw_info_timrot},
+    {"button", dbg_hw_info_button},
     {"target", dbg_hw_target_info},
 };
 
