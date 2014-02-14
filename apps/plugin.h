@@ -45,6 +45,7 @@
 #undef strcmp
 #undef strncmp
 #undef strchr
+#undef strtok_r
 
 char* strncpy(char *, const char *, size_t);
 void* plugin_get_buffer(size_t *buffer_size);
@@ -68,6 +69,7 @@ void* plugin_get_buffer(size_t *buffer_size);
 #include "mpeg.h"
 #include "audio.h"
 #include "mp3_playback.h"
+#include "root_menu.h"
 #include "talk.h"
 #ifdef RB_PROFILE
 #include "profile.h"
@@ -965,6 +967,11 @@ struct plugin_api {
 #endif
 
     const char *rbversion;
+    struct menu_table *(*root_menu_get_options)(int *nb_options);
+    void (*root_menu_set_default)(void* setting, void* defaultval);
+    char* (*root_menu_write_to_cfg)(void* setting, char*buf, int buf_len);
+    void (*root_menu_load_from_cfg)(void* setting, char *value);
+    int (*settings_save)(void);
 
     /* new stuff at the end, sort into place next time
        the API gets incompatible */
