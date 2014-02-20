@@ -39,17 +39,15 @@ import android.view.ViewConfiguration;
 
 
 public class RockboxFramebuffer extends SurfaceView 
-                                 implements Runnable, SurfaceHolder.Callback
+                                 implements SurfaceHolder.Callback
 {
     private final DisplayMetrics metrics;
     private final ViewConfiguration view_config;
-    private Bitmap btm,tmp_bmp;
+    private Bitmap btm;
     private int srcWidth, srcHeight, desWidth, desHeight;
     private float scaleWidth,scaleHeight;
     private Matrix myMatrix;
     private Paint myPaint;
-    private Thread thread = null;
-    private boolean firstrun = true;
 
     /* first stage init; needs to run from a thread that has a Looper 
      * setup stuff that needs a Context */
@@ -67,12 +65,9 @@ public class RockboxFramebuffer extends SurfaceView
         setEnabled(false);
 
         desWidth = metrics.widthPixels;
-        desHeight = metrics.heightPixels;
-       
+        desHeight = metrics.heightPixels;  
     }
-
-
-   
+  
     /* second stage init; called from Rockbox with information about the 
      * display framebuffer */
     private void initialize(int lcd_width, int lcd_height)
@@ -81,50 +76,54 @@ public class RockboxFramebuffer extends SurfaceView
        srcHeight = lcd_height; 
        scaleWidth = ((float)desWidth) / srcWidth;
        scaleHeight = ((float)desHeight) / srcHeight;
-       
+       /*Limited the upscaled ratio to <= 2 for better looks*/
+       scaleWidth  = (scaleWidth > 2) ? 2: scaleWidth;
+       scaleHeight = (scaleHeight > 2) ? 2 : scaleHeight;
+
        myMatrix = new Matrix();
-
        myMatrix.postScale(scaleWidth,scaleHeight);
-       myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
-
-       btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565); 
        
+       if (scaleWidth > 1)
+          myPaint = null;
+       else  
+          myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
+       
+       btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565);
        setEnabled(true);
-       thread = new Thread(this);
-       firstrun = false;
-       thread.start();
     }
   
 
     private void update(ByteBuffer framebuffer)
     {
-        synchronized(btm)
-        {
+        
+        SurfaceHolder holder = getHolder();
+        Canvas c = holder.lockCanvas(); 
+        if (c == null) 
+            return;
+        try{
             btm.copyPixelsFromBuffer(framebuffer);
-        }
+        }catch(Exception e){}     
+        c.drawBitmap(btm,myMatrix,myPaint);  
+                
+       holder.unlockCanvasAndPost(c);     
+ 
     }
-    
+   
     private void update(ByteBuffer framebuffer, Rect dirty)
-    {  
-        synchronized(btm)
-        {
-            try{
-            btm.copyPixelsFromBuffer(framebuffer);
-            }catch(Exception e){}
-        }
-    }
+    {     
+        this.update(framebuffer);
+    }    
 
     public boolean onTouchEvent(MotionEvent me)
     {
         
-
         int x = (int) me.getX();
         int y = (int) me.getY();
      
         x = (int)( x / scaleWidth);
         y = (int)( y / scaleHeight);
-        
-        
+       
+
         switch (me.getAction())
         {
         case MotionEvent.ACTION_CANCEL:
@@ -136,7 +135,7 @@ public class RockboxFramebuffer extends SurfaceView
             touchHandler(true, x, y);
             return true;
         }
-
+        
         return false;
     }
 
@@ -174,39 +173,12 @@ public class RockboxFramebuffer extends SurfaceView
        
     }
 
-/*      
- *  use a sepreate thread to handle the drawing - constant interval(15ms) 
- *  so no need to draw canvas as much as the old method.  
- *  
- */
-    public void run()
-    {
-        while(firstrun == false)
-        {
-            try{
-                Thread.sleep(15);
-            }catch (Exception e){}
-            
-            SurfaceHolder holder = getHolder();                            
-            Canvas c = holder.lockCanvas();
-            if (c==null) 
-                continue;
-
-            synchronized (holder)
-            {    
-            /* draw */          
-                synchronized(btm)
-                {
-                    c.drawBitmap(btm,myMatrix,myPaint); 
-                }             
-            }
-            holder.unlockCanvasAndPost(c);
-        }
-        return;
-    }
-
+    
     public void stopUpdate()
     {
-         firstrun = true; 
+         
     }
+
+
+
 }
