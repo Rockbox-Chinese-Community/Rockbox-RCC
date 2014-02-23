@@ -79,12 +79,16 @@
 /* define this if you have an i.MX23 codec */
 #define HAVE_IMX233_CODEC
 
+/* Define this if you have a speaker */
+#define HAVE_SPEAKER
+
 #define CONFIG_TUNER STFM1000
 
 /* There is no hardware tone control */
 #define HAVE_SW_TONE_CONTROLS
 
 #define CONFIG_KEYPAD CREATIVE_ZENXFI2_PAD
+#define HAVE_HEADPHONE_DETECTION
 #define HAVE_TOUCHSCREEN
 #define HAVE_BUTTON_DATA
 

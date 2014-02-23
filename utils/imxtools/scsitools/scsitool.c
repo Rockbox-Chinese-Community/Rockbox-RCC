@@ -137,7 +137,7 @@ int do_scsi(uint8_t *cdb, int cdb_size, unsigned flags, void *sense, int *sense_
         set_scsi_pt_data_in(obj, buffer, *buf_size);
     if(flags & DO_WRITE)
         set_scsi_pt_data_out(obj, buffer, *buf_size);
-    int ret = do_scsi_pt(obj, g_dev_fd, 1, 0);
+    int ret = do_scsi_pt(obj, g_dev_fd, 10, 0);
     switch(get_scsi_pt_result_category(obj))
     {
         case SCSI_PT_RESULT_SENSE:
@@ -555,7 +555,7 @@ static int do_info(void)
         if(!ret && len == 4)
         {
             u.u32 = fix_endian32be(u.u32);
-            cprintf_field("    Info 0: ", "%lu", (unsigned long)u.u32);
+            cprintf_field("    Info 0: ", "%lu\n", (unsigned long)u.u32);
         }
 
         len = 4;
@@ -563,7 +563,7 @@ static int do_info(void)
         if(!ret && len == 4)
         {
             u.u32 = fix_endian32be(u.u32);
-            cprintf_field("    Info 1: ", "%lu", (unsigned long)u.u32);
+            cprintf_field("    Info 1: ", "%lu\n", (unsigned long)u.u32);
         }
 
         len = 2;
@@ -575,6 +575,7 @@ static int do_info(void)
             ret = stmp_get_serial_number(1, u.buf, &len);
             cprintf_field("    Serial Number:", " ");
             print_hex(u.buf, len);
+            cprintf(OFF, "\n");
         }
 
         len = 2;
@@ -1067,9 +1068,18 @@ void do_write(const char *file, int want_a_brick)
         goto Lend;
     }
 
+    int percent = -1;
     for(int off = 0; off < fw_size; off += sector_size)
     {
         int sec = off / sector_size;
+        int this_percent = (sec * 100) / (fw_size / sector_size);
+        if(this_percent != percent && (this_percent % 5) == 0)
+        {
+            cprintf(RED, "%d%%", this_percent);
+            cprintf(YELLOW, "...");
+            fflush(stdout);
+        }
+        percent = this_percent;
         int xfer_len = MIN(fw_size - off, (int)sector_size);
         if(fread(sector, xfer_len, 1, f) != 1)
         {

@@ -41,7 +41,7 @@
 #include "string.h"
 #include "stdio.h"
 #include "button.h"
-#include "button-lradc-imx233.h"
+#include "button-imx233.h"
 
 #define ACT_NONE    0
 #define ACT_CANCEL  1
@@ -484,50 +484,9 @@ bool dbg_hw_info_dcp(void)
 }
 #endif
 
-/** Nested IRQ check code */
-void INT_SOFTWARE(unsigned nr)
-{
-    imx233_icoll_force_irq(INT_SRC_SOFTWARE(nr), false);
-    HW_DIGCTL_SCRATCH0 = nr;
-    if(nr < 3)
-    {
-        imx233_icoll_force_irq(INT_SRC_SOFTWARE(nr + 1), true);
-        udelay(10);
-        if(HW_DIGCTL_SCRATCH0 == nr)
-            panicf("Nestes IRQ bug (%d)", nr);
-    }
-}
-
-void INT_SOFTWARE0(void) { INT_SOFTWARE(0); }
-void INT_SOFTWARE1(void) { INT_SOFTWARE(1); }
-void INT_SOFTWARE2(void) { INT_SOFTWARE(2); }
-void INT_SOFTWARE3(void) { INT_SOFTWARE(3); }
-
-static void check_nested_irq(void)
-{
-    /* Test protocol: setup SOFTWAREn IRQ as level n and apply:
-     * - enable SOFTWARE0 and soft IRQ'it
-     * - in SOFTWAREn, enable SOFTWARE(n+1) and soft IRQ'it, check it ran
-     */
-    for(int i = 0; i < 4; i++)
-    {
-        imx233_icoll_enable_interrupt(INT_SRC_SOFTWARE(i), true);
-        imx233_icoll_set_priority(INT_SRC_SOFTWARE(i), i);
-    }
-    HW_DIGCTL_SCRATCH0 = 0;
-    imx233_icoll_force_irq(INT_SRC_SOFTWARE(0), true);
-    udelay(100);
-    if(HW_DIGCTL_SCRATCH0 != 3)
-        panicf("Nested IRQ broken (%lu)", HW_DIGCTL_SCRATCH0);
-    for(int i = 0; i < 4; i++)
-        imx233_icoll_enable_interrupt(INT_SRC_SOFTWARE(i), false);
-}
-
 bool dbg_hw_info_icoll(void)
 {
     lcd_setfont(FONT_SYSFIXED);
-
-    check_nested_irq();
 
     int first_irq = 0;
     int dbg_irqs_count = sizeof(dbg_irqs) / sizeof(dbg_irqs[0]);
@@ -563,7 +522,7 @@ bool dbg_hw_info_icoll(void)
             static char prio[4] = {'-', '+', '^', '!'};
             lcd_putsf(0, j, "%c%s", prio[info.priority & 3], dbg_irqs[i].name);
             if(info.enabled || info.freq > 0)
-                lcd_putsf(10, j, "%d", info.freq);
+                lcd_putsf(11, j, "%d", info.freq);
         }
         lcd_update();
         yield();
@@ -1000,7 +959,7 @@ bool dbg_hw_info_timrot(void)
 bool dbg_hw_info_button(void)
 {
     lcd_setfont(FONT_SYSFIXED);
-#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+#if IMX233_SUBTARGET >= 3700
     int orig_vddio_val, orig_vddio_brownout;
     imx233_power_get_regulator(REGULATOR_VDDIO, &orig_vddio_val, &orig_vddio_brownout);
     int vddio_val = orig_vddio_val;
@@ -1012,7 +971,7 @@ bool dbg_hw_info_button(void)
         int btn = my_get_action(0);
         switch(btn)
         {
-#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+#if IMX233_SUBTARGET >= 3700
             case ACT_PREV:
                 vddio_val -= 100; /* mV */
                 vddio_brownout -= 100; /* mV */
@@ -1025,13 +984,13 @@ bool dbg_hw_info_button(void)
                 break;
 #endif
             case ACT_OK:
-#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+#if IMX233_SUBTARGET >= 3700
                 imx233_power_set_regulator(REGULATOR_VDDIO, orig_vddio_val, orig_vddio_brownout);
 #endif
                 lcd_setfont(FONT_UI);
                 return true;
             case ACT_CANCEL:
-#if IMX233_SUBTARGET >= 3700 && defined(IMX233_BUTTON_LRADC_VDDIO)
+#if IMX233_SUBTARGET >= 3700
                 imx233_power_set_regulator(REGULATOR_VDDIO, orig_vddio_val, orig_vddio_brownout);
 #endif
                 lcd_setfont(FONT_UI);
@@ -1048,12 +1007,6 @@ bool dbg_hw_info_button(void)
         btn = button_read_device();
 #endif
         lcd_putsf(0, line++, "raw buttons: %x", btn);
-#ifdef IMX233_BUTTON_LRADC_CHANNEL
-        lcd_putsf(0, line++, "raw lradc: %d", imx233_button_lradc_read_raw());
-#ifdef IMX233_BUTTON_LRADC_VDDIO
-        lcd_putsf(0, line++, "vddio: %d", imx233_button_lradc_read_vddio());
-#endif
-#endif
 #ifdef HAS_BUTTON_HOLD
         lcd_putsf(0, line++, "hold: %d", button_hold());
 #endif
@@ -1067,6 +1020,45 @@ bool dbg_hw_info_button(void)
         lcd_putsf(0, line++, "data: %d", data);
 #endif
 #endif
+
+#define MAP imx233_button_map
+        for(int i = 0; MAP[i].btn != IMX233_BUTTON_END; i++)
+        {
+            bool val = imx233_button_read_btn(i);
+            int raw = imx233_button_read_raw(i);
+            char path[128];
+            char flags[128];
+            if(MAP[i].periph == IMX233_BUTTON_GPIO)
+                snprintf(path, sizeof(path), "gpio(%d,%d)", MAP[i].u.gpio.bank, MAP[i].u.gpio.pin);
+            else if(MAP[i].periph == IMX233_BUTTON_LRADC)
+            {
+                if(MAP[i].u.lradc.relative == -1)
+                    snprintf(path, sizeof(path), "lradc(%d,%d)", MAP[i].u.lradc.src,
+                        MAP[i].u.lradc.value);
+                else
+                    snprintf(path, sizeof(path), "lradc(%d,%d,%s)", MAP[i].u.lradc.src,
+                        MAP[i].u.lradc.value, MAP[MAP[i].u.lradc.relative].name);
+            }
+            else if(MAP[i].periph == IMX233_BUTTON_PSWITCH)
+                snprintf(path, sizeof(path), "pswitch(%d)", MAP[i].u.pswitch.level);
+            else
+                snprintf(path, sizeof(path), "unknown");
+            flags[0] = 0;
+            if(MAP[i].flags & IMX233_BUTTON_INVERTED)
+                strcat(flags, " inv");
+            if(MAP[i].flags & IMX233_BUTTON_PULLUP)
+                strcat(flags, " pull");
+#if LCD_WIDTH < 240
+            lcd_putsf(0, line++, "%s: %d[%d/%d] (raw=%d)", MAP[i].name, val,
+                MAP[i].rounds, MAP[i].threshold, raw);
+            lcd_putsf(0, line++, "    %s%s", path, flags);
+#else
+            lcd_putsf(0, line++, "%s: %d[%d/%d] (raw=%d) %s%s", MAP[i].name, val,
+                MAP[i].rounds, MAP[i].threshold, raw, path, flags);
+#endif
+        }
+#undef MAP
+
         lcd_update();
         yield();
     }

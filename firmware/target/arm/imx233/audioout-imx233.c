@@ -28,6 +28,7 @@
 #include "rtc-imx233.h"
 #include "pcm_sampr.h"
 #include "audio-target.h"
+#include "power-imx233.h"
 
 #ifndef IMX233_AUDIO_COUPLING_MODE
 #error You must define IMX233_AUDIO_COUPLING_MODE
@@ -259,6 +260,61 @@ void imx233_audioout_set_3d_effect(int val)
         /* others: off */
         default: BF_WR(AUDIOOUT_CTRL, SS3D_EFFECT, 0); break;
     }
+}
+
+void imx233_audioout_enable_spkr(bool en)
+{
+    /* avoid power sequence if not needed */
+    static bool spkr_en = false;
+    if(en == spkr_en)
+        return;
+    spkr_en = true;
+#if IMX233_SUBTARGET >= 3780
+    if(en)
+    {
+        BF_CLR(AUDIOOUT_PWRDN, SPEAKER);
+        BF_CLR(AUDIOOUT_SPEAKERCTRL, MUTE);
+    }
+    else
+    {
+        BF_SET(AUDIOOUT_SPEAKERCTRL, MUTE);
+        BF_SET(AUDIOOUT_PWRDN, SPEAKER);
+    }
+#elif IMX233_SUBTARGET >= 3700
+    /* assume speaker is wired to lineout */
+    if(en)
+    {
+        /** 1) make sure charge capacitors are discharged */
+        BF_WR(AUDIOOUT_LINEOUTCTRL, CHARGE_CAP, 2);
+        /** 2) set min gain, nominal vag levels and zerocross desires */
+        /* volume is decreasing with the value in the register */
+        BF_SET(AUDIOOUT_LINEOUTCTRL, VOLUME_LEFT);
+        BF_SET(AUDIOOUT_LINEOUTCTRL, VOLUME_RIGHT);
+        BF_SET(AUDIOOUT_LINEOUTCTRL, EN_LINEOUT_ZCD);
+        /* vag should be set to VDDIO/2, 0 is 1.725V, 15 is 1.350V, 25mV steps */
+        int vddio;
+        imx233_power_get_regulator(REGULATOR_VDDIO, &vddio, NULL);
+        BF_WR(AUDIOOUT_LINEOUTCTRL, VAG_CTRL, 15 - (vddio / 2 - 1350) / 25);
+        /** 3) Power up lineout */
+        BF_CLR(AUDIOOUT_PWRDN, LINEOUT);
+        /** 4) Ramp the vag */
+        BF_WR(AUDIOOUT_LINEOUTCTRL, CHARGE_CAP, 1);
+        /** 5) Unmute */
+        BF_CLR(AUDIOOUT_LINEOUTCTRL, MUTE);
+        /** 6) Ramp volume */
+        BF_WR(AUDIOOUT_LINEOUTCTRL, VOLUME_LEFT, 0);
+        BF_WR(AUDIOOUT_LINEOUTCTRL, VOLUME_RIGHT, 0);
+    }
+    else
+    {
+        /** Reverse procedure */
+        BF_SET(AUDIOOUT_LINEOUTCTRL, MUTE);
+        BF_WR(AUDIOOUT_LINEOUTCTRL, CHARGE_CAP, 2);
+        BF_SET(AUDIOOUT_PWRDN, LINEOUT);
+    }
+#else
+    (void) en;
+#endif
 }
 
 struct imx233_audioout_info_t imx233_audioout_get_info(void)

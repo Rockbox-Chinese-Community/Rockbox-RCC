@@ -39,7 +39,7 @@ SECTIONS
     {
         _dramcopystart = .;
     } > DRAM
-        
+
     .text :
     {
         *(.text*)
@@ -47,19 +47,7 @@ SECTIONS
         *(.rodata*)
     } > DRAM
 
-    .dramcopyend (NOLOAD) :
-    {
-        _dramcopyend = .;
-    } > DRAM
-
-    .init ENDAUDIOADDR :
-    {
-        _initstart = .;
-        *(.init*)
-        _initend = .;
-    } AT> DRAM
-
-    _initcopy = LOADADDR(.init);
+    _dramtextend = .;
 
     .itext :
     {
@@ -82,16 +70,32 @@ SECTIONS
         _iend = .;
     } > IRAM
 
-    .stack _dramcopyend (NOLOAD) :
+    .init ENDAUDIOADDR :
+    {
+        _initstart = .;
+        *(.init*)
+        _initend = .;
+    } AT> DRAM
+
+    _initcopy = LOADADDR(.init);
+
+    /* crt0 needs a temporary stack which does not overlap with init and itext
+     * and is in physical memory: put it *after* init and itext. A small one suffices */
+    crt0_tmpstack_phys = _dramcopyend + 0x200 - CACHED_DRAM_ADDR + UNCACHED_DRAM_ADDR;
+
+    .dramcopyend (NOLOAD) :
+    {
+        _dramcopyend = .;
+    } > DRAM
+
+    /* the stack overlaps the init and itext region, to reclaim space */
+    .stack _dramtextend (NOLOAD) :
     {
         *(.stack)
         stackbegin = .;
         . += 0x2000;
         stackend = .;
     } > DRAM
-
-    /* physical address of the stack */
-    stackend_phys = stackend - CACHED_DRAM_ADDR + UNCACHED_DRAM_ADDR;
 
     /* treat .bss and .ncbss as a single section */
     .bss (NOLOAD) :
