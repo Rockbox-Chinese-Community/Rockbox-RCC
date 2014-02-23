@@ -702,7 +702,7 @@ androidcc () {
     case $ANDROID_ARCH in
         armeabi)
             endian="little"
-            gccchoice="4.8"
+            gccchoice="4.6"
             gcctarget="arm-linux-androideabi-"
             # sigaltstack is not available in pre-android-9, however asm
             # threads work fine so far
