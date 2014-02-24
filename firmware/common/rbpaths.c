@@ -23,6 +23,9 @@
 #include <stdio.h> /* snprintf */
 #include <stdlib.h>
 #include <stdarg.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
 #include "config.h"
 #include "rbpaths.h"
 #include "file.h" /* MAX_PATH */
@@ -31,39 +34,38 @@
 #include "string-extra.h"
 #include "filefuncs.h"
 
+/* In this file we need the actual OS library functions, not the shadowed
+ * wrapper used within Rockbox' application code (except SDL adds
+ * another layer) */
 #undef open
 #undef creat
 #undef remove
 #undef rename
 #undef opendir
+#undef closedir
+#undef readdir
 #undef mkdir
 #undef rmdir
+#undef dirent
+#undef DIR
+#undef readlink
 
-
-#if (CONFIG_PLATFORM & PLATFORM_ANDROID) || defined(SAMSUNG_YPR0) || defined(SAMSUNG_YPR1) && !defined(__PCTOOL__)
-#include "dir-target.h"
-#define opendir _opendir
-#define mkdir   _mkdir
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)
 static const char rbhome[] = "/sdcard";
 #endif
-#elif (CONFIG_PLATFORM & (PLATFORM_SDL|PLATFORM_MAEMO|PLATFORM_PANDORA)) && !defined(__PCTOOL__)
-#define open    sim_open
-#define remove  sim_remove
-#define rename  sim_rename
-#define opendir sim_opendir
-#define mkdir   sim_mkdir
-#define rmdir   sim_rmdir
-extern int sim_open(const char* name, int o, ...);
-extern int sim_remove(const char* name);
-extern int sim_rename(const char* old, const char* new);
-extern DIR* sim_opendir(const char* name);
-extern int sim_mkdir(const char* name);
-extern int sim_rmdir(const char* name);
+#if (CONFIG_PLATFORM & (PLATFORM_SDL|PLATFORM_MAEMO|PLATFORM_PANDORA)) && !defined(__PCTOOL__)
 const char *rbhome;
 #endif
 
 #if !(defined(SAMSUNG_YPR0) || defined(SAMSUNG_YPR1)) && !defined(__PCTOOL__)
+/* Special dirs are user-accessible (and user-writable) dirs which take priority
+ * over the ones where Rockbox is installed to. Classic example would be
+ * $HOME/.config/rockbox.org vs /usr/share/rockbox */
+#define HAVE_SPECIAL_DIRS
+#define IS_HOME(p) (!strcmp(p, rbhome))
+#else
+#define IS_HOME(p) (!strcmp(p, HOME_DIR))
+#endif
 
 /* flags for get_user_file_path() */
 /* whether you need write access to that file/dir, especially true
@@ -72,12 +74,42 @@ const char *rbhome;
 /* file or directory? */
 #define IS_FILE             (1<<1)
 
+#ifdef HAVE_MULTIDRIVE
+/* A special link is created under e.g. HOME_DIR/<microSD1>, e.g. to access
+ * external storage in a convinient location, much similar to the mount
+ * point on our native targets. Here they are treated as symlink (one which
+ * doesn't actually exist in the filesystem and therefore we have to override
+ * readlink() */
+static const char *handle_special_links(const char* link, unsigned flags,
+                                char *buf, const size_t bufsize)
+{
+    (void) flags;
+    char vol_string[VOL_ENUM_POS + 8];
+    int len = sprintf(vol_string, VOL_NAMES, 1);
+
+    /* link might be passed with or without HOME_DIR expanded. To handle
+     * both perform substring matching (VOL_NAMES is unique enough) */
+    const char *begin = strstr(link, vol_string);
+    if (begin)
+    {
+        /* begin now points to the start of vol_string within link,
+         * we want to copy the remainder of the paths, prefixed by
+         * the actual mount point (the remainder might be "") */
+        snprintf(buf, bufsize, MULTIDRIVE_DIR"%s", begin + len);
+        return buf;
+    }
+
+    return link;
+}
+#endif
+
+#ifdef HAVE_SPECIAL_DIRS
 void paths_init(void)
 {
     /* make sure $HOME/.config/rockbox.org exists, it's needed for config.cfg */
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID)
-    mkdir("/sdcard/rockbox");
-    mkdir("/sdcard/rockbox/rocks.data");
+    mkdir("/sdcard/rockbox", 0777);
+    mkdir("/sdcard/rockbox/rocks.data", 0777);
 #else
     char config_dir[MAX_PATH];
 
@@ -94,13 +126,14 @@ void paths_init(void)
 
     rbhome = home;
     snprintf(config_dir, sizeof(config_dir), "%s/.config", home);
-    mkdir(config_dir);
+    mkdir(config_dir, 0777);
     snprintf(config_dir, sizeof(config_dir), "%s/.config/rockbox.org", home);
-    mkdir(config_dir);
+    mkdir(config_dir, 0777);
     /* Plugin data directory */
     snprintf(config_dir, sizeof(config_dir), "%s/.config/rockbox.org/rocks.data", home);
-    mkdir(config_dir);
+    mkdir(config_dir, 0777);
 #endif
+
 }
 
 static bool try_path(const char* filename, unsigned flags)
@@ -156,20 +189,28 @@ static const char* _get_user_file_path(const char *path,
     return ret;
 }
 
+#elif !defined(paths_init)
+void paths_init(void) { }
+#endif
 
 static const char* handle_special_dirs(const char* dir, unsigned flags,
                                 char *buf, const size_t bufsize)
 {
+    (void) flags; (void) buf; (void) bufsize;
+#ifdef HAVE_SPECIAL_DIRS
     if (!strncmp(HOME_DIR, dir, HOME_DIR_LEN))
     {
         const char *p = dir + HOME_DIR_LEN;
         while (*p == '/') p++;
         snprintf(buf, bufsize, "%s/%s", rbhome, p);
-        return buf;
+        dir = buf;
     }
     else if (!strncmp(ROCKBOX_DIR, dir, ROCKBOX_DIR_LEN))
-        return _get_user_file_path(dir, flags, buf, bufsize);
-
+        dir = _get_user_file_path(dir, flags, buf, bufsize);
+#endif
+#ifdef HAVE_MULTIDRIVE
+    dir = handle_special_links(dir, flags, buf, bufsize);
+#endif
     return dir;
 }
 
@@ -215,19 +256,120 @@ int app_rename(const char *old, const char *new)
     return rename(final_old, final_new);
 }
 
-DIR *app_opendir(const char *name)
+/* need to wrap around DIR* because we need to save the parent's
+ * directory path in order to determine dirinfo, required to implement
+ * get_dir_info() */
+struct __dir {
+    DIR *dir;
+    IF_MD(int volumes_returned);
+    char path[];
+};
+
+struct dirinfo dir_get_info(DIR* _parent, struct dirent *dir)
+{
+    struct __dir *parent = (struct __dir*)_parent;
+    struct stat s;
+    struct tm *tm = NULL;
+    struct dirinfo ret;
+    char path[MAX_PATH];
+
+    memset(&ret, 0, sizeof(ret));
+
+#ifdef HAVE_MULTIDRIVE
+    char vol_string[VOL_ENUM_POS + 8];
+    sprintf(vol_string, VOL_NAMES, 1);
+    if (!strcmp(vol_string, dir->d_name))
+    {
+        ret.attribute = ATTR_LINK;
+        strcpy(path, MULTIDRIVE_DIR);
+    }
+    else
+#endif
+        snprintf(path, sizeof(path), "%s/%s", parent->path, dir->d_name);
+
+    if (!stat(path, &s))
+    {
+        if (S_ISDIR(s.st_mode))
+            ret.attribute |= ATTR_DIRECTORY;
+
+        ret.size = s.st_size;
+        tm = localtime(&(s.st_mtime));
+    }
+
+    if (!lstat(path, &s) && S_ISLNK(s.st_mode))
+        ret.attribute |= ATTR_LINK;
+
+    if (tm)
+    {
+        ret.wrtdate = ((tm->tm_year - 80) << 9) |
+                            ((tm->tm_mon + 1) << 5) |
+                            tm->tm_mday;
+        ret.wrttime = (tm->tm_hour << 11) |
+                            (tm->tm_min << 5) |
+                            (tm->tm_sec >> 1);
+    }
+
+    return ret;
+}
+   
+DIR* app_opendir(const char *_name)
 {
     char realpath[MAX_PATH];
-    const char *fname = handle_special_dirs(name, 0, realpath, sizeof(realpath));
-    return opendir(fname);
+    const char *name = handle_special_dirs(_name, 0, realpath, sizeof(realpath));
+    char *buf = malloc(sizeof(struct __dir) + strlen(name)+1);
+    if (!buf)
+        return NULL;
+
+    struct __dir *this = (struct __dir*)buf;
+    /* definitely fits due to strlen() */
+    strcpy(this->path, name);
+
+    this->dir = opendir(name);
+
+    if (!this->dir)
+    {
+        free(buf);
+        return NULL;
+    }
+    IF_MD(this->volumes_returned = 0);
+    return (DIR*)this;
 }
+
+int app_closedir(DIR *dir)
+{
+    struct __dir *this = (struct __dir*)dir;
+    int ret = closedir(this->dir);
+    free(this);
+    return ret;
+}
+
+
+struct dirent* app_readdir(DIR* dir)
+{
+    struct __dir *d = (struct __dir*)dir;
+#ifdef HAVE_MULTIDRIVE
+    /* this is not MT-safe but OK according to man readdir */
+    static struct dirent voldir;
+    if (d->volumes_returned < (NUM_VOLUMES-1)
+            && volume_present(d->volumes_returned+1)
+            && IS_HOME(d->path))
+    {
+        d->volumes_returned += 1;
+        sprintf(voldir.d_name, VOL_NAMES, d->volumes_returned);
+        return &voldir;
+    }
+#endif
+    return readdir(d->dir);
+}
+
 
 int app_mkdir(const char* name)
 {
     char realpath[MAX_PATH];
     const char *fname = handle_special_dirs(name, NEED_WRITE, realpath, sizeof(realpath));
-    return mkdir(fname);
+    return mkdir(fname, 0777);
 }
+
 
 int app_rmdir(const char* name)
 {
@@ -236,27 +378,25 @@ int app_rmdir(const char* name)
     return rmdir(fname);
 }
 
-#else
 
-int app_open(const char *name, int o, ...)
+/* On MD we create a virtual symlink for the external drive,
+ * for this we need to override readlink(). */
+ssize_t app_readlink(const char *path, char *buf, size_t bufsiz)
 {
-    if (o & O_CREAT)
+    char _buf[MAX_PATH];
+    (void) path; (void) buf; (void) bufsiz;
+    path = handle_special_dirs(path, 0, _buf, sizeof(_buf));
+#ifdef HAVE_MULTIDRIVE
+    /* if path == _buf then we can be sure handle_special_dir() did something
+     * and path is not an ordinary directory */
+    if (path == _buf && !strncmp(path, MULTIDRIVE_DIR, sizeof(MULTIDRIVE_DIR)-1))
     {
-        int ret;
-        va_list ap;
-        va_start(ap, o);
-        ret = open(name, o, va_arg(ap, mode_t));
-        va_end(ap);
-        return ret;
+        /* copying NUL is not required as per readlink specification */
+        ssize_t len = strlen(path);
+        memcpy(buf, path, len);
+        return len;
     }
-    return open(name, o);
-}
-
-int app_creat(const char* name, mode_t mode) { return creat(name, mode); }
-int app_remove(const char *name) { return remove(name); }
-int app_rename(const char *old, const char *new) { return rename(old,new); }
-DIR *app_opendir(const char *name) { return (DIR*)opendir(name); } /* cast to remove warning in checkwps */
-int app_mkdir(const char* name) { return mkdir(name); }
-int app_rmdir(const char* name) { return rmdir(name); }
-
 #endif
+    /* does not append NUL !! */
+    return readlink(path, buf, bufsiz);
+}
