@@ -32,6 +32,7 @@
 #define STORAGE_SD      0x04
 #define STORAGE_NAND    0x08
 #define STORAGE_RAMDISK 0x10
+#define STORAGE_HOSTFS  0x20 /* meant for APPLICATION targets (implicit for SIMULATOR) */
 
 /* CONFIG_TUNER (note these are combineable bit-flags) */
 #define S1A0903X01 0x01 /* Samsung */
@@ -574,7 +575,6 @@ Lyre prototype 1 */
 
 #ifdef APPLICATION
 #define CONFIG_CPU 0
-#define CONFIG_STORAGE 0
 #endif
 
 /* keep this include after the target configs */
@@ -1109,8 +1109,10 @@ Lyre prototype 1 */
 #define INCLUDE_TIMEOUT_API
 #endif /* HAVE_GUI_BOOST && HAVE_ADJUSTABLE_CPU_FREQ */
 
+#ifndef SIMULATOR
 #if defined(HAVE_USBSTACK) || (CONFIG_STORAGE & STORAGE_NAND)
 #define STORAGE_GET_INFO
+#endif
 #endif
 
 #ifdef CPU_MIPS
@@ -1193,8 +1195,7 @@ Lyre prototype 1 */
 #endif
 
 /* enable logging messages to disk*/
-#if CONFIG_PLATFORM == PLATFORM_NATIVE  && !defined(SIMULATOR) && !defined(BOOTLOADER) \
-    && !defined(__PCTOOL__) && (CONFIG_CODEC == SWCODEC)
+#if !defined(BOOTLOADER) && !defined(__PCTOOL__) && (CONFIG_CODEC == SWCODEC)
 #define ROCKBOX_HAS_LOGDISKF
 #endif
 

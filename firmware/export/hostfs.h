@@ -5,9 +5,8 @@
  *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
  *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
  *                     \/            \/     \/    \/            \/
- * $Id$
  *
- * Copyright (C) 2010 by Thomas Martitz
+ * Copyright © 2013 by Thomas Martitz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,28 +18,27 @@
  *
  ****************************************************************************/
 
-#ifndef __DIR_TARGET_H__
-#define __DIR_TARGET_H__
+/* hosted storage driver
+ *
+ * Small functions to support storage_* api on hosted targets
+ * where we don't use raw access to storage devices but run on OS-mounted
+ * file systems */
 
-#include <dirent.h>
+#ifndef HOSTFS_H
+#define HOSTFS_H
 
-#define dirent_uncached dirent
-#define DIR_UNCACHED DIR
-#define opendir_uncached _opendir
-#define readdir_uncached _readdir
-#define closedir_uncached _closedir
-#define mkdir_uncached _mkdir
-#define rmdir_uncached rmdir
+#include <stdbool.h>
+#ifdef __unix__
+#include <unistd.h>
+#endif
+#include "config.h"
 
-extern DIR* _opendir(const char* name);
-extern int  _mkdir(const char* name);
-extern int  rmdir(const char* name);
-extern int  _closedir(DIR* dir);
-extern struct dirent *_readdir(DIR* dir);
-extern void fat_size(unsigned long *size, unsigned long *free);
+extern void hostfs_init(void);
+extern int  hostfs_flush(void);
 
-#define DIRFUNCTIONS_DEFINED
-#define DIRENT_DEFINED
-#define DIR_DEFINED
+#ifdef HAVE_HOTSWAP
+extern bool hostfs_removable(int drive);
+extern bool hostfs_present(int drive);
+#endif
 
-#endif /* __DIR_TARGET_H__ */
+#endif /* HOSTFS_H */
