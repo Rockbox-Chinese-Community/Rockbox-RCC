@@ -110,8 +110,25 @@ public class RockboxFramebuffer extends SurfaceView
     }
    
     private void update(ByteBuffer framebuffer, Rect dirty)
-    {     
-        this.update(framebuffer);
+    {    
+        if (scaleWidth > 1)  //scaled up
+            this.update(framebuffer);
+        else
+        {
+            SurfaceHolder holder = getHolder();        
+            Rect scaledDirty = new Rect();
+            scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
+                            (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
+         
+            Canvas c = holder.lockCanvas(scaledDirty);
+            if (c == null) 
+                return;
+            try{
+                btm.copyPixelsFromBuffer(framebuffer);
+            }catch(Exception e){}     
+            c.drawBitmap(btm,myMatrix,myPaint);      
+            holder.unlockCanvasAndPost(c);       
+        }    
     }    
 
     public boolean onTouchEvent(MotionEvent me)
