@@ -106,9 +106,11 @@ static bool draw_title(struct screen *display, struct gui_synclist *list)
     line.height = list->line_height[screen];
     title_text_vp->height = line.height;
 
-#ifdef HAVE_TOUCHSCREEN
-    if (global_settings.list_separator_enabled)
-        line.separator_height = lcd_get_dpi() > 200 ? 3 : 2;;
+#if LCD_DEPTH > 1
+    /* XXX: Do we want to support the separator on remote displays? */
+    if (display->screen_type == SCREEN_MAIN && global_settings.list_separator_height != 0)
+        line.separator_height = abs(global_settings.list_separator_height)
+                                + (lcd_get_dpi() > 200 ? 2 : 1);
 #endif
 
 #ifdef HAVE_LCD_COLOR
@@ -159,11 +161,11 @@ void list_draw(struct screen *display, struct gui_synclist *list)
 
     linedes.height = list->line_height[screen];
     linedes.nlines = list->selected_size;
-#ifdef HAVE_TOUCHSCREEN
-    if (global_settings.list_separator_enabled)
-        linedes.separator_height = 1;
+#if LCD_DEPTH > 1
+    /* XXX: Do we want to support the separator on remote displays? */
+    if (display->screen_type == SCREEN_MAIN)
+        linedes.separator_height = abs(global_settings.list_separator_height);
 #endif
-
     start = list_start_item;
     end = start + nb_lines;
 

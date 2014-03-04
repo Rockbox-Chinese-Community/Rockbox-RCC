@@ -13102,13 +13102,13 @@
   desc: line between lines in lists
   user: core
   <source>
-    *: "Color of Line Separator"
+    *: "Line Separator Colour"
   </source>
   <dest>
-    *: "Color of Line Separator"
+    *: "Line Separator Colour"
   </dest>
   <voice>
-    *: "Color of Line Separator"
+    *: "Line Separator Colour"
   </voice>
 </phrase>
 <phrase>

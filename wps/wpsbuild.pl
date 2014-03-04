@@ -294,7 +294,7 @@ MOO
         push @out, "line selector end color: $lineselectend\n"        if($lineselectend);;
         push @out, "line selector text color: $lineselecttextcolor\n" if($lineselecttextcolor);
         # list separator actually depends on HAVE_TOUCSCREEN
-        push @out, "list separator: $sep\n"                           if($sep);
+        push @out, "list separator height: $sep\n"                    if($sep);
         push @out, "list separator color: $sepcolor\n"                if($sepcolor);
     }
 
@@ -333,20 +333,46 @@ $has_remote = 1 if ($remote_height && $remote_width && $remote_depth);
 
 # check if line matches the setting string or if it contains a regex
 # that contains the targets resolution
-sub check_res {
+#
+# the line can be of the from
+# 1) setting: value (handled above)
+# 2) setting.128x96x2: value
+# 3) setting.128x96x2&touchscreen: value
+# The resolution pattern can be a perl-comatible regex
+sub check_res_feature {
     my ($line, $string, $remote) = @_;
-    if ($line =~ /^${string}: *(.*)/i) {
+    if ($line =~ /^$string: *(.*)/i) {
         return $1;
     }
-    elsif($line =~ /^${string}.(.*): *(.*)/i) {
-        # $1 is a resolution regex, $2 the filename incl. resolution
+    elsif($line =~ /^$string\.(.*): *(.*)/i) {
+    # $1 is a resolution/feature regex, $2 the filename incl. resolution
+        my $substr = $1;
         my $fn = $2;
+        my $feature;
         my $size_str = "${main_width}x${main_height}x${main_depth}";
         if ($remote) {
             $size_str = "${remote_width}x${remote_height}x${remote_depth}";
         }
-        if ($size_str =~ /$1$/) {
-            return $fn;
+
+        # extract feature constraint, if any
+        if ($substr =~ /&([a-z0-9_]+)/) {
+            $feature = $1;
+            $substr =~ s/&$feature//;
+        }
+
+        if ($size_str =~ /$substr$/) {
+            if ($feature) {
+                # check feature constrait
+                open(FEAT, "<apps/features");
+                chomp(my @lines = <FEAT>);
+                close(FEAT);
+                my $matches = (grep { /$feature/ } @lines);
+                return $fn if $matches > 0;
+            }
+            else {
+                # no feature constraint
+                return $fn;
+            }
         }
     }
     return "";
@@ -459,22 +485,22 @@ while(<WPS>) {
             if ($l =~ /^ *<\/main>/i) {
                 last;
             }
-            elsif($_ = check_res($l, "wps")) {
+            elsif($_ = check_res_feature($l, "wps")) {
                 $wps = $_;
             }
-            elsif($_ = check_res($l, "sbs")) {
+            elsif($_ = check_res_feature($l, "sbs")) {
                 $sbs = $_;
             }
-            elsif($_ = check_res($l, "fms")) {
+            elsif($_ = check_res_feature($l, "fms")) {
                 $fms = $_;
             }
-            elsif($_ = check_res($l, "Font")) {
+            elsif($_ = check_res_feature($l, "Font")) {
                 $font = $_;
             }
-            elsif($_ = check_res($l, "Statusbar")) {
+            elsif($_ = check_res_feature($l, "Statusbar")) {
                 $statusbar = $_;
             }
-            elsif($_ = check_res($l, "Backdrop")) {
+            elsif($_ = check_res_feature($l, "Backdrop")) {
                 $backdrop = $_;
             }
             elsif($l =~ /^Foreground Color: *(.*)/i) {
@@ -483,11 +509,11 @@ while(<WPS>) {
             elsif($l =~ /^Background Color: *(.*)/i) {
                 $bgcolor = $1;
             }
-            elsif($l =~ /^list separator color: *(.*)/i) {
-                $sepcolor = $1;
+            elsif($_ = check_res_feature($l, "list separator color")) {
+                $sepcolor = $_;
             }
-            elsif($l =~ /^list separator: *(.*)/i) {
-                $sep = $1;
+            elsif($_ = check_res_feature($l, "list separator height")) {
+                $sep = $_;
             }
             elsif($l =~ /^line selector start color: *(.*)/i) {
                 $lineselectstart = $1;
@@ -495,13 +521,13 @@ while(<WPS>) {
             elsif($l =~ /^line selector end color: *(.*)/i) {
                 $lineselectend = $1;
             }
-            elsif($_ = check_res($l, "selector type")) {
+            elsif($_ = check_res_feature($l, "selector type")) {
                 $selecttype = $_;
             }
-            elsif($_ = check_res($l, "iconset")) {
+            elsif($_ = check_res_feature($l, "iconset")) {
                 $iconset = $_;
             }
-            elsif($_ = check_res($l, "viewers iconset")) {
+            elsif($_ = check_res_feature($l, "viewers iconset")) {
                 $viewericon = $_;
             }
             elsif($l =~ /^show icons: *(.*)/i) {
@@ -513,7 +539,7 @@ while(<WPS>) {
             elsif($l =~ /^filetype colours: *(.*)/i) {
                 $filetylecolor = $1;
             }
-            elsif($_ = check_res($l, "ui viewport")) {
+            elsif($_ = check_res_feature($l, "ui viewport")) {
                 $listviewport = $_;
             }
         }
@@ -528,28 +554,28 @@ while(<WPS>) {
             elsif(!$has_remote) {
                 next; # dont parse <remote> section
             }
-            elsif($_ = check_res($l, "rwps", 1)) {
+            elsif($_ = check_res_feature($l, "rwps", 1)) {
                 $rwps = $_;
             }
-            elsif($_ = check_res($l, "rsbs", 1)) {
+            elsif($_ = check_res_feature($l, "rsbs", 1)) {
                 $rsbs = $_;
             }
-            elsif($_ = check_res($l, "rfms", 1)) {
+            elsif($_ = check_res_feature($l, "rfms", 1)) {
                 $rfms = $_;
             }
-            elsif($_ = check_res($l, "Font", 1)) {
+            elsif($_ = check_res_feature($l, "Font", 1)) {
                 $remotefont = $_;
             }
-            elsif($_ = check_res($l, "iconset", 1)) {
+            elsif($_ = check_res_feature($l, "iconset", 1)) {
                 $remoteiconset = $_;
             }
-            elsif($_ = check_res($l, "viewers iconset", 1)) {
+            elsif($_ = check_res_feature($l, "viewers iconset", 1)) {
                 $remoteviewericon = $_;
             }
-            elsif($_ = check_res($l, "statusbar", 1)) {
+            elsif($_ = check_res_feature($l, "statusbar", 1)) {
                 $remotestatusbar = $_;
             }
-            elsif($_ = check_res($l, "ui viewport", 1)) {
+            elsif($_ = check_res_feature($l, "ui viewport", 1)) {
                 $remotelistviewport = $_;
             }
         }

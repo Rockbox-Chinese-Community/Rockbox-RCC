@@ -114,9 +114,6 @@ struct scrollinfo;
 #define STRIDE(screen, w, h) (screen==SCREEN_MAIN?STRIDE_MAIN((w), \
                                         (h)):STRIDE_REMOTE((w),(h)))
 
-#define STYLE_SEPARATOR         0x00100000
-#define STYLE_SEPARATOR_MASK    0x00F00000
-
 #ifdef HAVE_LCD_BITMAP
 #if LCD_DEPTH <=8
 #if (LCD_PIXELFORMAT == VERTICAL_INTERLEAVED) \
@@ -537,20 +534,15 @@ extern void lcd_bmp_part(const struct bitmap* bm, int src_x, int src_y,
 extern void lcd_bmp(const struct bitmap* bm, int x, int y);
 extern void lcd_nine_segment_bmp(const struct bitmap* bm, int x, int y,
                                 int width, int height);
-#endif /* HAVE_LCD_BITMAP */
 
-
-#ifdef HAVE_TOUCHSCREEN
-/* only needed for touchscreen for now, feel free to implement it for others
- * once needed
- */
-
+/* TODO: Impement this for remote displays if ever needed */
 #if defined(LCD_DPI) && (LCD_DPI > 0)
 /* returns the pixel density of the display */
 static inline int lcd_get_dpi(void) { return LCD_DPI; }
 #else
 extern int lcd_get_dpi(void);
 #endif /* LCD_DPI */
-#endif /* HAVE_TOUCHSCREEN */
+
+#endif /* HAVE_LCD_BITMAP */
 
 #endif /* __LCD_H__ */
