@@ -55,8 +55,6 @@ my $font;
 my $remotefont;
 my $fgcolor;
 my $bgcolor;
-my $sepcolor;
-my $sep;
 my $statusbar;
 my $remotestatusbar;
 my $author;
@@ -293,9 +291,6 @@ MOO
         push @out, "line selector start color: $lineselectstart\n"    if($lineselectstart);
         push @out, "line selector end color: $lineselectend\n"        if($lineselectend);;
         push @out, "line selector text color: $lineselecttextcolor\n" if($lineselecttextcolor);
-        # list separator actually depends on HAVE_TOUCSCREEN
-        push @out, "list separator: $sep\n"                           if($sep);
-        push @out, "list separator color: $sepcolor\n"                if($sepcolor);
     }
 
     push @out, "font: $font\n"                  if (defined($font));
@@ -409,8 +404,6 @@ while(<WPS>) {
         undef $remotefont;
         undef $fgcolor;
         undef $bgcolor;
-        undef $sepcolor;
-        undef $sep;
         undef $statusbar;
         undef $remotestatusbar;
         undef $author;
@@ -482,12 +475,6 @@ while(<WPS>) {
             }
             elsif($l =~ /^Background Color: *(.*)/i) {
                 $bgcolor = $1;
-            }
-            elsif($l =~ /^list separator color: *(.*)/i) {
-                $sepcolor = $1;
-            }
-            elsif($l =~ /^list separator: *(.*)/i) {
-                $sep = $1;
             }
             elsif($l =~ /^line selector start color: *(.*)/i) {
                 $lineselectstart = $1;

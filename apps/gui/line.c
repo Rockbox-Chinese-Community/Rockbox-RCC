@@ -301,24 +301,6 @@ static void style_line(struct screen *display,
     int style = line->style;
     int width = display->getwidth();
     int height = line->height == -1 ? display->getcharheight() : line->height;
-    int bar_height = height;
-
-#ifdef HAVE_TOUCHSCREEN
-    /* mask out gradient and colorbar styles for non-color displays */
-    if (display->depth < 16 && (style & (STYLE_COLORBAR|STYLE_GRADIENT)))
-    {
-        style &= ~(STYLE_COLORBAR|STYLE_GRADIENT);
-        style |= STYLE_INVERT;
-    }
-    if (line->separator_height > 0 && (line->line == line->nlines-1))
-    {
-        display->set_drawmode(DRMODE_FG);
-        display->set_foreground(global_settings.list_separator_color);
-        display->fillrect(x, y + height - line->separator_height, width, line->separator_height);
-        bar_height -= line->separator_height;
-        display->set_foreground(global_settings.fg_color);
-    }
-#endif /* HAVE_TOUCHSCREEN */
 
     /* mask out gradient and colorbar styles for non-color displays */
     if (display->depth < 16)
@@ -336,7 +318,7 @@ static void style_line(struct screen *display,
 #ifdef HAVE_LCD_COLOR
         case STYLE_GRADIENT:
             display->set_drawmode(DRMODE_FG);
-            display->gradient_fillrect_part(x, y, width, bar_height,
+            display->gradient_fillrect_part(x, y, width, height,
                                             line->line_color,
                                             line->line_end_color,
                                             height*line->nlines,
@@ -345,16 +327,16 @@ static void style_line(struct screen *display,
         case STYLE_COLORBAR:
             display->set_drawmode(DRMODE_FG);
             display->set_foreground(line->line_color);
-            display->fillrect(x, y, width - x, bar_height);
+            display->fillrect(x, y, width - x, height);
             break;
 #endif
         case STYLE_INVERT:
             display->set_drawmode(DRMODE_FG);
-            display->fillrect(x, y, width - x, bar_height);
+            display->fillrect(x, y, width - x, height);
             break;
         case STYLE_DEFAULT: default:
             display->set_drawmode(DRMODE_BG | DRMODE_INVERSEVID);
-            display->fillrect(x, y, width - x, bar_height);
+            display->fillrect(x, y, width - x, height);
             break;
         case STYLE_NONE:
             break;

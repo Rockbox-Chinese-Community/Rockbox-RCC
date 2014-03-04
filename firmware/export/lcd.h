@@ -114,8 +114,6 @@ struct scrollinfo;
 #define STRIDE(screen, w, h) (screen==SCREEN_MAIN?STRIDE_MAIN((w), \
                                         (h)):STRIDE_REMOTE((w),(h)))
 
-#define STYLE_SEPARATOR         0x00100000
-#define STYLE_SEPARATOR_MASK    0x00F00000
 
 #ifdef HAVE_LCD_BITMAP
 #if LCD_DEPTH <=8

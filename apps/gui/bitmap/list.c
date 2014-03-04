@@ -106,11 +106,6 @@ static bool draw_title(struct screen *display, struct gui_synclist *list)
     line.height = list->line_height[screen];
     title_text_vp->height = line.height;
 
-#ifdef HAVE_TOUCHSCREEN
-    if (global_settings.list_separator_enabled)
-        line.separator_height = lcd_get_dpi() > 200 ? 3 : 2;;
-#endif
-
 #ifdef HAVE_LCD_COLOR
     if (list->title_color >= 0)
         line.style |= (STYLE_COLORED|list->title_color);
@@ -159,10 +154,6 @@ void list_draw(struct screen *display, struct gui_synclist *list)
 
     linedes.height = list->line_height[screen];
     linedes.nlines = list->selected_size;
-#ifdef HAVE_TOUCHSCREEN
-    if (global_settings.list_separator_enabled)
-        linedes.separator_height = 1;
-#endif
 
     start = list_start_item;
     end = start + nb_lines;
