@@ -6,9 +6,11 @@
 #include "dsp_proc_entry.h"
 
 #define DOLBY_SURROUND_MAX 3072
-static int32_t dolbyBuffer[DOLBY_SURROUND_MAX * 2];
+/*STEPSIZE sets the strength of surround effect. */
+/*number between 1 to 4: 1 is strongest, 4 is the weakest. */ 
+#define STEPSIZE 2 
+static int32_t dolbyBuffer[DOLBY_SURROUND_MAX * 2 * ( (STEPSIZE>1)?STEPSIZE:2 ) ]; 
 static int32_t dolbyBufferPointer IBSS_ATTR;
-
 static bool surround_enabled = false;
 
 static void dsp_surround_flush(void)
@@ -44,12 +46,17 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
             backBuffer = dolbyBuffer + dolbyBufferPointer;
             X = DOLBY_SURROUND_MAX - dolbyBufferPointer;
     		
-            if (X < 0) X = 0;
+            if (X < 0) 
+            {   /*buffer overflowed*/
+                X = 0;
+                memset(dolbyBuffer, 0, sizeof(dolbyBuffer));
+                dolbyBufferPointer = 0;
+                return;
+            }
             if (X > count) X = count;
             while (X--)
             {
-                backBuffer[1] = *inputSamplesB;
-
+                backBuffer[0] = *inputSamplesB;
                 *inputSamplesB *= 0;
     	        inputSamplesB ++;
                 backBuffer += 1;
@@ -66,13 +73,13 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
     		
             while (X--)
             {
+                backBuffer[0] = *inputSamplesA;
                 backBuffer[1] = *inputSamplesB;
-	    		
+                inputSamplesA ++;
                 inputSamplesB ++;
-                backBuffer += 2;
-                dolbyBufferPointer += 2;
+                backBuffer += STEPSIZE;
+                dolbyBufferPointer += STEPSIZE;
             }
-		
             inputSamplesA = buf->p32[0];
             inputSamplesB = buf->p32[1];	
 		
@@ -82,10 +89,9 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
             while (X--)
             {
                 *inputSamplesB = backBuffer[1];
-			
                 inputSamplesB ++;
-                backBuffer += 2;
-                dolbyBufferPointer -= 2;
+                backBuffer += STEPSIZE;
+                dolbyBufferPointer -= STEPSIZE;
             }
             memcpy(dolbyBuffer, backBuffer, dolbyBufferPointer * 4);
         }

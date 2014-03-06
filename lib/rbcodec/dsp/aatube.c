@@ -31,19 +31,19 @@ static void antialias_tube_process(struct dsp_proc_entry *this,
     int32_t i;
     struct dsp_buffer *buf = *buf_p;
     int count = buf->remcount;
-    const int num_chan = buf->format.num_channels;
-    {
+
         pSmpCH0 = buf->p32[0];
         pSmpCH1 = buf->p32[1];
-        for (int ch = 0; ch < num_chan; ch++)
+        for (i = 0; i < count; i++)
         {
-            for (i = 0; i < count; i++)
-            {
-                aatube_filter_state[ch] = (aatube_filter_state[ch] + pSmpCH0[i]) >> 1;
-                pSmpCH0[i] = aatube_filter_state[ch];
-            }
-        }
-    }
+            aatube_filter_state[0] = (aatube_filter_state[0]+ *pSmpCH0 ) >> 1; 
+            *pSmpCH0 = aatube_filter_state[0];
+            pSmpCH0++;
+                
+            aatube_filter_state[1] = (aatube_filter_state[1]+ *pSmpCH1 ) >> 1; 
+            *pSmpCH1 = aatube_filter_state[1];
+            pSmpCH1++;
+        }    
     (void)this;
 }
 
