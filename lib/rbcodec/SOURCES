@@ -9,6 +9,8 @@ dsp/crossfeed.c
 dsp/emu10k_core.c
 dsp/emu10k_space80.c
 dsp/dsp_core.c
+dsp/surround.c
+dsp/aatube.c
 dsp/dsp_filter.c
 dsp/dsp_misc.c
 dsp/dsp_sample_input.c

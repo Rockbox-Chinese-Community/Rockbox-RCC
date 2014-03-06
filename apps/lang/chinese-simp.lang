@@ -47,6 +47,22 @@
   </dest>
   <voice>
     *: "重置均衡器频段增益"
+
+<phrase>
+  id: LANG_ANTIALIAS_WARM
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "AntiAlias"
+  </source>
+  <dest>
+    *: none
+    swcodec: "抗锯齿(Tube)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: ""
   </voice>
 </phrase>
 <phrase>

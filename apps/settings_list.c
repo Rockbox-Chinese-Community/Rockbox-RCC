@@ -2249,6 +2249,13 @@ const struct settings_list settings[] = {
     /* dithering */
     OFFON_SETTING(F_SOUNDSETTING, dithering_enabled, LANG_DITHERING, false,
                   "dithering enabled", dsp_dither_enable),
+    /* surround */
+    OFFON_SETTING(F_SOUNDSETTING, surround_enabled, LANG_SURROUND, false,
+                  "surround enabled", dsp_surround_enable),
+
+    /* aa-tube */
+    OFFON_SETTING(F_SOUNDSETTING, aatube_enabled, LANG_ANTIALIAS_WARM, false,
+                  "aatube enabled", dsp_aatube_enable),
 
 #ifdef HAVE_PITCHCONTROL
     /* timestretch */
