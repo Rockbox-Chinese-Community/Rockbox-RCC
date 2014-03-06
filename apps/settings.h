@@ -352,6 +352,8 @@ struct user_settings
     int  keyclick;          /* keyclick volume */
     int  keyclick_repeats;  /* keyclick on repeats */
     bool dithering_enabled;
+    bool surround_enabled;
+    bool aatube_enabled;
 #ifdef HAVE_PITCHCONTROL
     bool timestretch_enabled;
 #endif
