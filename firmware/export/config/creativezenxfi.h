@@ -80,6 +80,9 @@
 /* define this if you have an i.MX23 codec */
 #define HAVE_IMX233_CODEC
 
+/* Define this if you have a speaker */
+#define HAVE_SPEAKER
+
 #define CONFIG_TUNER TEA5760
 
 /* There is no hardware tone control */
@@ -193,7 +196,7 @@
 #define HAVE_BOOTLOADER_USB_MODE
 
 /* Define this if you have adjustable CPU frequency */
-//#define HAVE_ADJUSTABLE_CPU_FREQ
+#define HAVE_ADJUSTABLE_CPU_FREQ
 
 #define BOOTFILE_EXT    "creative"
 #define BOOTFILE        "rockbox." BOOTFILE_EXT
