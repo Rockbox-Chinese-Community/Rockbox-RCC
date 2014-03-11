@@ -263,15 +263,17 @@ struct cpufreq_profile_t
     int arm_cache_timings;
 };
 
-#if IMX233_SUBTARGET >= 3780
+#if IMX233_SUBTARGET >= 3700
 static struct cpufreq_profile_t cpu_profiles[] =
 {
-    /* clk_p@454.74 MHz, clk_h@130.91 MHz, clk_emi@130.91 MHz, VDDD@1.550 V */
+    /* clk_p@454.74 MHz, clk_h@151.58 MHz, clk_emi@130.91 MHz, VDDD@1.550 V */
     {IMX233_CPUFREQ_454_MHz, 1550, 1450, 3, 1, 19, IMX233_EMIFREQ_130_MHz, 0},
+    /* clk_p@320.00 MHz, clk_h@106.66 MHz, clk_emi@130.91 MHz, VDDD@1.450 V */
+    {IMX233_CPUFREQ_320_MHz, 1450, 1350, 3, 1, 27, IMX233_EMIFREQ_130_MHz, 0},
     /* clk_p@261.82 MHz, clk_h@130.91 MHz, clk_emi@130.91 MHz, VDDD@1.275 V */
     {IMX233_CPUFREQ_261_MHz, 1275, 1175, 2, 1, 33, IMX233_EMIFREQ_130_MHz, 0},
     /* clk_p@64 MHz, clk_h@64 MHz, clk_emi@64 MHz, VDDD@1.050 V */
-    {IMX233_CPUFREQ_64_MHz, 1050, 975, 1, 5, 27, IMX233_EMIFREQ_64_MHz, 0},
+    {IMX233_CPUFREQ_64_MHz, 1050, 975, 1, 5, 27, IMX233_EMIFREQ_64_MHz, 3},
     /* dummy */
     {0, 0, 0, 0, 0, 0, 0, 0}
 };
@@ -281,7 +283,7 @@ static struct cpufreq_profile_t cpu_profiles[] =
 
 void imx233_set_cpu_frequency(long frequency)
 {
-#if IMX233_SUBTARGET >= 3780
+#if IMX233_SUBTARGET >= 3700
     /* don't change the frequency if it is useless (changes are expensive) */
     if(cpu_frequency == frequency)
         return;
@@ -293,8 +295,6 @@ void imx233_set_cpu_frequency(long frequency)
         return;
     /* disable auto-slow (enable back afterwards) */
     imx233_clkctrl_enable_auto_slow(false);
-    /* set VDDIO to the right value */
-    imx233_power_set_regulator(REGULATOR_VDDIO, 3300, 3125);
 
     /* WARNING watch out the order ! */
     if(frequency > cpu_frequency)
@@ -303,29 +303,15 @@ void imx233_set_cpu_frequency(long frequency)
         imx233_power_set_regulator(REGULATOR_VDDD, prof->vddd, prof->vddd_bo);
         /* Change ARM cache timings */
         imx233_digctl_set_arm_cache_timings(prof->arm_cache_timings);
-        /* Switch CPU to crystal at 24MHz */
-        imx233_clkctrl_set_bypass(CLK_CPU, true);
-        /* Program CPU divider for PLL */
-        imx233_clkctrl_set_frac_div(CLK_CPU, prof->cpu_fdiv);
-        imx233_clkctrl_set_div(CLK_CPU, prof->cpu_idiv);
-        /* Change the HBUS divider to its final value */
-        imx233_clkctrl_set_div(CLK_HBUS, prof->hbus_div);
-        /* Switch back CPU to PLL */
-        imx233_clkctrl_set_bypass(CLK_CPU, false);
+        /* Change CPU and HBUS frequencies */
+        imx233_clkctrl_set_cpu_hbus_div(prof->cpu_idiv, prof->cpu_fdiv, prof->hbus_div);
         /* Set the new EMI frequency */
         imx233_emi_set_frequency(prof->emi_freq);
     }
     else
     {
-        /* Switch CPU to crystal at 24MHz */
-        imx233_clkctrl_set_bypass(CLK_CPU, true);
-        /* Program HBUS divider to its final value */
-        imx233_clkctrl_set_div(CLK_HBUS, prof->hbus_div);
-        /* Program CPU divider for PLL */
-        imx233_clkctrl_set_frac_div(CLK_CPU, prof->cpu_fdiv);
-        imx233_clkctrl_set_div(CLK_CPU, prof->cpu_idiv);
-        /* Switch back CPU to PLL */
-        imx233_clkctrl_set_bypass(CLK_CPU, false);
+        /* Change CPU and HBUS frequencies */
+        imx233_clkctrl_set_cpu_hbus_div(prof->cpu_idiv, prof->cpu_fdiv, prof->hbus_div);
         /* Set the new EMI frequency */
         imx233_emi_set_frequency(prof->emi_freq);
         /* Change ARM cache timings */
