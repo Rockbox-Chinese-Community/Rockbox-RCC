@@ -34,7 +34,7 @@ extern jobject RockboxService_instance;
 static jobject RockboxFramebuffer_instance;
 static jmethodID java_lcd_update;
 static jmethodID java_lcd_update_rect;
-
+static jmethodID java_lcd_init;
 static jclass    AndroidRect_class;
 static jmethodID AndroidRect_constructor;
 
@@ -69,6 +69,11 @@ static void connect_with_java(JNIEnv* env, jobject fb_instance)
 
     AndroidRect_constructor = e->GetMethodID(env, AndroidRect_class,
                                          "<init>", "(IIII)V");
+    java_lcd_init        = e->GetMethodID(env, fb_class,
+                                             "initialize", "(II)V");
+    /* we need to setup parts for the java object every time */
+    (*env)->CallVoidMethod(env, fb_instance, java_lcd_init,
+                          (jint)LCD_WIDTH, (jint)LCD_HEIGHT);
 }
 
 /*
