@@ -56,6 +56,12 @@ public class RockboxFramebuffer extends SurfaceView
         /* don't draw until native is ready (2nd stage) */
         setEnabled(false);
     }
+    
+    private void initialize(int lcd_width, int lcd_height)
+    {  
+       btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565);
+       setEnabled(true);
+    }
 
     private void update(ByteBuffer framebuffer)
     {
@@ -130,7 +136,5 @@ public class RockboxFramebuffer extends SurfaceView
     public native void surfaceDestroyed(SurfaceHolder holder);
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
-        btm = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        setEnabled(true);
     }
 }
