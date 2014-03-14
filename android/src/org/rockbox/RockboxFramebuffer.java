@@ -72,8 +72,6 @@ public class RockboxFramebuffer extends SurfaceView
         desHeight = metrics.heightPixels;
     }
 
-
-   
     /* second stage init; called from Rockbox with information about the 
      * display framebuffer */
     private void initialize(int lcd_width, int lcd_height)
@@ -82,10 +80,9 @@ public class RockboxFramebuffer extends SurfaceView
        srcHeight = lcd_height; 
        scaleWidth = ((float)desWidth) / srcWidth;
        scaleHeight = ((float)desHeight) / srcHeight;
-       if (scaleWidth >2 || scaleHeight >2)
-       {
-            scaleWidth = scaleHeight = 2;
-       }
+       /*Limited the upscaled ratio to <= 2 for better looks*/
+       scaleWidth  = (scaleWidth > 2) ? 2: scaleWidth;
+       scaleHeight = (scaleHeight > 2) ? 2 : scaleHeight;
 
        if ( (desWidth > srcWidth) || (desHeight >  srcHeight) )
        {  
@@ -153,7 +150,6 @@ public class RockboxFramebuffer extends SurfaceView
             touchHandler(true, x, y);
             return true;
         }
-        
         return false;
     }
 
@@ -209,7 +205,6 @@ public class RockboxFramebuffer extends SurfaceView
                 Thread.sleep(15);
             }catch (Exception e){}
             
-            
             holder = getHolder();
             holder.setFormat(4); //RGB_565
             if (dirty == null)                            
@@ -217,10 +212,14 @@ public class RockboxFramebuffer extends SurfaceView
             else
             {   
                 if (!upscale)
-                scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
-                    (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
+                { 
+                    scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
+                        (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
+                }
                 else
+                {
                     scaledDirty.set(dirty.left ,dirty.top, dirty.right,dirty.bottom);  
+                }
                 c = holder.lockCanvas(scaledDirty); 
             }   
             
@@ -228,8 +227,7 @@ public class RockboxFramebuffer extends SurfaceView
                 continue;
 
             synchronized (holder)
-            {    
-                   
+            {     
                 synchronized(btm)
                 {
                     if (!upscale)
