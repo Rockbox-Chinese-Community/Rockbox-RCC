@@ -39,16 +39,19 @@ import android.view.ViewConfiguration;
 
 
 public class RockboxFramebuffer extends SurfaceView 
-                                 implements SurfaceHolder.Callback
+                                 implements Runnable,SurfaceHolder.Callback
 {
     private final DisplayMetrics metrics;
     private final ViewConfiguration view_config;
-    private Bitmap btm;
+    private Bitmap btm,tmp_bmp;
     private int srcWidth, srcHeight, desWidth, desHeight;
     private float scaleWidth,scaleHeight;
     private Matrix myMatrix;
     private Paint myPaint;
-
+    private Thread thread = null;
+    private boolean firstrun = true;
+    private Rect dirty=null;
+    private boolean upscale = false; 
     /* first stage init; needs to run from a thread that has a Looper 
      * setup stuff that needs a Context */
     public RockboxFramebuffer(Context c)
@@ -57,6 +60,7 @@ public class RockboxFramebuffer extends SurfaceView
         metrics = c.getResources().getDisplayMetrics();
         view_config = ViewConfiguration.get(c);
         getHolder().addCallback(this);
+        
         /* Needed so we can catch KeyEvents */
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -65,9 +69,11 @@ public class RockboxFramebuffer extends SurfaceView
         setEnabled(false);
 
         desWidth = metrics.widthPixels;
-        desHeight = metrics.heightPixels;  
+        desHeight = metrics.heightPixels;
     }
-  
+
+
+   
     /* second stage init; called from Rockbox with information about the 
      * display framebuffer */
     private void initialize(int lcd_width, int lcd_height)
@@ -76,71 +82,66 @@ public class RockboxFramebuffer extends SurfaceView
        srcHeight = lcd_height; 
        scaleWidth = ((float)desWidth) / srcWidth;
        scaleHeight = ((float)desHeight) / srcHeight;
-       /*Limited the upscaled ratio to <= 2 for better looks*/
-       scaleWidth  = (scaleWidth > 2) ? 2: scaleWidth;
-       scaleHeight = (scaleHeight > 2) ? 2 : scaleHeight;
+       if (scaleWidth >2 || scaleHeight >2)
+       {
+            scaleWidth = scaleHeight = 2;
+       }
+
+       if ( (desWidth > srcWidth) || (desHeight >  srcHeight) )
+       {  
+           upscale = true;
+           getHolder().setFixedSize(srcWidth,srcHeight);
+       }
 
        myMatrix = new Matrix();
+
        myMatrix.postScale(scaleWidth,scaleHeight);
+       myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
+
+       btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565); 
        
-       if (scaleWidth > 1)
-          myPaint = null;
-       else  
-          myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
-       
-       btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565);
        setEnabled(true);
+       thread = new Thread(this);
+       firstrun = false;
+        
+       thread.start(); 
     }
   
 
     private void update(ByteBuffer framebuffer)
     {
         
-        SurfaceHolder holder = getHolder();
-        Canvas c = holder.lockCanvas(); 
-        if (c == null) 
-            return;
-        try{
-            btm.copyPixelsFromBuffer(framebuffer);
-        }catch(Exception e){}     
-        c.drawBitmap(btm,myMatrix,myPaint);  
-                
-       holder.unlockCanvasAndPost(c);     
- 
-    }
-   
-    private void update(ByteBuffer framebuffer, Rect dirty)
-    {    
-        if (scaleWidth > 1)  //scaled up
-            this.update(framebuffer);
-        else
+        synchronized(btm)
         {
-            SurfaceHolder holder = getHolder();        
-            Rect scaledDirty = new Rect();
-            scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
-                            (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
-         
-            Canvas c = holder.lockCanvas(scaledDirty);
-            if (c == null) 
-                return;
+            btm.copyPixelsFromBuffer(framebuffer);   
+        }
+        this.dirty = null; 
+
+    }
+    
+    private void update(ByteBuffer framebuffer, Rect dirty)
+    {  
+        synchronized(btm)
+        {
             try{
-                btm.copyPixelsFromBuffer(framebuffer);
-            }catch(Exception e){}     
-            c.drawBitmap(btm,myMatrix,myPaint);      
-            holder.unlockCanvasAndPost(c);       
-        }    
-    }    
+            btm.copyPixelsFromBuffer(framebuffer);
+            }catch(Exception e){}  
+        }
+        this.dirty = new Rect();
+        this.dirty.set(dirty);
+        
+    }
 
     public boolean onTouchEvent(MotionEvent me)
-    {
-        
+    {  
+
         int x = (int) me.getX();
         int y = (int) me.getY();
      
         x = (int)( x / scaleWidth);
         y = (int)( y / scaleHeight);
-       
-
+        
+        
         switch (me.getAction())
         {
         case MotionEvent.ACTION_CANCEL:
@@ -190,12 +191,60 @@ public class RockboxFramebuffer extends SurfaceView
        
     }
 
-    
-    public void stopUpdate()
+/*      
+ *  use a sepreate thread to handle the drawing - constant interval(15ms) 
+ *  so no need to draw canvas as much as the old method.  
+ *  
+ */
+
+    public void run()
     {
-         
+        Rect scaledDirty= new Rect();
+        Canvas c;
+         SurfaceHolder holder;
+        while(firstrun == false)
+        {   
+            
+            try{
+                Thread.sleep(15);
+            }catch (Exception e){}
+            
+            
+            holder = getHolder();
+            holder.setFormat(4); //RGB_565
+            if (dirty == null)                            
+                c = holder.lockCanvas();
+            else
+            {   
+                if (!upscale)
+                scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
+                    (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
+                else
+                    scaledDirty.set(dirty.left ,dirty.top, dirty.right,dirty.bottom);  
+                c = holder.lockCanvas(scaledDirty); 
+            }   
+            
+            if (c==null) 
+                continue;
+
+            synchronized (holder)
+            {    
+                   
+                synchronized(btm)
+                {
+                    if (!upscale)
+                        c.drawBitmap(btm,myMatrix,myPaint);
+                    else    
+                        c.drawBitmap(btm,0,0,myPaint);         
+                }             
+            }
+            holder.unlockCanvasAndPost(c);
+        }
+        return;
     }
 
-
-
+    public void stopUpdate()
+    {
+         firstrun = true; 
+    }
 }
