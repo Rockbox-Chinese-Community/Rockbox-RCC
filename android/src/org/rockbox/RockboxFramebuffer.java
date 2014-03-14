@@ -188,7 +188,7 @@ public class RockboxFramebuffer extends SurfaceView
     }
 
 /*      
- *  use a sepreate thread to handle the drawing - constant interval(15ms) 
+ *  use a sepreate thread to handle the drawing - constant interval(10ms) 
  *  so no need to draw canvas as much as the old method.  
  *  
  */
@@ -202,7 +202,7 @@ public class RockboxFramebuffer extends SurfaceView
         {   
             
             try{
-                Thread.sleep(15);
+                Thread.sleep(10);
             }catch (Exception e){}
             
             holder = getHolder();
