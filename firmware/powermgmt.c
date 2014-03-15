@@ -748,6 +748,19 @@ static void power_thread(void)
             collect_power_history();
         }
     }
+#else   /* CONFIG_PLATFORM & PLATFORM_ANDROID*/
+    while(1)
+    {
+        sleep(HZ/100);
+        if (sleeptimer_active)  
+        {
+            if (TIME_AFTER(current_tick, sleeptimer_endtick))
+            {
+                sleeptimer_active = false; 
+                power_off();     
+            }
+        }
+    } 
 #endif
 } /* power_thread */
 
