@@ -93,7 +93,10 @@ public class RockboxFramebuffer extends SurfaceView
        myMatrix = new Matrix();
 
        myMatrix.postScale(scaleWidth,scaleHeight);
-       myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
+       if (scaleWidth == scaleHeight && scaleWidth ==1) //no zoom
+           myPaint =null;
+       else
+           myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
 
        btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565); 
        
@@ -104,7 +107,6 @@ public class RockboxFramebuffer extends SurfaceView
        thread.start(); 
     }
   
-
     private void update(ByteBuffer framebuffer)
     {
         
@@ -197,12 +199,12 @@ public class RockboxFramebuffer extends SurfaceView
     {
         Rect scaledDirty= new Rect();
         Canvas c;
-         SurfaceHolder holder;
+        SurfaceHolder holder;
         while(firstrun == false)
         {   
             
             try{
-                Thread.sleep(10);
+                Thread.sleep(5);
             }catch (Exception e){}
             
             holder = getHolder();
