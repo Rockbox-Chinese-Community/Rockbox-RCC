@@ -27,7 +27,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -45,13 +44,13 @@ public class RockboxFramebuffer extends SurfaceView
     private final ViewConfiguration view_config;
     private Bitmap btm,tmp_bmp;
     private int srcWidth, srcHeight, desWidth, desHeight;
-    private float scaleWidth,scaleHeight;
-    private Matrix myMatrix;
+    private float ScaleWidthFactor,scaleHeightFactor;
     private Paint myPaint;
     private Thread thread = null;
     private boolean firstrun = true;
     private Rect dirty=null;
-    private boolean upscale = false; 
+    private boolean upscale = false;
+    private boolean statusBarOn = false; 
     /* first stage init; needs to run from a thread that has a Looper 
      * setup stuff that needs a Context */
     public RockboxFramebuffer(Context c)
@@ -78,23 +77,28 @@ public class RockboxFramebuffer extends SurfaceView
     {
        srcWidth = lcd_width;
        srcHeight = lcd_height; 
-       scaleWidth = ((float)desWidth) / srcWidth;
-       scaleHeight = ((float)desHeight) / srcHeight;
+       ScaleWidthFactor = ((float)desWidth) / srcWidth;
+       scaleHeightFactor = ((float)desHeight) / srcHeight;
        /*Limited the upscaled ratio to <= 2 for better looks*/
-       scaleWidth  = (scaleWidth > 2) ? 2: scaleWidth;
-       scaleHeight = (scaleHeight > 2) ? 2 : scaleHeight;
+       ScaleWidthFactor  = (ScaleWidthFactor > 2) ? 2: ScaleWidthFactor;
+       scaleHeightFactor = (scaleHeightFactor > 2) ? 2 : scaleHeightFactor;
 
-       if ( (desWidth > srcWidth) || (desHeight >  srcHeight) )
+       if ( (desWidth >= srcWidth) || (desHeight >=  srcHeight) )
        {  
            upscale = true;
-           getHolder().setFixedSize(srcWidth,srcHeight);
        }
-
-       myMatrix = new Matrix();
-
-       myMatrix.postScale(scaleWidth,scaleHeight);
-       if (scaleWidth == scaleHeight && scaleWidth ==1) //no zoom
-           myPaint =null;
+    
+       if (!RockboxApp.getInstance().getTitlebarStatus())  
+           statusBarOn=true;
+       
+       /*surface setFixedSize, emulate the screen resolution no matter what actual LCD resolution is*/
+       if (!statusBarOn)
+          getHolder().setFixedSize(srcWidth,srcHeight);
+       else
+          getHolder().setFixedSize(srcWidth,srcHeight-(int)(getStatusBarHeight()/scaleHeightFactor));  
+           
+       if (ScaleWidthFactor == scaleHeightFactor && ScaleWidthFactor ==1) //no zoom
+           myPaint = null;
        else
            myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
 
@@ -127,20 +131,34 @@ public class RockboxFramebuffer extends SurfaceView
             }catch(Exception e){}  
         }
         this.dirty = new Rect();
-        this.dirty.set(dirty);
-        
+        try{
+            this.dirty.set(dirty);
+        }catch(Exception e2){ 
+             this.dirty = null;
+        }      
     }
 
     public boolean onTouchEvent(MotionEvent me)
     {  
+        int x,y;
+        if (statusBarOn)  /*need to fix the xy touched coordinates */
+        {
+           int[] coords = new int[2];
+           this.getLocationInWindow(coords);
+        
+           x = (int)me.getRawX() - coords[0]; 
+           y = (int)me.getRawY() - coords[1];   
+        }
+        else
+        {  
+            x = (int) me.getRawX();
+            y = (int) me.getRawY();
+        }
+        /*convert */
+        x = (int)( x / ScaleWidthFactor); 
+        y = (int)( y / scaleHeightFactor);
+       
 
-        int x = (int) me.getX();
-        int y = (int) me.getY();
-     
-        x = (int)( x / scaleWidth);
-        y = (int)( y / scaleHeight);
-        
-        
         switch (me.getAction())
         {
         case MotionEvent.ACTION_CANCEL:
@@ -190,7 +208,7 @@ public class RockboxFramebuffer extends SurfaceView
     }
 
 /*      
- *  use a sepreate thread to handle the drawing - constant interval(10ms) 
+ *  use a sepreate thread to handle the drawing - constant interval(5ms) 
  *  so no need to draw canvas as much as the old method.  
  *  
  */
@@ -201,8 +219,7 @@ public class RockboxFramebuffer extends SurfaceView
         Canvas c;
         SurfaceHolder holder;
         while(firstrun == false)
-        {   
-            
+        {    
             try{
                 Thread.sleep(5);
             }catch (Exception e){}
@@ -213,15 +230,7 @@ public class RockboxFramebuffer extends SurfaceView
                 c = holder.lockCanvas();
             else
             {   
-                if (!upscale)
-                { 
-                    scaledDirty.set((int)(dirty.left * scaleWidth), (int)(dirty.top * scaleHeight),
-                        (int)(dirty.right * scaleWidth), (int)(dirty.bottom * scaleHeight));
-                }
-                else
-                {
-                    scaledDirty.set(dirty.left ,dirty.top, dirty.right,dirty.bottom);  
-                }
+                scaledDirty.set(dirty.left ,dirty.top, dirty.right,dirty.bottom);  
                 c = holder.lockCanvas(scaledDirty); 
             }   
             
@@ -231,11 +240,8 @@ public class RockboxFramebuffer extends SurfaceView
             synchronized (holder)
             {     
                 synchronized(btm)
-                {
-                    if (!upscale)
-                        c.drawBitmap(btm,myMatrix,myPaint);
-                    else    
-                        c.drawBitmap(btm,0,0,myPaint);         
+                {    
+                    c.drawBitmap(btm,0,0,myPaint);         
                 }             
             }
             holder.unlockCanvasAndPost(c);
@@ -246,5 +252,15 @@ public class RockboxFramebuffer extends SurfaceView
     public void stopUpdate()
     {
          firstrun = true; 
+    }
+
+    public int getStatusBarHeight() 
+    {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+             result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }
