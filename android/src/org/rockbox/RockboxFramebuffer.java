@@ -40,7 +40,9 @@ public class RockboxFramebuffer extends SurfaceView
     private final DisplayMetrics metrics;
     private final ViewConfiguration view_config;
     private Bitmap btm;
-
+    private int srcWidth,srcHeight, desWidth, desHeight;
+    private float ScaleWidthFactor,scaleHeightFactor;
+    private boolean statusBarOn = false; 
     /* first stage init; needs to run from a thread that has a Looper 
      * setup stuff that needs a Context */
     public RockboxFramebuffer(Context c)
@@ -55,12 +57,37 @@ public class RockboxFramebuffer extends SurfaceView
         setClickable(true);
         /* don't draw until native is ready (2nd stage) */
         setEnabled(false);
+        desWidth = metrics.widthPixels;
+        desHeight = metrics.heightPixels;
+    }
+
+    private void initialize(int lcd_width, int lcd_height)
+    {
+        srcWidth = lcd_width;
+        srcHeight = lcd_height;   
+        ScaleWidthFactor = ((float)desWidth) / srcWidth;
+        scaleHeightFactor = ((float)desHeight) / srcHeight;
+        /*Limited the upscaled ratio to <= 2 for better looks*/
+        ScaleWidthFactor  = (ScaleWidthFactor > 2) ? 2: ScaleWidthFactor;
+        scaleHeightFactor = (scaleHeightFactor > 2) ? 2 : scaleHeightFactor;
+        if (!RockboxApp.getInstance().getTitlebarStatus())  
+           statusBarOn=true;
+       
+       /*surface setFixedSize, emulate the screen resolution no matter what actual LCD resolution is*/
+       if (!statusBarOn)
+          getHolder().setFixedSize(srcWidth,srcHeight);
+       else
+          getHolder().setFixedSize(srcWidth,srcHeight-(int)(getStatusBarHeight()/scaleHeightFactor));  
+        btm = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.RGB_565);
+        setEnabled(true);  
     }
 
     private void update(ByteBuffer framebuffer)
     {
-        SurfaceHolder holder = getHolder();                            
+        SurfaceHolder holder = getHolder(); 
+        holder.setFormat(4); //RGB_565                             
         Canvas c = holder.lockCanvas();
+        if (c == null) return;
         btm.copyPixelsFromBuffer(framebuffer);
         synchronized (holder)
         { /* draw */
@@ -71,8 +98,10 @@ public class RockboxFramebuffer extends SurfaceView
     
     private void update(ByteBuffer framebuffer, Rect dirty)
     {
-        SurfaceHolder holder = getHolder();         
+        SurfaceHolder holder = getHolder(); 
+        holder.setFormat(4); //RGB_565        
         Canvas c = holder.lockCanvas(dirty);
+        if (c == null) return;
         /* can't copy a partial buffer, but it doesn't make a noticeable difference anyway */
         btm.copyPixelsFromBuffer(framebuffer);
         synchronized (holder)
@@ -84,9 +113,24 @@ public class RockboxFramebuffer extends SurfaceView
 
     public boolean onTouchEvent(MotionEvent me)
     {
-        int x = (int) me.getX();
-        int y = (int) me.getY();
-
+        int x,y;
+        if (statusBarOn)  /*need to fix the xy touched coordinates */
+        {
+           int[] coords = new int[2];
+           this.getLocationInWindow(coords);
+        
+           x = (int)me.getRawX() - coords[0]; 
+           y = (int)me.getRawY() - coords[1];   
+        }
+        else
+        {  
+            x = (int) me.getRawX();
+            y = (int) me.getRawY();
+        }
+        /*convert */
+        x = (int)( x / ScaleWidthFactor); 
+        y = (int)( y / scaleHeightFactor);
+       
         switch (me.getAction())
         {
         case MotionEvent.ACTION_CANCEL:
@@ -130,7 +174,15 @@ public class RockboxFramebuffer extends SurfaceView
     public native void surfaceDestroyed(SurfaceHolder holder);
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
-        btm = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
-        setEnabled(true);
+        
+    }
+    public int getStatusBarHeight() 
+    {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+             result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }
