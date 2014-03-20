@@ -106,7 +106,10 @@ public class RockboxFramebuffer extends SurfaceView
         btm.copyPixelsFromBuffer(framebuffer);
         synchronized (holder)
         {   /* draw */
-            c.drawBitmap(btm, dirty, dirty, null);   
+            try{ 
+            //c.drawBitmap(btm, dirty, dirty, null);
+            c.drawBitmap(btm, 0, 0, null);   
+            }catch(Exception e){}
         }
         holder.unlockCanvasAndPost(c);
     }
