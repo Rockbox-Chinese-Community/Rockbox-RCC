@@ -98,18 +98,17 @@ public class RockboxFramebuffer extends SurfaceView
     
     private void update(ByteBuffer framebuffer, Rect dirty)
     {
+         
         SurfaceHolder holder = getHolder(); 
         holder.setFormat(4); //RGB_565        
         Canvas c = holder.lockCanvas(dirty);
-        if (c == null) return;
+        if (c == null) 
+            return;
         /* can't copy a partial buffer, but it doesn't make a noticeable difference anyway */
         btm.copyPixelsFromBuffer(framebuffer);
         synchronized (holder)
         {   /* draw */
-            try{ 
-            //c.drawBitmap(btm, dirty, dirty, null);
             c.drawBitmap(btm, 0, 0, null);   
-            }catch(Exception e){}
         }
         holder.unlockCanvasAndPost(c);
     }
