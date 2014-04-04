@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2006 by Linus Nielsen Feltzing
+ * Copyright (C) 2014 by Szymon Dziok
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,41 +18,48 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+
+/*
+SANSA VIEW: TESTING CODE
+*/
+
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
 #include "config.h"
-#include <stdbool.h>
+#include "inttypes.h"
 #include "cpu.h"
 #include "system.h"
+#include "lcd.h"
 #include "kernel.h"
-#include "usb.h"
+#include "thread.h"
+#include "storage.h"
+#include "fat.h"
+#include "disk.h"
+#include "font.h"
+#include "backlight.h"
+#include "backlight-target.h"
+#include "button.h"
+#include "panic.h"
+#include "power.h"
+#include "file.h"
+#include "common.h"
 
-void usb_init_device(void)
+void main(void)
 {
-    or_l(0x00000080, &GPIO1_FUNCTION); /* GPIO39 is the USB detect input */
+    system_init();
+    kernel_init();
+    disable_irq();
 
-    /* Turn off all Cypress chip power suppies */
-    and_l(~0x01000000, &GPIO_OUT);       /* GPIO24 (USB_EN)    - low (controled power from usb host) */
-    or_l(0x40, &GPIO_OUT);               /* GPOI6 (USB_POW_ON) - high (controled power from internal battery) */
-
-    or_l(0x01000040, &GPIO_ENABLE);
-    or_l(0x01000040, &GPIO_FUNCTION);
-}
-
-int usb_detect(void)
-{
-    return (GPIO1_READ & 0x80) ? USB_INSERTED : USB_EXTRACTED;
-}
-
-void usb_enable(bool on)
-{
-    if(on)
+    while(1)
     {
-        /* Power on the Cypress chip */
-        or_l(0x01000000, &GPIO_OUT); /* Turn on only GPIO24 (USB_EN). GPOI6 (USB_POW_ON) still at high state (off) */
-        sleep(2);
-    }
-    else
-    {
-        /* Power off the Cypress chip */
-        and_l(~0x01000000, &GPIO_OUT); /* Turn off only GPIO24 (USB_EN). GPOI6 (USB_POW_ON) still at high state (off) */
+       _backlight_on();
+       _buttonlight_off();
+       sleep(HZ/4);
+       _backlight_off();
+       _buttonlight_on();
+       sleep(HZ/4);
     }
 }
