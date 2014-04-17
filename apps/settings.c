@@ -770,6 +770,9 @@ void sound_settings_apply(void)
 #ifdef AUDIOHW_HAVE_TREBLE
     sound_set(SOUND_TREBLE, global_settings.treble);
 #endif
+#ifdef AUDIOHW_HAVE_TONE_GAIN
+    sound_set(SOUND_TONE_GAIN, global_settings.tone_gain);
+#endif
     sound_set(SOUND_BALANCE, global_settings.balance);
 #ifndef PLATFORM_HAS_VOLUME_CHANGE
     sound_set(SOUND_VOLUME, global_settings.volume);

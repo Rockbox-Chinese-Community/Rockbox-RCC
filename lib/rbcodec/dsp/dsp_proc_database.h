@@ -37,19 +37,19 @@
 DSP_PROC_DB_START
     DSP_PROC_DB_ITEM(MISC_HANDLER)  /* misc stuff (null stage) */
     DSP_PROC_DB_ITEM(PGA)           /* pre-gain amp */
-#ifdef HAVE_PITCHCONTROL
-    DSP_PROC_DB_ITEM(TIMESTRETCH)   /* time-stretching */
-#endif
+    DSP_PROC_DB_ITEM(AATUBE)
     DSP_PROC_DB_ITEM(RESAMPLE)      /* resampler providing output frequency */
-    DSP_PROC_DB_ITEM(EQUALIZER)     /* n-band equalizer */
-    DSP_PROC_DB_ITEM(SURROUND) 
-    DSP_PROC_DB_ITEM(CROSSFEED)     /* stereo crossfeed */
-    DSP_PROC_DB_ITEM(AATUBE) 
 #ifdef HAVE_SW_TONE_CONTROLS
     DSP_PROC_DB_ITEM(TONE_CONTROLS) /* bass and treble */
 #endif
-    DSP_PROC_DB_ITEM(CHANNEL_MODE)  /* channel modes */
+#ifdef HAVE_PITCHCONTROL
+    DSP_PROC_DB_ITEM(TIMESTRETCH)   /* time-stretching */
+#endif
+    DSP_PROC_DB_ITEM(EQUALIZER)     /* n-band equalizer */
+    DSP_PROC_DB_ITEM(SURROUND) 
+    DSP_PROC_DB_ITEM(CROSSFEED)     /* stereo crossfeed */
     DSP_PROC_DB_ITEM(COMPRESSOR)    /* dynamic-range compressor */
+    DSP_PROC_DB_ITEM(CHANNEL_MODE)  /* channel modes */
     DSP_PROC_DB_ITEM(SPACE80)        /* space80 */
 DSP_PROC_DB_STOP
 
