@@ -454,6 +454,33 @@ static void space80_set(int val)
                           global_settings.space80_mix);
 }
 
+static void settings_apply_eq(int val)
+{
+    (void)val;
+    dsp_eq_enable(global_settings.eq_enabled);
+	
+    for(int i = 0; i < EQ_NUM_BANDS; i++) {
+	 dsp_set_eq_coefs(i, &global_settings.eq_band_settings[i]);
+    }
+}
+
+static void settings_eq(bool val)
+{
+    (void)val;
+    dsp_eq_enable(global_settings.eq_enabled);   
+}
+
+static void settings_eq_precut(int val)
+{
+    (void)val;
+    dsp_set_eq_precut(global_settings.eq_precut);
+}
+
+static void replaygain_set(int val)
+{
+    (void)val;
+    dsp_replaygain_set_settings(&global_settings.replaygain_settings); 
+}
 static void compressor_set(int val)
 {
     (void)val;
@@ -787,6 +814,9 @@ const struct settings_list settings[] = {
 #endif
 #ifdef AUDIOHW_HAVE_TREBLE
     SOUND_SETTING(F_NO_WRAP,treble, LANG_TREBLE, "treble", SOUND_TREBLE),
+#endif
+#ifdef AUDIOHW_HAVE_TONE_GAIN
+    SOUND_SETTING(F_NO_WRAP,tone_gain, LANG_TONE_GAIN, "tone gain", SOUND_TONE_GAIN),
 #endif
 /* Hardware EQ tone controls */
 #ifdef AUDIOHW_HAVE_EQ
@@ -1577,7 +1607,7 @@ const struct settings_list settings[] = {
                   LANG_REPLAYGAIN_NOCLIP, false, "replaygain noclip", NULL),
     INT_SETTING_NOWRAP(F_SOUNDSETTING, replaygain_settings.preamp,
                        LANG_REPLAYGAIN_PREAMP, 0, "replaygain preamp",
-                       UNIT_DB, -120, 120, 5, db_format, get_dec_talkid, NULL),
+                       UNIT_DB, -120, 120, 5, db_format, get_dec_talkid, replaygain_set),
 
     CHOICE_SETTING(0, beep, LANG_BEEP, 0, "beep", "off,weak,moderate,strong",
                    NULL, 4, ID2P(LANG_OFF), ID2P(LANG_WEAK),
@@ -2250,13 +2280,15 @@ const struct settings_list settings[] = {
     OFFON_SETTING(F_SOUNDSETTING, dithering_enabled, LANG_DITHERING, false,
                   "dithering enabled", dsp_dither_enable),
     /* surround */
-    OFFON_SETTING(F_SOUNDSETTING, surround_enabled, LANG_SURROUND, false,
-                  "surround enabled", dsp_surround_enable),
-
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_enabled,
+                       LANG_SURROUND, 0,
+                       "surround enabled", UNIT_PERCENT, 0, 100,
+                       20, NULL, NULL, dsp_surround_enable),	
     /* aa-tube */
-    OFFON_SETTING(F_SOUNDSETTING, aatube_enabled, LANG_ANTIALIAS_WARM, false,
-                  "aatube enabled", dsp_aatube_enable),
-
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, aatube_enabled,
+                       LANG_ANTIALIAS_WARM, 0,
+                       "aatube enabled", UNIT_PERCENT, 0, 100,
+                       1, NULL, NULL, dsp_aatube_enable),
 #ifdef HAVE_PITCHCONTROL
     /* timestretch */
     OFFON_SETTING(F_SOUNDSETTING, timestretch_enabled, LANG_TIMESTRETCH, false,

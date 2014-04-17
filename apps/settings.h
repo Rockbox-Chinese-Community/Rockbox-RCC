@@ -294,6 +294,7 @@ struct user_settings
     int balance;    /* stereo balance:          0-100 0=left  50=bal 100=right        */
     int bass;       /* bass boost/cut in decibels                                     */
     int treble;     /* treble boost/cut in decibels                                   */
+    int tone_gain;  /* bass/treble boost gain in decibels */
     int channel_config; /* Stereo, Mono, Custom, Mono left, Mono right, Karaoke, Swap */
     int stereo_width; /* 0-255% */
 
@@ -354,8 +355,8 @@ struct user_settings
     int  keyclick;          /* keyclick volume */
     int  keyclick_repeats;  /* keyclick on repeats */
     bool dithering_enabled;
-    bool surround_enabled;
-    bool aatube_enabled;
+    int surround_enabled;
+    int aatube_enabled;
 #ifdef HAVE_PITCHCONTROL
     bool timestretch_enabled;
 #endif

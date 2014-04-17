@@ -5,6 +5,7 @@
 /* We don't run on hardware directly */
 #define CONFIG_PLATFORM (PLATFORM_HOSTED|PLATFORM_ANDROID)
 
+
 /* For Rolo and boot loader */
 #define MODEL_NUMBER 100
 
@@ -86,6 +87,11 @@
 #define CONFIG_BATTERY_MEASURE PERCENTAGE_MEASURE
 
 #define NO_LOW_BATTERY_SHUTDOWN
+
+#define AUDIOHW_HAVE_BASS_CUTOFF
+#define AUDIOHW_HAVE_TREBLE_CUTOFF
+#define AUDIOHW_HAVE_TONE_GAIN
+
 /* Define this to the CPU frequency */
 /*
 #define CPU_FREQ 48000000

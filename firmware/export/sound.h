@@ -46,7 +46,9 @@ void sound_set_bass_cutoff(int value);
 #if defined(AUDIOHW_HAVE_TREBLE_CUTOFF)
 void sound_set_treble_cutoff(int value);
 #endif
-
+#if defined(AUDIOHW_HAVE_TONE_GAIN)
+void sound_set_tone_gain(int value);
+#endif
 #if defined(AUDIOHW_HAVE_DEPTH_3D)
 void sound_set_depth_3d(int value);
 #endif
