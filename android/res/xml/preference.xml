@@ -31,6 +31,14 @@
             android:summary="@string/pre_rockbox_show_titlebar_summary" android:title="@string/pre_rockbox_show_titlebar" android:defaultValue="true"> 
         </CheckBoxPreference>
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pre_rockbox_scale_settings">
+        <CheckBoxPreference android:key="scale_mode"
+            android:summary="@string/pre_rockbox_scale_mode_summary" android:title="@string/pre_rockbox_scale_mode" android:defaultValue="true"> 
+        </CheckBoxPreference>
+        <CheckBoxPreference android:key="keep_scale_aspect"
+            android:summary="@string/pre_rockbox_keep_scale_aspect_summary" android:title="@string/pre_rockbox_keep_scale_aspect" android:defaultValue="true"> 
+        </CheckBoxPreference>
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/pre_rockbox_config">
         <org.rockbox.preference.RockboxBackupDialog android:title="@string/pre_rockbox_backup" android:summary="@string/pre_rockbox_backup_summary" android:dialogMessage="@string/pre_rockbox_backup_dialogMessage" android:dialogTitle="@string/pre_rockbox_backup_dialogTitle" android:positiveButtonText="@string/pre_rockbox_backup_backup" android:negativeButtonText="@string/pre_rockbox_backup_restore" />
     </PreferenceCategory>
