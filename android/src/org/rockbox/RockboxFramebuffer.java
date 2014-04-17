@@ -27,7 +27,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
@@ -39,18 +38,20 @@ import android.view.ViewConfiguration;
 
 
 public class RockboxFramebuffer extends SurfaceView 
-                                 implements Runnable, SurfaceHolder.Callback
+                                 implements Runnable,SurfaceHolder.Callback
 {
     private final DisplayMetrics metrics;
     private final ViewConfiguration view_config;
-    private Bitmap btm,tmp_bmp;
-    private int srcWidth, srcHeight, desWidth, desHeight;
-    private float scaleWidth,scaleHeight;
-    private Matrix myMatrix;
-    private Paint myPaint;
-    private Thread thread = null;
-    private boolean firstrun = true;
-
+    private Bitmap btm=null;
+    private int srcWidth=0,srcHeight=0, desWidth, desHeight,paddingHeight=0,paddingWidth=0;
+    private int fixedWidth, fixedHeight;
+    private float scaleWidthFactor,scaleHeightFactor;
+    private boolean statusBarOn = false; 
+    private boolean fastScale =false;
+    private boolean keepAspectRatio =false; 
+    private Matrix myMatrix=null;
+    private Paint myPaint=null;
+    private boolean downscaled = false;
     /* first stage init; needs to run from a thread that has a Looper 
      * setup stuff that needs a Context */
     public RockboxFramebuffer(Context c)
@@ -59,6 +60,7 @@ public class RockboxFramebuffer extends SurfaceView
         metrics = c.getResources().getDisplayMetrics();
         view_config = ViewConfiguration.get(c);
         getHolder().addCallback(this);
+        
         /* Needed so we can catch KeyEvents */
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -68,63 +70,193 @@ public class RockboxFramebuffer extends SurfaceView
 
         desWidth = metrics.widthPixels;
         desHeight = metrics.heightPixels;
-       
     }
 
-
-   
+    /* srcWidth, srcHeight: static value from Rockbox internal frambuffer */
+    /* desWidth, desHeight: read from the current running android device */
+    /* paddingWidth, paddingHeight: the size of black bar when keep scale aspect ratio.*/
+    /* fixedWidth, fixedHeight the sum of srcWidth+paddingWidth, srcHeight+paddingHeight */
     /* second stage init; called from Rockbox with information about the 
      * display framebuffer */
     private void initialize(int lcd_width, int lcd_height)
     {
-       srcWidth = lcd_width;
-       srcHeight = lcd_height; 
-       scaleWidth = ((float)desWidth) / srcWidth;
-       scaleHeight = ((float)desHeight) / srcHeight;
+        srcWidth = lcd_width;
+        srcHeight = lcd_height; 
+        scaleWidthFactor = ((float)desWidth) / srcWidth;
+        scaleHeightFactor = ((float)desHeight) / srcHeight;
+        
+        checkDisplayConfig();
+   
+        getHolder().setFormat(4); /* RGB_565 */  
+        btm = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.RGB_565); 
        
-       myMatrix = new Matrix();
+        setEnabled(true);  
+    }
+   
+    private void checkDisplayConfig()
+    {
+        downscaled = (scaleWidthFactor < 1 || scaleHeightFactor < 1)?true:false;
+        
+        fastScale = (!RockboxApp.getInstance().getRockboxFastScaleMode())?true:false;   
+        
+        statusBarOn = (!RockboxApp.getInstance().getTitlebarStatus())?true:false;  
+        
+        keepAspectRatio = (!RockboxApp.getInstance().getRockboxScaleKeepAspect())?true:false;
+        
 
-       myMatrix.postScale(scaleWidth,scaleHeight);
-       myPaint = new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
+        if (fastScale == false && keepAspectRatio ==true)
+        {
+            if (scaleWidthFactor >  scaleHeightFactor && scaleWidthFactor >1)
+                scaleWidthFactor =  scaleHeightFactor;
+            else
+                scaleHeightFactor = scaleWidthFactor;
+        }
+
+        if (keepAspectRatio == true)
+        {
+            if (scaleHeightFactor > scaleWidthFactor)
+                paddingHeight = (int)Math.ceil(srcWidth * desHeight / desWidth) - srcHeight;
+
+            if ( scaleWidthFactor > scaleHeightFactor)
+                paddingWidth = (int)Math.ceil(srcHeight * desWidth / desHeight) - srcWidth;
+        }
+
+        fixedWidth = srcWidth+paddingWidth;
+        fixedHeight = (statusBarOn == true)?srcHeight-(int)(getStatusBarHeight()/scaleHeightFactor)+paddingHeight 
+                                            : srcHeight+paddingHeight;
+ 
+        if (fastScale == true)  /* surface setFixedSize, emulate the screen resolution no matter what actual LCD resolution is */
+        {
+            getHolder().setFixedSize(fixedWidth,fixedHeight);
+        }
+        else
+        {
+            myMatrix = new Matrix();
+            myMatrix.postScale(scaleWidthFactor,scaleHeightFactor);
+            /* note. upscaling with Paint flags is very slow. */
+            myPaint =(scaleWidthFactor > 1 || scaleHeightFactor > 1)?null: 
+                                      new Paint(Paint.ANTI_ALIAS_FLAG| Paint.DITHER_FLAG| Paint.FILTER_BITMAP_FLAG);
+        }
+    }
+
+    private boolean isBtmAlive()
+    {
+        if (btm.isRecycled() == true || btm == null) 
+        {  
+           if (srcWidth !=0 && srcHeight !=0)
+                btm = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.RGB_565);
+           else
+                return false; 
+        } 
+        return true;           
+    }
+
 
        btm = Bitmap.createBitmap(lcd_width, lcd_height, Bitmap.Config.RGB_565); 
        
        setEnabled(true);
        thread = new Thread(this);
        firstrun = false;
-       thread.start();
+        
+       thread.start(); 
     }
   
-
     private void update(ByteBuffer framebuffer)
     {
-        synchronized(btm)
+        SurfaceHolder holder = getHolder(); 
+        Canvas c;
+        Rect dirty = new Rect();
+
+        if (isBtmAlive() == false)
+            return;  
+
+        if (downscaled && fastScale == true) //downscale
         {
-            btm.copyPixelsFromBuffer(framebuffer);
+           /* (bug!)getHolder may returned a SurfaceHolder with wrong size, ignoring the previous setFixedSize call. (pre-Kitkat) */
+           /* needs to menually setFixedSize again, and lock update area according to source width and height. */
+           holder.setFixedSize(fixedWidth,fixedHeight);   
+           dirty.set(0,0,fixedWidth,srcHeight+paddingHeight);
         }
+        else
+           dirty = null;
+         
+        c = holder.lockCanvas(dirty);
+
+        if (c == null) 
+            return;
+        
+        btm.copyPixelsFromBuffer(framebuffer);
+        synchronized (holder)
+        { /* draw */
+            if (fastScale == true)
+                c.drawBitmap(btm, 0.0f, 0.0f, null);
+            else
+                c.drawBitmap(btm,myMatrix,myPaint);
+        }
+        this.dirty = null; 
+
     }
     
     private void update(ByteBuffer framebuffer, Rect dirty)
-    {  
-        synchronized(btm)
+    { 
+        SurfaceHolder holder = getHolder();
+        Rect scaledDirty = new Rect();
+
+        if (fastScale == true)
         {
-            try{
-            btm.copyPixelsFromBuffer(framebuffer);
-            }catch(Exception e){}
+            scaledDirty = dirty;
+            if (downscaled) /* downscale */
+                holder.setFixedSize(fixedWidth,fixedHeight);
         }
+        else
+            scaledDirty.set((int)(dirty.left * scaleWidthFactor), (int)(dirty.top * scaleHeightFactor),
+                        (int)(dirty.right * scaleWidthFactor), (int)(dirty.bottom * scaleHeightFactor));    
+
+        if (isBtmAlive() == false)
+            return; 
+  
+        Canvas c = holder.lockCanvas(scaledDirty);
+        if (c == null) 
+            return;
+        
+        /* can't copy a partial buffer, but it doesn't make a noticeable difference anyway */
+        btm.copyPixelsFromBuffer(framebuffer);
+        synchronized (holder)
+        {   /* draw */
+            if (fastScale == true)
+                c.drawBitmap(btm, 0.0f, 0.0f, null);
+            else
+                c.drawBitmap(btm,myMatrix,myPaint);
+        }
+        this.dirty = new Rect();
+        try{
+            this.dirty.set(dirty);
+        }catch(Exception e2){ 
+             this.dirty = null;
+        }      
     }
 
     public boolean onTouchEvent(MotionEvent me)
-    {
+    {  
+        int x,y;
+        if (statusBarOn)  /*need to fix the xy touched coordinates */
+        {
+           int[] coords = new int[2];
+           this.getLocationInWindow(coords);
         
+           x = (int)me.getRawX() - coords[0]; 
+           y = (int)me.getRawY() - coords[1];   
+        }
+        else
+        {  
+            x = (int) me.getRawX();
+            y = (int) me.getRawY();
+        }
+        /*convert */
+        x =  (paddingWidth  > 0) ? (int)( x / scaleHeightFactor):(int)( x / scaleWidthFactor);
+        y =  (paddingHeight > 0) ? (int)( y / scaleWidthFactor) :(int)( y / scaleHeightFactor);
+       
 
-        int x = (int) me.getX();
-        int y = (int) me.getY();
-     
-        x = (int)( x / scaleWidth);
-        y = (int)( y / scaleHeight);
-        
-        
         switch (me.getAction())
         {
         case MotionEvent.ACTION_CANCEL:
@@ -136,7 +268,6 @@ public class RockboxFramebuffer extends SurfaceView
             touchHandler(true, x, y);
             return true;
         }
-
         return false;
     }
 
@@ -175,29 +306,40 @@ public class RockboxFramebuffer extends SurfaceView
     }
 
 /*      
- *  use a sepreate thread to handle the drawing - constant interval(15ms) 
+ *  use a sepreate thread to handle the drawing - constant interval(5ms) 
  *  so no need to draw canvas as much as the old method.  
  *  
  */
+
     public void run()
     {
+        Rect scaledDirty= new Rect();
+        Canvas c;
+        SurfaceHolder holder;
         while(firstrun == false)
-        {
+        {    
             try{
-                Thread.sleep(15);
+                Thread.sleep(5);
             }catch (Exception e){}
             
-            SurfaceHolder holder = getHolder();                            
-            Canvas c = holder.lockCanvas();
+            holder = getHolder();
+            holder.setFormat(4); //RGB_565
+            if (dirty == null)                            
+                c = holder.lockCanvas();
+            else
+            {   
+                scaledDirty.set(dirty.left ,dirty.top, dirty.right,dirty.bottom);  
+                c = holder.lockCanvas(scaledDirty); 
+            }   
+            
             if (c==null) 
                 continue;
 
             synchronized (holder)
-            {    
-            /* draw */          
+            {     
                 synchronized(btm)
-                {
-                    c.drawBitmap(btm,myMatrix,myPaint); 
+                {    
+                    c.drawBitmap(btm,0,0,myPaint);         
                 }             
             }
             holder.unlockCanvasAndPost(c);
@@ -208,5 +350,15 @@ public class RockboxFramebuffer extends SurfaceView
     public void stopUpdate()
     {
          firstrun = true; 
+    }
+
+    public int getStatusBarHeight() 
+    {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+             result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }
