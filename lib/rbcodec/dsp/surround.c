@@ -7,9 +7,9 @@
 
 #define DOLBY_SURROUND_MAX 3072
 /*STEPSIZE sets the strength of surround effect. */
-/*number between 1 to 4: 1 is strongest, 4 is the weakest. */ 
-#define STEPSIZE 2 
-static int32_t dolbyBuffer[DOLBY_SURROUND_MAX * 2 * ( (STEPSIZE>1)?STEPSIZE:2 ) ]; 
+#define MAXSTEP 16
+static int STEPSIZE = 2;
+static int32_t dolbyBuffer[DOLBY_SURROUND_MAX * 2 * MAXSTEP]; 
 static int32_t dolbyBufferPointer IBSS_ATTR;
 static bool surround_enabled = false;
 
@@ -21,11 +21,25 @@ static void dsp_surround_flush(void)
     dolbyBufferPointer = 0;
 }
 
-void dsp_surround_enable(bool enable)
+static void surround_set_stepsize(int var)
 {
-    surround_enabled = enable;
+    if (var > 0)
+    {
+    if (var == 20)  STEPSIZE = MAXSTEP;
+    if (var == 40)  STEPSIZE = MAXSTEP>>1;
+    if (var == 60)  STEPSIZE = MAXSTEP>>2;
+    if (var == 80)  STEPSIZE = MAXSTEP>>3;
+    if (var == 100) STEPSIZE = MAXSTEP>>4;
+    }  
+       
+}
+
+void dsp_surround_enable(int var)
+{
+    surround_set_stepsize(var); 
+    surround_enabled = (var > 0)?true:false;
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
-    dsp_proc_enable(dsp, DSP_PROC_SURROUND, enable);
+    dsp_proc_enable(dsp, DSP_PROC_SURROUND, surround_enabled);
 }
 
 static void dolby_surround_process(struct dsp_proc_entry *this,
