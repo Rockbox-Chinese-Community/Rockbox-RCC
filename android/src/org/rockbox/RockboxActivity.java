@@ -57,7 +57,9 @@ import java.io.FileWriter;
 import java.io.ByteArrayOutputStream;
 import android.content.DialogInterface;
 
-public class RockboxActivity extends Activity 
+import java.lang.Thread.UncaughtExceptionHandler;
+
+public class RockboxActivity extends Activity
 {
     private RockboxApp RockboxAppSetting = RockboxApp.getInstance();
     /** Called when the activity is first created. */
@@ -136,6 +138,7 @@ public class RockboxActivity extends Activity
                 .setPositiveButton(R.string.OK, null)
                 .show();
         }
+        
     }
     
     @Override
@@ -242,7 +245,7 @@ public class RockboxActivity extends Activity
     public void popMessage(int result)
     {
           final String[] ResultString = {"task completed.","no default Music folder.","cannot access default Music folder.",
-                                              "missing sbs file","error, directory name should not contain round breaket."}; 
+                                              "missing sbs file","error, directory name should not contain round breaket or #."}; 
          new AlertDialog.Builder(this)
                                 .setTitle("tinyCoverMaker")
             	                .setMessage(ResultString[result])
@@ -346,8 +349,8 @@ public class RockboxActivity extends Activity
                             String tname1 =  f.getName().toString()+".jpg";
                             String tname2 =  f.getName().toString()+".bmp";
                             String[] names = { "cover.jpg","cover.bmp",tname1,tname2,"folder.jpg","folder.bmp" };
-                            if (tname1.contains("(") || tname1.contains(")") )
-                                return 4; //error, directory name should not contain round breaket. eg ( or )
+                            if (tname1.contains("(") || tname1.contains(")") || tname1.contains("#"))
+                                return 4; //error, directory name should not contain round breaket. eg ( or ), also no #
  
                             for (int i=0;i<6;i++)
                             {
@@ -455,8 +458,8 @@ public class RockboxActivity extends Activity
                             String tname1 =  f.getAbsolutePath().toString().split(defaultMusicFolder)[1] +".jpg";
                             String tname2 =  f.getAbsolutePath().toString().split(defaultMusicFolder)[1] +".bmp";
                             String[] names = { "cover.jpg","cover.bmp",tname1,tname2,"folder.jpg","folder.bmp" };
-                            if (tname1.contains("(") || tname1.contains(")") )
-                                return 4; //error, directory name should not contain round breaket. eg ( or )
+                            if (tname1.contains("(") || tname1.contains(")") || tname1.contains("#"))
+                                return 4; //error, directory name should not contain round breaket. eg ( or ), also no #
                             for (int i=0;i<6;i++)
                             {
                                 cover = new File(f.getAbsolutePath().toString() +"/"+names[i]); 
