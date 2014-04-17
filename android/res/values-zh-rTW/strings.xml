@@ -61,7 +61,11 @@
     <string name="rockbox_sdcard_notfound">​​SD卡不存在或未掛載</string>
     <string name="rockbox_backupfile_notfound">​​備份設定檔不存在</string>
     <string name="rockbox_backup_success">備份完成</string>
-
+    <string name="pre_rockbox_scale_settings">畫面伸縮設定管理</string>
+    <string name="pre_rockbox_scale_mode">高速畫面伸縮模式</string>
+    <string name="pre_rockbox_scale_mode_summary">下次啟動時生效</string>
+    <string name="pre_rockbox_keep_scale_aspect">保持長寬比</string>
+    <string name="pre_rockbox_keep_scale_aspect_summary">下次啟動時生效</string>
     <!-- Rockbox initial configuration values -->
     <string name="rockbox_language_file">chinese-trad.lng</string>
 
