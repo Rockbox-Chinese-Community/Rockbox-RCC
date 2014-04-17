@@ -173,6 +173,9 @@ Java_org_rockbox_RockboxFramebuffer_surfaceDestroyed(JNIEnv *e, jobject this,
 
     (*e)->DeleteGlobalRef(e, RockboxFramebuffer_instance);
     RockboxFramebuffer_instance = NULL;
+    (*e)->DeleteGlobalRef(e, AndroidRect_class);
+    AndroidRect_class = NULL;
+    connected=false;
 }
 
 bool lcd_active(void)
