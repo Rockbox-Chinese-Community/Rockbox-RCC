@@ -81,8 +81,8 @@ AUDIOHW_SETTINGS(
 #if defined(AUDIOHW_HAVE_TREBLE)
     AUDIOHW_SETTING_ENT(TREBLE,             sound_set_treble)
 #endif
-#ifdef AUDIOHW_HAVE_TONE_GAIN
-    AUDIOHW_SETTING_ENT(TONE_GAIN,            sound_set_tone_gain)
+#if defined(AUDIOHW_HAVE_TONE_GAIN)
+    AUDIOHW_SETTING_ENT(TONE_GAIN,       sound_set_tone_gain)
 #endif
     AUDIOHW_SETTING_ENT(BALANCE,            sound_set_balance)
     AUDIOHW_SETTING_ENT(CHANNELS,           sound_set_channels)
