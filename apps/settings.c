@@ -770,13 +770,13 @@ void sound_settings_apply(void)
 #ifdef AUDIOHW_HAVE_TREBLE
     sound_set(SOUND_TREBLE, global_settings.treble);
 #endif
+#ifndef PLATFORM_HAS_VOLUME_CHANGE
+    sound_set(SOUND_VOLUME, global_settings.volume);
+#endif	
 #ifdef AUDIOHW_HAVE_TONE_GAIN
     sound_set(SOUND_TONE_GAIN, global_settings.tone_gain);
 #endif
     sound_set(SOUND_BALANCE, global_settings.balance);
-#ifndef PLATFORM_HAS_VOLUME_CHANGE
-    sound_set(SOUND_VOLUME, global_settings.volume);
-#endif
     sound_set(SOUND_CHANNELS, global_settings.channel_config);
     sound_set(SOUND_STEREO_WIDTH, global_settings.stereo_width);
 #if (CONFIG_CODEC == MAS3587F) || (CONFIG_CODEC == MAS3539F)

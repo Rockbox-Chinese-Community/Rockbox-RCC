@@ -176,7 +176,7 @@ static void set_prescaled_volume(void)
     if (volume + prescale > maxvol)
         prescale = maxvol - volume;
 #ifdef AUDIOHW_HAVE_TONE_GAIN
-    if (sound_prescaler.tone_gain >= 0 )
+    if (sound_prescaler.tone_gain > 0 )
         prescale  *=(100 - sound_prescaler.tone_gain) / 100;
 #endif /* AUDIOHW_HAVE_TONE_GAIN */
     audiohw_set_prescaler(prescale);

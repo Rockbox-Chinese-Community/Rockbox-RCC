@@ -480,6 +480,9 @@ static void settings_eq_precut(int val)
 static void replaygain_set(int val)
 {
     (void)val;
+#ifdef AUDIOHW_HAVE_TONE_GAIN
+    sound_set(SOUND_TONE_GAIN, global_settings.tone_gain);
+#endif
     dsp_replaygain_set_settings(&global_settings.replaygain_settings);
 }
 static void compressor_set(int val)
