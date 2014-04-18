@@ -479,6 +479,9 @@ static void settings_eq_precut(int val)
 static void replaygain_set(int val)
 {
     (void)val;
+#ifdef AUDIOHW_HAVE_TONE_GAIN
+    sound_set(SOUND_TONE_GAIN, global_settings.tone_gain);
+#endif
     dsp_replaygain_set_settings(&global_settings.replaygain_settings); 
 }
 
@@ -2277,9 +2280,6 @@ const struct settings_list settings[] = {
     OFFON_SETTING(F_SOUNDSETTING, dithering_enabled, LANG_DITHERING, false,
                   "dithering enabled", dsp_dither_enable),
     /* surround */
-    /*OFFON_SETTING(F_SOUNDSETTING, surround_enabled, LANG_SURROUND, false,
-                  "surround enabled", dsp_surround_enable),
-    */
     INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_enabled,
                        LANG_SURROUND, 0,
                        "surround enabled", UNIT_PERCENT, 0, 100,
