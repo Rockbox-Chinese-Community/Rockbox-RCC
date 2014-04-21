@@ -13168,3 +13168,54 @@
     *: "音量限制"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_SURROUND
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "差分环绕"
+  </source>
+  <dest>
+    *: none
+    swcodec: "差分环绕"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "差分环绕"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_ANTIALIAS_WARM
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "抗锯齿"
+  </source>
+  <dest>
+    *: none
+    swcodec: "抗锯齿(Tube)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "抗锯齿"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_TONE_GAIN
+  desc: tone gain
+  user: core
+  <source>
+    *: none
+    *: "破音器"
+  </source>
+  <dest>
+    *: none
+    *: "破音器"
+  </dest>
+  <voice>
+    *: none
+    *: "破音器"
+  </voice>
+</phrase>
