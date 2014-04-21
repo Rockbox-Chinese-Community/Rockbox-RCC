@@ -12237,3 +12237,54 @@
     swcodec: "暫停時自動倒退長度"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_SURROUND
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "差分環繞"
+  </source>
+  <dest>
+    *: none
+    swcodec: "差分環繞"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "差分環繞"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_ANTIALIAS_WARM
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "抗鋸齒"
+  </source>
+  <dest>
+    *: none
+    swcodec: "抗鋸齒(Tube)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "抗鋸齒"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_TONE_GAIN
+  desc: tone gain
+  user: core
+  <source>
+    *: none
+    *: "破音器"
+  </source>
+  <dest>
+    *: none
+    *: "破音器"
+  </dest>
+  <voice>
+    *: none
+    *: "破音器"
+  </voice>
+</phrase>
