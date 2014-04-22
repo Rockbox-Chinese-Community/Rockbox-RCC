@@ -524,76 +524,76 @@ struct eq_band_setting eq_defaults[EQ_NUM_BANDS] = {
     { 60, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 6
-    { 70, 43, 0 },
+    { 80, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 7
-    { 90, 43, 0 },
+    { 100, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 8
-    { 110, 43, 0 },
+    { 130, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 9
-    { 140, 43, 0 },
+    { 160, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 10
-    { 180, 4.3, 0 },
+    { 200, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 11
-    { 230, 43, 0 },
+    { 250, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 12
-    { 290, 43, 0 },
+    { 320, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 13
-    { 360, 43, 0 },
+    { 400, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 14
-    { 450, 43, 0 },
+    { 500, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 15
-    { 570, 43, 0 },
+    { 630, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 16
-    { 720, 43, 0 },
+    { 800, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 17
-    { 910, 43, 0 },
+    { 1000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 18
-    { 1140, 43, 0 },
+    { 1250, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 19
-    { 1440, 43, 0 },
+    { 1600, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 20
-    { 1810, 43, 0 },
+    { 2000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 21
-    { 2280, 3, 0 },
+    { 2500, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 22
-    { 2880, 4.3, 0 },
+    { 3150, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 23
-    { 3620, 43, 0 },
+    { 4000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 24
-    { 4560, 43, 0 },
+    { 5000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 25
-    { 5750, 43, 0 },
+    { 6300, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 26
-    { 7250, 43, 0 },
+    { 8000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 27
-    { 9130, 43, 0 },
+    { 10000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 28
-    { 11500, 43, 0 },
+    { 12500, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 29
-    { 14490, 43, 0 },
+    { 16000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 30
     { 18260, 43, 0 },
@@ -601,7 +601,7 @@ struct eq_band_setting eq_defaults[EQ_NUM_BANDS] = {
 #if EQ_NUM_BANDS > 31
     { 19420, 43, 0 },
 #endif
-    { 19810, 43, 0 },
+    { 20000, 43, 0 },
 };
 
 static void eq_load_from_cfg(void *setting, char *value)
