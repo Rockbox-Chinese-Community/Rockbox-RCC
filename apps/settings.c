@@ -232,8 +232,8 @@ void settings_load(int which)
         read_nvram_data(nvram_buffer,NVRAM_BLOCK_SIZE);
     if (which&SETTINGS_HD)
     {
+	    settings_load_config(FIXEDSETTINGSFILE, false);      
         settings_load_config(CONFIGFILE, false);
-        settings_load_config(FIXEDSETTINGSFILE, false);
     }
 }
 
