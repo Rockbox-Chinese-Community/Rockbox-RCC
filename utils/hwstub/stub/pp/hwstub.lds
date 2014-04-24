@@ -7,7 +7,7 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2012 by Amaury Pouly
+ * Copyright (C) 2014 by Amaury Pouly
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,37 +18,56 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#ifndef _BUTTON_TARGET_H_
-#define _BUTTON_TARGET_H_
-
-#include <stdbool.h>
 #include "config.h"
 
-void button_init_device(void);
-int button_read_device(void);
-bool button_debug_screen(void);
+ENTRY(start)
+OUTPUT_FORMAT(elf32-littlearm)
+OUTPUT_ARCH(arm)
+STARTUP(pp/crt0.o)
 
-#define HAS_BUTTON_HOLD
+#define IRAM_END_ADDR   (IRAM_ORIG + IRAM_SIZE)
 
-/* Main unit's buttons */
-#define BUTTON_POWER                0x00000001
-#define BUTTON_MENU                 0x00000002
-#define BUTTON_BACK                 0x00000004
-#define BUTTON_PLAY                 0x00000008
-#define BUTTON_UP                   0x00000010
-#define BUTTON_DOWN                 0x00000020
-#define BUTTON_VOL_UP               0x00000040
-#define BUTTON_VOL_DOWN             0x00000080
-/* For compatibility */
-#define BUTTON_LEFT  BUTTON_BACK
-#define BUTTON_RIGHT BUTTON_MENU
+MEMORY
+{
+    OCRAM : ORIGIN = IRAM_ORIG, LENGTH = IRAM_SIZE
+}
 
-#define BUTTON_MAIN 0xff
+SECTIONS
+{
+    .octext :
+    {
+        _copystart = .;
+        oc_codestart = .;
+        *(.text*)
+        *(.icode*)
+        *(.data*)
+        *(.rodata*)
+        _copyend = .;
+    } > OCRAM
 
-#define BUTTON_REMOTE 0
+    .bss (NOLOAD) :
+    {
+        bss_start = .;
+        *(.bss)
+        bss_end = .;
+    } > OCRAM
 
-/* Software power-off */
-#define POWEROFF_BUTTON BUTTON_POWER
-#define POWEROFF_COUNT 10
+    .stack (NOLOAD) :
+    {
+        oc_codeend = .;
+        oc_stackstart = .;
+        . += STACK_SIZE;
+        oc_stackend = .;
+        oc_bufferstart = .;
+    } > OCRAM
 
-#endif /* _BUTTON_TARGET_H_ */
+    .ocend IRAM_END_ADDR (NOLOAD) :
+    {
+        oc_bufferend = .;
+    } > OCRAM
+
+    /DISCARD/ :
+    {
+        *(.eh_frame)
+    } 
+}
