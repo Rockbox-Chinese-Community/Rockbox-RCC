@@ -44,6 +44,8 @@ public class RockboxApp extends Application {
     private PowerManager.WakeLock RockboxWakeLock = null;
     private boolean RockboxWakeLockStatus = false; //初始化Wakeock状态
     private boolean Rockboxhastitlebar = false;
+    private boolean RockboxFastScaleMode =false;
+    private boolean RockboxScaleKeepAspect = false;
     
     public static RockboxApp getInstance() {
         return instance;
@@ -59,6 +61,14 @@ public class RockboxApp extends Application {
     
     public boolean getTitlebarStatus(){
         return Rockboxhastitlebar;
+    }
+
+    public boolean getRockboxScaleKeepAspect(){
+        return RockboxScaleKeepAspect;  
+    }
+
+    public boolean getRockboxFastScaleMode(){
+        return RockboxFastScaleMode;  
     }
 
     public boolean isRockboxWireExchange(){
@@ -128,6 +138,8 @@ public class RockboxApp extends Application {
         RockboxWireStatus = prefs.getBoolean("drive_by_wire", true);
         isRockboxWireExchange = prefs.getBoolean("drive_by_wire_exchange", false);
         Rockboxhastitlebar = !prefs.getBoolean("show_title_bar", true);
+        RockboxFastScaleMode =  !prefs.getBoolean("scale_mode", true);
+        RockboxScaleKeepAspect = !prefs.getBoolean("keep_scale_aspect", true);
     }
     
     /* Acquire WakeLock */

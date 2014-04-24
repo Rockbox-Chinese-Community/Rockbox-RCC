@@ -62,7 +62,11 @@
 <string name="rockbox_sdcard_notfound">Sdcard does not exist</string>
 <string name="rockbox_backupfile_notfound">The backup file does not exist</string>
 <string name="rockbox_backup_success">Backup completed</string>
-
+<string name="pre_rockbox_scale_settings">Scale Settings</string>
+<string name="pre_rockbox_scale_mode">Fast Scale</string>
+<string name="pre_rockbox_scale_mode_summary">Needs Restart</string>
+<string name="pre_rockbox_keep_scale_aspect">Keep Scale Aspect Ratio</string>
+<string name="pre_rockbox_keep_scale_aspect_summary">Needs Restart</string>
 <!-- Rockbox initial configuration values -->
 <string name="rockbox_language_file">english.lng</string>
 
