@@ -404,6 +404,14 @@ void audiohw_set_bass_cutoff(int val);
  */
 void audiohw_set_treble_cutoff(int val);
 #endif
+#ifdef AUDIOHW_HAVE_TONE_GAIN
+/**
+ * Set new tone gain value.
+ * @param val to set.
+ * 
+ */
+void audiohw_set_tone_gain(int value);
+#endif
 
 #ifdef AUDIOHW_HAVE_EQ
 /**

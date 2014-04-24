@@ -10307,15 +10307,15 @@
   user: core
   <source>
     *: none
-    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100: "Bass Cutoff"
+    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100,android: "Bass Cutoff"
   </source>
   <dest>
     *: none
-    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100: "低频截止频率"
+    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100,android: "低频截止频率"
   </dest>
   <voice>
     *: none
-    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100: "低频截止频率"
+    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100,android: "低频截止频率"
   </voice>
 </phrase>
 <phrase>
@@ -10513,15 +10513,15 @@
   user: core
   <source>
     *: none
-    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100: "Treble Cutoff"
+    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100,android: "Treble Cutoff"
   </source>
   <dest>
     *: none
-    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100: "高频截止频率"
+    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100,android: "高频截止频率"
   </dest>
   <voice>
     *: none
-    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100: "高频截止频率"
+    ipodvideo,ipod6g,mpiohd200,mpiohd300,gigabeatfx,mrobe100,android: "高频截止频率"
   </voice>
 </phrase>
 <phrase>
@@ -13166,5 +13166,56 @@
   </dest>
   <voice>
     *: "音量限制"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "差分环绕"
+  </source>
+  <dest>
+    *: none
+    swcodec: "差分环绕"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "差分环绕"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_ANTIALIAS_WARM
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "抗锯齿"
+  </source>
+  <dest>
+    *: none
+    swcodec: "抗锯齿(Tube)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "抗锯齿"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_TONE_GAIN
+  desc: tone gain
+  user: core
+  <source>
+    *: none
+    *: "破音器"
+  </source>
+  <dest>
+    *: none
+    *: "破音器"
+  </dest>
+  <voice>
+    *: none
+    *: "破音器"
   </voice>
 </phrase>

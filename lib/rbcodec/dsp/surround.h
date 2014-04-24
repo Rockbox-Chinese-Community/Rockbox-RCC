@@ -1,2 +1,2 @@
 #include <stdbool.h>
-void dsp_surround_enable(bool enable);
+void dsp_surround_enable(int var);

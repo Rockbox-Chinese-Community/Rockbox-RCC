@@ -37,16 +37,19 @@ AUDIOHW_SETTING(BASS,        "dB",   0,  1, -24,  24,   0)
 #ifdef AUDIOHW_HAVE_TREBLE
 AUDIOHW_SETTING(TREBLE,      "dB",   0,  1, -24,  24,   0)
 #endif
+#ifdef AUDIOHW_HAVE_TONE_GAIN
+AUDIOHW_SETTING(TONE_GAIN,   "%",   0,  5, 0,  190,   0)
+#endif
 #if defined(HAVE_RECORDING)
 AUDIOHW_SETTING(LEFT_GAIN,   "dB",   1,  1,-128,  96,   0)
 AUDIOHW_SETTING(RIGHT_GAIN,  "dB",   1,  1,-128,  96,   0)
 AUDIOHW_SETTING(MIC_GAIN,    "dB",   1,  1,-128, 108,  16)
 #endif
 #if defined(AUDIOHW_HAVE_BASS_CUTOFF)
-AUDIOHW_SETTING(BASS_CUTOFF,   "",   0,  1,   1,   4,   1)
+AUDIOHW_SETTING(BASS_CUTOFF,   "Hz",   0,  10,   60,   1000,   150)
 #endif
 #if defined(AUDIOHW_HAVE_TREBLE_CUTOFF)
-AUDIOHW_SETTING(TREBLE_CUTOFF, "",   0,  1,   1,   4,   1)
+AUDIOHW_SETTING(TREBLE_CUTOFF, "Hz",   0,  10,   1000,   10000,   3500)
 #endif
 #endif /* CONFIG_PLATFORM & PLATFORM_ANDROID */
 

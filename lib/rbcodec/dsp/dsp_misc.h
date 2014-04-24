@@ -53,7 +53,6 @@ struct dsp_replay_gains
 };
 
 void dsp_replaygain_set_settings(const struct replaygain_settings *settings);
-
 #ifdef HAVE_PITCHCONTROL
 void dsp_set_pitch(int32_t pitch);
 int32_t dsp_get_pitch(void);
