@@ -36,12 +36,12 @@
  */
 DSP_PROC_DB_START
     DSP_PROC_DB_ITEM(MISC_HANDLER)  /* misc stuff (null stage) */
-    DSP_PROC_DB_ITEM(PGA)           /* pre-gain amp */ 
     DSP_PROC_DB_ITEM(AATUBE) 
     DSP_PROC_DB_ITEM(RESAMPLE)      /* resampler providing output frequency */
 #ifdef HAVE_SW_TONE_CONTROLS
     DSP_PROC_DB_ITEM(TONE_CONTROLS) /* bass and treble */
-#endif 
+#endif
+    DSP_PROC_DB_ITEM(PGA)           /* pre-gain amp */ 
 #ifdef HAVE_PITCHCONTROL
     DSP_PROC_DB_ITEM(TIMESTRETCH)   /* time-stretching */
 #endif 
