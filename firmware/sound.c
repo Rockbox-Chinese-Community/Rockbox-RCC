@@ -134,9 +134,6 @@ static struct
 #if defined(AUDIOHW_HAVE_TONE_GAIN)
     int tone_gain;                    /* percent */
 #endif
-#if defined(AUDIOHW_HAVE_TONE_GAIN)
-    int tone_gain;                    /* percent */
-#endif
 #if defined(AUDIOHW_HAVE_EQ)
     int eq_gain[AUDIOHW_EQ_BAND_NUM]; /* tenth dB */
 #endif
