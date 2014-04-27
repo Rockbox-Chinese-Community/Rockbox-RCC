@@ -129,6 +129,10 @@ static int close_wrapper(int fd);
 static int creat_wrapper(const char *pathname, mode_t mode);
 #endif
 
+static void* plugin_get_audio_buffer(size_t *buffer_size);
+static void plugin_release_audio_buffer(void);
+static void plugin_tsr(bool (*exit_callback)(bool));
+
 static const struct plugin_api rockbox_api = {
 
     /* lcd */
@@ -693,8 +697,8 @@ static const struct plugin_api rockbox_api = {
     mktime,
 #endif
     plugin_get_buffer,
-    plugin_get_audio_buffer,
-    plugin_tsr,
+    plugin_get_audio_buffer,     /* defined in plugin.c */
+    plugin_tsr,                  /* defined in plugin.c */ 
     plugin_get_current_filename,
 #if defined(DEBUG) || defined(SIMULATOR)
     debugf,
@@ -801,6 +805,7 @@ static const struct plugin_api rockbox_api = {
 
     /* new stuff at the end, sort into place next time
        the API gets incompatible */
+    plugin_release_audio_buffer, /* defined in plugin.c */
 };
 
 static int plugin_buffer_handle;
@@ -995,7 +1000,7 @@ void* plugin_get_buffer(size_t *buffer_size)
    Playback gets stopped, to avoid conflicts.
    Talk buffer is stolen as well.
  */
-void* plugin_get_audio_buffer(size_t *buffer_size)
+static void* plugin_get_audio_buffer(size_t *buffer_size)
 {
     /* dummy ops with no callbacks, needed because by
      * default buflib buffers can be moved around which must be avoided */
@@ -1005,10 +1010,16 @@ void* plugin_get_audio_buffer(size_t *buffer_size)
     return core_get_data(plugin_buffer_handle);
 }
 
+static void plugin_release_audio_buffer(void)
+{
+    if (plugin_buffer_handle > 0)
+        plugin_buffer_handle = core_free(plugin_buffer_handle);
+}
+
 /* The plugin wants to stay resident after leaving its main function, e.g.
    runs from timer or own thread. The callback is registered to later
    instruct it to free its resources before a new plugin gets loaded. */
-void plugin_tsr(bool (*exit_callback)(bool))
+static void plugin_tsr(bool (*exit_callback)(bool))
 {
     pfn_tsr_exit = exit_callback; /* remember the callback for later */
 }

@@ -1,0 +1,1 @@
+#define MAX_LANGUAGE_SIZE 20482

@@ -1,0 +1,4 @@
+#define BMPHEIGHT_mpegplayer_status_icons_16x16x1 16
+#define BMPWIDTH_mpegplayer_status_icons_16x16x1 80
+extern const unsigned char mpegplayer_status_icons_16x16x1[];
+extern const struct bitmap bm_mpegplayer_status_icons_16x16x1;

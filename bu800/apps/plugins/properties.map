@@ -1,0 +1,127 @@
+Archive member included because of file (symbol)
+
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o (memset)
+
+Allocating common symbols
+Common symbol       size              file
+
+str_album           0x208             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_artist          0x208             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_dirname         0x208             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_filename        0x208             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_title           0x208             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_date            0x40              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_dircount        0x40              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_filecount       0x40              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_size            0x40              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_time            0x40              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+str_duration        0x20              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+num_properties      0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+
+Discarded input sections
+
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+Memory map
+
+ ** file header
+                0x00000000       0x34
+ ** segment headers
+                0x00000034       0xc0
+
+.dynsym         0x000000f4      0x210
+ ** dynsym      0x000000f4      0x210
+
+.dynstr         0x00000304      0x14e
+ ** string table
+                0x00000304      0x14e
+
+.hash           0x00000454       0xd0
+ ** hash        0x00000454       0xd0
+
+.rel.dyn        0x00000524      0x158
+ ** dynamic relocs
+                0x00000524      0x158
+
+.rel.plt        0x0000067c       0x20
+ ** dynamic relocs
+                0x0000067c       0x20
+
+.plt            0x0000069c       0x44
+ ** PLT         0x0000069c       0x44
+
+.text           0x000006e0     0x10fc
+ .text          0x000006e0       0x14 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x000006e0                atexit
+ .text.exit     0x000006f4       0x10 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x000006f4                __on_dlclose
+ .text          0x00000704      0xef0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+                0x00000bcc                plugin_start
+ .text          0x000015f4      0x168 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00001614                plugin__start
+                0x0000168c                rb_atexit
+                0x000016c0                exit
+                0x000016ec                _exit
+                0x00001708                exit_on_usb
+ .text          0x0000175c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .text.memcpy   0x0000175c       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x0000175c                memcpy
+ .text.memset   0x0000177c       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x0000177c                memset
+ .text.memmove  0x0000179c       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x0000179c                memmove
+ .text.memcmp   0xffffffffffffffff       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x000017bc                memcmp
+ .text          0x000017dc        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.rodata         0x000017e0      0x193
+ .rodata        0x000017e0        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+ ** merge strings
+                0x000017e8      0x18b
+
+.fini_array     0x00002e40        0x8
+ .fini_array    0x00002e40        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x00002e44        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.data.rel.ro    0x00002e48       0x80
+ .data.rel.ro   0x00002e48       0x68 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+ .data.rel.ro   0x00002eb0       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00002eb0                __header
+
+.init_array     0x00002ec8        0x4
+ .init_array    0x00002ec8        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.dynamic        0x00002ecc       0xe0
+ ** dynamic     0x00002ecc       0xe0
+
+.got            0x00002fac       0x54
+ ** GOT         0x00002fac       0x38
+ ** GOT PLT     0x00002fe4       0x1c
+
+.data           0x00003000        0x8
+ .data          0x00003000        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00003000                __dso_handle
+ .data          0x00003004        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+ .data          0x00003004        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00003004                rb
+ .data          0x00003008        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .data          0x00003008        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.bss            0x00003008      0xc98
+ .bss           0x00003008        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .bss           0x00003008        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/properties.o
+                0x0000300c                its_a_dir
+ .bss           0x00003010      0x104 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .bss           0x00003114        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .bss           0x00003114        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ ** common      0x00003114      0xb8c

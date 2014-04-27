@@ -1,0 +1,447 @@
+Archive member included because of file (symbol)
+
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o (playback_control)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_display.o (__aeabi_idiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o) (__aeabi_idiv0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o) (__aeabi_unwind_cpp_pr1)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (restore_core_regs)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (__gnu_unwind_execute)
+
+Allocating common symbols
+Common symbol       size              file
+
+bookmarks           0x110             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_bookmark.o
+
+Discarded input sections
+
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/text_viewer.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_action.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_bookmark.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_display.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_pager.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_preferences.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_reader.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_screen_pos.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_settings.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_processor.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_reader.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_window.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+Memory map
+
+ ** file header
+                0x00000000       0x34
+ ** segment headers
+                0x00000034       0xe0
+
+.dynsym         0x00000114      0xb80
+ ** dynsym      0x00000114      0xb80
+
+.dynstr         0x00000c94      0xcbf
+ ** string table
+                0x00000c94      0xcbf
+
+.hash           0x00001954      0x4f4
+ ** hash        0x00001954      0x4f4
+
+.rel.dyn        0x00001e48      0x5b0
+ ** dynamic relocs
+                0x00001e48      0x5b0
+
+.rel.plt        0x000023f8       0x58
+ ** dynamic relocs
+                0x000023f8       0x58
+
+.plt            0x00002450       0x98
+ ** PLT         0x00002450       0x98
+
+.text           0x000024e8     0x7a40
+ .text          0x000024e8       0x14 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x000024e8                atexit
+ .text.exit     0x000024fc       0x10 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x000024fc                __on_dlclose
+ .text          0x0000250c      0x3d4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/text_viewer.o
+                0x0000250c                plugin_start
+ .text          0x000028e0      0x3dc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_action.o
+                0x000028e0                tv_init_action
+                0x00002910                tv_exit
+                0x000029a8                tv_load_file
+                0x000029cc                tv_draw
+                0x00002a08                tv_scroll_up
+                0x00002a88                tv_scroll_down
+                0x00002b14                tv_scroll_left
+                0x00002b7c                tv_scroll_right
+                0x00002be4                tv_top
+                0x00002bfc                tv_bottom
+                0x00002c48                tv_menu
+                0x00002c9c                tv_add_or_remove_bookmark
+ .text          0x00002cbc      0x8e8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_bookmark.o
+                0x00002eac                tv_init_bookmark
+                0x00002ec8                tv_finalize_bookmark
+                0x00002ecc                tv_get_bookmark_positions
+                0x00002f44                tv_toggle_bookmark
+                0x00003054                tv_create_system_bookmark
+                0x000030fc                tv_select_bookmark
+                0x000033b8                tv_deserialize_bookmarks
+                0x000034e4                tv_serialize_bookmarks
+ .text          0x000035a4      0xb50 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_display.o
+                0x000038f0                tv_init_scrollbar
+                0x000039a8                tv_show_bookmarks
+                0x00003a60                tv_update_extra
+                0x00003c70                tv_draw_text
+                0x00003d8c                tv_start_display
+                0x00003de8                tv_end_display
+                0x00003e18                tv_set_layout
+                0x00003ff0                tv_get_drawarea_info
+                0x00004018                tv_init_display
+                0x00004060                tv_finalize_display
+                0x000040ec                tv_exist_scrollbar
+ .text          0x000040f4      0x864 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o
+                0x0000482c                tv_display_menu
+ .text          0x00004958      0x994 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_pager.o
+                0x00004af0                tv_init_pager
+                0x00004b50                tv_finalize_pager
+                0x00004b5c                tv_reset_line_positions
+                0x00004b84                tv_move_next_line
+                0x00004be8                tv_get_line_positions
+                0x00004c48                tv_new_page
+                0x00004d7c                tv_convert_fpos
+                0x00004f1c                tv_move_screen
+ .text          0x000052ec      0x4d8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_preferences.o
+                0x000052ec                tv_copy_preferences
+                0x00005320                tv_set_preferences
+                0x0000569c                tv_compare_preferences
+                0x000056d8                tv_set_default_preferences
+                0x00005778                tv_add_preferences_change_listner
+                0x000057b0                tv_change_fontid
+ .text          0x000057c4      0x5a4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_reader.o
+                0x00005824                tv_get_file_size
+                0x00005838                tv_is_eof
+                0x00005864                tv_get_current_file_pos
+                0x00005880                tv_get_buffer
+                0x000058a8                tv_seek
+                0x00005ccc                tv_init_reader
+                0x00005d34                tv_finalize_reader
+ .text          0x00005d68       0x54 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_screen_pos.o
+                0x00005d68                tv_get_screen_pos
+                0x00005d78                tv_set_screen_pos
+                0x00005d8c                tv_copy_screen_pos
+ .text          0x00005dbc     0x1290 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_settings.o
+                0x00006498                tv_load_global_settings
+                0x000065ac                tv_save_global_settings
+                0x000066fc                tv_load_settings
+                0x000069ac                tv_save_settings
+ .text          0x0000704c      0xfc0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_processor.o
+                0x000075d0                tv_create_formed_text
+                0x00007fd0                tv_init_text_processor
+                0x00007ff4                tv_set_creation_conditions
+ .text          0x0000800c       0xec /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_reader.o
+                0x0000800c                tv_init_text_reader
+                0x0000803c                tv_finalize_text_reader
+                0x00008048                tv_set_read_conditions
+                0x00008054                tv_get_total_text_size
+                0x00008060                tv_get_next_line
+                0x000080b0                tv_read_start
+                0x000080d0                tv_read_end
+                0x000080e0                tv_seek_top
+ .text          0x000080f8      0x4a4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_window.o
+                0x00008180                tv_draw_window
+                0x00008240                tv_traverse_lines
+                0x000083d4                tv_init_window
+                0x0000841c                tv_finalize_window
+                0x0000842c                tv_move_window
+ .text          0x0000859c      0x168 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x000085bc                plugin__start
+                0x00008634                rb_atexit
+                0x00008668                exit
+                0x00008694                _exit
+                0x000086b0                exit_on_usb
+ .text          0x00008704        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.prevtrack
+                0x00008704       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.play     0x00008728       0xc4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.stop     0x000087ec       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.nexttrack
+                0x00008810       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.volume   0x00008834       0x54 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.shuffle  0x00008888       0x5c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.repeat_mode
+                0x000088e4       0xac /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .text.playback_control_init
+                0x00008990       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x00008990                playback_control_init
+ .text.playback_control
+                0x000089a4       0x54 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x000089a4                playback_control
+ .text          0x000089f8       0xfc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                0x000089f8                __divsi3
+                0x000089f8                __aeabi_idiv
+                0x00008ad4                __aeabi_idivmod
+ .text          0x00008af4       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                0x00008af4                __aeabi_idiv0
+                0x00008af4                __aeabi_ldiv0
+ .text          0x00008b04      0xddc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                0x00009348                __aeabi_unwind_cpp_pr0
+                0x00009340                __aeabi_unwind_cpp_pr1
+                0x00009338                __aeabi_unwind_cpp_pr2
+                0x00008ec8                _Unwind_VRS_Get
+                0x00008f34                _Unwind_VRS_Set
+                0x00009350                _Unwind_VRS_Pop
+                0x000096a8                _Unwind_GetCFA
+                0x000096b0                __gnu_Unwind_RaiseException
+                0x00009754                __gnu_Unwind_ForcedUnwind
+                0x00009770                __gnu_Unwind_Resume
+                0x000097dc                __gnu_Unwind_Resume_or_Rethrow
+                0x000097fc                _Unwind_Complete
+                0x00009800                _Unwind_DeleteException
+                0x00009820                __gnu_Unwind_Backtrace
+ .text          0x000098e0      0x1a8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                0x000098e0                __restore_core_regs
+                0x000098e0                restore_core_regs
+                0x000098f4                __gnu_Unwind_Restore_VFP
+                0x000098fc                __gnu_Unwind_Save_VFP
+                0x00009904                __gnu_Unwind_Restore_VFP_D
+                0x0000990c                __gnu_Unwind_Save_VFP_D
+                0x00009914                __gnu_Unwind_Restore_VFP_D_16_to_31
+                0x0000991c                __gnu_Unwind_Save_VFP_D_16_to_31
+                0x00009924                __gnu_Unwind_Restore_WMMXD
+                0x00009968                __gnu_Unwind_Save_WMMXD
+                0x000099ac                __gnu_Unwind_Restore_WMMXC
+                0x000099c0                __gnu_Unwind_Save_WMMXC
+                0x000099d4                ___Unwind_RaiseException
+                0x000099d4                _Unwind_RaiseException
+                0x000099f8                ___Unwind_Resume
+                0x000099f8                _Unwind_Resume
+                0x00009a1c                ___Unwind_Resume_or_Rethrow
+                0x00009a1c                _Unwind_Resume_or_Rethrow
+                0x00009a40                ___Unwind_ForcedUnwind
+                0x00009a40                _Unwind_ForcedUnwind
+                0x00009a64                ___Unwind_Backtrace
+                0x00009a64                _Unwind_Backtrace
+ .text          0xffffffffffffffff      0x4a0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                0x00009ae0                __gnu_unwind_execute
+                0x00009e74                __gnu_unwind_frame
+                0x00009eb4                _Unwind_GetRegionStart
+                0x00009ee0                _Unwind_GetLanguageSpecificData
+                0x00009f18                _Unwind_GetDataRelBase
+                0x00009f20                _Unwind_GetTextRelBase
+ .text          0x00009f28        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.rodata         0x00009f28      0x618
+ ** merge strings
+                0x00009f28      0x5df
+ .rodata        0x0000a508       0x38 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_processor.o
+
+.ARM.extab      0x0000a540       0x48
+ .ARM.extab     0x0000a540        0xc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.extab     0x0000a54c       0x24 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .ARM.extab     0x0000a570       0x18 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+
+.ARM.exidx      0x0000a588       0xd8
+ .ARM.exidx     0x0000a588        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.exidx     0xffffffffffffffff       0xb0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ ** ARM cantunwind
+                0x0000a628        0x8
+ .ARM.exidx     0xffffffffffffffff       0x38 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ ** ARM cantunwind
+                0x0000a658        0x8
+
+.data.rel.ro.local
+                0x0000ba7c      0x404
+ .data.rel.ro.local
+                0x0000ba7c      0x308 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o
+                0x0000baf8                option_menu
+                0x0000bb04                indent_spaces_item
+                0x0000bb10                font_item
+                0x0000bb1c                statusbar_item
+                0x0000bb28                footer_item
+                0x0000bb34                header_item
+                0x0000bb40                alignment_item
+                0x0000bb4c                windows_item
+                0x0000bb58                line_mode_item
+                0x0000bb64                word_wrap_item
+                0x0000bb70                encoding_item
+                0x0000bb7c                scroll_menu
+                0x0000bb88                vertical_scroll_menu
+                0x0000bb94                narrow_mode_item
+                0x0000bba0                autoscroll_speed_item
+                0x0000bbac                overlap_page_mode_item
+                0x0000bbb8                vertical_scroll_mode_item
+                0x0000bbc4                vertical_scrollbar_item
+                0x0000bbd0                horizontal_scroll_menu
+                0x0000bbdc                horizontal_scroll_mode_item
+                0x0000bbe8                horizontal_scrollbar_item
+ .data.rel.ro.local
+                0x0000bd84        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_preferences.o
+                0x0000bd84                preferences
+ .data.rel.ro.local.prevtrack_item__
+                0x0000bd88        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.stop_item_
+                0x0000bd90        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.playpause_item__
+                0x0000bd9c        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.volume_item
+                0x0000bda4        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000bda4                volume_item
+ .data.rel.ro.local.playpause_item
+                0x0000bdb0        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000bdb0                playpause_item
+ .data.rel.ro.local.nexttrack_item__
+                0x0000bdbc        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.playpause_item_
+                0x0000bdc4        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.repeat_mode_item__
+                0x0000bdd0        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.playback_control_menu__
+                0x0000bdd8        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.repeat_mode_item_
+                0x0000bde4        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.playback_control_menu
+                0x0000bdf0        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000bdf0                playback_control_menu
+ .data.rel.ro.local.nexttrack_item
+                0x0000bdfc        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000bdfc                nexttrack_item
+ .data.rel.ro.local.shuffle_item
+                0x0000be08        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000be08                shuffle_item
+ .data.rel.ro.local.volume_item_
+                0x0000be14        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.repeat_mode_item
+                0x0000be20        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000be20                repeat_mode_item
+ .data.rel.ro.local.nexttrack_item_
+                0x0000be2c        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.prevtrack_item
+                0x0000be38        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000be38                prevtrack_item
+ .data.rel.ro.local.stop_item__
+                0x0000be44        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.prevtrack_item_
+                0x0000be4c        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.stop_item
+                0x0000be58        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x0000be58                stop_item
+ .data.rel.ro.local.shuffle_item_
+                0x0000be64        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.shuffle_item__
+                0x0000be70        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.ro.local.volume_item__
+                0x0000be78        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+
+.fini_array     0x0000be80        0x8
+ .fini_array    0x0000be80        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x0000be84        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.data.rel.ro    0x0000be88       0x18
+ .data.rel.ro   0x0000be88       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x0000be88                __header
+
+.init_array     0x0000bea0        0x4
+ .init_array    0x0000bea0        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.dynamic        0x0000bea4       0xe0
+ ** dynamic     0x0000bea4       0xe0
+
+.got            0x0000bf84       0x7c
+ ** GOT         0x0000bf84       0x44
+ ** GOT PLT     0x0000bfc8       0x38
+
+.data           0x0000c000       0x98
+ .data          0x0000c000        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x0000c000                __dso_handle
+ .data          0x0000c004        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/text_viewer.o
+ .data          0x0000c004        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_action.o
+ .data          0x0000c004        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_bookmark.o
+ .data          0x0000c004        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_display.o
+ .data          0x0000c00c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o
+ .data.rel.local
+                0x0000c00c       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o
+ .data.rel      0x0000c024       0x50 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o
+ .data          0x0000c074        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_pager.o
+ .data          0x0000c074        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_preferences.o
+ .data          0x0000c074        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_reader.o
+ .data          0x0000c078        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_screen_pos.o
+ .data          0x0000c078        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_settings.o
+ .data          0x0000c078        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_processor.o
+ .data          0x0000c078        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_reader.o
+ .data          0x0000c078        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_window.o
+ .data          0x0000c078        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x0000c078                rb
+ .data          0x0000c07c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data.rel.playback_control_menu_
+                0x0000c07c       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .data          0x0000c098        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .data          0x0000c098        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .data          0x0000c098        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .data          0x0000c098        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .data          0x0000c098        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .data          0x0000c098        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.bss            0x0000c098     0xd000
+ .bss           0x0000c098        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .bss           0x0000c098        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/text_viewer.o
+ .bss           0x0000c098        0x2 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_action.o
+                0x0000c099                bookmarks_changed
+                0x0000c098                scrolled
+ .bss           0x0000c09a        0x1 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_bookmark.o
+ .bss           0x0000c09c       0xa4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_display.o
+ .bss           0x0000c140      0x4c0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_menu.o
+ .bss           0x0000c600     0xa660 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_pager.o
+ .bss           0x00016c60      0x8b0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_preferences.o
+                0x0001750c                preferences_changed
+ .bss           0x00017510       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_reader.o
+ .bss           0x00017530        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_screen_pos.o
+ .bss           0x00017534        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_settings.o
+ .bss           0x0001753c     0x1928 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_processor.o
+ .bss           0x00018e64        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_text_reader.o
+ .bss           0x00018e6c       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/text_viewer/tv_window.o
+ .bss           0x00018e80      0x104 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .bss           0x00018f84        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+ .bss.parentvp  0x00018f84        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(playback_control.o)
+                0x00018f84                parentvp
+ .bss           0x00018f88        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .bss           0x00018f88        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .bss           0x00018f88        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .bss           0x00018f88        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .bss           0x00018f88        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .bss           0x00018f88        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ ** common      0x00018f88      0x110

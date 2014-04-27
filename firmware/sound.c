@@ -45,7 +45,7 @@ static const struct sound_setting_entry * get_setting_entry(int setting)
         { "", 0, 0, 0, 0, 0 };
 
     static const struct sound_setting_entry default_entry =
-        { &default_info, NULL }; 
+        { &default_info, NULL };
 
     if ((unsigned)setting >= ARRAYLEN(sound_setting_entries))
         return &default_entry;
@@ -131,6 +131,9 @@ static struct
 #if defined(AUDIOHW_HAVE_TREBLE)
     int treble;                       /* tenth dB */
 #endif 
+#if defined(AUDIOHW_HAVE_TONE_GAIN)
+    int tone_gain;                    /* percent */
+#endif
 #if defined(AUDIOHW_HAVE_TONE_GAIN)
     int tone_gain;                    /* percent */
 #endif

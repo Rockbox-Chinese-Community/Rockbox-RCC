@@ -2329,7 +2329,7 @@ fi
     output="rockbox.creative"
     bootoutput="bootloader-zenxfi3.creative"
     appextra="gui:recorder:radio"
-    plugins=""
+    plugins="yes"
     swcodec="yes"
     toolset=$scramblebitmaptools
     t_cpu="arm"
@@ -2679,8 +2679,6 @@ fi
     ;;
 
    61|sansaview)
-    echo "Sansa View is not yet supported!"
-    exit 1
     target_id=63
     modelname="sansaview"
     target="SANSA_VIEW"

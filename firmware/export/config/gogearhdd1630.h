@@ -108,7 +108,7 @@
 /* WM8731 has no tone controls, so we use the software ones */
 #define HAVE_SW_TONE_CONTROLS
 
-/* TODO: #define AB_REPEAT_ENABLE */
+#define AB_REPEAT_ENABLE
 
 /* FM Tuner */
 #define CONFIG_TUNER      TEA5767
@@ -121,7 +121,7 @@
 /* Define this for LCD backlight available */
 #define HAVE_BACKLIGHT
 #define HAVE_BACKLIGHT_BRIGHTNESS
-/* #define CONFIG_BACKLIGHT_FADING     BACKLIGHT_FADING_SW_SETTING */
+#define CONFIG_BACKLIGHT_FADING    BACKLIGHT_FADING_SW_SETTING
 
 /* Main LCD backlight brightness range and defaults */
 #define MIN_BRIGHTNESS_SETTING      1

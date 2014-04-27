@@ -1,0 +1,1046 @@
+Archive member included because of file (symbol)
+
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o (global_stack)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o (opus_decoder_create)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_header.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o (opus_header_parse)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(framing.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o (ogg_page_granulepos)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o) (celt_decoder_get_size)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_lpc.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (_celt_lpc)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entcode.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (ec_tell_frac)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entdec.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o) (ec_dec_init)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mathops.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (celt_sqrt)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mdct.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (clt_mdct_backward)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(modes.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (opus_custom_mode_create)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (pitch_downsample)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(quant_bands.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (unquant_coarse_energy)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(rate.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (compute_allocation)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(vq.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (renormalise_vector)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o) (silk_Get_Decoder_Size)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_frame.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o) (silk_decode_frame)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o) (silk_decode_indices)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_frame.o) (silk_decode_parameters)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pitch.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o) (silk_decode_pitch)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pulses.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o) (silk_decode_pulses)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o) (silk_decoder_set_fs)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(gain_quant.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o) (silk_gains_dequant)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(init_decoder.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o) (silk_init_decoder)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(log2lin.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(gain_quant.o) (silk_log2lin)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o) (silk_NLSF2A)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_decode.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o) (silk_NLSF_decode)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_stabilize.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_decode.o) (silk_NLSF_stabilize)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_unpack.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o) (silk_NLSF_unpack)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_VQ_weights_laroia.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_decode.o) (silk_NLSF_VQ_weights_laroia)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch_est_tables.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pitch.o) (silk_CB_lags_stage3)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(init_decoder.o) (silk_PLC_Reset)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o) (silk_resampler_init)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_down_FIR.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o) (silk_resampler_private_down_FIR)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_IIR_FIR.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o) (silk_resampler_private_IIR_FIR)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_up2_HQ.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_IIR_FIR.o) (silk_resampler_private_up2_HQ)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_rom.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_IIR_FIR.o) (silk_resampler_frac_FIR_12)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(shell_coder.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pulses.o) (silk_shell_decoder)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sort.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_stabilize.o) (silk_insertion_sort_increasing_all_values_int16)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_decode_pred.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o) (silk_stereo_decode_pred)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_MS_to_LR.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o) (silk_stereo_MS_to_LR)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sum_sqr_shift.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o) (silk_sum_sqr_shift)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(table_LSF_cos.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o) (silk_LSFCosTab_FIX_Q12)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_gain.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o) (silk_delta_gain_iCDF)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_LTP.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o) (silk_LTP_vq_ptrs_Q7)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_NB_MB.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o) (silk_NLSF_CB_NB_MB)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_WB.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o) (silk_NLSF_CB_WB)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_other.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o) (silk_NLSF_EXT_iCDF)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pitch_lag.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o) (silk_pitch_contour_10_ms_NB_iCDF)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pulses_per_block.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(shell_coder.o) (silk_shell_code_table_offsets)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o) (opus_packet_parse_impl)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bands.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o) (celt_lcg_rand)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(cwrs.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(vq.o) (encode_pulses)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entenc.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bands.o) (ec_encode)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(kiss_fft.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mdct.o) (opus_ifft)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(laplace.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(quant_bands.o) (ec_laplace_encode)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander_32.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o) (silk_bwexpander_32)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o) (silk_bwexpander)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(CNG.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(init_decoder.o) (silk_CNG_Reset)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(code_signs.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pulses.o) (silk_decode_signs)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_core.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_frame.o) (silk_decode_core)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_analysis_filter.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o) (silk_LPC_analysis_filter)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_inv_pred_gain.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o) (silk_LPC_inverse_pred_gain)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_AR2.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_down_FIR.o) (silk_resampler_private_AR2)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o (destroy_memory_pool)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o (codec_set_replaygain)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entdec.o) (__aeabi_uidiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o) (__aeabi_idiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_uldivmod.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o (__aeabi_uldivmod)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_uldivmod.o) (__gnu_uldivmod_helper)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__aeabi_unwind_cpp_pr0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (restore_core_regs)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (__gnu_unwind_execute)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__divdi3)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__udivdi3)
+
+Discarded input sections
+
+ .text          0x00000000       0x14 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_header.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_header.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_header.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(framing.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(framing.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(framing.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_lpc.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_lpc.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_lpc.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entcode.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entcode.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entcode.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entdec.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entdec.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entdec.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mathops.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mathops.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mathops.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mdct.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mdct.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mdct.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(modes.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(modes.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(modes.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(quant_bands.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(quant_bands.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(quant_bands.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(rate.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(rate.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(rate.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(vq.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(vq.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(vq.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_frame.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_frame.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_frame.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pitch.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pitch.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pitch.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pulses.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pulses.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pulses.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(gain_quant.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(gain_quant.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(gain_quant.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(init_decoder.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(init_decoder.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(init_decoder.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(log2lin.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(log2lin.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(log2lin.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_decode.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_decode.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_decode.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_stabilize.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_stabilize.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_stabilize.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_unpack.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_unpack.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_unpack.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_VQ_weights_laroia.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_VQ_weights_laroia.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_VQ_weights_laroia.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch_est_tables.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch_est_tables.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch_est_tables.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch_est_tables.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_down_FIR.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_down_FIR.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_down_FIR.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_IIR_FIR.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_IIR_FIR.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_IIR_FIR.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_up2_HQ.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_up2_HQ.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_up2_HQ.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_rom.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_rom.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_rom.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_rom.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(shell_coder.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(shell_coder.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(shell_coder.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sort.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sort.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sort.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_decode_pred.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_decode_pred.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_decode_pred.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_MS_to_LR.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_MS_to_LR.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_MS_to_LR.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sum_sqr_shift.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sum_sqr_shift.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sum_sqr_shift.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(table_LSF_cos.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(table_LSF_cos.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(table_LSF_cos.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(table_LSF_cos.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_gain.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_gain.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_gain.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_gain.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_LTP.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_LTP.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_LTP.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_LTP.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_NB_MB.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_NB_MB.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_NB_MB.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_NB_MB.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_WB.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_WB.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_WB.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_WB.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_other.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_other.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_other.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_other.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pitch_lag.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pitch_lag.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pitch_lag.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pitch_lag.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pulses_per_block.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pulses_per_block.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pulses_per_block.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pulses_per_block.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bands.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bands.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bands.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(cwrs.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(cwrs.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(cwrs.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entenc.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entenc.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entenc.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(kiss_fft.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(kiss_fft.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(kiss_fft.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(laplace.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(laplace.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(laplace.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander_32.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander_32.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander_32.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(CNG.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(CNG.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(CNG.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(code_signs.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(code_signs.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(code_signs.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_core.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_core.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_core.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_analysis_filter.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_analysis_filter.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_analysis_filter.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_inv_pred_gain.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_inv_pred_gain.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_inv_pred_gain.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_AR2.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_AR2.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_AR2.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_uldivmod.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_uldivmod.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_uldivmod.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .ARM.extab     0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .ARM.extab     0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .ARM.extab     0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .text          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+Memory map
+
+ ** file header
+                0x00000000       0x34
+ ** segment headers
+                0x00000034       0xe0
+
+.dynsym         0x00000114     0x14b0
+ ** dynsym      0x00000114     0x14b0
+
+.dynstr         0x000015c4     0x1800
+ ** string table
+                0x000015c4     0x1800
+
+.hash           0x00002dc4      0x950
+ ** hash        0x00002dc4      0x950
+
+.rel.dyn        0x00003714      0x410
+ ** dynamic relocs
+                0x00003714      0x410
+
+.rel.plt        0x00003b24       0x30
+ ** dynamic relocs
+                0x00003b24       0x30
+
+.plt            0x00003b54       0x5c
+ ** PLT         0x00003b54       0x5c
+
+.text           0x00003bb0    0x19cd0
+ .text.exit     0x00003bb0       0x10 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00003bb0                __on_dlclose
+ .text          0x00003bc0      0xa80 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o
+                0x00003cbc                codec_run
+                0x00004638                codec_main
+ .text          0x00004640       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+                0x00004640                _start
+                0x00004648                codec_start
+ .text          0x00004654      0x4b8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt.o)
+                0x00004654                resampling_factor
+                0x000046bc                comb_filter
+                0x00004a60                init_caps
+                0x00004ac8                opus_strerror
+                0x00004afc                opus_get_version_string
+ .text          0x00004b0c     0x195c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o)
+                0x00005a34                opus_decoder_get_size
+                0x00005a90                opus_decoder_init
+                0x00005bbc                opus_decoder_create
+                0x00005cc4                opus_decoder_ctl
+                0x00005f44                opus_decoder_destroy
+                0x00005f48                opus_packet_get_bandwidth
+                0x00005fac                opus_packet_get_samples_per_frame
+                0x0000604c                opus_packet_get_nb_channels
+                0x00006060                opus_decode_native
+                0x00006394                opus_decode
+                0x000063d4                opus_packet_get_nb_frames
+                0x00006410                opus_packet_get_nb_samples
+                0x00006454                opus_decoder_get_nb_samples
+ .text          0x00006468      0x55c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_header.o)
+                0x00006508                opus_header_parse
+                0x000067ac                opus_header_to_packet
+ .text          0x000069c4     0x14f4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(framing.o)
+                0x00006ae8                ogg_page_version
+                0x00006af4                ogg_page_continued
+                0x00006b04                ogg_page_bos
+                0x00006b14                ogg_page_eos
+                0x00006b24                ogg_page_granulepos
+                0x00006be4                ogg_page_serialno
+                0x00006c0c                ogg_page_pageno
+                0x00006c34                ogg_page_packets
+                0x00006c74                ogg_stream_check
+                0x00006c98                ogg_stream_clear
+                0x00006d68                ogg_stream_init
+                0x00006e00                ogg_stream_destroy
+                0x00006e20                ogg_page_checksum_set
+                0x00007250                ogg_stream_iovecin
+                0x000074f0                ogg_stream_packetin
+                0x0000752c                ogg_stream_flush
+                0x00007538                ogg_stream_flush_fill
+                0x00007544                ogg_stream_pageout
+                0x000075a8                ogg_stream_pageout_fill
+                0x00007610                ogg_stream_eos
+                0x0000762c                ogg_sync_init
+                0x00007654                ogg_sync_clear
+                0x00007688                ogg_sync_destroy
+                0x000076a8                ogg_sync_check
+                0x000076bc                ogg_sync_buffer
+                0x00007784                ogg_sync_wrote
+                0x000077c8                ogg_sync_pageseek
+                0x00007904                ogg_sync_pageout
+                0x00007960                ogg_stream_pagein
+                0x00007d70                ogg_sync_reset
+                0x00007d9c                ogg_stream_reset
+                0x00007dfc                ogg_stream_reset_serialno
+                0x00007e30                ogg_stream_packetout
+                0x00007e64                ogg_stream_packetpeek
+                0x00007e94                ogg_packet_clear
+ .text          0x00007eb8     0x2558 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o)
+                0x0000816c                celt_decoder_get_size
+                0x000081b0                celt_decode_with_ec
+                0x0000a060                opus_custom_decoder_ctl
+                0x0000a334                celt_decoder_init
+ .text          0x0000a410      0xf24 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_lpc.o)
+                0x0000a410                _celt_lpc
+                0x0000a5f4                celt_fir
+                0x0000ab74                celt_iir
+                0x0000b078                _celt_autocorr
+ .text          0x0000b334       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entcode.o)
+                0x0000b334                ec_tell_frac
+ .text          0x0000b37c      0x348 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entdec.o)
+                0x0000b3fc                ec_dec_init
+                0x0000b450                ec_decode
+                0x0000b498                ec_decode_bin
+                0x0000b4e4                ec_dec_update
+                0x0000b520                ec_dec_bit_logp
+                0x0000b55c                ec_dec_icdf
+                0x0000b5a8                ec_dec_bits
+                0x0000b624                ec_dec_uint
+ .text          0x0000b6c4      0x43c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mathops.o)
+                0x0000b6c4                isqrt32
+                0x0000b704                celt_rsqrt_norm
+                0x0000b790                celt_sqrt
+                0x0000b848                celt_cos_norm
+                0x0000b9c8                celt_rcp
+                0x0000ba78                frac_div32
+ .text          0x0000bb00      0x2f8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(mdct.o)
+                0x0000bb00                clt_mdct_backward
+ .text          0x0000bdf8       0x84 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(modes.o)
+                0x0000bdf8                opus_custom_mode_create
+ .text          0x0000be7c      0xc30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch.o)
+                0x0000bfe4                pitch_downsample
+                0x0000c32c                celt_pitch_xcorr_c
+                0x0000c688                pitch_search
+ .text          0x0000caac     0x1164 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(quant_bands.o)
+                0x0000cef8                quant_coarse_energy
+                0x0000d46c                quant_fine_energy
+                0x0000d558                quant_energy_finalise
+                0x0000d6b4                unquant_coarse_energy
+                0x0000d8f4                unquant_fine_energy
+                0x0000d980                unquant_energy_finalise
+                0x0000dab4                amp2Log2
+ .text          0x0000dc10      0xe70 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(rate.o)
+                0x0000dc10                compute_allocation
+ .text          0x0000ea80      0xac0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(vq.o)
+                0x0000ecd4                alg_quant
+                0x0000f0f8                alg_unquant
+                0x0000f268                renormalise_vector
+                0x0000f33c                stereo_itheta
+ .text          0x0000f540      0xc20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(dec_API.o)
+                0x0000f540                silk_Get_Decoder_Size
+                0x0000f554                silk_InitDecoder
+                0x0000f5b4                silk_Decode
+ .text          0x00010160      0x1dc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_frame.o)
+                0x00010160                silk_decode_frame
+ .text          0x0001033c      0x440 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_indices.o)
+                0x0001033c                silk_decode_indices
+ .text          0x0001077c      0x26c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_parameters.o)
+                0x0001077c                silk_decode_parameters
+ .text          0x000109e8      0x120 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pitch.o)
+                0x000109e8                silk_decode_pitch
+ .text          0x00010b08      0x228 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_pulses.o)
+                0x00010b08                silk_decode_pulses
+ .text          0x00010d30      0x218 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decoder_set_fs.o)
+                0x00010d30                silk_decoder_set_fs
+ .text          0x00010f48       0xd8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(gain_quant.o)
+                0x00010f48                silk_gains_dequant
+ .text          0x00011020       0x40 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(init_decoder.o)
+                0x00011020                silk_init_decoder
+ .text          0x00011060       0x74 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(log2lin.o)
+                0x00011060                silk_log2lin
+ .text          0x000110d4      0x4d8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o)
+                0x000110d4                silk_NLSF2A
+ .text          0x000115ac      0x1d0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_decode.o)
+                0x000115ac                silk_NLSF_decode
+ .text          0x0001177c      0x300 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_stabilize.o)
+                0x0001177c                silk_NLSF_stabilize
+ .text          0x00011a7c       0xac /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_unpack.o)
+                0x00011a7c                silk_NLSF_unpack
+ .text          0x00011b28      0x12c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF_VQ_weights_laroia.o)
+                0x00011b28                silk_NLSF_VQ_weights_laroia
+ .text          0x00011c54      0xdbc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o)
+                0x00011c54                silk_PLC_Reset
+                0x00011ca4                silk_PLC
+                0x00012840                silk_PLC_glue_frames
+ .text          0x00012a10      0x540 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o)
+                0x00012a10                silk_resampler_init
+                0x00012e00                silk_resampler
+ .text          0x00012f50      0x868 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_down_FIR.o)
+                0x00012f50                silk_resampler_private_down_FIR
+ .text          0x000137b8      0x214 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_IIR_FIR.o)
+                0x000137b8                silk_resampler_private_IIR_FIR
+ .text          0x000139cc      0x1c4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_up2_HQ.o)
+                0x000139cc                silk_resampler_private_up2_HQ
+                0x00013b8c                silk_resampler_private_up2_HQ_wrapper
+ .text          0x00013b90      0x3b4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(shell_coder.o)
+                0x00013b90                silk_shell_decoder
+ .text          0x00013f44      0x260 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sort.o)
+                0x00013f44                silk_insertion_sort_decreasing_int16
+                0x00014108                silk_insertion_sort_increasing_all_values_int16
+ .text          0x000141a4      0x164 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_decode_pred.o)
+                0x000141a4                silk_stereo_decode_pred
+                0x000142e4                silk_stereo_decode_mid_only
+ .text          0x00014308      0x2c8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(stereo_MS_to_LR.o)
+                0x00014308                silk_stereo_MS_to_LR
+ .text          0x000145d0      0x108 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(sum_sqr_shift.o)
+                0x000145d0                silk_sum_sqr_shift
+ .text          0x000146d8      0x408 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus.o)
+                0x000146d8                opus_packet_parse_impl
+ .text          0x00014ae0     0x2d18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bands.o)
+                0x000155fc                hysteresis_decision
+                0x00015694                celt_lcg_rand
+                0x00015c54                denormalise_bands
+                0x00015ee4                anti_collapse
+                0x0001641c                haar1
+                0x00016a28                quant_all_bands
+ .text          0x000177f8      0x388 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(cwrs.o)
+                0x000177f8                encode_pulses
+                0x00017928                decode_pulses
+ .text          0x00017b80      0x5ec /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(entenc.o)
+                0x00017ca0                ec_enc_init
+                0x00017ce4                ec_encode
+                0x00017d54                ec_encode_bin
+                0x00017db0                ec_enc_bit_logp
+                0x00017dd8                ec_enc_icdf
+                0x00017e38                ec_enc_bits
+                0x00017eb8                ec_enc_uint
+                0x00017f18                ec_enc_patch_initial_bits
+                0x00017f9c                ec_enc_shrink
+                0x00017fd0                ec_enc_done
+ .text          0x0001816c      0xad4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(kiss_fft.o)
+                0x0001816c                opus_ifft
+ .text          0x00018c40      0x1fc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(laplace.o)
+                0x00018c40                ec_laplace_encode
+                0x00018d48                ec_laplace_decode
+ .text          0x00018e3c       0x78 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander_32.o)
+                0x00018e3c                silk_bwexpander_32
+ .text          0x00018eb4       0x74 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bwexpander.o)
+                0x00018eb4                silk_bwexpander
+ .text          0x00018f28      0x5a4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(CNG.o)
+                0x00018f28                silk_CNG_Reset
+                0x00018f98                silk_CNG
+ .text          0x000194cc       0xc0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(code_signs.o)
+                0x000194cc                silk_decode_signs
+ .text          0x0001958c      0x984 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(decode_core.o)
+                0x0001958c                silk_decode_core
+ .text          0x00019f10       0xc0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_analysis_filter.o)
+                0x00019f10                silk_LPC_analysis_filter
+ .text          0x00019fd0      0x308 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(LPC_inv_pred_gain.o)
+                0x00019fd0                silk_LPC_inverse_pred_gain
+ .text          0x0001a2d8       0x5c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_private_AR2.o)
+                0x0001a2d8                silk_resampler_private_AR2
+ .text.get_new_area
+                0x0001a334        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a334                get_new_area
+ .text.get_used_size
+                0x0001a33c        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a33c                get_used_size
+ .text.get_max_size
+                0x0001a344        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a344                get_max_size
+ .text.destroy_memory_pool
+                0x0001a34c        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a34c                destroy_memory_pool
+ .text.free_ex  0x0001a358      0x38c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a358                free_ex
+ .text.tlsf_free
+                0x0001a6e4       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a6e4                tlsf_free
+ .text.add_new_area
+                0x0001a6fc      0x198 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a6fc                add_new_area
+ .text.malloc_ex
+                0x0001a894      0x5f8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001a894                malloc_ex
+ .text.init_memory_pool
+                0x0001ae8c      0x138 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001ae8c                init_memory_pool
+ .text.tlsf_malloc
+                0x0001afc4       0x64 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001afc4                tlsf_malloc
+ .text.realloc_ex
+                0x0001b028      0x5bc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001b028                realloc_ex
+ .text.tlsf_realloc
+                0x0001b5e4       0x2c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001b5e4                tlsf_realloc
+ .text.calloc_ex
+                0x0001b610       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001b610                calloc_ex
+ .text.tlsf_calloc
+                0x0001b658       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0001b658                tlsf_calloc
+ .text.codec_init
+                0x0001b670       0x40 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b670                codec_init
+ .text.codec_set_replaygain
+                0x0001b6b0       0x50 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b6b0                codec_set_replaygain
+ .text.codec_malloc
+                0x0001b700       0x54 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b700                codec_malloc
+ .text.codec_calloc
+                0x0001b754       0x44 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b754                codec_calloc
+ .text.codec_free
+                0x0001b798        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b798                codec_free
+ .text.codec_realloc
+                0x0001b79c       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b79c                codec_realloc
+ .text.strlen   0x0001b7e4       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b7e4                strlen
+ .text.strcpy   0x0001b804       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b804                strcpy
+ .text.strcat   0x0001b824       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b824                strcat
+ .text.strcmp   0x0001b844       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b844                strcmp
+ .text.memcpy   0x0001b864       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b864                memcpy
+ .text.memset   0x0001b884       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b884                memset
+ .text.memcmp   0x0001b8a4       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b8a4                memcmp
+ .text.memchr   0x0001b8c4       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b8c4                memchr
+ .text.memmove  0x0001b8e4       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b8e4                memmove
+ .text.qsort    0x0001b904       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001b904                qsort
+ .text          0x0001b924       0xc8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                0x0001b924                __udivsi3
+                0x0001b924                __aeabi_uidiv
+                0x0001b9cc                __aeabi_uidivmod
+ .text          0x0001b9ec       0xfc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                0x0001b9ec                __divsi3
+                0x0001b9ec                __aeabi_idiv
+                0x0001bac8                __aeabi_idivmod
+ .text          0x0001bae8       0x3c /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_uldivmod.o)
+                0x0001bae8                __aeabi_uldivmod
+ .text          0x0001bb24       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                0x0001bb24                __aeabi_idiv0
+                0x0001bb24                __aeabi_ldiv0
+ .text          0x0001bb34       0x78 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+                0x0001bb34                __gnu_ldivmod_helper
+                0x0001bb70                __gnu_uldivmod_helper
+ .text          0x0001bbac      0xddc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                0x0001c3f0                __aeabi_unwind_cpp_pr0
+                0x0001c3e8                __aeabi_unwind_cpp_pr1
+                0x0001c3e0                __aeabi_unwind_cpp_pr2
+                0x0001bf70                _Unwind_VRS_Get
+                0x0001bfdc                _Unwind_VRS_Set
+                0x0001c3f8                _Unwind_VRS_Pop
+                0x0001c750                _Unwind_GetCFA
+                0x0001c758                __gnu_Unwind_RaiseException
+                0x0001c7fc                __gnu_Unwind_ForcedUnwind
+                0x0001c818                __gnu_Unwind_Resume
+                0x0001c884                __gnu_Unwind_Resume_or_Rethrow
+                0x0001c8a4                _Unwind_Complete
+                0x0001c8a8                _Unwind_DeleteException
+                0x0001c8c8                __gnu_Unwind_Backtrace
+ .text          0x0001c988      0x1a8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                0x0001c988                __restore_core_regs
+                0x0001c988                restore_core_regs
+                0x0001c99c                __gnu_Unwind_Restore_VFP
+                0x0001c9a4                __gnu_Unwind_Save_VFP
+                0x0001c9ac                __gnu_Unwind_Restore_VFP_D
+                0x0001c9b4                __gnu_Unwind_Save_VFP_D
+                0x0001c9bc                __gnu_Unwind_Restore_VFP_D_16_to_31
+                0x0001c9c4                __gnu_Unwind_Save_VFP_D_16_to_31
+                0x0001c9cc                __gnu_Unwind_Restore_WMMXD
+                0x0001ca10                __gnu_Unwind_Save_WMMXD
+                0x0001ca54                __gnu_Unwind_Restore_WMMXC
+                0x0001ca68                __gnu_Unwind_Save_WMMXC
+                0x0001ca7c                ___Unwind_RaiseException
+                0x0001ca7c                _Unwind_RaiseException
+                0x0001caa0                ___Unwind_Resume
+                0x0001caa0                _Unwind_Resume
+                0x0001cac4                ___Unwind_Resume_or_Rethrow
+                0x0001cac4                _Unwind_Resume_or_Rethrow
+                0x0001cae8                ___Unwind_ForcedUnwind
+                0x0001cae8                _Unwind_ForcedUnwind
+                0x0001cb0c                ___Unwind_Backtrace
+                0x0001cb0c                _Unwind_Backtrace
+ .text          0x0001cb30      0x4a0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                0x0001cb88                __gnu_unwind_execute
+                0x0001cf1c                __gnu_unwind_frame
+                0x0001cf5c                _Unwind_GetRegionStart
+                0x0001cf88                _Unwind_GetLanguageSpecificData
+                0x0001cfc0                _Unwind_GetDataRelBase
+                0x0001cfc8                _Unwind_GetTextRelBase
+ .text          0x0001cfd0      0x484 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+                0x0001cfd0                __divdi3
+ .text          0xffffffffffffffff      0x42c /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+                0x0001d454                __udivdi3
+
+.rodata         0x0001d880     0x4c28
+ .rodata        0x0001d880       0x34 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt.o)
+                0x0001d894                tf_select_table
+ ** merge strings
+                0x0001d8b8       0xe5
+ .rodata        0x0001d9a0       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o)
+ .rodata        0x0001d9b0      0x100 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_header.o)
+                0x0001d9b0                wav_permute_matrix
+ .rodata        0x0001dab0      0x400 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(framing.o)
+ .rodata        0x0001deb0       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o)
+ .rodata        0x0001dec4     0x1780 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(modes.o)
+ .rodata        0x0001f644      0x180 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(quant_bands.o)
+                0x0001f7a8                eMeans
+ .rodata        0x0001f7c4       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(rate.o)
+ .rodata        0x0001f7dc        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(vq.o)
+ .rodata        0x0001f7e8       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(NLSF2A.o)
+ .rodata        0x0001f804       0xf4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(pitch_est_tables.o)
+                0x0001f804                silk_nb_cbk_searchs_stage3
+                0x0001f808                silk_Lag_range_stage3
+                0x0001f820                silk_CB_lags_stage3
+                0x0001f8a8                silk_CB_lags_stage2
+                0x0001f8d4                silk_Lag_range_stage3_10_ms
+                0x0001f8d8                silk_CB_lags_stage3_10_ms
+                0x0001f8f0                silk_CB_lags_stage2_10_ms
+ .rodata        0x0001f8f8        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(PLC.o)
+ .rodata        0x0001f904       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler.o)
+ .rodata        0x0001f924      0x164 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(resampler_rom.o)
+                0x0001f924                silk_resampler_frac_FIR_12
+                0x0001f984                silk_Resampler_2_3_COEFS_LQ
+                0x0001f990                silk_Resampler_1_6_COEFS
+                0x0001f9b8                silk_Resampler_1_4_COEFS
+                0x0001f9e0                silk_Resampler_1_3_COEFS
+                0x0001fa08                silk_Resampler_1_2_COEFS
+                0x0001fa24                silk_Resampler_2_3_COEFS
+                0x0001fa4c                silk_Resampler_3_4_COEFS
+ .rodata        0x0001fa88      0x104 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(table_LSF_cos.o)
+                0x0001fa88                silk_LSFCosTab_FIX_Q12
+ .rodata        0x0001fb8c       0x44 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_gain.o)
+                0x0001fb8c                silk_delta_gain_iCDF
+                0x0001fbb8                silk_gain_iCDF
+ .rodata        0x0001fbd0      0x154 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_LTP.o)
+                0x0001fbd0                silk_LTP_per_index_iCDF
+ .rodata        0x0001fd24      0x2dc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_NB_MB.o)
+ .rodata        0x00020000      0x414 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_WB.o)
+ .rodata        0x00020414      0x170 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_other.o)
+                0x00020414                silk_Transition_LP_A_Q28
+                0x0002043c                silk_Transition_LP_B_Q28
+                0x00020478                silk_NLSF_EXT_iCDF
+                0x00020480                silk_uniform8_iCDF
+                0x00020488                silk_uniform6_iCDF
+                0x00020490                silk_uniform5_iCDF
+                0x00020498                silk_uniform4_iCDF
+                0x0002049c                silk_uniform3_iCDF
+                0x000204a0                silk_LTPScales_table_Q14
+                0x000204a8                silk_Quantization_Offsets_Q10
+                0x000204b0                silk_NLSF_interpolation_factor_iCDF
+                0x000204b8                silk_type_offset_no_VAD_iCDF
+                0x000204bc                silk_type_offset_VAD_iCDF
+                0x000204c0                silk_LTPscale_iCDF
+                0x000204c4                silk_lsb_iCDF
+                0x000204c8                silk_stereo_only_code_mid_iCDF
+                0x000204cc                silk_stereo_pred_joint_iCDF
+                0x000204e8                silk_stereo_pred_quant_Q13
+                0x00020508                silk_SNR_table_Q1
+                0x00020518                silk_TargetRate_table_WB
+                0x00020538                silk_TargetRate_table_MB
+                0x00020558                silk_TargetRate_table_NB
+ .rodata        0x00020584       0x78 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pitch_lag.o)
+                0x00020584                silk_pitch_contour_10_ms_NB_iCDF
+                0x00020588                silk_pitch_contour_10_ms_iCDF
+                0x00020594                silk_pitch_contour_NB_iCDF
+                0x000205a0                silk_pitch_contour_iCDF
+                0x000205c4                silk_pitch_delta_iCDF
+                0x000205dc                silk_pitch_lag_iCDF
+ .rodata        0x000205fc      0x424 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_pulses_per_block.o)
+                0x000205fc                silk_sign_iCDF
+                0x00020628                silk_shell_code_table_offsets
+                0x0002063c                silk_shell_code_table3
+                0x000206d4                silk_shell_code_table2
+                0x0002076c                silk_shell_code_table1
+                0x00020804                silk_shell_code_table0
+                0x0002089c                silk_rate_levels_BITS_Q5
+                0x000208b0                silk_rate_levels_iCDF
+                0x000208c4                silk_pulses_per_block_BITS_Q5
+                0x00020968                silk_pulses_per_block_iCDF
+                0x00020a1c                silk_max_pulses_table
+ .rodata        0x00020a20       0xa8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(bands.o)
+ .rodata        0x00020ac8     0x13e0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(cwrs.o)
+ .rodata        0x00021ea8      0x400 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .rodata        0x000222a8      0x200 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x000222a8                bs_clz_tab
+                0x000223a8                bs_log2_tab
+
+.ARM.extab      0x000224a8       0x48
+ .ARM.extab     0x000224a8        0xc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.extab     0x000224b4       0x24 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .ARM.extab     0x000224d8       0x18 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+
+.ARM.exidx      0x000224f0       0xf0
+ .ARM.exidx     0x000224f0        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.exidx     0xffffffffffffffff       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .ARM.exidx     0xffffffffffffffff       0xb0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ ** ARM cantunwind
+                0x00022598        0x8
+ .ARM.exidx     0xffffffffffffffff       0x38 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .ARM.exidx     0x000225c8        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .ARM.exidx     0x000225d0        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ ** ARM cantunwind
+                0x000225d8        0x8
+
+.data.rel.ro.local
+                0x00023bf8      0x1e8
+ .data.rel.ro.local
+                0x00023bf8       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt.o)
+ .data.rel.ro.local
+                0x00023c18      0x124 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(modes.o)
+ .data.rel.ro.local
+                0x00023d3c       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_LTP.o)
+                0x00023d3c                silk_LTP_vq_ptrs_Q7
+                0x00023d48                silk_LTP_gain_iCDF_ptrs
+ .data.rel.ro.local
+                0x00023d54       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_NB_MB.o)
+                0x00023d54                silk_NLSF_CB_NB_MB
+ .data.rel.ro.local
+                0x00023d78       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_NLSF_CB_WB.o)
+                0x00023d78                silk_NLSF_CB_WB
+ .data.rel.ro.local
+                0x00023d9c        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(tables_other.o)
+                0x00023d9c                silk_LBRR_flags_iCDF_ptr
+ .data.rel.ro.local
+                0x00023da4       0x3c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(cwrs.o)
+
+.fini_array     0x00023de0        0x8
+ .fini_array    0x00023de0        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x00023de4        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.data.rel.ro    0x00023de8       0x1c
+ .data.rel.ro   0x00023de8       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/opus.o
+                0x00023de8                __header
+
+.init_array     0x00023e04        0x4
+ .init_array    0x00023e04        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.dynamic        0x00023e08       0xe0
+ ** dynamic     0x00023e08       0xe0
+
+.got            0x00023ee8      0x118
+ ** GOT         0x00023ee8       0xf4
+ ** GOT PLT     0x00023fdc       0x24
+
+.data           0x00024000        0x8
+ .data          0x00024000        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00024000                __dso_handle
+ .data          0x00024004        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+                0x00024004                ci
+
+.bss            0x00024020     0x94f0
+ .bss           0x00024020        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt.o)
+                0x00024020                global_stack
+ .bss           0x00024040     0x67c0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(opus_decoder.o)
+ .bss           0x0002a800     0x2d00 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libopus.a(celt_decoder.o)
+ .bss           0x0002d500        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .bss           0x0002d504        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)

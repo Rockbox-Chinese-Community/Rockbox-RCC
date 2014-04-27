@@ -89,8 +89,15 @@ extralibs.commands = $$SILENT \
 # flags in this order, put libucl at the end.
 RBLIBS = rbspeex ipodpatcher sansapatcher mkamsboot mktccboot \
          mkmpioboot chinachippatcher mkimxboot ucl
-QMAKE_EXTRA_TARGETS += extralibs
-PRE_TARGETDEPS += extralibs
+!win32-msvc* {
+    QMAKE_EXTRA_TARGETS += extralibs
+    PRE_TARGETDEPS += extralibs
+}
+win32-msvc* {
+    INCLUDEPATH += msvc
+    LIBS += -L$$_PRO_FILE_/msvc
+    LIBS += -ladvapi32 # required for MSVC / Qt Creator combination
+}
 
 # rule for creating ctags file
 tags.commands = ctags -R --c++-kinds=+p --fields=+iaS --extra=+q $(SOURCES)
@@ -105,7 +112,7 @@ QMAKE_EXTRA_TARGETS += lrelease
 }
 
 # Needed by QT on Win
-INCLUDEPATH = $$_PRO_FILE_PWD_ $$_PRO_FILE_PWD_/irivertools \
+INCLUDEPATH += $$_PRO_FILE_PWD_ $$_PRO_FILE_PWD_/irivertools \
             $$_PRO_FILE_PWD_/zlib $$_PRO_FILE_PWD_/base \
             $$_PRO_FILE_PWD_/zlib $$_PRO_FILE_PWD_/gui
 INCLUDEPATH += $$RBBASE_DIR/rbutil/ipodpatcher $$RBBASE_DIR/rbutil/sansapatcher \
@@ -138,6 +145,9 @@ contains(QT_MAJOR_VERSION, 5) {
     message("Qt5 found")
     QT += widgets
     win32 {
+        QT += multimedia
+    }
+    macx {
         QT += multimedia
     }
 }
@@ -187,6 +197,12 @@ unix:!macx:static {
 }
 
 # if -config intel is specified use 10.5 SDK and don't build for PPC
+contains(QT_MAJOR_VERSION, 5) {
+    macx {
+        CONFIG += intel
+        message("Qt5 doesn't support PPC anymore, building x86 only")
+    }
+}
 macx:!intel {
     CONFIG += ppc
     QMAKE_LFLAGS_PPC=-mmacosx-version-min=10.4 -arch ppc
@@ -195,7 +211,12 @@ macx:!intel {
 }
 macx:intel {
     QMAKE_LFLAGS_X86=-mmacosx-version-min=10.5 -arch i386
-    QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
+    contains(QT_MAJOR_VERSION, 5) {
+        QMAKE_MAC_SDK=macosx
+    }
+    !contains(QT_MAJOR_VERSION, 5) {
+        QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
+    }
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
 }
 macx {

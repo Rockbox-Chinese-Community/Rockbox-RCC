@@ -1,0 +1,992 @@
+Archive member included because of file (symbol)
+
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o (destroy_memory_pool)
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_amf.o (memcpy)
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o (configfile_save)
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(strncpy.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_669.o (strncpy)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdriver.o (__aeabi_uidiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_med.o (__aeabi_idiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubdf3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o (__aeabi_i2d)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivdf3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o (__aeabi_dmul)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_fixdfsi.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o (__aeabi_d2iz)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubsf3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o (__aeabi_i2f)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivsf3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o (__aeabi_fmul)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_cmpsf2.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o (__aeabi_fcmplt)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o (__aeabi_ldivmod)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o) (__gnu_ldivmod_helper)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__aeabi_unwind_cpp_pr0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (restore_core_regs)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (__gnu_unwind_execute)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__divdi3)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__udivdi3)
+
+Allocating common symbols
+Common symbol       size              file
+
+gmbuf               0x10000           /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+filtersettings      0x200             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+of                  0x140             /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mloader.o
+remap               0x40              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+filtermacros        0x10              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+display             0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+filters             0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+modreader           0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mloader.o
+module              0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+playingtime         0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+textlines           0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+vc_callback         0x4               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o
+poslookupcnt        0x2               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+activemacro         0x1               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+quit                0x1               /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+
+Discarded input sections
+
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/drv_nos.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_669.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_amf.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_asy.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_dsm.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_far.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gdm.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gt2.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_imf.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_it.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_m15.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_med.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mod.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mtm.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_okt.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_s3m.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stm.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stx.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_ult.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_uni.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_xm.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdreg.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdriver.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mloader.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlreg.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmalloc.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmerror.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmio.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/munitrk.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/npertab.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/sloader.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strdup.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strstr.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch_common.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(strncpy.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubdf3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivdf3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_fixdfsi.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubsf3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivsf3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_cmpsf2.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+Memory map
+
+ ** file header
+                0x00000000       0x34
+ ** segment headers
+                0x00000034       0xe0
+
+.dynsym         0x00000114     0x1cc0
+ ** dynsym      0x00000114     0x1cc0
+
+.dynstr         0x00001dd4     0x1af8
+ ** string table
+                0x00001dd4     0x1af8
+
+.hash           0x000038cc      0xb54
+ ** hash        0x000038cc      0xb54
+
+.rel.dyn        0x00004420      0xe48
+ ** dynamic relocs
+                0x00004420      0xe48
+
+.rel.plt        0x00005268       0x58
+ ** dynamic relocs
+                0x00005268       0x58
+
+.plt            0x000052c0       0x98
+ ** PLT         0x000052c0       0x98
+
+.text           0x00005358    0x27c84
+ .text          0x00005358       0x14 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00005358                atexit
+ .text.exit     0x0000536c       0x10 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x0000536c                __on_dlclose
+ .text          0x0000537c       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/drv_nos.o
+ .text          0x00005390      0xb18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_669.o
+ .text          0x00005ea8     0x13c0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_amf.o
+ .text          0x00007268      0x7f0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_asy.o
+ .text          0x00007a58      0xad0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_dsm.o
+ .text          0x00008528      0xaa4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_far.o
+ .text          0x00008fcc     0x1028 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gdm.o
+ .text          0x00009ff4      0x704 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gt2.o
+ .text          0x0000a6f8     0x17d8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_imf.o
+ .text          0x0000bed0     0x240c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_it.o
+ .text          0x0000e2dc      0xe14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_m15.o
+ .text          0x0000f0f0     0x132c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_med.o
+ .text.unlikely
+                0x0001041c      0x230 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_med.o
+ .text          0x0001064c      0xf24 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mod.o
+ .text          0x00011570      0x7b4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mtm.o
+ .text          0x00011d24      0xb18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_okt.o
+ .text          0x0001283c      0xe98 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_s3m.o
+ .text          0x000136d4      0xa24 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stm.o
+ .text          0x000140f8      0xd5c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stx.o
+ .text          0x00014e54      0x9b0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_ult.o
+ .text          0x00015804     0x19c8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_uni.o
+ .text          0x000171cc     0x1d20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_xm.o
+ .text          0x00018eec       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdreg.o
+                0x00018eec                MikMod_RegisterAllDrivers
+ .text          0x00018efc     0x16f0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdriver.o
+                0x00018efc                MD_SampleSpace
+                0x00018f9c                MD_SampleLength
+                0x0001903c                MikMod_InfoDriver
+                0x00019130                _mm_registerdriver
+                0x00019190                MikMod_RegisterDriver
+                0x000191b4                MikMod_DriverFromAlias
+                0x00019220                MikMod_DriverByOrdinal
+                0x00019264                MD_SampleLoad
+                0x00019300                MD_SampleUnload
+                0x00019320                MikMod_RegisterPlayer
+                0x0001933c                MikMod_Update
+                0x000193c4                Voice_SetVolume_internal
+                0x00019498                Voice_SetVolume
+                0x0001949c                Voice_GetVolume
+                0x000194f0                Voice_SetFrequency_internal
+                0x0001956c                Voice_SetFrequency
+                0x00019570                Voice_GetFrequency
+                0x000195c4                Voice_SetPanning_internal
+                0x00019678                Voice_SetPanning
+                0x0001967c                Voice_GetPanning
+                0x000196d0                Voice_Play_internal
+                0x00019760                Voice_Play
+                0x00019770                Voice_Stop_internal
+                0x000197e8                Voice_Stop
+                0x000197ec                Voice_Stopped_internal
+                0x00019840                Voice_Stopped
+                0x00019844                Voice_GetPosition
+                0x000198a0                Voice_RealVolume
+                0x000198fc                VC_SetCallback
+                0x00019910                MikMod_EnableOutput_internal
+                0x0001998c                MikMod_EnableOutput
+                0x00019990                MikMod_DisableOutput_internal
+                0x000199d8                MikMod_Exit_internal
+                0x00019c84                MikMod_Init
+                0x00019c88                MikMod_Reset
+                0x00019db8                MikMod_Exit
+                0x00019dbc                MikMod_SetNumVoices_internal
+                0x0001a294                MikMod_SetNumVoices
+                0x0001a298                MikMod_DisableOutput
+                0x0001a29c                MikMod_Active_internal
+                0x0001a2b0                MikMod_Active
+                0x0001a2b4                Sample_Play
+                0x0001a4a0                MikMod_GetVersion
+                0x0001a4ac                MikMod_InitThreads
+                0x0001a4d0                MikMod_Unlock
+                0x0001a4d4                MikMod_Lock
+                0x0001a4d8                MD_GetAtom
+ .text          0x0001a5ec     0x1080 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mloader.o
+                0x0001a894                MikMod_InfoLoader
+                0x0001a970                _mm_registerloader
+                0x0001a9ac                MikMod_RegisterLoader
+                0x0001a9c4                ReadComment
+                0x0001aa88                ReadLinedComment
+                0x0001acfc                AllocPositions
+                0x0001ad4c                AllocPatterns
+                0x0001ae20                AllocTracks
+                0x0001ae74                AllocInstruments
+                0x0001af20                AllocSamples
+                0x0001afbc                DupStr
+                0x0001b0a8                StrDup
+                0x0001b0ec                Player_Free
+                0x0001b10c                Player_LoadTitleFP
+                0x0001b140                Player_LoadTitleMem
+                0x0001b16c                Player_LoadTitleGeneric
+                0x0001b178                Player_LoadTitle
+                0x0001b1c8                Player_LoadGeneric
+                0x0001b5ac                Player_LoadMem
+                0x0001b5e8                Player_LoadFP
+                0x0001b624                Player_Load
+ .text          0x0001b66c      0x154 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlreg.o
+                0x0001b66c                MikMod_RegisterAllLoaders
+ .text          0x0001b7c0      0x864 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+                0x0001b7c0                AllocLinear
+                0x0001b82c                FreeLinear
+                0x0001b86c                speed_to_finetune
+                0x0001b980                S3MIT_CreateOrders
+                0x0001bab0                UniEffect
+                0x0001bb0c                UniPTEffect
+                0x0001bb34                S3MIT_ProcessCmd
+                0x0001bfec                UniVolEffect
+ .text          0x0001c024       0xc0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmalloc.o
+                0x0001c024                MikMod_realloc
+                0x0001c028                MikMod_malloc
+                0x0001c088                MikMod_calloc
+                0x0001c0e0                MikMod_free
+ .text          0x0001c0e4       0x38 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmerror.o
+                0x0001c0e4                MikMod_strerror
+                0x0001c100                MikMod_RegisterErrorHandler
+ .text          0x0001c11c      0xb00 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmio.o
+                0x0001c3f4                _mm_fopen
+                0x0001c45c                _mm_FileExists
+                0x0001c4a0                _mm_fclose
+                0x0001c4c0                _mm_iobase_setcur
+                0x0001c4e0                _mm_iobase_revert
+                0x0001c4ec                _mm_new_file_reader
+                0x0001c55c                _mm_delete_file_reader
+                0x0001c568                _mm_new_file_writer
+                0x0001c5bc                _mm_delete_file_writer
+                0x0001c5c8                _mm_delete_mem_reader
+                0x0001c5d4                _mm_new_mem_reader
+                0x0001c654                _mm_write_string
+                0x0001c694                _mm_write_M_UWORD
+                0x0001c6c4                _mm_write_I_UWORD
+                0x0001c6f4                _mm_write_M_ULONG
+                0x0001c71c                _mm_write_I_ULONG
+                0x0001c744                _mm_write_M_SWORD
+                0x0001c750                _mm_write_I_SWORD
+                0x0001c75c                _mm_write_M_SLONG
+                0x0001c760                _mm_write_I_SLONG
+                0x0001c764                _mm_write_M_SWORDS
+                0x0001c794                _mm_write_M_UWORDS
+                0x0001c7c4                _mm_write_I_SWORDS
+                0x0001c7f4                _mm_write_I_UWORDS
+                0x0001c824                _mm_write_M_SLONGS
+                0x0001c858                _mm_write_M_ULONGS
+                0x0001c88c                _mm_write_I_SLONGS
+                0x0001c8c0                _mm_write_I_ULONGS
+                0x0001c8f4                _mm_read_string
+                0x0001c918                _mm_read_M_UWORD
+                0x0001c948                _mm_read_I_UWORD
+                0x0001c97c                _mm_read_M_ULONG
+                0x0001c99c                _mm_read_I_ULONG
+                0x0001c9bc                _mm_read_M_SWORD
+                0x0001c9d0                _mm_read_I_SWORD
+                0x0001c9e4                _mm_read_M_SLONG
+                0x0001c9e8                _mm_read_I_SLONG
+                0x0001c9ec                _mm_read_M_SWORDS
+                0x0001ca30                _mm_read_M_UWORDS
+                0x0001ca74                _mm_read_I_SWORDS
+                0x0001cab8                _mm_read_I_UWORDS
+                0x0001cafc                _mm_read_M_SLONGS
+                0x0001cb44                _mm_read_M_ULONGS
+                0x0001cb8c                _mm_read_I_SLONGS
+                0x0001cbd4                _mm_read_I_ULONGS
+ .text          0x0001cc1c     0x5360 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o
+                0x0001f268                getlinearperiod
+                0x0001fb28                getfrequency
+                0x0001fbe0                Player_HandleTick
+                0x00021368                Player_Init
+                0x000213f0                Player_SetVolume
+                0x0002141c                Player_GetModule
+                0x00021430                Player_Start
+                0x000214bc                Player_Stop_internal
+                0x00021508                Player_Exit_internal
+                0x0002156c                Player_Exit
+                0x00021570                Player_Stop
+                0x00021574                Player_Active
+                0x000215b4                Player_NextPosition
+                0x000216a4                Player_PrevPosition
+                0x00021790                Player_SetPosition
+                0x000218ac                Player_Unmute
+                0x00021a18                Player_Mute
+                0x00021b88                Player_ToggleMute
+                0x00021d0c                Player_Muted
+                0x00021d48                Player_GetChannelVoice
+                0x00021d84                Player_GetChannelPeriod
+                0x00021dc0                Player_Paused_internal
+                0x00021de0                Player_Paused
+                0x00021de4                Player_TogglePause
+                0x00021e08                Player_SetSpeed
+                0x00021e3c                Player_SetTempo
+                0x00021e88                Player_QueryVoices
+                0x00021f38                Player_GetOrder
+                0x00021f5c                Player_GetRow
+ .text          0x00021f7c      0x41c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/munitrk.o
+                0x00021fd4                UniSetRow
+                0x00022014                UniGetByte
+                0x00022054                UniGetWord
+                0x00022074                UniSkipOpcode
+                0x000220c4                UniFindRow
+                0x00022128                UniReset
+                0x00022154                UniWriteByte
+                0x00022190                UniWriteWord
+                0x000221dc                UniNewline
+                0x000222d4                UniDup
+                0x00022330                UniInit
+                0x00022360                UniCleanup
+ .text          0x00022398        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/npertab.o
+ .text          0x00022398      0xedc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/sloader.o
+                0x00022398                SL_Init
+                0x00022410                SL_Exit
+                0x00022464                SL_Load
+                0x00022e28                SL_RegisterSample
+                0x00022edc                SL_Sample16to8
+                0x00022f00                SL_Sample8to16
+                0x00022f24                SL_SampleSigned
+                0x00022f48                SL_SampleUnsigned
+                0x00022f6c                SL_HalveSample
+                0x000231dc                SL_LoadSamples
+ .text          0x00023274       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strdup.o
+                0x00023274                strdup
+ .text          0x000232bc       0x7c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strstr.o
+                0x000232bc                strstr
+ .text          0x00023338     0x3248 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o
+                0x00023ce8                VC1_SilenceBytes
+                0x00023d64                VC1_Exit
+                0x00023de0                VC1_VoiceGetVolume
+                0x00023e00                VC1_VoiceGetPanning
+                0x00023e20                VC1_VoiceSetFrequency
+                0x00023e40                VC1_VoiceGetFrequency
+                0x00023e60                VC1_VoicePlay
+                0x00023eb4                VC1_VoiceStop
+                0x00023ed8                VC1_VoiceStopped
+                0x00023f00                VC1_VoiceGetPosition
+                0x00023f2c                VC1_VoiceSetVolume
+                0x00023f68                VC1_VoiceSetPanning
+                0x00023fa4                VC1_SampleUnload
+                0x00023fec                VC1_SampleLoad
+                0x000241a8                VC1_SampleSpace
+                0x000241b0                VC1_SampleLength
+                0x000241e0                VC1_VoiceRealVolume
+                0x000242a4                VC1_WriteSamples
+                0x00025e20                VC1_WriteBytes
+                0x00025e84                VC1_Init
+                0x00025f68                VC1_PlayStart
+                0x0002629c                VC1_PlayStop
+                0x000264b8                VC1_SetNumVoices
+ .text          0x00026580      0x408 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch_common.o
+                0x00026580                VC_Init
+                0x00026598                VC_Exit
+                0x000265b4                VC_SetNumVoices
+                0x000265cc                VC_SampleSpace
+                0x000265e8                VC_SampleLength
+                0x00026604                VC_PlayStart
+                0x00026620                VC_PlayStop
+                0x0002663c                VC_SampleLoad
+                0x00026658                VC_SampleUnload
+                0x00026674                VC_WriteBytes
+                0x00026690                VC_SilenceBytes
+                0x000266ac                VC_VoiceSetVolume
+                0x000266c8                VC_VoiceGetVolume
+                0x000266e4                VC_VoiceSetFrequency
+                0x00026700                VC_VoiceGetFrequency
+                0x0002671c                VC_VoiceSetPanning
+                0x00026738                VC_VoiceGetPanning
+                0x00026754                VC_VoicePlay
+                0x00026790                VC_VoiceStop
+                0x000267ac                VC_VoiceStopped
+                0x000267c8                VC_VoiceGetPosition
+                0x000267e4                VC_VoiceRealVolume
+                0x00026800                VC_SetupPointers
+ .text          0x00026988     0x1a80 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+                0x00026c30                mmsupp_strncat
+                0x00026cb8                mmsupp_sprintf
+                0x00026fe8                mmsupp_printf
+                0x000270b8                plugin_start
+ .text          0x00028408      0x168 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00028428                plugin__start
+                0x000284a0                rb_atexit
+                0x000284d4                exit
+                0x00028500                _exit
+                0x0002851c                exit_on_usb
+ .text          0x00028570        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .text.get_new_area
+                0x00028570        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028570                get_new_area
+ .text.get_used_size
+                0x00028578        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028578                get_used_size
+ .text.get_max_size
+                0x00028580        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028580                get_max_size
+ .text.destroy_memory_pool
+                0x00028588        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028588                destroy_memory_pool
+ .text.free_ex  0x00028594      0x38c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028594                free_ex
+ .text.tlsf_free
+                0x00028920       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028920                tlsf_free
+ .text.add_new_area
+                0x00028938      0x198 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028938                add_new_area
+ .text.malloc_ex
+                0x00028ad0      0x5f8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00028ad0                malloc_ex
+ .text.init_memory_pool
+                0x000290c8      0x138 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x000290c8                init_memory_pool
+ .text.tlsf_malloc
+                0x00029200       0x64 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00029200                tlsf_malloc
+ .text.realloc_ex
+                0x00029264      0x5bc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00029264                realloc_ex
+ .text.tlsf_realloc
+                0x00029820       0x2c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00029820                tlsf_realloc
+ .text.calloc_ex
+                0x0002984c       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0002984c                calloc_ex
+ .text.tlsf_calloc
+                0x00029894       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x00029894                tlsf_calloc
+ .text          0x000298ac        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .text.memcpy   0x000298ac       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x000298ac                memcpy
+ .text.memset   0x000298cc       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x000298cc                memset
+ .text.memmove  0x000298ec       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x000298ec                memmove
+ .text.memcmp   0x0002990c       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x0002990c                memcmp
+ .text          0x0002992c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .text.get_cfg_filename
+                0x0002992c       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .text.configfile_save
+                0x0002995c      0x1dc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x0002995c                configfile_save
+ .text.configfile_load
+                0x00029b38      0x2e0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00029b38                configfile_load
+ .text.configfile_get_value
+                0x00029e18      0x110 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00029e18                configfile_get_value
+ .text.configfile_update_entry
+                0x00029f28      0x174 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00029f28                configfile_update_entry
+ .text          0x0002a09c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(strncpy.o)
+ .text.strncpy  0x0002a09c      0x114 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(strncpy.o)
+                0x0002a09c                strncpy
+ .text          0x0002a1b0       0xc8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                0x0002a1b0                __udivsi3
+                0x0002a1b0                __aeabi_uidiv
+                0x0002a258                __aeabi_uidivmod
+ .text          0x0002a278       0xfc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                0x0002a278                __divsi3
+                0x0002a278                __aeabi_idiv
+                0x0002a354                __aeabi_idivmod
+ .text          0x0002a374      0x3b8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubdf3.o)
+                0x0002a374                __aeabi_drsub
+                0x0002a37c                __subdf3
+                0x0002a37c                __aeabi_dsub
+                0x0002a380                __adddf3
+                0x0002a380                __aeabi_dadd
+                0x0002a62c                __floatunsidf
+                0x0002a62c                __aeabi_ui2d
+                0x0002a650                __floatsidf
+                0x0002a650                __aeabi_i2d
+                0x0002a678                __extendsfdf2
+                0x0002a678                __aeabi_f2d
+                0x0002a6b8                __floatundidf
+                0x0002a6b8                __aeabi_ul2d
+                0x0002a6cc                __floatdidf
+                0x0002a6cc                __aeabi_l2d
+ .text          0x0002a72c      0x470 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivdf3.o)
+                0x0002a72c                __muldf3
+                0x0002a72c                __aeabi_dmul
+                0x0002a998                __divdf3
+                0x0002a998                __aeabi_ddiv
+ .text          0x0002ab9c       0x5c /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_fixdfsi.o)
+                0x0002ab9c                __fixdfsi
+                0x0002ab9c                __aeabi_d2iz
+ .text          0x0002abf8      0x250 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubsf3.o)
+                0x0002abf8                __aeabi_frsub
+                0x0002ac00                __subsf3
+                0x0002ac00                __aeabi_fsub
+                0x0002ac04                __addsf3
+                0x0002ac04                __aeabi_fadd
+                0x0002ad94                __floatunsisf
+                0x0002ad94                __aeabi_ui2f
+                0x0002ad9c                __floatsisf
+                0x0002ad9c                __aeabi_i2f
+                0x0002adbc                __floatundisf
+                0x0002adbc                __aeabi_ul2f
+                0x0002adcc                __floatdisf
+                0x0002adcc                __aeabi_l2f
+ .text          0x0002ae48      0x2f8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivsf3.o)
+                0x0002ae48                __mulsf3
+                0x0002ae48                __aeabi_fmul
+                0x0002afe0                __divsf3
+                0x0002afe0                __aeabi_fdiv
+ .text          0x0002b140       0xfc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_cmpsf2.o)
+                0x0002b140                __gtsf2
+                0x0002b140                __gesf2
+                0x0002b148                __ltsf2
+                0x0002b148                __lesf2
+                0x0002b150                __cmpsf2
+                0x0002b150                __nesf2
+                0x0002b150                __eqsf2
+                0x0002b1b4                __aeabi_cfrcmple
+                0x0002b1c4                __aeabi_cfcmpeq
+                0x0002b1c4                __aeabi_cfcmple
+                0x0002b1d8                __aeabi_fcmpeq
+                0x0002b1ec                __aeabi_fcmplt
+                0x0002b200                __aeabi_fcmple
+                0x0002b214                __aeabi_fcmpge
+                0x0002b228                __aeabi_fcmpgt
+ .text          0x0002b23c       0x44 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+                0x0002b23c                __aeabi_ldivmod
+ .text          0x0002b280       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                0x0002b280                __aeabi_idiv0
+                0x0002b280                __aeabi_ldiv0
+ .text          0x0002b290       0x78 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+                0x0002b290                __gnu_ldivmod_helper
+                0x0002b2cc                __gnu_uldivmod_helper
+ .text          0x0002b308      0xddc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                0x0002bb4c                __aeabi_unwind_cpp_pr0
+                0x0002bb44                __aeabi_unwind_cpp_pr1
+                0x0002bb3c                __aeabi_unwind_cpp_pr2
+                0x0002b6cc                _Unwind_VRS_Get
+                0x0002b738                _Unwind_VRS_Set
+                0x0002bb54                _Unwind_VRS_Pop
+                0x0002beac                _Unwind_GetCFA
+                0x0002beb4                __gnu_Unwind_RaiseException
+                0x0002bf58                __gnu_Unwind_ForcedUnwind
+                0x0002bf74                __gnu_Unwind_Resume
+                0x0002bfe0                __gnu_Unwind_Resume_or_Rethrow
+                0x0002c000                _Unwind_Complete
+                0x0002c004                _Unwind_DeleteException
+                0x0002c024                __gnu_Unwind_Backtrace
+ .text          0x0002c0e4      0x1a8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                0x0002c0e4                __restore_core_regs
+                0x0002c0e4                restore_core_regs
+                0x0002c0f8                __gnu_Unwind_Restore_VFP
+                0x0002c100                __gnu_Unwind_Save_VFP
+                0x0002c108                __gnu_Unwind_Restore_VFP_D
+                0x0002c110                __gnu_Unwind_Save_VFP_D
+                0x0002c118                __gnu_Unwind_Restore_VFP_D_16_to_31
+                0x0002c120                __gnu_Unwind_Save_VFP_D_16_to_31
+                0x0002c128                __gnu_Unwind_Restore_WMMXD
+                0x0002c16c                __gnu_Unwind_Save_WMMXD
+                0x0002c1b0                __gnu_Unwind_Restore_WMMXC
+                0x0002c1c4                __gnu_Unwind_Save_WMMXC
+                0x0002c1d8                ___Unwind_RaiseException
+                0x0002c1d8                _Unwind_RaiseException
+                0x0002c1fc                ___Unwind_Resume
+                0x0002c1fc                _Unwind_Resume
+                0x0002c220                ___Unwind_Resume_or_Rethrow
+                0x0002c220                _Unwind_Resume_or_Rethrow
+                0x0002c244                ___Unwind_ForcedUnwind
+                0x0002c244                _Unwind_ForcedUnwind
+                0x0002c268                ___Unwind_Backtrace
+                0x0002c268                _Unwind_Backtrace
+ .text          0x0002c28c      0x4a0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                0x0002c2e4                __gnu_unwind_execute
+                0x0002c678                __gnu_unwind_frame
+                0x0002c6b8                _Unwind_GetRegionStart
+                0x0002c6e4                _Unwind_GetLanguageSpecificData
+                0x0002c71c                _Unwind_GetDataRelBase
+                0x0002c724                _Unwind_GetTextRelBase
+ .text          0x0002c72c      0x484 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+                0x0002c72c                __divdi3
+ .text          0xffffffffffffffff      0x42c /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+                0x0002cbb0                __udivdi3
+ .text          0x0002cfdc        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.rodata         0x0002cfe0     0x27c0
+ ** merge strings
+                0x0002cfe0     0x14f5
+ .rodata        0x0002e4d8        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_imf.o
+ .rodata        0x0002e4e0        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_it.o
+ .rodata        0x0002e4ec        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_okt.o
+ .rodata        0x0002e4f0       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_s3m.o
+ .rodata        0x0002e500      0xea0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o
+ .rodata        0x0002f3a0      0x400 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+
+.ARM.extab      0x0002f7a0       0x48
+ .ARM.extab     0x0002f7a0        0xc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.extab     0x0002f7ac        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .ARM.extab     0x0002f7ac       0x24 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .ARM.extab     0x0002f7d0       0x18 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .ARM.extab     0x0002f7e8        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .ARM.extab     0x0002f7e8        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+
+.ARM.exidx      0x0002f7e8       0xf0
+ .ARM.exidx     0x0002f7e8        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.exidx     0xffffffffffffffff       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .ARM.exidx     0xffffffffffffffff       0xb0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ ** ARM cantunwind
+                0x0002f890        0x8
+ .ARM.exidx     0xffffffffffffffff       0x38 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .ARM.exidx     0x0002f8c0        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .ARM.exidx     0x0002f8c8        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ ** ARM cantunwind
+                0x0002f8d0        0x8
+
+.data.rel.ro.local
+                0x00030bc4      0x16c
+ .data.rel.ro.local
+                0x00030bc4        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_669.o
+ .data.rel.ro.local
+                0x00030bcc       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_it.o
+ .data.rel.ro.local
+                0x00030be4       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_s3m.o
+ .data.rel.ro.local
+                0x00030bfc        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stm.o
+ .data.rel.ro.local
+                0x00030c08       0xf8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o
+ .data.rel.ro.local
+                0x00030d00       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+
+.fini_array     0x00030d30        0x8
+ .fini_array    0x00030d30        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x00030d34        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.data.rel.ro    0x00030d38       0x18
+ .data.rel.ro   0x00030d38       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00030d38                __header
+
+.init_array     0x00030d50        0x4
+ .init_array    0x00030d50        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.dynamic        0x00030d54       0xe0
+ ** dynamic     0x00030d54       0xe0
+
+.got            0x00030e34      0x1cc
+ ** GOT         0x00030e34      0x194
+ ** GOT PLT     0x00030fc8       0x38
+
+.data           0x00031000      0x864
+ .data          0x00031000        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00031000                __dso_handle
+ .data          0x00031004        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/drv_nos.o
+ .data.rel      0x00031004       0x7c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/drv_nos.o
+                0x00031004                drv_nos
+ .data          0x00031080        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_669.o
+ .data.rel.local
+                0x00031080       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_669.o
+                0x00031080                load_669
+ .data          0x000310a0       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_amf.o
+ .data.rel.local
+                0x000310b8       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_amf.o
+                0x000310b8                load_amf
+ .data          0x000310d8       0xd0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_asy.o
+                0x000310e4                periodtable
+ .data.rel.local
+                0x000311a8       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_asy.o
+                0x000311a8                load_asy
+ .data          0x000311c8       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_dsm.o
+ .data.rel.local
+                0x000311e0       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_dsm.o
+                0x000311e0                load_dsm
+ .data          0x00031200       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_far.o
+ .data.rel.local
+                0x00031218       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_far.o
+                0x00031218                load_far
+ .data          0x00031238       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gdm.o
+                0x00031238                GDM_Version
+ .data.rel.local
+                0x00031250       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gdm.o
+                0x00031250                load_gdm
+ .data          0x00031270        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gt2.o
+ .data.rel.local
+                0x00031270       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gt2.o
+                0x00031270                load_gt2
+ .data          0x00031290       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_imf.o
+ .data.rel.local
+                0x000312a0       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_imf.o
+                0x000312a0                load_imf
+ .data          0x000312c0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_it.o
+ .data.rel.local
+                0x000312c0       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_it.o
+                0x000312c0                load_it
+ .data          0x000312e0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_m15.o
+ .data.rel.local
+                0x000312e0       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_m15.o
+                0x000312e0                load_m15
+ .data          0x00031300       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_med.o
+ .data.rel.local
+                0x00031310       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_med.o
+                0x00031310                load_med
+ .data          0x00031330       0x80 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mod.o
+ .data.rel.local
+                0x000313b0       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mod.o
+                0x000313b0                load_mod
+ .data          0x000313d0        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mtm.o
+ .data.rel.local
+                0x000313d8       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mtm.o
+                0x000313d8                load_mtm
+ .data          0x000313f8        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_okt.o
+ .data.rel.local
+                0x000313f8       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_okt.o
+                0x000313f8                load_okt
+ .data          0x00031418        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_s3m.o
+ .data.rel.local
+                0x00031418       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_s3m.o
+                0x00031418                load_s3m
+ .data          0x00031438        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stm.o
+ .data.rel.local
+                0x00031438       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stm.o
+                0x00031438                load_stm
+ .data          0x00031458        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stx.o
+ .data.rel.local
+                0x00031458       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stx.o
+                0x00031458                load_stx
+ .data          0x00031478       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_ult.o
+ .data.rel.local
+                0x00031490       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_ult.o
+                0x00031490                load_ult
+ .data          0x000314b0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_uni.o
+ .data.rel.local
+                0x000314b0       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_uni.o
+                0x000314b0                load_uni
+ .data          0x000314d0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_xm.o
+ .data.rel.local
+                0x000314d0       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_xm.o
+                0x000314d0                load_xm
+ .data          0x000314f0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdreg.o
+ .data          0x000314f0       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdriver.o
+                0x000314fe                md_mode
+                0x000314fb                md_musicvolume
+                0x000314fa                md_sndfxvolume
+                0x000314fc                md_volume
+                0x000314fd                md_pansep
+                0x000314f8                md_bpm
+                0x00031500                md_mixfreq
+ .data.rel      0x00031504        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdriver.o
+                0x00031504                md_player
+ .data          0x00031508       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mloader.o
+                0x00031508                finetune
+ .data          0x00031528        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlreg.o
+ .data          0x00031528        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+ .data.rel.local
+                0x00031528       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+                0x00031528                STM_Version
+                0x00031534                STM_Signatures
+ .data          0x00031540        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmalloc.o
+ .data          0x00031540        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmerror.o
+ .data.rel.local
+                0x00031540      0x130 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmerror.o
+                0x00031540                _mm_errmsg
+ .data          0x00031670        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmio.o
+ .data          0x00031670        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o
+ .data          0x00031670       0x7c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/munitrk.o
+                0x00031670                unioperands
+ .data          0x000316ec       0xa8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/npertab.o
+                0x000316ec                npertab
+ .data          0x00031794        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/sloader.o
+ .data          0x00031794        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strdup.o
+ .data          0x00031794        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strstr.o
+ .data          0x00031794        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o
+ .data          0x00031794        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch_common.o
+ .data.rel      0x00031794        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch_common.o
+ .data          0x0003179c       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+                0x000317ac                lastswap
+ .data.rel.local
+                0x000317b0       0xb0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+ .data          0x00031860        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00031860                rb
+ .data          0x00031864        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .data          0x00031864        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .data          0x00031864        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .data          0x00031864        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(strncpy.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubdf3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivdf3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_fixdfsi.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubsf3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivsf3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_cmpsf2.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .data          0x00031864        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.bss            0x00031868    0x10ae8
+ .bss           0x00031868        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .bss           0x00031868        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/drv_nos.o
+ .bss           0x00031868        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_669.o
+ .bss           0x00031870        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_amf.o
+ .bss           0x00031878        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_asy.o
+ .bss           0x00031884       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_dsm.o
+ .bss           0x00031898        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_far.o
+ .bss           0x000318a4        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gdm.o
+ .bss           0x000318ac        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_gt2.o
+ .bss           0x000318ac        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_imf.o
+ .bss           0x000318b4       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_it.o
+ .bss           0x000318d0        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_m15.o
+ .bss           0x000318dc       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_med.o
+ .bss           0x000318fc       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mod.o
+ .bss           0x0003190c       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_mtm.o
+ .bss           0x00031954        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_okt.o
+ .bss           0x00031958       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_s3m.o
+ .bss           0x00031968        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stm.o
+ .bss           0x00031970        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_stx.o
+ .bss           0x0003197c        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_ult.o
+ .bss           0x00031984      0x148 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_uni.o
+ .bss           0x00031acc       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/load_xm.o
+ .bss           0x00031ae0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdreg.o
+ .bss           0x00031ae0       0x2c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mdriver.o
+                0x00031b08                md_driver
+                0x00031b04                md_numchn
+                0x00031b03                md_sngchn
+                0x00031b02                md_sfxchn
+                0x00031b06                md_device
+                0x00031b01                md_hardchn
+                0x00031b00                md_softchn
+                0x00031af8                _mm_mutex_lists
+                0x00031afc                _mm_mutex_vars
+                0x00031b05                md_reverb
+ .bss           0x00031b0c        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mloader.o
+ .bss           0x00031b10        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlreg.o
+ .bss           0x00031b10       0x10 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mlutil.o
+                0x00031b14                noteindex
+                0x00031b1c                poslookup
+                0x00031b18                origpositions
+ .bss           0x00031b20        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmalloc.o
+ .bss           0x00031b20        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmerror.o
+                0x00031b28                _mm_errorhandler
+                0x00031b20                MikMod_critical
+                0x00031b24                MikMod_errno
+ .bss           0x00031b2c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mmio.o
+ .bss           0x00031b2c        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mplayer.o
+                0x00031b2c                pf
+ .bss           0x00031b30       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/munitrk.o
+ .bss           0x00031b4c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/npertab.o
+ .bss           0x00031b4c       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/sloader.o
+ .bss           0x00031b60        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strdup.o
+ .bss           0x00031b60        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/strstr.o
+ .bss           0x00031b60       0xb0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch.o
+ .bss           0x00031c10       0x50 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/virtch_common.o
+ .bss           0x00031c60      0x238 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/mikmod/mikmod.o
+                0x00031e8c                swap
+                0x00031e94                vscroll
+                0x00031e8d                screenupdated
+                0x00031e90                hscroll
+ .bss           0x00031e98      0x104 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .bss           0x00031f9c        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(strncpy.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubdf3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivdf3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_fixdfsi.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_addsubsf3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_muldivsf3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_arm_cmpsf2.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .bss           0x00031fa0        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ ** common      0x00031fa0    0x103b0
