@@ -13446,3 +13446,37 @@
     *: "OverDrive"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_CROSSFEED_FIELD
+  desc: none
+  user: core 
+  <source>
+    *: none
+    *: "Crossfeed field"
+  </source>
+  <dest>
+    *: none
+    *: "Crossfeed field"
+  </dest>
+  <voice>
+    *: none
+    *: "Crossfeed field"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_BRIGHTNESS
+  desc: none
+  user: core 
+  <source>
+    *: none
+    *: "Compressor Brightness"
+  </source>
+  <dest>
+    *: none
+    *: "Compressor Brightness"
+  </dest>
+  <voice>
+    *: none
+    *: "Compressor Brightness"
+  </voice>
+</phrase>

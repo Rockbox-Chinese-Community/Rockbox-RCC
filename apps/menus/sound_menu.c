@@ -147,9 +147,11 @@ MENUITEM_SETTING(roll_off, &global_settings.roll_off, NULL);
                      &global_settings.crossfeed_hf_attenuation, lowlatency_callback);
     MENUITEM_SETTING(crossfeed_hf_cutoff,
                      &global_settings.crossfeed_hf_cutoff, lowlatency_callback);
+    MENUITEM_SETTING(crossfeed_field,
+                     &global_settings.crossfeed_field, lowlatency_callback);
     MAKE_MENU(crossfeed_menu,ID2P(LANG_CROSSFEED), NULL, Icon_NOICON,
               &crossfeed, &crossfeed_direct_gain, &crossfeed_cross_gain,
-              &crossfeed_hf_attenuation, &crossfeed_hf_cutoff);
+              &crossfeed_hf_attenuation, &crossfeed_hf_cutoff,&crossfeed_field);
 
     /* Space'80 Reverb */
     MENUITEM_SETTING(space80, &global_settings.space80, lowlatency_callback);
@@ -208,9 +210,12 @@ static int timestretch_callback(int action,const struct menu_item_ex *this_item)
     MENUITEM_SETTING(compressor_release,
                      &global_settings.compressor_settings.release_time,
                      lowlatency_callback);
+    MENUITEM_SETTING(compressor_brightness,
+                     &global_settings.compressor_settings.brightness,
+                     lowlatency_callback);
     MAKE_MENU(compressor_menu,ID2P(LANG_COMPRESSOR), NULL, Icon_NOICON,
               &compressor_threshold, &compressor_gain, &compressor_ratio,
-              &compressor_knee, &compressor_attack, &compressor_release);
+              &compressor_knee, &compressor_attack, &compressor_release, &compressor_brightness);
 #endif
 
 #if (CONFIG_CODEC == MAS3587F) || (CONFIG_CODEC == MAS3539F)

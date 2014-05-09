@@ -20,14 +20,22 @@ extern unsigned char audiobufend[];
 extern unsigned char audiobuffer[];
 #else /* PLATFORM_HOSTED */
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID) /* PLATFORM_ANDROID */
-unsigned char audiobuffer[(9*1024-768)*1024+(MEMORYSIZE-8)*1024*1024];
+union u{
+    unsigned char buffer[(9*1024-768)*1024+(MEMORYSIZE-8)*1024*1024];
+    unsigned short dummy;
+};
+union u array;
+unsigned char *audiobuffer = &array.buffer[0]; 
 #else
 unsigned char audiobuffer[(MEMORYSIZE*1024-768)*1024];
 #endif
+#if (CONFIG_PLATFORM & PLATFORM_ANDROID) /* PLATFORM_ANDROID */
+unsigned char *audiobufend = &array.buffer[0] + sizeof(array.buffer);
+#else
 unsigned char *audiobufend = audiobuffer + sizeof(audiobuffer);
+#endif
 extern unsigned char *audiobufend;
 #endif
-
 /* debug test alloc */
 static int test_alloc;
 void core_allocator_init(void)
