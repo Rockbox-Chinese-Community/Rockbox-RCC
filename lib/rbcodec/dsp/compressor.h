@@ -29,8 +29,10 @@ struct compressor_settings
     int knee;
     int release_time;
     int attack_time;
+    int brightness;
 };
 
 void dsp_set_compressor(const struct compressor_settings *settings);
+void dsp_set_compressor_brightness(int val);
 
 #endif /* COMPRESSOR_H */

@@ -446,6 +446,12 @@ static void crossfeed_cross_set(int val)
                                   global_settings.crossfeed_hf_cutoff);
 }
 
+static void crossfeed_field_set(int val)
+{
+    (void)val;
+    dsp_set_crossfeed_field(global_settings.crossfeed_field);  
+}
+
 static void space80_set(int val)
 {
    (void)val;
@@ -489,6 +495,12 @@ static void compressor_set(int val)
 {
     (void)val;
     dsp_set_compressor(&global_settings.compressor_settings);
+}
+
+static void compressor_brightness_set(int val)
+{
+    (void)val;
+    dsp_set_compressor_brightness(global_settings.compressor_settings.brightness);
 }
 
 static const char* db_format(char* buffer, size_t buffer_size, int value,
@@ -1666,7 +1678,10 @@ const struct settings_list settings[] = {
                        LANG_CROSSFEED_HF_CUTOFF, 700,
                        "crossfeed hf cutoff", UNIT_HERTZ, 500, 2000, 100,
                        NULL, NULL, crossfeed_cross_set),
-
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, crossfeed_field,
+                       LANG_CROSSFEED_FIELD, 0,
+                       "crossfeed field", UNIT_INT, 0, 5, 1,
+                       NULL, NULL, crossfeed_field_set),
     /* space80 */
     OFFON_SETTING(F_SOUNDSETTING, space80, LANG_SPACE80, false,
                   "space80 enabled", dsp_set_space80_enable),
@@ -2327,6 +2342,11 @@ const struct settings_list settings[] = {
                        LANG_COMPRESSOR_RELEASE, 500,
                        "compressor release time", UNIT_MS, 100, 1000,
                        100, NULL, NULL, compressor_set),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, compressor_settings.brightness,
+                       LANG_COMPRESSOR_BRIGHTNESS, -4,
+                       "compressor brightness", UNIT_INT, -16, 16,
+                       2, NULL, NULL, compressor_brightness_set),
+
 #endif
 #ifdef AUDIOHW_HAVE_BASS_CUTOFF
     SOUND_SETTING(F_NO_WRAP, bass_cutoff, LANG_BASS_CUTOFF,

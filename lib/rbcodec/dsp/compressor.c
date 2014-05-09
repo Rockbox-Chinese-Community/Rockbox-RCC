@@ -428,6 +428,11 @@ void dsp_set_compressor(const struct compressor_settings *settings)
     dsp_proc_activate(dsp, DSP_PROC_COMPRESSOR, true);
 }
 
+static int brightness=0;
+void dsp_set_compressor_brightness(int val)
+{
+    brightness=val;
+}
 /** COMPRESSOR PROCESS
  *  Changes the gain of the samples according to the compressor curve
  */
@@ -438,7 +443,7 @@ static void compressor_process(struct dsp_proc_entry *this,
     int count = buf->remcount;
     int32_t *in_buf[2] = { buf->p32[0], buf->p32[1] };
     const int num_chan = buf->format.num_channels;
-
+    int weight = brightness; /*the weight factor for sum to the pre-emphasis network can cahnge how bright the sound is*/
     while (count-- > 0)
     {
 
@@ -478,11 +483,16 @@ static void compressor_process(struct dsp_proc_entry *this,
         hpfx1 = x;
 
         /* Apply weighted sum to the pre-emphasis network */
-        sample_gain = (x>>1) + hp1y1 + (hp2y1<<1); /* x/2 + hp1 + 2*hp2 */
+        //sample_gain = (x>>1) + hp1y1 + (hp2y1<<1); /* x/2 + hp1 + 2*hp2 */
+        if (weight >8)
+            sample_gain = (x>>1) + hp1y1 + (hp1y1>>2) * (weight-8); 
+        else if (weight >0) 
+            sample_gain = (x>>1) + hp1y1 + (hp2y1<<1) + (hp2y1>>1) * weight;
+        else
+            sample_gain = (x>>1) + hp1y1 + (hp2y1<<1) - (hp2y1>>1) * weight;
         sample_gain >>= 1;
         sample_gain += sample_gain >> 1;
         sample_gain = get_compression_gain(&buf->format, sample_gain);
-
         /* Exponential Attack and Release */
 
        if ((sample_gain <= release_gain) && (sample_gain > 0))

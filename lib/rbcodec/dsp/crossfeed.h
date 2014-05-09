@@ -31,5 +31,5 @@ enum crossfeed_type
 void dsp_set_crossfeed_type(int type);
 void dsp_set_crossfeed_direct_gain(int gain);
 void dsp_set_crossfeed_cross_params(long lf_gain, long hf_gain, long cutoff);
-
+void dsp_set_crossfeed_field(int level);
 #endif /* CROSSFEED_H */

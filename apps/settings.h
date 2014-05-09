@@ -337,7 +337,7 @@ struct user_settings
     unsigned int crossfeed_cross_gain;          /* dB x 10 */
     unsigned int crossfeed_hf_attenuation;      /* dB x 10 */
     unsigned int crossfeed_hf_cutoff;           /* Frequency in Hz */
-
+    unsigned int crossfeed_field;
     /* Space'80 Reverb */
     bool space80;
     unsigned int space80_decay;

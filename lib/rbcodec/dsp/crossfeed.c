@@ -268,6 +268,88 @@ void crossfeed_meier_process(struct dsp_proc_entry *this,
 }
 #endif /* CPU */
 
+
+typedef struct crossfeed_s {
+	unsigned int mid[25];
+	unsigned int  side[25];
+	unsigned char delay;
+	unsigned char len;
+	unsigned char pos;
+} crossfeed_t;
+
+
+static const float kernel_44k[] = {
+	1, -0.020730974, -0.019022247, -0.018487588, -0.017449792, -0.024426898, -0.038292188,
+	-0.071077453, -0.11469807, -0.1874774, -0.20722037, -0.00073042441
+};
+
+
+/*static void crossfeed_process_sample(crossfeed_t *filter, int left, int right,
+                                            int *oleft, int *oright) {
+	int mid = (left + right) / 2;
+	int side = (left - right) / 2;
+	int oside = 0;
+	filter->mid[(filter->pos + filter->delay) % filter->len] = mid;
+	filter->side[filter->pos] = side;
+
+	oside = filter->side[(filter->pos + filter->len - filter->delay) % filter->len];
+
+	*oleft = filter->mid[filter->pos] + oside;
+	*oright = filter->mid[filter->pos] - oside;
+	filter->pos = (filter->pos + 1) % filter->len;
+}
+*/
+
+static crossfeed_t filter_lnx;
+static int field_level;
+
+void dsp_set_crossfeed_field(int level)
+{
+    field_level = level;   
+}
+
+void crossfeed_LnxPrgr3_process(struct dsp_proc_entry *this,
+                             struct dsp_buffer **buf_p)
+{
+    (void)this;
+    static int m[] = {0,31,63,127,191,254}; 
+    struct dsp_buffer *buf = *buf_p;
+    int count = buf->remcount;
+
+    int mid,side,oside, left, right,*oleft,*oright;
+
+    crossfeed_t *filter = &filter_lnx;
+    filter->delay = m[field_level];
+    filter->len = sizeof(kernel_44k)/sizeof(float);
+    
+    /*for(int i=0;i<count;++i) {
+        crossfeed_process_sample(&filter, buf->p32[0][i+1], buf->p32[1][i+1], &buf->p32[0][i],
+		                        &buf->p32[1][i]);
+    }*/
+    for(int i=0;i<count;++i) 
+    {
+        left = buf->p32[0][i+1];
+        right = buf->p32[1][i+1];
+        oleft = &buf->p32[0][i];
+        oright = &buf->p32[1][i];  
+        mid = (left + right) / 2;
+	side = (left - right) / 2;
+	oside = 0;
+
+	filter->mid[(filter->pos + filter->delay) % filter->len] = mid;
+	filter->side[filter->pos] = side;
+
+	oside = filter->side[(filter->pos + filter->len - filter->delay) % filter->len];
+
+	*oleft = filter->mid[filter->pos] + oside;
+	*oright = filter->mid[filter->pos] - oside;
+	filter->pos = (filter->pos + 1) % filter->len;  
+
+    }
+}
+
+
+
 /* Update the processing function according to crossfeed type */
 static void update_process_fn(struct dsp_proc_entry *this,
                               struct dsp_config *dsp)
@@ -275,18 +357,23 @@ static void update_process_fn(struct dsp_proc_entry *this,
     struct crossfeed_state *state = (struct crossfeed_state *)this->data;
     dsp_proc_fn_type fn;
 
+
     unsigned int fout = dsp_get_output_frequency(dsp);
 
-    if (crossfeed_type != CROSSFEED_TYPE_CUSTOM)
+    if (crossfeed_type == CROSSFEED_TYPE_MEIER)
     {
         crossfeed_meier_update_filter(state, fout);
         fn = crossfeed_meier_process;
     }
-    else
+    else if(crossfeed_type == CROSSFEED_TYPE_CUSTOM)
     {
         state->index_max = state->delay + DELAY_LEN(fout);
         crossfeed_custom_update_filter(state, fout);
         fn = crossfeed_process;
+    }
+    else
+    {
+        fn = crossfeed_LnxPrgr3_process;
     }
 
     if (this->process != fn)
