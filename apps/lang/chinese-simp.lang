@@ -13203,3 +13203,37 @@
     *: "破音器"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "限幅器(LIMITER)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "限幅器(LIMITER)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "限幅器(LIMITER)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "压限器+限幅器(LIMITER)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "压限器+限幅器(LIMITER)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "压限器+限幅器(LIMITER)"
+  </voice>
+</phrase>

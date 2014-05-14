@@ -13446,3 +13446,122 @@
     *: "OverDrive"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "LnxPrgr"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LnxPrgr"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LnxPrgr"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "LnxPrgr2"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LnxPrgr2"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LnxPrgr2"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX3
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "LnxPrgr3"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LnxPrgr3"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LnxPrgr3"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX4
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "LnxPrgr4"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LnxPrgr4"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LnxPrgr4"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX5
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "LnxPrgr5"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LnxPrgr5"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LnxPrgr5"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "LIMITER"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LIMITER"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LIMITER"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "COMPRESSOR+LIMITER"
+  </source>
+  <dest>
+    *: none
+    swcodec: "COMPRESSOR+LIMITER"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "COMPRESSOR+LIMITER"
+  </voice>
+</phrase>

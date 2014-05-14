@@ -1054,6 +1054,7 @@ void settings_apply(bool read_disk)
 #ifdef HAVE_PITCHCONTROL
     dsp_timestretch_enable(global_settings.timestretch_enabled);
 #endif
+    dsp_compressor_switch(global_settings.compressor_switch);
     dsp_set_compressor(&global_settings.compressor_settings);
 #endif
 

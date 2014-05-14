@@ -419,13 +419,33 @@ static inline int32_t get_compression_gain(struct sample_format *format,
 /** SET COMPRESSOR
  *  Enable or disable the compressor based upon the settings
  */
+static bool force_off=false;
+void dsp_compressor_switch(int val)
+{
+    force_off=(val>0)?false:true;
+    struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
+    if (force_off)
+    {
+        dsp_proc_enable(dsp, DSP_PROC_COMPRESSOR, false);
+        dsp_proc_activate(dsp, DSP_PROC_COMPRESSOR, false);
+    }
+}
 void dsp_set_compressor(const struct compressor_settings *settings)
 {
     /* enable/disable the compressor depending upon settings */
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
-    bool enable = compressor_update(dsp, settings);
-    dsp_proc_enable(dsp, DSP_PROC_COMPRESSOR, enable);
-    dsp_proc_activate(dsp, DSP_PROC_COMPRESSOR, true);
+    
+    if (!force_off)
+    {
+        bool enable = compressor_update(dsp, settings);
+        dsp_proc_enable(dsp, DSP_PROC_COMPRESSOR, enable);
+        dsp_proc_activate(dsp, DSP_PROC_COMPRESSOR, true);
+    }
+    else
+    {
+        dsp_proc_enable(dsp, DSP_PROC_COMPRESSOR, false);
+        dsp_proc_activate(dsp, DSP_PROC_COMPRESSOR, false);
+    }
 }
 
 /** COMPRESSOR PROCESS

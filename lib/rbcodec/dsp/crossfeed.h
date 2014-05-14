@@ -26,10 +26,15 @@ enum crossfeed_type
     CROSSFEED_TYPE_NONE,
     CROSSFEED_TYPE_MEIER,
     CROSSFEED_TYPE_CUSTOM,
+    CROSSFEED_TYPE_LNX,
+    CROSSFEED_TYPE_LNX2,
+    CROSSFEED_TYPE_LNX3,
+    CROSSFEED_TYPE_LNX4,
+    CROSSFEED_TYPE_LNX5,
 };
 
 void dsp_set_crossfeed_type(int type);
 void dsp_set_crossfeed_direct_gain(int gain);
 void dsp_set_crossfeed_cross_params(long lf_gain, long hf_gain, long cutoff);
-
+void dsp_set_crossfeed_field(int level);
 #endif /* CROSSFEED_H */

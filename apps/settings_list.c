@@ -479,9 +479,6 @@ static void settings_eq_precut(int val)
 static void replaygain_set(int val)
 {
     (void)val;
-#ifdef AUDIOHW_HAVE_TONE_GAIN
-    sound_set(SOUND_TONE_GAIN, global_settings.tone_gain);
-#endif
     dsp_replaygain_set_settings(&global_settings.replaygain_settings); 
 }
 
@@ -490,6 +487,30 @@ static void compressor_set(int val)
     (void)val;
     dsp_set_compressor(&global_settings.compressor_settings);
 }
+
+static void compressor_switch(int val)
+{
+    int select = global_settings.compressor_switch;
+    (void)val;   
+    switch(select) /*after change settings better restart RB */
+    {
+         case 1: 
+              dsp_set_limiter(0);  
+              break;
+         case 2:
+              dsp_compressor_switch(0);  
+              dsp_set_limiter(1);                 
+              break;  
+         case 3:  dsp_set_limiter(1);   
+              break;  
+         case 0:
+         default: 
+              dsp_compressor_switch(0);
+              dsp_set_limiter(0);    
+              break;  
+    }
+}
+
 
 static const char* db_format(char* buffer, size_t buffer_size, int value,
                       const char* unit)
@@ -1647,9 +1668,10 @@ const struct settings_list settings[] = {
 
     /* crossfeed */
     CHOICE_SETTING(F_SOUNDSETTING, crossfeed, LANG_CROSSFEED, 0,"crossfeed",
-                   "off,meier,custom", dsp_set_crossfeed_type, 3,
+                   "off,meier,custom,lnx,lnx2,lnx3,lnx4,lnx5", dsp_set_crossfeed_type, 8,
                    ID2P(LANG_OFF), ID2P(LANG_CROSSFEED_MEIER),
-                   ID2P(LANG_CROSSFEED_CUSTOM)),
+                   ID2P(LANG_CROSSFEED_CUSTOM),ID2P(LANG_CROSSFEED_LNX),ID2P(LANG_CROSSFEED_LNX2),ID2P(LANG_CROSSFEED_LNX3),
+                      ID2P(LANG_CROSSFEED_LNX4),ID2P(LANG_CROSSFEED_LNX5)),
     INT_SETTING_NOWRAP(F_SOUNDSETTING, crossfeed_direct_gain,
                        LANG_CROSSFEED_DIRECT_GAIN, -15,
                        "crossfeed direct gain", UNIT_DB, -60, 0, 5,
@@ -2296,8 +2318,13 @@ const struct settings_list settings[] = {
     OFFON_SETTING(F_SOUNDSETTING, timestretch_enabled, LANG_TIMESTRETCH, false,
                   "timestretch enabled", dsp_timestretch_enable),
 #endif
+    
      
     /* compressor */
+    CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, compressor_switch,
+                   LANG_COMPRESSOR, 2, "compressor switch",
+                   "off,compressor,limiter,compressor+limiter", compressor_switch, 4,
+                   ID2P(LANG_OFF), ID2P(LANG_COMPRESSOR),ID2P(LANG_LIMITER),ID2P(LANG_COMPRESSOR_LIMITER)), 
     INT_SETTING_NOWRAP(F_SOUNDSETTING, compressor_settings.threshold,
                        LANG_COMPRESSOR_THRESHOLD, 0,
                        "compressor threshold", UNIT_DB, 0, -24,

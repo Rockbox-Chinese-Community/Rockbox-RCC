@@ -32,5 +32,5 @@ struct compressor_settings
 };
 
 void dsp_set_compressor(const struct compressor_settings *settings);
-
+void dsp_compressor_switch(int val);
 #endif /* COMPRESSOR_H */
