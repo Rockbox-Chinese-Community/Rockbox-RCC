@@ -43,7 +43,7 @@ function PP.is_pp500x()
 end
 
 if PP.is_pp611x() then
-    identify("PP6110x (aka GoForce6110)", "pp6110", "pp6110")
+    identify("PP611x (aka GoForce6110)", "pp6110", "pp6110")
 elseif PP.is_pp502x() then
     identify("PP502x", "pp502x", "pp502x")
 elseif PP.is_pp500x() then
@@ -59,4 +59,13 @@ PP.debug_on = false
 
 function PP.debug(...)
     if PP.debug_on then print(...) end
+end
+
+hh = h:create_topic("debug")
+hh:add("PP.debug(...) prints some debug output if PP.debug_on is true and does nothing otherwise.")
+
+PP.debug_on = false
+
+if PP.info.chip ~= nil then
+    require "pp/gpio"
 end

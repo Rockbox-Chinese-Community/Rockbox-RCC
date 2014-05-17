@@ -21,7 +21,7 @@
 #include "backend.h"
 #include "settings.h"
 #include "mainwindow.h"
-#include "aux.h"
+#include "utils.h"
 
 class AbstractRegEditPanel
 {
@@ -238,6 +238,7 @@ protected slots:
     void OnSaveAs();
     void OnSocModified(bool modified);
     void OnNew();
+    void OnSocItemDelete();
 
 protected:
     void LoadSocFile(const QString& filename);
