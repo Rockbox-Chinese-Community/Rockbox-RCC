@@ -204,7 +204,7 @@ public class RockboxFramebuffer extends SurfaceView
         Canvas c = holder.lockCanvas(scaledDirty);
         if (c == null) 
             return;
-
+        
         /* can't copy a partial buffer, but it doesn't make a noticeable difference anyway */
         btm.copyPixelsFromBuffer(framebuffer);
         synchronized (holder)
@@ -212,10 +212,11 @@ public class RockboxFramebuffer extends SurfaceView
             if (fastScale == true)
                 c.drawBitmap(btm, 0.0f, 0.0f, null);
             else
-                c.drawBitmap(btm,myMatrix,myPaint);
+                c.drawBitmap(btm,myMatrix,myPaint);   
         }
         holder.unlockCanvasAndPost(c);
     }
+
 
     public boolean onTouchEvent(MotionEvent me)
     {

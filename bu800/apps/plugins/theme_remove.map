@@ -1,0 +1,120 @@
+Archive member included because of file (symbol)
+
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/theme_remove.o (configfile_save)
+
+Discarded input sections
+
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/theme_remove.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+Memory map
+
+ ** file header
+                0x00000000       0x34
+ ** segment headers
+                0x00000034       0xc0
+
+.dynsym         0x000000f4      0x140
+ ** dynsym      0x000000f4      0x140
+
+.dynstr         0x00000234       0xea
+ ** string table
+                0x00000234       0xea
+
+.hash           0x00000320       0x9c
+ ** hash        0x00000320       0x9c
+
+.rel.dyn        0x000003bc      0x278
+ ** dynamic relocs
+                0x000003bc      0x278
+
+.rel.plt        0x00000634       0x20
+ ** dynamic relocs
+                0x00000634       0x20
+
+.plt            0x00000654       0x44
+ ** PLT         0x00000654       0x44
+
+.text           0x00000698     0x1de0
+ .text          0x00000698       0x14 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00000698                atexit
+ .text.exit     0x000006ac       0x10 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x000006ac                __on_dlclose
+ .text          0x000006bc     0x14e4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/theme_remove.o
+                0x00001114                plugin_start
+ .text          0x00001ba0      0x168 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00001bc0                plugin__start
+                0x00001c38                rb_atexit
+                0x00001c6c                exit
+                0x00001c98                _exit
+                0x00001cb4                exit_on_usb
+ .text          0x00001d08        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .text.get_cfg_filename
+                0x00001d08       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .text.configfile_save
+                0x00001d38      0x1dc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00001d38                configfile_save
+ .text.configfile_load
+                0x00001f14      0x2e0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00001f14                configfile_load
+ .text.configfile_get_value
+                0x000021f4      0x110 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x000021f4                configfile_get_value
+ .text.configfile_update_entry
+                0xffffffffffffffff      0x174 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00002304                configfile_update_entry
+ .text          0x00002478        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.rodata         0x00002478      0x52d
+ ** merge strings
+                0x00002478      0x52d
+
+.data.rel.ro.local
+                0x00003eac       0x30
+ .data.rel.ro.local
+                0x00003eac       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/theme_remove.o
+
+.fini_array     0x00003edc        0x8
+ .fini_array    0x00003edc        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x00003ee0        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.data.rel.ro    0x00003ee4       0x18
+ .data.rel.ro   0x00003ee4       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00003ee4                __header
+
+.init_array     0x00003efc        0x4
+ .init_array    0x00003efc        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.dynamic        0x00003f00       0xe0
+ ** dynamic     0x00003f00       0xe0
+
+.got            0x00003fe0       0x20
+ ** GOT         0x00003fe0        0x4
+ ** GOT PLT     0x00003fe4       0x1c
+
+.data           0x00004000     0x101c
+ .data          0x00004000        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00004000                __dso_handle
+ .data          0x00004004       0x38 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/theme_remove.o
+ .data.rel.local
+                0x0000403c      0xfdc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/theme_remove.o
+ .data          0x00005018        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00005018                rb
+ .data          0x0000501c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .data          0x0000501c        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.bss            0x0000501c      0xb70
+ .bss           0x0000501c        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .bss           0x0000501c      0xa6c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/theme_remove.o
+ .bss           0x00005a88      0x104 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .bss           0x00005b8c        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .bss           0x00005b8c        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o

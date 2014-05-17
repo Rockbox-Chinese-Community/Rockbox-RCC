@@ -130,7 +130,7 @@ static struct
 #endif
 #if defined(AUDIOHW_HAVE_TREBLE)
     int treble;                       /* tenth dB */
-#endif
+#endif 
 #if defined(AUDIOHW_HAVE_TONE_GAIN)
     int tone_gain;                    /* percent */
 #endif

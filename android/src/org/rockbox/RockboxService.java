@@ -270,6 +270,12 @@ public class RockboxService extends Service
                     }
                 }
 
+                /* Generate eqs folder if none exists yet*/
+                File rockboxEQS = new File(Environment.getExternalStorageDirectory(), "rockbox/eqs");
+                if (!rockboxEQS.exists()){
+                    rockboxEQS.mkdirs();    
+                } 
+
                 /* Start native code */
                 putResult(RESULT_INVOKING_MAIN);
 

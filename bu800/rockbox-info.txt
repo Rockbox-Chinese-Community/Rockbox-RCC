@@ -1,0 +1,17 @@
+Target: android
+Target id: 74
+Target define: -DANDROID
+Memory: 16
+CPU: hosted
+Manufacturer: android
+Version: RCC c216ce8-140421 (Community Version)
+Binary: librockbox.so
+Binary size: 965448
+Voice format: 400
+Actual size: 
+RAM usage: 0
+Features: crossfade:headphone_detection:hotkey:lcd_bitmap:lcd_non-mono:lcd_color:pitchscreen:quickscreen:rtc:swcodec:tagcache:touchscreen:large_plugin_buffer:ab_repeat_buttons:albumart
+gcc: arm-linux-androideabi-gcc (GCC) 4.6 20120106 (prerelease)
+ld: GNU gold (GNU Binutils 2.21) 1.10
+Host gcc: gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1
+Host system: Linux

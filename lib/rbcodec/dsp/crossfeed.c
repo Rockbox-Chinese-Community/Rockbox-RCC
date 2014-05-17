@@ -268,6 +268,71 @@ void crossfeed_meier_process(struct dsp_proc_entry *this,
 }
 #endif /* CPU */
 
+
+static int32_t tcoef1,tcoef2,tcoef3;
+
+static void crossfeed_LnxPrgr3_update_filter(int32_t freq_m,int32_t freq_l,int32_t freq_h,
+                                         struct crossfeed_state *state,unsigned int fout)
+{
+
+    tcoef1 = fp_div(freq_m, fout, 31);
+    tcoef2 = fp_div(freq_l, fout, 31);
+    tcoef3 = fp_div(freq_h, fout, 31);
+
+    state->vcl = state->vcr = state->vdiff = 0;
+}
+
+
+
+void crossfeed_LnxPrgr3_process(struct dsp_proc_entry *this,
+                             struct dsp_buffer **buf_p)
+{
+    struct dsp_buffer *buf = *buf_p;
+
+    /* Get filter state */
+    struct crossfeed_state *state = (struct crossfeed_state *)this->data;
+    int32_t vcl = state->vcl;
+    int32_t vcr = state->vcr;
+    int32_t vdiff = state->vdiff;
+
+    int32_t coef1 =tcoef1;
+    int32_t coef2 =tcoef2;
+    int32_t coef3 =tcoef3;
+    
+    int count = buf->remcount;
+
+    for (int i = 0; i < count; i++)
+    {
+        /* Calculate new output */
+        int32_t lout = buf->p32[0][i] + vcl;
+        int32_t rout = buf->p32[1][i] + vcr;
+        buf->p32[0][i] = lout;
+        buf->p32[1][i] = rout;
+
+        /* Update filter state */
+        int32_t common = FRACMUL(vdiff, coef2);
+        
+        if (coef3 > 0)
+        {   
+            vcl -= FRACMUL(vcl, coef3)- FRACMUL(vcl, coef1) + common;
+            vcr -= FRACMUL(vcr, coef3)- FRACMUL(vcr, coef1) - common;
+        }
+        else
+        {
+            vcl -= FRACMUL(vcl, coef1) + common;
+            vcr -= FRACMUL(vcr, coef1) - common;
+        }
+         
+        vdiff = lout - rout;
+    }
+
+    /* Store filter state */
+    state->vcl = vcl;
+    state->vcr = vcr;
+    state->vdiff = vdiff;
+}
+
+
 /* Update the processing function according to crossfeed type */
 static void update_process_fn(struct dsp_proc_entry *this,
                               struct dsp_config *dsp)
@@ -275,18 +340,48 @@ static void update_process_fn(struct dsp_proc_entry *this,
     struct crossfeed_state *state = (struct crossfeed_state *)this->data;
     dsp_proc_fn_type fn;
 
+
     unsigned int fout = dsp_get_output_frequency(dsp);
 
-    if (crossfeed_type != CROSSFEED_TYPE_CUSTOM)
+    if (crossfeed_type == CROSSFEED_TYPE_MEIER)
     {
         crossfeed_meier_update_filter(state, fout);
         fn = crossfeed_meier_process;
     }
-    else
+    else if(crossfeed_type == CROSSFEED_TYPE_CUSTOM)
     {
         state->index_max = state->delay + DELAY_LEN(fout);
         crossfeed_custom_update_filter(state, fout);
         fn = crossfeed_process;
+    }
+    else if (crossfeed_type == CROSSFEED_TYPE_LNX)
+    {
+        crossfeed_LnxPrgr3_update_filter(640,320,2180,state,fout);
+        fn = crossfeed_LnxPrgr3_process;
+    }
+    else if (crossfeed_type == CROSSFEED_TYPE_LNX2)
+    {
+        crossfeed_LnxPrgr3_update_filter(1000,640,2180,state,fout);
+        fn = crossfeed_LnxPrgr3_process;
+    }
+    else if (crossfeed_type == CROSSFEED_TYPE_LNX3)
+    {
+        crossfeed_LnxPrgr3_update_filter(2000,980,6400,state,fout);
+        fn = crossfeed_LnxPrgr3_process;
+    }
+    else if (crossfeed_type == CROSSFEED_TYPE_LNX4)
+    {
+        crossfeed_LnxPrgr3_update_filter(320,160,640,state,fout);
+        fn = crossfeed_LnxPrgr3_process;
+    }
+    else if (crossfeed_type == CROSSFEED_TYPE_LNX5)
+    {
+        crossfeed_LnxPrgr3_update_filter(640,320,0,state,fout);
+        fn = crossfeed_LnxPrgr3_process;
+    }
+    else
+    {
+        fn = NULL;
     }
 
     if (this->process != fn)

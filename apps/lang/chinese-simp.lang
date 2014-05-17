@@ -47,22 +47,6 @@
   </dest>
   <voice>
     *: "重置均衡器频段增益"
-
-<phrase>
-  id: LANG_ANTIALIAS_WARM
-  desc: in the sound settings menu
-  user: core
-  <source>
-    *: none
-    swcodec: "AntiAlias"
-  </source>
-  <dest>
-    *: none
-    swcodec: "抗锯齿(Tube)"
-  </dest>
-  <voice>
-    *: none
-    swcodec: ""
   </voice>
 </phrase>
 <phrase>
@@ -13217,5 +13201,39 @@
   <voice>
     *: none
     *: "破音器"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "限幅器(LIMITER)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "限幅器(LIMITER)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "限幅器(LIMITER)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "压限器+限幅器(LIMITER)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "压限器+限幅器(LIMITER)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "压限器+限幅器(LIMITER)"
   </voice>
 </phrase>

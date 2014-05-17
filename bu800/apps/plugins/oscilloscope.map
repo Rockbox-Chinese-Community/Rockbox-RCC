@@ -1,0 +1,352 @@
+Archive member included because of file (symbol)
+
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o (memcpy)
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o (backlight_ignore_timeout)
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o (configfile_save)
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o (osd_init)
+/home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o (xlcd_scroll_left)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o (__aeabi_uidiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o (__aeabi_idiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o) (__aeabi_unwind_cpp_pr1)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (restore_core_regs)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (__gnu_unwind_execute)
+
+Discarded input sections
+
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+Memory map
+
+ ** file header
+                0x00000000       0x34
+ ** segment headers
+                0x00000034       0xe0
+
+.dynsym         0x00000114      0x670
+ ** dynsym      0x00000114      0x670
+
+.dynstr         0x00000784      0x70c
+ ** string table
+                0x00000784      0x70c
+
+.hash           0x00000e90      0x328
+ ** hash        0x00000e90      0x328
+
+.rel.dyn        0x000011b8      0x180
+ ** dynamic relocs
+                0x000011b8      0x180
+
+.rel.plt        0x00001338       0x48
+ ** dynamic relocs
+                0x00001338       0x48
+
+.plt            0x00001380       0x80
+ ** PLT         0x00001380       0x80
+
+.text           0x00001400     0x59bc
+ .text          0x00001400       0x14 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00001400                atexit
+ .text.exit     0x00001414       0x10 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00001414                __on_dlclose
+ .text          0x00001424     0x2b7c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o
+                0x00001424                osd_lcd_draw_cb
+                0x00003558                plugin_start
+ .text          0x00003fa0      0x168 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00003fc0                plugin__start
+                0x00004038                rb_atexit
+                0x0000406c                exit
+                0x00004098                _exit
+                0x000040b4                exit_on_usb
+ .text          0x00004108        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .text.memcpy   0x00004108       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x00004108                memcpy
+ .text.memset   0x00004128       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x00004128                memset
+ .text.memmove  0x00004148       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x00004148                memmove
+ .text.memcmp   0x00004168       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+                0x00004168                memcmp
+ .text          0x00004188        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+ .text.backlight_force_on
+                0x00004188       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+                0x00004188                backlight_force_on
+ .text.backlight_ignore_timeout
+                0x000041ac       0x34 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+                0x000041ac                backlight_ignore_timeout
+ .text.backlight_use_settings
+                0x000041e0       0x28 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+                0x000041e0                backlight_use_settings
+ .text          0x00004208        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .text.get_cfg_filename
+                0x00004208       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .text.configfile_save
+                0x00004238      0x1dc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00004238                configfile_save
+ .text.configfile_load
+                0x00004414      0x2e0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00004414                configfile_load
+ .text.configfile_get_value
+                0x000046f4      0x110 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x000046f4                configfile_get_value
+ .text.configfile_update_entry
+                0x00004804      0x174 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+                0x00004804                configfile_update_entry
+ .text          0x00004978        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_lcd_init_buffers
+                0x00004978       0xf4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_lcd_viewport_set_pos
+                0x00004a6c       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_draw_osd_rect
+                0x00004a84       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_draw_osd
+                0x00004acc       0x28 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_update_viewport
+                0x00004af4       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_update_back_buffer
+                0x00004b18       0x60 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_erase_osd
+                0x00004b78       0x4c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_update
+                0x00004bc4       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_show
+                0x00004bf4       0xe4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_destroy
+                0x00004cd8       0x4c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text._osd_monitor_timeout
+                0x00004d24       0x50 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .text.osd_init
+                0x00004d74      0x2b4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00004d74                osd_init
+ .text.osd_destroy
+                0x00005028       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005028                osd_destroy
+ .text.osd_show
+                0x00005040       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005040                osd_show
+ .text.osd_update
+                0x0000505c       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x0000505c                osd_update
+ .text.osd_update_rect
+                0x00005074       0xec /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005074                osd_update_rect
+ .text.osd_update_pos
+                0x00005160      0x1a8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005160                osd_update_pos
+ .text.osd_monitor_timeout
+                0x00005308       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005308                osd_monitor_timeout
+ .text.osd_set_timeout
+                0x00005320       0x34 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005320                osd_set_timeout
+ .text.osd_get_viewport
+                0x00005354       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005354                osd_get_viewport
+ .text.osd_get_max_dims
+                0x00005368       0x3c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005368                osd_get_max_dims
+ .text.osd_enabled
+                0x000053a4       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x000053a4                osd_enabled
+ .text.osd_lcd_update_prepare
+                0x000053bc       0x34 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x000053bc                osd_lcd_update_prepare
+ .text.osd_lcd_update
+                0x000053f0       0x54 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x000053f0                osd_lcd_update
+ .text.osd_lcd_update_rect
+                0x00005444       0x74 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+                0x00005444                osd_lcd_update_rect
+ .text          0x000054b8        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+ .text.xlcd_scroll_left
+                0x000054b8       0xdc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+                0x000054b8                xlcd_scroll_left
+ .text.xlcd_scroll_right
+                0x00005594       0xdc /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+                0x00005594                xlcd_scroll_right
+ .text.xlcd_scroll_up
+                0x00005670       0xac /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+                0x00005670                xlcd_scroll_up
+ .text.xlcd_scroll_down
+                0x0000571c       0xa8 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+                0x0000571c                xlcd_scroll_down
+ .text          0x000057c4       0xc8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                0x000057c4                __udivsi3
+                0x000057c4                __aeabi_uidiv
+                0x0000586c                __aeabi_uidivmod
+ .text          0x0000588c       0xfc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                0x0000588c                __divsi3
+                0x0000588c                __aeabi_idiv
+                0x00005968                __aeabi_idivmod
+ .text          0x00005988       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                0x00005988                __aeabi_idiv0
+                0x00005988                __aeabi_ldiv0
+ .text          0x00005998      0xddc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                0x000061dc                __aeabi_unwind_cpp_pr0
+                0x000061d4                __aeabi_unwind_cpp_pr1
+                0x000061cc                __aeabi_unwind_cpp_pr2
+                0x00005d5c                _Unwind_VRS_Get
+                0x00005dc8                _Unwind_VRS_Set
+                0x000061e4                _Unwind_VRS_Pop
+                0x0000653c                _Unwind_GetCFA
+                0x00006544                __gnu_Unwind_RaiseException
+                0x000065e8                __gnu_Unwind_ForcedUnwind
+                0x00006604                __gnu_Unwind_Resume
+                0x00006670                __gnu_Unwind_Resume_or_Rethrow
+                0x00006690                _Unwind_Complete
+                0x00006694                _Unwind_DeleteException
+                0x000066b4                __gnu_Unwind_Backtrace
+ .text          0x00006774      0x1a8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                0x00006774                __restore_core_regs
+                0x00006774                restore_core_regs
+                0x00006788                __gnu_Unwind_Restore_VFP
+                0x00006790                __gnu_Unwind_Save_VFP
+                0x00006798                __gnu_Unwind_Restore_VFP_D
+                0x000067a0                __gnu_Unwind_Save_VFP_D
+                0x000067a8                __gnu_Unwind_Restore_VFP_D_16_to_31
+                0x000067b0                __gnu_Unwind_Save_VFP_D_16_to_31
+                0x000067b8                __gnu_Unwind_Restore_WMMXD
+                0x000067fc                __gnu_Unwind_Save_WMMXD
+                0x00006840                __gnu_Unwind_Restore_WMMXC
+                0x00006854                __gnu_Unwind_Save_WMMXC
+                0x00006868                ___Unwind_RaiseException
+                0x00006868                _Unwind_RaiseException
+                0x0000688c                ___Unwind_Resume
+                0x0000688c                _Unwind_Resume
+                0x000068b0                ___Unwind_Resume_or_Rethrow
+                0x000068b0                _Unwind_Resume_or_Rethrow
+                0x000068d4                ___Unwind_ForcedUnwind
+                0x000068d4                _Unwind_ForcedUnwind
+                0x000068f8                ___Unwind_Backtrace
+                0x000068f8                _Unwind_Backtrace
+ .text          0xffffffffffffffff      0x4a0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                0x00006974                __gnu_unwind_execute
+                0x00006d08                __gnu_unwind_frame
+                0x00006d48                _Unwind_GetRegionStart
+                0x00006d74                _Unwind_GetLanguageSpecificData
+                0x00006dac                _Unwind_GetDataRelBase
+                0x00006db4                _Unwind_GetTextRelBase
+ .text          0x00006dbc        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.rodata         0x00006dc0      0x27d
+ .rodata        0x00006dc0       0xe0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o
+ ** merge strings
+                0x00006ea0      0x19d
+
+.ARM.extab      0x00007040       0x48
+ .ARM.extab     0x00007040        0xc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.extab     0x0000704c       0x24 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .ARM.extab     0x00007070       0x18 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+
+.ARM.exidx      0x00007088       0xd8
+ .ARM.exidx     0x00007088        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.exidx     0xffffffffffffffff       0xb0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ ** ARM cantunwind
+                0x00007128        0x8
+ .ARM.exidx     0xffffffffffffffff       0x38 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ ** ARM cantunwind
+                0x00007158        0x8
+
+.data.rel.ro.local
+                0x00008e7c       0x28
+ .data.rel.ro.local
+                0x00008e7c       0x28 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o
+
+.fini_array     0x00008ea4        0x8
+ .fini_array    0x00008ea4        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x00008ea8        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.data.rel.ro    0x00008eac       0x18
+ .data.rel.ro   0x00008eac       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x00008eac                __header
+
+.init_array     0x00008ec4        0x4
+ .init_array    0x00008ec4        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.dynamic        0x00008ec8       0xe0
+ ** dynamic     0x00008ec8       0xe0
+
+.got            0x00008fa8       0x58
+ ** GOT         0x00008fa8       0x28
+ ** GOT PLT     0x00008fd0       0x30
+
+.data           0x00009000       0xdc
+ .data          0x00009000        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00009000                __dso_handle
+ .data          0x00009004       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o
+ .data.rel.local
+                0x00009024       0xb4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o
+                0x00009024                disk_config
+ .data          0x000090d8        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+                0x000090d8                rb
+ .data          0x000090dc        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .data          0x000090dc        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+ .data          0x000090dc        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .data          0x000090dc        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .data          0x000090dc        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+ .data          0x000090dc        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .data          0x000090dc        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .data          0x000090dc        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .data          0x000090dc        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .data          0x000090dc        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .data          0x000090dc        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .data          0x000090dc        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.bss            0x000090e0    0x2e210
+ .bss           0x000090e0        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .bss           0x000090e0    0x2e0a0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/oscilloscope.o
+ .bss           0x00037180      0x104 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/plugin_crt0.o
+ .bss           0x00037284        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(gcc-support.o)
+ .bss           0x00037284        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(helper.o)
+ .bss           0x00037284        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(configfile.o)
+ .bss           0x00037284        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .bss.native_osd
+                0x00037284       0x6c /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(osd.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/apps/plugins/libplugin.a(xlcd_scroll.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .bss           0x000372f0        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o

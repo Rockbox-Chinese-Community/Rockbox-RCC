@@ -1,0 +1,85 @@
+#ifdef HAVE_LCD_BITMAP
+
+#ifdef HAVE_DYNAMIC_LCD_SIZE
+/* This is a hack to prevent buildtime errors popping up */
+#undef LCD_WIDTH
+#undef LCD_HEIGHT
+#define LCD_WIDTH 0
+#define LCD_HEIGHT 0
+#endif
+
+/* Rockbox logo */
+#if (LCD_DEPTH == 1)
+#if (LCD_WIDTH == 160)
+rockboxlogo.160x53x1.bmp
+#elif (LCD_WIDTH == 128)
+rockboxlogo.128x42x1.bmp
+#else
+rockboxlogo.112x30x1.bmp
+#endif
+#elif defined(HAVE_DYNAMIC_LCD_SIZE)
+/* Currently only one screen size is supported.
+ * Ideally, we should compile in multiple logos and choose the correct one
+ * at runtime (and optionally discard the others using INIT_ATTR).
+ */
+rockboxlogo.320x98x16.bmp
+#elif (LCD_WIDTH == 96) && (LCD_DEPTH == 16)
+rockboxlogo.96x30x16.bmp
+#elif (LCD_WIDTH == 128) && (LCD_DEPTH == 2)
+rockboxlogo.128x42x2.bmp
+#elif (LCD_WIDTH == 128) && (LCD_DEPTH == 16)
+rockboxlogo.128x40x16.bmp
+#elif (LCD_WIDTH == 132) && (LCD_DEPTH == 16)
+rockboxlogo.132x40x16.bmp
+#elif (LCD_WIDTH == 138) && (LCD_DEPTH == 2)
+rockboxlogo.138x46x2.bmp
+#elif (LCD_WIDTH == 160) && (LCD_DEPTH == 2)
+rockboxlogo.160x53x2.bmp
+#elif (LCD_WIDTH == 320) && (LCD_DEPTH == 2)
+rockboxlogo.160x53x2.bmp
+#elif (LCD_WIDTH == 160) && (LCD_DEPTH == 16)
+rockboxlogo.160x50x16.bmp
+#elif (LCD_WIDTH == 176) && (LCD_DEPTH == 16)
+rockboxlogo.176x54x16.bmp
+#elif (LCD_WIDTH == 220) && (LCD_DEPTH == 16)
+rockboxlogo.220x68x16.bmp
+#elif (LCD_WIDTH == 240) && (LCD_DEPTH == 16)
+rockboxlogo.240x74x16.bmp
+#elif (LCD_WIDTH >= 320) && (LCD_WIDTH < 480)  && (LCD_DEPTH == 16)
+rockboxlogo.320x98x16.bmp
+#elif (LCD_WIDTH >= 480) && (LCD_WIDTH < 640) && (LCD_DEPTH == 16)
+rockboxlogo.480x149x16.bmp
+#elif (LCD_WIDTH >= 640) && (LCD_DEPTH == 16)
+rockboxlogo.640x198x16.bmp
+#elif (LCD_WIDTH == 272) && (LCD_DEPTH == 16)
+rockboxlogo.240x74x16.bmp
+#endif
+
+#ifndef BOOTLOADER  /* We don't need these for the bootloader */
+
+/* USB logo */
+#ifdef HAVE_LCD_COLOR
+#if defined(HAVE_DYNAMIC_LCD_SIZE)
+usblogo.176x48x16.bmp
+#elif LCD_WIDTH >= 128
+usblogo.128x37x16.bmp
+#elif LCD_WIDTH >= 88
+usblogo.88x24x16.bmp
+#endif
+#elif LCD_DEPTH > 1 /* greyscale */
+#ifdef IPOD_1G2G /* use firewire logo */
+usblogo.fw.128x39x2.bmp
+#else
+usblogo.128x33x2.bmp
+#endif
+#else /* monochrome */
+#if LCD_WIDTH == 112
+usblogo.100x20x1.bmp
+#else
+usblogo.104x27x1.bmp
+#endif
+#endif
+
+#endif /* BOOTLOADER */
+
+#endif /* HAVE_LCD_BITMAP */

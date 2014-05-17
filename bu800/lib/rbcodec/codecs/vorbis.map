@@ -1,0 +1,589 @@
+Archive member included because of file (symbol)
+
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o (ov_clear)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(oggmalloc.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o (ogg_malloc_init)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o) (vorbis_block_init)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(framing.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o) (ogg_page_continued)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(info.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o) (vorbis_info_blocksize)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o) (_mapping_P)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(res012.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o) (residue2_exportbundle)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(sharedbook.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o) (vorbis_staticbook_destroy)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(synthesis.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o) (vorbis_synthesis)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(window.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o) (_vorbis_window)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(bitwise.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(info.o) (oggpack_readinit)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(codebook.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(info.o) (vorbis_staticbook_unpack)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor0.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o) (floor0_exportbundle)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor1.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o) (floor1_exportbundle)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(mapping0.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o) (mapping0_exportbundle)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(oggmalloc.o) (destroy_memory_pool)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o (codec_init)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(mapping0.o) (ff_imdct_half)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct_lookup.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o) (revtab)
+/home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o) (ff_fft_calc_c)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(codebook.o) (__aeabi_uidiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(res012.o) (__aeabi_idiv)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+                              /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o) (__aeabi_ldivmod)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o) (__aeabi_idiv0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o) (__gnu_ldivmod_helper)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__aeabi_unwind_cpp_pr0)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (restore_core_regs)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o) (__gnu_unwind_execute)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__divdi3)
+/home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+                              /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o) (__udivdi3)
+
+Allocating common symbols
+Common symbol       size              file
+
+rb_jump_buf         0x100             /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o
+
+Discarded input sections
+
+ .text          0x00000000       0x14 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(oggmalloc.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(oggmalloc.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(oggmalloc.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(framing.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(framing.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(framing.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(info.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(info.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(info.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(res012.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(res012.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(res012.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(sharedbook.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(sharedbook.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(sharedbook.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(synthesis.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(synthesis.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(synthesis.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(window.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(window.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(window.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(bitwise.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(bitwise.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(bitwise.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(codebook.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(codebook.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(codebook.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor0.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor0.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor0.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor1.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor1.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor1.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(mapping0.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(mapping0.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(mapping0.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct_lookup.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct_lookup.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct_lookup.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct_lookup.o)
+ .text          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .data          0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .bss           0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .ARM.extab     0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .ARM.extab     0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .ARM.extab     0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ .text          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ .data          0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ .bss           0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+ .note.GNU-stack
+                0x00000000        0x0 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+Memory map
+
+ ** file header
+                0x00000000       0x34
+ ** segment headers
+                0x00000034       0xe0
+
+.dynsym         0x00000114      0xc20
+ ** dynsym      0x00000114      0xc20
+
+.dynstr         0x00000d34      0xca6
+ ** string table
+                0x00000d34      0xca6
+
+.hash           0x000019dc      0x51c
+ ** hash        0x000019dc      0x51c
+
+.rel.dyn        0x00001ef8      0x238
+ ** dynamic relocs
+                0x00001ef8      0x238
+
+.rel.plt        0x00002130       0x40
+ ** dynamic relocs
+                0x00002130       0x40
+
+.plt            0x00002170       0x74
+ ** PLT         0x00002170       0x74
+
+.text           0x000021e4    0x109e0
+ .text.exit     0x000021e4       0x10 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x000021e4                __on_dlclose
+ .text          0x000021f4      0x500 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o
+                0x000022bc                codec_run
+                0x000026a4                codec_main
+ .text          0x000026f4       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+                0x000026f4                _start
+                0x000026fc                codec_start
+ .text          0x00002708     0x2b58 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(vorbisfile.o)
+                0x00003830                ov_clear
+                0x0000391c                ov_pcm_total
+                0x000039b8                ov_time_total
+                0x00003a84                ov_raw_seek
+                0x00003e90                ov_open_callbacks
+                0x0000420c                rescale64
+                0x000042f0                ov_pcm_seek_page
+                0x00004b44                ov_pcm_seek
+                0x00004e9c                ov_time_seek
+                0x00004fec                ov_raw_tell
+                0x0000500c                ov_time_tell
+                0x0000513c                ov_info
+                0x0000519c                ov_read_fixed
+ .text          0x00005260       0xe4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(oggmalloc.o)
+                0x00005260                ogg_malloc_init
+                0x00005298                ogg_malloc_destroy
+                0x000052c8                ogg_malloc
+                0x000052f0                ogg_calloc
+                0x00005318                ogg_realloc
+                0x00005340                ogg_free
+ .text          0x00005344      0xef0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o)
+                0x00005344                vorbis_block_init
+                0x0000536c                _vorbis_block_alloc
+                0x000053fc                _vorbis_block_ripcord
+                0x000054a8                vorbis_block_clear
+                0x000054dc                vorbis_synthesis_restart
+                0x0000553c                vorbis_dsp_clear
+                0x00005634                vorbis_synthesis_init
+                0x00005a28                vorbis_synthesis_blockin
+                0x00006188                vorbis_synthesis_pcmout
+                0x00006200                vorbis_synthesis_read
+ .text          0x00006234      0xc74 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(framing.o)
+                0x0000634c                ogg_page_continued
+                0x0000635c                ogg_page_bos
+                0x0000636c                ogg_page_eos
+                0x0000637c                ogg_page_granulepos
+                0x0000643c                ogg_page_serialno
+                0x00006464                ogg_stream_clear
+                0x000064b8                ogg_stream_init
+                0x00006550                _os_body_expand
+                0x000065bc                ogg_sync_init
+                0x000065e4                ogg_sync_clear
+                0x00006618                ogg_sync_buffer
+                0x000066e0                ogg_sync_wrote
+                0x00006714                ogg_sync_pageseek
+                0x00006948                ogg_stream_pagein
+                0x00006d94                ogg_sync_reset
+                0x00006dc0                ogg_stream_reset
+                0x00006e1c                ogg_stream_reset_serialno
+                0x00006e58                ogg_stream_packetout
+                0x00006e80                ogg_stream_packetpeek
+ .text          0x00006ea8      0x794 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(info.o)
+                0x00006ea8                vorbis_info_blocksize
+                0x00006ec0                vorbis_info_init
+                0x00006ee8                vorbis_info_clear
+                0x0000709c                vorbis_synthesis_idheader
+                0x0000713c                vorbis_synthesis_headerin
+ .text          0x0000763c      0xb08 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(res012.o)
+ .text          0x00008144      0xf34 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(sharedbook.o)
+                0x000081d0                _ilog
+                0x000081f4                _book_maptype1_quantvals
+                0x00008270                vorbis_staticbook_destroy
+                0x000082b4                vorbis_book_clear
+                0x00008320                vorbis_book_init_decode
+ .text          0x00009078      0x390 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(synthesis.o)
+                0x00009078                vorbis_synthesis
+                0x0000922c                vorbis_synthesis_trackonly
+                0x00009388                vorbis_packet_blocksize
+ .text          0x00009408       0xf4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(window.o)
+                0x00009408                _vorbis_window
+ .text          0x000094fc      0x134 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(bitwise.o)
+                0x000094fc                oggpack_readinit
+                0x00009528                oggpack_read
+ .text          0x00009630     0x2980 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(codebook.o)
+                0x00009cd4                vorbis_staticbook_unpack
+                0x0000a0a4                vorbis_book_decode
+                0x0000a3ec                vorbis_book_decodevs_add
+                0x0000ac38                vorbis_book_decodev_add
+                0x0000b3b4                vorbis_book_decodev_set
+                0x0000bb80                vorbis_book_decodevv_add
+ .text          0x0000bfb0      0x9a8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor0.o)
+ .text          0x0000c958      0xc3c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor1.o)
+ .text          0x0000d594      0x930 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(mapping0.o)
+ .text.get_new_area
+                0x0000dec4        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000dec4                get_new_area
+ .text.get_used_size
+                0x0000decc        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000decc                get_used_size
+ .text.get_max_size
+                0x0000ded4        0x8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000ded4                get_max_size
+ .text.destroy_memory_pool
+                0x0000dedc        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000dedc                destroy_memory_pool
+ .text.free_ex  0x0000dee8      0x38c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000dee8                free_ex
+ .text.tlsf_free
+                0x0000e274       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000e274                tlsf_free
+ .text.add_new_area
+                0x0000e28c      0x198 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000e28c                add_new_area
+ .text.malloc_ex
+                0x0000e424      0x5f8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000e424                malloc_ex
+ .text.init_memory_pool
+                0x0000ea1c      0x138 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000ea1c                init_memory_pool
+ .text.tlsf_malloc
+                0x0000eb54       0x64 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000eb54                tlsf_malloc
+ .text.realloc_ex
+                0x0000ebb8      0x5bc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000ebb8                realloc_ex
+ .text.tlsf_realloc
+                0x0000f174       0x2c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000f174                tlsf_realloc
+ .text.calloc_ex
+                0x0000f1a0       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000f1a0                calloc_ex
+ .text.tlsf_calloc
+                0x0000f1e8       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+                0x0000f1e8                tlsf_calloc
+ .text.codec_init
+                0x0000f200       0x40 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f200                codec_init
+ .text.codec_set_replaygain
+                0x0000f240       0x50 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f240                codec_set_replaygain
+ .text.codec_malloc
+                0x0000f290       0x54 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f290                codec_malloc
+ .text.codec_calloc
+                0x0000f2e4       0x44 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f2e4                codec_calloc
+ .text.codec_free
+                0x0000f328        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f328                codec_free
+ .text.codec_realloc
+                0x0000f32c       0x48 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f32c                codec_realloc
+ .text.strlen   0x0000f374       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f374                strlen
+ .text.strcpy   0x0000f394       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f394                strcpy
+ .text.strcat   0x0000f3b4       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f3b4                strcat
+ .text.strcmp   0x0000f3d4       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f3d4                strcmp
+ .text.memcpy   0x0000f3f4       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f3f4                memcpy
+ .text.memset   0x0000f414       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f414                memset
+ .text.memcmp   0x0000f434       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f434                memcmp
+ .text.memchr   0x0000f454       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f454                memchr
+ .text.memmove  0x0000f474       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f474                memmove
+ .text.qsort    0x0000f494       0x20 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0000f494                qsort
+ .text.ff_imdct_half
+                0x0000f4b4      0x6c0 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o)
+                0x0000f4b4                ff_imdct_half
+ .text.ff_imdct_calc
+                0x0000fb74      0x104 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct.o)
+                0x0000fb74                ff_imdct_calc
+ .text.fft4_dispatch
+                0x0000fc78       0x54 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.pass     0x0000fccc      0x51c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft8_dispatch
+                0x000101e8      0x17c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft16    0x00010364      0x490 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft32    0x000107f4      0x2f8 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft64    0x00010aec       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft128   0x00010b1c       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft256   0x00010b4c       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft512   0x00010b7c       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft1024  0x00010bac       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft2048  0x00010bdc       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.fft4096  0x00010c0c       0x30 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+ .text.ff_fft_calc_c
+                0x00010c3c       0x24 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+                0x00010c3c                ff_fft_calc_c
+ .text          0x00010c60       0xc8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivsi3.o)
+                0x00010c60                __udivsi3
+                0x00010c60                __aeabi_uidiv
+                0x00010d08                __aeabi_uidivmod
+ .text          0x00010d28       0xfc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divsi3.o)
+                0x00010d28                __divsi3
+                0x00010d28                __aeabi_idiv
+                0x00010e04                __aeabi_idivmod
+ .text          0x00010e24       0x44 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_aeabi_ldivmod.o)
+                0x00010e24                __aeabi_ldivmod
+ .text          0x00010e68       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+                0x00010e68                __aeabi_idiv0
+                0x00010e68                __aeabi_ldiv0
+ .text          0x00010e78       0x78 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+                0x00010e78                __gnu_ldivmod_helper
+                0x00010eb4                __gnu_uldivmod_helper
+ .text          0x00010ef0      0xddc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+                0x00011734                __aeabi_unwind_cpp_pr0
+                0x0001172c                __aeabi_unwind_cpp_pr1
+                0x00011724                __aeabi_unwind_cpp_pr2
+                0x000112b4                _Unwind_VRS_Get
+                0x00011320                _Unwind_VRS_Set
+                0x0001173c                _Unwind_VRS_Pop
+                0x00011a94                _Unwind_GetCFA
+                0x00011a9c                __gnu_Unwind_RaiseException
+                0x00011b40                __gnu_Unwind_ForcedUnwind
+                0x00011b5c                __gnu_Unwind_Resume
+                0x00011bc8                __gnu_Unwind_Resume_or_Rethrow
+                0x00011be8                _Unwind_Complete
+                0x00011bec                _Unwind_DeleteException
+                0x00011c0c                __gnu_Unwind_Backtrace
+ .text          0x00011ccc      0x1a8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(libunwind.o)
+                0x00011ccc                __restore_core_regs
+                0x00011ccc                restore_core_regs
+                0x00011ce0                __gnu_Unwind_Restore_VFP
+                0x00011ce8                __gnu_Unwind_Save_VFP
+                0x00011cf0                __gnu_Unwind_Restore_VFP_D
+                0x00011cf8                __gnu_Unwind_Save_VFP_D
+                0x00011d00                __gnu_Unwind_Restore_VFP_D_16_to_31
+                0x00011d08                __gnu_Unwind_Save_VFP_D_16_to_31
+                0x00011d10                __gnu_Unwind_Restore_WMMXD
+                0x00011d54                __gnu_Unwind_Save_WMMXD
+                0x00011d98                __gnu_Unwind_Restore_WMMXC
+                0x00011dac                __gnu_Unwind_Save_WMMXC
+                0x00011dc0                ___Unwind_RaiseException
+                0x00011dc0                _Unwind_RaiseException
+                0x00011de4                ___Unwind_Resume
+                0x00011de4                _Unwind_Resume
+                0x00011e08                ___Unwind_Resume_or_Rethrow
+                0x00011e08                _Unwind_Resume_or_Rethrow
+                0x00011e2c                ___Unwind_ForcedUnwind
+                0x00011e2c                _Unwind_ForcedUnwind
+                0x00011e50                ___Unwind_Backtrace
+                0x00011e50                _Unwind_Backtrace
+ .text          0x00011e74      0x4a0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+                0x00011ecc                __gnu_unwind_execute
+                0x00012260                __gnu_unwind_frame
+                0x000122a0                _Unwind_GetRegionStart
+                0x000122cc                _Unwind_GetLanguageSpecificData
+                0x00012304                _Unwind_GetDataRelBase
+                0x0001230c                _Unwind_GetTextRelBase
+ .text          0x00012314      0x484 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+                0x00012314                __divdi3
+ .text          0xffffffffffffffff      0x42c /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+                0x00012798                __udivdi3
+
+.rodata         0x00012bc8     0xd3a8
+ .rodata        0x00012bc8      0x400 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(framing.o)
+ ** merge strings
+                0x00012fc8        0xf
+ .rodata        0x00012fd8     0x7f80 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(window.o)
+ .rodata        0x0001af58       0x84 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(bitwise.o)
+                0x0001af58                mask
+ .rodata        0x0001afdc      0x58c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor0.o)
+ .rodata        0x0001b568      0x400 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor1.o)
+ .rodata        0x0001b968      0x400 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .rodata        0x0001bd68      0x200 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+                0x0001bd68                bs_clz_tab
+                0x0001be68                bs_log2_tab
+ .rodata        0x0001bf68     0x4008 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(mdct_lookup.o)
+                0x0001bf68                revtab
+                0x0001df68                sincos_lookup1
+                0x0001ef68                sincos_lookup0
+
+.ARM.extab      0x0001ff70       0x48
+ .ARM.extab     0x0001ff70        0xc /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.extab     0x0001ff7c       0x24 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ .ARM.extab     0x0001ffa0       0x18 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+
+.ARM.exidx      0x0001ffb8       0xf0
+ .ARM.exidx     0x0001ffb8        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_dvmd_lnx.o)
+ .ARM.exidx     0xffffffffffffffff       0x10 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(bpabi.o)
+ .ARM.exidx     0xffffffffffffffff       0xb0 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(unwind-arm.o)
+ ** ARM cantunwind
+                0x00020060        0x8
+ .ARM.exidx     0xffffffffffffffff       0x38 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(pr-support.o)
+ .ARM.exidx     0x00020090        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_divdi3.o)
+ .ARM.exidx     0x00020098        0x8 /home/ubuntu/android-ndk-r9c/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86/bin/../lib/gcc/arm-linux-androideabi/4.6/libgcc.a(_udivdi3.o)
+ ** ARM cantunwind
+                0x000200a0        0x8
+
+.data.rel.ro.local
+                0x00021dd8       0xac
+ .data.rel.ro.local
+                0x00021dd8       0x3c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(res012.o)
+                0x00021dd8                residue2_exportbundle
+                0x00021dec                residue1_exportbundle
+                0x00021e00                residue0_exportbundle
+ .data.rel.ro.local
+                0x00021e14       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor0.o)
+                0x00021e14                floor0_exportbundle
+ .data.rel.ro.local
+                0x00021e2c       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(floor1.o)
+                0x00021e2c                floor1_exportbundle
+ .data.rel.ro.local
+                0x00021e44       0x14 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(mapping0.o)
+                0x00021e44                mapping0_exportbundle
+ .data.rel.ro.local
+                0x00021e58       0x2c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(fft-ffmpeg.o)
+
+.fini_array     0x00021e84        0x8
+ .fini_array    0x00021e84        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x00021e88        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.data.rel.ro    0x00021e8c       0x1c
+ .data.rel.ro   0x00021e8c       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/vorbis.o
+                0x00021e8c                __header
+
+.init_array     0x00021ea8        0x4
+ .init_array    0x00021ea8        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtend_so.o
+
+.dynamic        0x00021eac       0xe0
+ ** dynamic     0x00021eac       0xe0
+
+.got            0x00021f8c       0x74
+ ** GOT         0x00021f8c       0x48
+ ** GOT PLT     0x00021fd4       0x2c
+
+.data           0x00022000       0x20
+ .data          0x00022000        0x4 /home/ubuntu/android-ndk-r9c/platforms/android-19/arch-arm/usr/lib/crtbegin_so.o
+                0x00022000                __dso_handle
+ .data          0x00022004        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/codec_crt0.o
+                0x00022004                ci
+ .data.rel      0x00022008       0x18 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(registry.o)
+                0x00022008                _mapping_P
+                0x0002200c                _residue_P
+                0x00022018                _floor_P
+
+.bss            0x00022020      0x12c
+ .bss           0x00022020       0x1c /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libtremor.a(block.o)
+ .bss           0x0002203c        0x4 /home/ubuntu/Desktop/RockboxRCC/bu800/lib/libtlsf.a(tlsf.o)
+ .bss           0x00022040        0xc /home/ubuntu/Desktop/RockboxRCC/bu800/lib/rbcodec/codecs/libcodec.a(codeclib.o)
+ ** common      0x0002204c      0x100

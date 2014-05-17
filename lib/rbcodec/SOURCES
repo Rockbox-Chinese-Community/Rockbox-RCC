@@ -8,6 +8,7 @@ dsp/compressor.c
 dsp/crossfeed.c
 dsp/emu10k_core.c
 dsp/emu10k_space80.c
+dsp/limiter.c
 dsp/dsp_core.c
 dsp/surround.c
 dsp/aatube.c

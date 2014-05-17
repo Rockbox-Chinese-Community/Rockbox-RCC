@@ -9,14 +9,14 @@
 /*STEPSIZE sets the strength of surround effect. */
 #define MAXSTEP 16
 static int STEPSIZE = 2;
-static int32_t dolbyBuffer[DOLBY_SURROUND_MAX * 2 * MAXSTEP];
+static int32_t dolbyBuffer[DOLBY_SURROUND_MAX * 2 * MAXSTEP]; 
 static int32_t dolbyBufferPointer IBSS_ATTR;
 static bool surround_enabled = false;
 
 static void dsp_surround_flush(void)
 {
     if (!surround_enabled)
-        return;
+        return; 
     memset(dolbyBuffer, 0, sizeof(dolbyBuffer));
     dolbyBufferPointer = 0;
 }
@@ -30,15 +30,23 @@ static void surround_set_stepsize(int var)
     if (var == 60)  STEPSIZE = MAXSTEP>>2;
     if (var == 80)  STEPSIZE = MAXSTEP>>3;
     if (var == 100) STEPSIZE = MAXSTEP>>4;
-    }
+    }  
+       
 }
 
 void dsp_surround_enable(int var)
 {
-    surround_set_stepsize(var);
+    bool prev_surround_enabled = surround_enabled;
+    surround_set_stepsize(var); 
     surround_enabled = (var > 0)?true:false;
+    if (prev_surround_enabled == surround_enabled)
+        return; /* No change */
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
     dsp_proc_enable(dsp, DSP_PROC_SURROUND, surround_enabled);
+    if(surround_enabled && !dsp_proc_active(dsp,DSP_PROC_SURROUND))
+        dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
+    if(!surround_enabled && dsp_proc_active(dsp,DSP_PROC_SURROUND))
+        dsp_proc_activate(dsp, DSP_PROC_SURROUND, false);
 }
 
 static void dolby_surround_process(struct dsp_proc_entry *this,
@@ -50,16 +58,16 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
     int32_t *backBuffer;
     int32_t X;
     if ((buf->format.num_channels == 2) && surround_enabled)
-    {
+    {		
         if (dolbyBufferPointer < DOLBY_SURROUND_MAX)
         {
             inputSamplesA = buf->p32[0];
-            inputSamplesB = buf->p32[1];
-
+            inputSamplesB = buf->p32[1];	
+		
             backBuffer = dolbyBuffer + dolbyBufferPointer;
             X = DOLBY_SURROUND_MAX - dolbyBufferPointer;
-
-            if (X < 0)
+    		
+            if (X < 0) 
             {   /*buffer overflowed*/
                 X = 0;
                 memset(dolbyBuffer, 0, sizeof(dolbyBuffer));
@@ -79,11 +87,11 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
         else
         {
             inputSamplesA = buf->p32[0];
-            inputSamplesB = buf->p32[1];
-
+            inputSamplesB = buf->p32[1];	
+		
             backBuffer = dolbyBuffer + dolbyBufferPointer;
             X = count;
-
+    		
             while (X--)
             {
                 backBuffer[0] = *inputSamplesA;
@@ -94,11 +102,11 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
                 dolbyBufferPointer += STEPSIZE;
             }
             inputSamplesA = buf->p32[0];
-            inputSamplesB = buf->p32[1];
-
+            inputSamplesB = buf->p32[1];	
+		
             backBuffer = dolbyBuffer;
             X = count;
-
+		
             while (X--)
             {
                 *inputSamplesB = backBuffer[1];
@@ -124,7 +132,7 @@ static intptr_t surround_configure(struct dsp_proc_entry *this,
         if (value != 0)
             break;
         this->process = dolby_surround_process;
-        dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
+        //dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
         break;
     case DSP_FLUSH:
         dsp_surround_flush();

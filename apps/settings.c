@@ -232,8 +232,13 @@ void settings_load(int which)
         read_nvram_data(nvram_buffer,NVRAM_BLOCK_SIZE);
     if (which&SETTINGS_HD)
     {
+#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
         settings_load_config(CONFIGFILE, false);
         settings_load_config(FIXEDSETTINGSFILE, false);
+#else
+        settings_load_config(FIXEDSETTINGSFILE, false);
+        settings_load_config(CONFIGFILE, false);
+#endif
     }
 }
 
@@ -1049,6 +1054,7 @@ void settings_apply(bool read_disk)
 #ifdef HAVE_PITCHCONTROL
     dsp_timestretch_enable(global_settings.timestretch_enabled);
 #endif
+    dsp_compressor_switch(global_settings.compressor_switch);
     dsp_set_compressor(&global_settings.compressor_settings);
 #endif
 
