@@ -9,7 +9,7 @@
 #ifdef HAVE_HWSTUB
 #include "hwstub.h"
 #endif
-#include "soc.h"
+#include "soc_desc.hpp"
 
 class IoBackend : public QObject
 {
@@ -85,7 +85,7 @@ class FileIoBackend : public IoBackend
 {
     Q_OBJECT
 public:
-    FileIoBackend(const QString& filename);
+    FileIoBackend(const QString& filename, const QString& soc_name = "");
 
     virtual bool SupportAccess(AccessType type) { return type == ByName; }
     virtual QString GetSocName();
@@ -113,6 +113,7 @@ class HWStubDevice
 {
 public:
     HWStubDevice(struct libusb_device *dev);
+    HWStubDevice(const HWStubDevice *dev);
     ~HWStubDevice();
     bool IsValid();
     bool Open();
@@ -123,12 +124,14 @@ public:
     inline struct hwstub_version_desc_t GetVersionInfo() { return m_hwdev_ver; }
     inline struct hwstub_target_desc_t GetTargetInfo() { return m_hwdev_target; }
     inline struct hwstub_stmp_desc_t GetSTMPInfo() { return m_hwdev_stmp; }
+    inline struct hwstub_pp_desc_t GetPPInfo() { return m_hwdev_pp; }
     /* Calls below require the device to be opened */
     bool ReadMem(soc_addr_t addr, size_t length, void *buffer);
     bool WriteMem(soc_addr_t addr, size_t length, void *buffer);
 
 protected:
     bool Probe();
+    void Init(struct libusb_device *dev);
 
     bool m_valid;
     struct libusb_device *m_dev;
@@ -137,6 +140,7 @@ protected:
     struct hwstub_version_desc_t m_hwdev_ver;
     struct hwstub_target_desc_t m_hwdev_target;
     struct hwstub_stmp_desc_t m_hwdev_stmp;
+    struct hwstub_pp_desc_t m_hwdev_pp;
 };
 
 /** NOTE the HWStub backend is never dirty: all writes are immediately committed */
@@ -144,6 +148,7 @@ class HWStubIoBackend : public IoBackend
 {
     Q_OBJECT
 public:
+    // NOTE: HWStubIoBackend takes ownership of the device and will delete it
     HWStubIoBackend(HWStubDevice *dev);
     virtual ~HWStubIoBackend();
 
@@ -308,6 +313,8 @@ public:
     bool GetRegRef(const SocDevRef& dev, const QString& reg, SocRegRef& ref);
     bool GetFieldRef(const SocRegRef& reg, const QString& field, SocFieldRef& ref);
     bool GetRegisterAddress(const QString& dev, const QString& reg, soc_addr_t& addr);
+    bool DumpAllRegisters(const QString& filename);
+
 private:
     IoBackend *m_io_backend;
     const SocRef& m_soc;
