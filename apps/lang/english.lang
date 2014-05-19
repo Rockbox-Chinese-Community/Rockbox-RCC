@@ -13446,3 +13446,122 @@
     *: "OverDrive"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(1280Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(1280Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(1280Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(640Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(640Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(640Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX3
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(320Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(320Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(320Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX4
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(160Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(160Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(160Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX5
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(80Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(80Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(80Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "LIMITER"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LIMITER"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LIMITER"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_COMPRESSOR_LIMITER
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "COMPRESSOR+LIMITER"
+  </source>
+  <dest>
+    *: none
+    swcodec: "COMPRESSOR+LIMITER"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "COMPRESSOR+LIMITER"
+  </voice>
+</phrase>
