@@ -32,6 +32,9 @@ extern unsigned char *audiobufend;
 static int test_alloc;
 void core_allocator_init(void)
 {
+#if (CONFIG_PLATFORM & PLATFORM_ANDROID)
+    memset(audiobuffer,0,(9*1024-768)*1024+(MEMORYSIZE-8)*1024*1024);
+#endif
     unsigned char *start = ALIGN_UP(audiobuffer, sizeof(intptr_t));
 
 #if defined(IPOD_VIDEO) && !defined(BOOTLOADER) && !defined(SIMULATOR)
