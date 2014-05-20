@@ -35,10 +35,18 @@ static void surround_set_stepsize(int var)
 
 void dsp_surround_enable(int var)
 {
+
+    bool prev_surround_enabled = surround_enabled;
     surround_set_stepsize(var);
     surround_enabled = (var > 0)?true:false;
+    if (prev_surround_enabled == surround_enabled)
+        return; /* No change */
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
     dsp_proc_enable(dsp, DSP_PROC_SURROUND, surround_enabled);
+    if(surround_enabled && !dsp_proc_active(dsp,DSP_PROC_SURROUND))
+        dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
+    if(!surround_enabled && dsp_proc_active(dsp,DSP_PROC_SURROUND))
+        dsp_proc_activate(dsp, DSP_PROC_SURROUND, false);
 }
 
 static void dolby_surround_process(struct dsp_proc_entry *this,
@@ -124,7 +132,7 @@ static intptr_t surround_configure(struct dsp_proc_entry *this,
         if (value != 0)
             break;
         this->process = dolby_surround_process;
-        dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
+        //dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
         break;
     case DSP_FLUSH:
         dsp_surround_flush();

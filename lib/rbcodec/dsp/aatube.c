@@ -19,10 +19,17 @@ static void dsp_aatube_flush(void)
 
 void dsp_aatube_enable(int var)
 {
-    aatube_enabled=(var > 0)?  true:false;
+    bool prev_aatube_enabled = aatube_enabled;
     strength = var;
+    aatube_enabled=(var > 0)?  true:false;	
+    if (prev_aatube_enabled == aatube_enabled)
+        return; /* No change */
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
     dsp_proc_enable(dsp, DSP_PROC_AATUBE, aatube_enabled);
+    if(aatube_enabled && !dsp_proc_active(dsp,DSP_PROC_AATUBE))
+        dsp_proc_activate(dsp, DSP_PROC_AATUBE, true);
+    if(!aatube_enabled && dsp_proc_active(dsp,DSP_PROC_AATUBE))
+        dsp_proc_activate(dsp, DSP_PROC_AATUBE, false);
 }
 
 static void antialias_tube_process(struct dsp_proc_entry *this,
@@ -68,7 +75,7 @@ static intptr_t aatube_configure(struct dsp_proc_entry *this,
         if (value != 0)
             break; /* Already enabled */
         this->process = antialias_tube_process;
-        dsp_proc_activate(dsp, DSP_PROC_AATUBE, true);
+        //dsp_proc_activate(dsp, DSP_PROC_AATUBE, true);
         break;
     case DSP_FLUSH:
         dsp_aatube_flush();

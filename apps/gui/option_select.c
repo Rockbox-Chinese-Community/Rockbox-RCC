@@ -613,6 +613,10 @@ void update_setting_value_from_touch(int setting_id, int selection)
     if (var_type == F_T_INT || var_type == F_T_UINT)
     {
         *(int*)setting->setting = new_val;
+         void (*f)(int) = NULL;
+         f = setting->int_setting->option_callback;
+         if (*f != NULL)
+         f(1);
     }
     else if (var_type == F_T_BOOL)
     {
