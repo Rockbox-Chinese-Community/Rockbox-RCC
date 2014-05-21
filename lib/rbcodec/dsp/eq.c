@@ -51,7 +51,11 @@ static struct eq_state
     uint32_t enabled;                        /* Mask of enabled bands */
     uint8_t bands[EQ_NUM_BANDS+1];           /* Indexes of enabled bands */
     struct dsp_filter filters[EQ_NUM_BANDS]; /* Data for each filter */
-} eq_data IBSS_ATTR;
+} eq_data
+#if EQ_NUM_BANDS <= 10
+          IBSS_ATTR
+#endif
+;
 
 #define FOR_EACH_ENB_BAND(b) \
     for (uint8_t *b = eq_data.bands; *b < EQ_NUM_BANDS; b++)
@@ -138,7 +142,7 @@ void dsp_set_eq_coefs(int band, const struct eq_band_setting *setting)
     /* Only be active if there are bands to process - if EQ is off, then
        this call has no effect */
     dsp_proc_activate(dsp, DSP_PROC_EQUALIZER, mask != 0);
-  
+
     /* Prepare list of enabled bands for efficient iteration */
     for (band = 0; mask != 0; mask &= mask - 1, band++)
         eq_data.bands[band] = (uint8_t)find_first_set_bit(mask);
@@ -191,7 +195,7 @@ static intptr_t eq_configure(struct dsp_proc_entry *this,
     case DSP_PROC_CLOSE:
         pga_enable_gain(PGA_EQ_PRECUT, setting == DSP_PROC_INIT);
         break;
-        
+
     case DSP_FLUSH:
         eq_flush();
         break;
