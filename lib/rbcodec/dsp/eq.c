@@ -51,7 +51,11 @@ static struct eq_state
     uint32_t enabled;                        /* Mask of enabled bands */
     uint8_t bands[EQ_NUM_BANDS+1];           /* Indexes of enabled bands */
     struct dsp_filter filters[EQ_NUM_BANDS]; /* Data for each filter */
+#if EQ_NUM_BANDS > 10
+} eq_data; /* 10+ bands are too big for iram*/
+#else
 } eq_data IBSS_ATTR;
+#endif
 
 #define FOR_EACH_ENB_BAND(b) \
     for (uint8_t *b = eq_data.bands; *b < EQ_NUM_BANDS; b++)
