@@ -184,6 +184,7 @@ public class RockboxActivity extends Activity
         RockboxAppSetting.releaseWakeLock();
         MobclickAgent.onResume(this);
         setVisible(true);
+        setServiceActivity(true);
     }
     
     /* this is also called when the backlight goes off,
