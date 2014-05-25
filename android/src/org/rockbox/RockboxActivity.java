@@ -189,6 +189,7 @@ public class RockboxActivity extends Activity
         MobclickAgent.onResume(this);
         setServiceActivity(true);
         setVisible(true);
+        setServiceActivity(true);
     }
     
     /* this is also called when the backlight goes off,
