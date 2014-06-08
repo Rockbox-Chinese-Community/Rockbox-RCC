@@ -31,7 +31,7 @@
  * the behavior of hardware tone controls */
 
 /* Cutoffs in HZ - not adjustable for now */
-static unsigned int tone_bass_cutoff = 150;
+static unsigned int tone_bass_cutoff = 200;
 static unsigned int tone_treble_cutoff = 3500;
 
 /* Current bass and treble gain values */
@@ -58,7 +58,6 @@ void tone_set_prescale(int prescale)
 {
     int bass = tone_bass;
     int treble = tone_treble;
-    int gain = tone_gain;
     
     tone_prescale = prescale;
  
@@ -67,7 +66,7 @@ void tone_set_prescale(int prescale)
     {
         update_filter(i, dsp_get_output_frequency(dsp));
     
-        bool enable = bass != 0 || treble != 0 || gain != 0;
+        bool enable = bass != 0 || treble != 0;
         dsp_proc_enable(dsp, DSP_PROC_TONE_CONTROLS, enable);
 
         if (enable && !dsp_proc_active(dsp, DSP_PROC_TONE_CONTROLS))
@@ -144,6 +143,10 @@ static intptr_t tone_configure(struct dsp_proc_entry *this,
 
     case DSP_SET_OUT_FREQUENCY:
         update_filter(dsp_get_id(dsp), value);
+        if (tone_bass == 0 && tone_treble == 0)
+           this->process = NULL;
+        else
+           this->process = tone_process; 
         break;
     }
 

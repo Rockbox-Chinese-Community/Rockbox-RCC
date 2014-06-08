@@ -31,6 +31,7 @@
 #include "dsp_misc.h"
 #include "eq.h"
 #include "pga.h"
+#include "rdose.h"
 #ifdef HAVE_PITCHCONTROL
 #include "tdspeed.h"
 #endif

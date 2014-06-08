@@ -480,9 +480,6 @@ static void settings_eq_precut(int val)
 static void replaygain_set(int val)
 {
     (void)val;
-#ifdef AUDIOHW_HAVE_TONE_GAIN
-    sound_set(SOUND_TONE_GAIN, global_settings.tone_gain);
-#endif
     dsp_replaygain_set_settings(&global_settings.replaygain_settings);
 }
 static void compressor_set(int val)
@@ -491,6 +488,17 @@ static void compressor_set(int val)
     dsp_set_compressor(&global_settings.compressor_settings);
 }
 
+static void compressor_switch(int val)
+{
+    (void)val;   
+    dsp_compressor_switch(global_settings.compressor_switch);   
+}
+
+static void surround_set_factor(int val)
+{
+    (void)val;
+    dsp_surround_set_cutoff(global_settings.surround_fx1, global_settings.surround_fx2);
+}
 static const char* db_format(char* buffer, size_t buffer_size, int value,
                       const char* unit)
 {
@@ -1608,7 +1616,7 @@ const struct settings_list settings[] = {
                    "track,album,track shuffle,off", NULL, 4, ID2P(LANG_TRACK_GAIN),
                    ID2P(LANG_ALBUM_GAIN), ID2P(LANG_SHUFFLE_GAIN), ID2P(LANG_OFF)),
     OFFON_SETTING(F_SOUNDSETTING, replaygain_settings.noclip,
-                  LANG_REPLAYGAIN_NOCLIP, false, "replaygain noclip", NULL),
+                  LANG_REPLAYGAIN_NOCLIP, true, "replaygain noclip", NULL),
     INT_SETTING_NOWRAP(F_SOUNDSETTING, replaygain_settings.preamp,
                        LANG_REPLAYGAIN_PREAMP, 0, "replaygain preamp",
                        UNIT_DB, -120, 120, 5, db_format, get_dec_talkid, replaygain_set),
@@ -1647,9 +1655,10 @@ const struct settings_list settings[] = {
 
     /* crossfeed */
     CHOICE_SETTING(F_SOUNDSETTING, crossfeed, LANG_CROSSFEED, 0,"crossfeed",
-                   "off,meier,custom", dsp_set_crossfeed_type, 3,
+                   "off,meier,custom,lnx(1280Hz),lnx(640Hz),lnx(320Hz),lnx(160Hz),lnx(80Hz)", dsp_set_crossfeed_type, 8,
                    ID2P(LANG_OFF), ID2P(LANG_CROSSFEED_MEIER),
-                   ID2P(LANG_CROSSFEED_CUSTOM)),
+                   ID2P(LANG_CROSSFEED_CUSTOM),ID2P(LANG_CROSSFEED_LNX),ID2P(LANG_CROSSFEED_LNX2),ID2P(LANG_CROSSFEED_LNX3),
+                      ID2P(LANG_CROSSFEED_LNX4),ID2P(LANG_CROSSFEED_LNX5)),
     INT_SETTING_NOWRAP(F_SOUNDSETTING, crossfeed_direct_gain,
                        LANG_CROSSFEED_DIRECT_GAIN, -15,
                        "crossfeed direct gain", UNIT_DB, -60, 0, 5,
@@ -2284,15 +2293,35 @@ const struct settings_list settings[] = {
     OFFON_SETTING(F_SOUNDSETTING, dithering_enabled, LANG_DITHERING, false,
                   "dithering enabled", dsp_dither_enable),
     /* surround */
-    INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_enabled,
-                       LANG_SURROUND, 0,
-                       "surround enabled", UNIT_PERCENT, 0, 100,
-                       20, NULL, NULL, dsp_surround_enable),
+    TABLE_SETTING(F_SOUNDSETTING, surround_enabled,
+                  LANG_SURROUND, 0, "surround enabled", "off",
+                  UNIT_MS, formatter_unit_0_is_off, getlang_unit_0_is_off,
+                  dsp_surround_enable, 6,
+                  0,1,2,5,8,10), 
+
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_balance,
+                       LANG_BALANCE, 35,
+                       "surround balance", UNIT_PERCENT, 0, 99,
+                       1, NULL, NULL, dsp_surround_set_balance),
+
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_fx1,
+                       LANG_SURROUND_FX1, 3200,
+                       "surround_fx1", UNIT_HERTZ, 600, 8000,
+                       200, NULL, NULL, surround_set_factor),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_fx2,
+                       LANG_SURROUND_FX2, 320,
+                       "surround_fx2", UNIT_HERTZ, 40, 400,
+                       40, NULL, NULL, surround_set_factor),		
     /* aa-tube */
-    INT_SETTING_NOWRAP(F_SOUNDSETTING, aatube_enabled,
-                       LANG_ANTIALIAS_WARM, 0,
-                       "aatube enabled", UNIT_PERCENT, 0, 100,
-                       1, NULL, NULL, dsp_aatube_enable),
+    CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, aatube_enabled,
+                       LANG_ANTIALIAS_WARM, 0,"aatube enabled",
+                       "off,weak,moderate,strong", dsp_aatube_enable, 4,
+                       ID2P(LANG_OFF), ID2P(LANG_WEAK),ID2P(LANG_MODERATE),ID2P(LANG_STRONG)),	
+    /* rDose */
+    CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, rdose,
+                   LANG_RDOSE, 0, "rdose enabled",
+                   "off,weak,moderate,strong", dsp_rdose_enable, 4,
+                   ID2P(LANG_OFF), ID2P(LANG_WEAK),ID2P(LANG_MODERATE),ID2P(LANG_STRONG)),
 #ifdef HAVE_PITCHCONTROL
     /* timestretch */
     OFFON_SETTING(F_SOUNDSETTING, timestretch_enabled, LANG_TIMESTRETCH, false,
@@ -2300,6 +2329,10 @@ const struct settings_list settings[] = {
 #endif
 
     /* compressor */
+    CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, compressor_switch,
+                   LANG_COMPRESSOR, 0, "compressor switch",
+                   "off,on", compressor_switch, 2,
+                   ID2P(LANG_OFF), ID2P(LANG_ON)), 
     INT_SETTING_NOWRAP(F_SOUNDSETTING, compressor_settings.threshold,
                        LANG_COMPRESSOR_THRESHOLD, 0,
                        "compressor threshold", UNIT_DB, 0, -24,

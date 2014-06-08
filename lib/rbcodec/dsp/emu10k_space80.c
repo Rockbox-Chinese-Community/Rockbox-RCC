@@ -85,13 +85,16 @@ static void space80_flush(void)
 
 void dsp_set_space80_enable(bool enable)
 {
-  /*  if (enable == space80_enable)
-        return;  No change */
-
+    
     space80_enable = enable;
 
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
     dsp_proc_enable(dsp, DSP_PROC_SPACE80, enable);
+
+    if(space80_enable && !dsp_proc_active(dsp,DSP_PROC_SPACE80))
+        dsp_proc_activate(dsp, DSP_PROC_SPACE80, true);
+    if(!space80_enable && dsp_proc_active(dsp,DSP_PROC_SPACE80))
+        dsp_proc_activate(dsp, DSP_PROC_SPACE80, false);
 }
 
 void space80_process(struct dsp_proc_entry *this, struct dsp_buffer **buf_p)
@@ -210,7 +213,7 @@ static intptr_t space80_configure(struct dsp_proc_entry *this, struct dsp_config
             ((struct space80_data *)this->data)->dsp = dsp;
         }
         this->process = space80_process;
-        dsp_proc_activate(dsp, DSP_PROC_SPACE80, true);
+        //dsp_proc_activate(dsp, DSP_PROC_SPACE80, true);
         break;
     case DSP_FLUSH:
         space80_flush();

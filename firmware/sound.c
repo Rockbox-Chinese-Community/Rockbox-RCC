@@ -130,9 +130,15 @@ static struct
 #endif
 #if defined(AUDIOHW_HAVE_TREBLE)
     int treble;                       /* tenth dB */
+<<<<<<< HEAD
 #endif
 #if defined(AUDIOHW_HAVE_TONE_GAIN)
     int tone_gain;                    /* percent */
+=======
+#endif 
+#if defined(AUDIOHW_HAVE_TONE_GAIN)
+    int tone_gain;                    /* tenth dB */
+>>>>>>> c6fd7c8... new DSPs and update.
 #endif
 #if defined(AUDIOHW_HAVE_EQ)
     int eq_gain[AUDIOHW_EQ_BAND_NUM]; /* tenth dB */
@@ -176,8 +182,8 @@ static void set_prescaled_volume(void)
     if (volume + prescale > maxvol)
         prescale = maxvol - volume;
 #ifdef AUDIOHW_HAVE_TONE_GAIN
-    if (sound_prescaler.tone_gain > 0 )
-        prescale  *=(100 - sound_prescaler.tone_gain) / 100;
+    if (sound_prescaler.tone_gain > 0 && MAX(sound_prescaler.bass, sound_prescaler.treble) > 0)
+        prescale -= MIN(sound_prescaler.tone_gain, MAX(sound_prescaler.bass, sound_prescaler.treble));
 #endif /* AUDIOHW_HAVE_TONE_GAIN */
     audiohw_set_prescaler(prescale);
 
@@ -299,7 +305,7 @@ void sound_set_tone_gain(int value)
     if (!audio_is_initialized)
         return;
 
-    sound_prescaler.tone_gain = value;
+    sound_prescaler.tone_gain =  sound_value_to_cb(SOUND_TONE_GAIN, value);
     audiohw_set_tone_gain(value);
 #if !defined(AUDIOHW_HAVE_CLIPPING)
     set_prescaled_volume();

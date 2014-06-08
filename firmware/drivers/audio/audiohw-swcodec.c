@@ -52,7 +52,7 @@ void audiohw_set_treble(int value)
 
 void audiohw_set_bass_cutoff(int value)
 {
-    cutoff_set_treble(value);
+    cutoff_set_bass(value);
 }
 
 void audiohw_set_treble_cutoff(int value)

@@ -844,6 +844,13 @@ struct user_settings
     int play_frequency; /* core audio output frequency selection */
 #endif
     int volume_limit; /* maximum volume limit */
+
+    int compressor_switch;
+
+    int rdose;
+    int surround_balance;
+    int surround_fx1;
+    int surround_fx2;
 };
 
 /** global variables **/

@@ -13446,3 +13446,139 @@
     *: "OverDrive"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(1280Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(1280Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(1280Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(640Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(640Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(640Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX3
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(320Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(320Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(320Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX4
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(160Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(160Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(160Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX5
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Lnx(80Hz)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Lnx(80Hz)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Lnx(80Hz)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_RDOSE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "rDose"
+  </source>
+  <dest>
+    *: none
+    swcodec: "rDose"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "rDose"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND_FX1
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "f(x1)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "f(x1)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "f(x1)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND_FX2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "f(x2)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "f(x2)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "f(x2)"
+  </voice>
+</phrase>
