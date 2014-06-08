@@ -136,17 +136,6 @@ public class RockboxFramebuffer extends SurfaceView
         }
     }
 
-    private boolean isBtmAlive()
-    {
-        if (btm.isRecycled() == true || btm == null) 
-        {  
-           if (srcWidth !=0 && srcHeight !=0)
-                btm = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.RGB_565);
-           else
-                return false; 
-        } 
-        return true;           
-    }
 
     private void update(ByteBuffer framebuffer)
     {
@@ -154,8 +143,6 @@ public class RockboxFramebuffer extends SurfaceView
         Canvas c;
         Rect dirty = new Rect();
 
-        if (isBtmAlive() == false)
-            return;  
 
         if (downscaled && fastScale == true) //downscale
         {
@@ -198,9 +185,9 @@ public class RockboxFramebuffer extends SurfaceView
             scaledDirty.set((int)(dirty.left * scaleWidthFactor), (int)(dirty.top * scaleHeightFactor),
                         (int)(dirty.right * scaleWidthFactor), (int)(dirty.bottom * scaleHeightFactor));    
 
-        if (isBtmAlive() == false)
-            return; 
-  
+        if (scaledDirty.isEmpty()) /*  (left >= right or top >= bottom) */
+            scaledDirty.sort();
+          
         Canvas c = holder.lockCanvas(scaledDirty);
         if (c == null) 
             return;
