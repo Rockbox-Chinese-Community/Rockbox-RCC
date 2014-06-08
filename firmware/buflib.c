@@ -383,6 +383,7 @@ buflib_compact_and_shrink(struct buflib_context *ctx, unsigned shrink_hints)
     /* if something compacted before already there will be no further gain */
     if (!ctx->compact)
         result = buflib_compact(ctx);
+#if  !(CONFIG_PLATFORM & PLATFORM_ANDROID)
     if (!result)
     {
         union buflib_data *this, *before;
@@ -430,7 +431,9 @@ buflib_compact_and_shrink(struct buflib_context *ctx, unsigned shrink_hints)
         if (result)
             result |= buflib_compact(ctx);
     }
-
+#else
+    (void)shrink_hints;
+#endif
     return result;
 }
 

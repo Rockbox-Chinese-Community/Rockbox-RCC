@@ -20,7 +20,11 @@ extern unsigned char audiobufend[];
 extern unsigned char audiobuffer[];
 #else /* PLATFORM_HOSTED */
 #if (CONFIG_PLATFORM & PLATFORM_ANDROID) /* PLATFORM_ANDROID */
-unsigned char audiobuffer[(9*1024-768)*1024+(MEMORYSIZE-8)*1024*1024];
+#if MEMORYSIZE > 32
+unsigned char audiobuffer[(32*1024-768)*1024];
+#elif MEMORYSIZE > 16
+unsigned char audiobuffer[(16*1024-768)*1024];
+#endif
 #else
 unsigned char audiobuffer[(MEMORYSIZE*1024-768)*1024];
 #endif
@@ -33,7 +37,6 @@ static int test_alloc;
 void core_allocator_init(void)
 {
     unsigned char *start = ALIGN_UP(audiobuffer, sizeof(intptr_t));
-
 #if defined(IPOD_VIDEO) && !defined(BOOTLOADER) && !defined(SIMULATOR)
     audiobufend=(unsigned char *)audiobufend_lds;
     if(MEMORYSIZE==64 && probed_ramsize!=64)
@@ -43,7 +46,6 @@ void core_allocator_init(void)
 #endif
 
     buflib_init(&core_ctx, start, audiobufend - start);
-
     test_alloc = core_alloc("test", 112);
 }
 
