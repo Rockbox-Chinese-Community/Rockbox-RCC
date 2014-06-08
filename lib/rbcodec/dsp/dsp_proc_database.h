@@ -46,12 +46,12 @@ DSP_PROC_DB_START
 #ifdef HAVE_SW_TONE_CONTROLS
     DSP_PROC_DB_ITEM(TONE_CONTROLS) /* bass and treble */
 #endif
+    DSP_PROC_DB_ITEM(RDOSE)
     DSP_PROC_DB_ITEM(AATUBE)  
     DSP_PROC_DB_ITEM(SURROUND)
     DSP_PROC_DB_ITEM(SPACE80)       /* space80 */ 
     DSP_PROC_DB_ITEM(CHANNEL_MODE)  /* channel modes */
-    DSP_PROC_DB_ITEM(COMPRESSOR)    /* dynamic-range compressor */  
-    DSP_PROC_DB_ITEM(LIMITER)
+    DSP_PROC_DB_ITEM(COMPRESSOR)    /* dynamic-range compressor */
 DSP_PROC_DB_STOP
 
 /* This file is included multiple times with different macro definitions so
