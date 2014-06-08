@@ -38,7 +38,7 @@ AUDIOHW_SETTING(BASS,        "dB",   0,  1, -24,  24,   0)
 AUDIOHW_SETTING(TREBLE,      "dB",   0,  1, -24,  24,   0)
 #endif
 #ifdef AUDIOHW_HAVE_TONE_GAIN
-AUDIOHW_SETTING(TONE_GAIN,   "%",   0,  5, 0,  190,   0)
+AUDIOHW_SETTING(TONE_GAIN,   "dB",   0,  1, 0,  24,   0)
 #endif
 #if defined(HAVE_RECORDING)
 AUDIOHW_SETTING(LEFT_GAIN,   "dB",   1,  1,-128,  96,   0)

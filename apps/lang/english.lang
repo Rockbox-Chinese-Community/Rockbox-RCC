@@ -13532,36 +13532,53 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_LIMITER
+  id: LANG_RDOSE
   desc: in sound settings
   user: core
   <source>
     *: none
-    swcodec: "LIMITER"
+    swcodec: "rDose"
   </source>
   <dest>
     *: none
-    swcodec: "LIMITER"
+    swcodec: "rDose"
   </dest>
   <voice>
     *: none
-    swcodec: "LIMITER"
+    swcodec: "rDose"
   </voice>
 </phrase>
 <phrase>
-  id: LANG_COMPRESSOR_LIMITER
+  id: LANG_SURROUND_FX1
   desc: in sound settings
   user: core
   <source>
     *: none
-    swcodec: "COMPRESSOR+LIMITER"
+    swcodec: "f(x1)"
   </source>
   <dest>
     *: none
-    swcodec: "COMPRESSOR+LIMITER"
+    swcodec: "f(x1)"
   </dest>
   <voice>
     *: none
-    swcodec: "COMPRESSOR+LIMITER"
+    swcodec: "f(x1)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND_FX2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "f(x2)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "f(x2)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "f(x2)"
   </voice>
 </phrase>
