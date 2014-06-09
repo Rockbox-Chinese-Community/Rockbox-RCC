@@ -455,28 +455,6 @@ static void space80_set(int val)
                           global_settings.space80_mix);
 }
 
-static void settings_apply_eq(int val)
-{
-    (void)val;
-    dsp_eq_enable(global_settings.eq_enabled);
-
-    for(int i = 0; i < EQ_NUM_BANDS; i++) {
-	 dsp_set_eq_coefs(i, &global_settings.eq_band_settings[i]);
-    }
-}
-
-static void settings_eq(bool val)
-{
-    (void)val;
-    dsp_eq_enable(global_settings.eq_enabled);
-}
-
-static void settings_eq_precut(int val)
-{
-    (void)val;
-    dsp_set_eq_precut(global_settings.eq_precut);
-}
-
 static void replaygain_set(int val)
 {
     (void)val;
@@ -490,8 +468,8 @@ static void compressor_set(int val)
 
 static void compressor_switch(int val)
 {
-    (void)val;   
-    dsp_compressor_switch(global_settings.compressor_switch);   
+    (void)val;
+    dsp_compressor_switch(global_settings.compressor_switch);
 }
 
 static void surround_set_factor(int val)
@@ -2297,7 +2275,7 @@ const struct settings_list settings[] = {
                   LANG_SURROUND, 0, "surround enabled", "off",
                   UNIT_MS, formatter_unit_0_is_off, getlang_unit_0_is_off,
                   dsp_surround_enable, 6,
-                  0,1,2,5,8,10), 
+                  0,1,2,5,8,10),
 
     INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_balance,
                        LANG_BALANCE, 35,
@@ -2311,12 +2289,12 @@ const struct settings_list settings[] = {
     INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_fx2,
                        LANG_SURROUND_FX2, 320,
                        "surround_fx2", UNIT_HERTZ, 40, 400,
-                       40, NULL, NULL, surround_set_factor),		
+                       40, NULL, NULL, surround_set_factor),
     /* aa-tube */
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, aatube_enabled,
                        LANG_ANTIALIAS_WARM, 0,"aatube enabled",
                        "off,weak,moderate,strong", dsp_aatube_enable, 4,
-                       ID2P(LANG_OFF), ID2P(LANG_WEAK),ID2P(LANG_MODERATE),ID2P(LANG_STRONG)),	
+                       ID2P(LANG_OFF), ID2P(LANG_WEAK),ID2P(LANG_MODERATE),ID2P(LANG_STRONG)),
     /* rDose */
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, rdose,
                    LANG_RDOSE, 0, "rdose enabled",
@@ -2332,7 +2310,7 @@ const struct settings_list settings[] = {
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, compressor_switch,
                    LANG_COMPRESSOR, 0, "compressor switch",
                    "off,on", compressor_switch, 2,
-                   ID2P(LANG_OFF), ID2P(LANG_ON)), 
+                   ID2P(LANG_OFF), ID2P(LANG_ON)),
     INT_SETTING_NOWRAP(F_SOUNDSETTING, compressor_settings.threshold,
                        LANG_COMPRESSOR_THRESHOLD, 0,
                        "compressor threshold", UNIT_DB, 0, -24,
