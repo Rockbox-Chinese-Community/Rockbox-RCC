@@ -97,7 +97,7 @@ app_set_eq_num_bands () {
     if [ -z "$ARG_EQ_BANDS" ]; then
         until [ $app_eq_bands_num -ge 3 -a $app_eq_bands_num -le 32 ]
         do
-           echo "Enter the number of the EQ bands (3~32, inclusive, default:24)"
+           echo "Enter the number of the EQ bands (3~32, inclusive, default:30)"
             tmp=`input`
             if [ -z "$tmp" ]; then
                 app_eq_bands_num="30";
@@ -358,13 +358,13 @@ simcc () {
         echo "don't have SDL (properly) installed. Please correct and"
         echo "re-run configure!"
         exit 2
-    else 
+    else
         # generic sdl-config checker
         GCCOPTS="$GCCOPTS `$sdl --cflags`"
         LDOPTS="$LDOPTS `$sdl --libs`"
     fi
  fi
- 
+
 
  GCCOPTS="$GCCOPTS -I\$(SIMDIR)"
  # x86_64 supports MMX by default
@@ -1072,7 +1072,7 @@ voiceconfig () {
             exit 4
          fi
     fi
- 
+
     echo "Using $ENCODER for encoding voice clips"
 
     # Read custom encoder options from command line
@@ -1219,7 +1219,7 @@ ARG_ARM_THUMB=
 ARG_PREFIX="$PREFIX"
 ARG_THREAD_SUPPORT=
 ARG_EQ_BANDS=
-err=            
+err=
 for arg in "$@"; do
 	case "$arg" in
 		--ccache)     ARG_CCACHE=1;;
@@ -2065,7 +2065,7 @@ fi
     t_manufacturer="tcc780x"
     t_model="cowond2"
     ;;
-    
+
    34|iaudiom3)
     target_id=37
     modelname="iaudiom3"
@@ -2208,7 +2208,7 @@ fi
     t_manufacturer="tcc77x"
     t_model="logikdax"
     ;;
-	
+
     89|creativezenxfistyle)
     target_id=94
     modelname="creativezenxfistyle"
@@ -2251,7 +2251,7 @@ fi
     t_manufacturer="tms320dm320"
     t_model="creative-zvm"
     ;;
-    
+
     91|zenvisionm60gb)
     target_id=40
     modelname="zenvisionm60gb"
@@ -2274,7 +2274,7 @@ fi
     t_manufacturer="tms320dm320"
     t_model="creative-zvm"
     ;;
-    
+
     92|zenvision)
     target_id=39
     modelname="zenvision"
@@ -2522,9 +2522,9 @@ fi
     ;;
 
    54|sansac100)
-    target_id=42 
-    modelname="sansac100" 
-    target="SANSA_C100"     
+    target_id=42
+    modelname="sansac100"
+    target="SANSA_C100"
     memory=2
     arm946cc
     tool="$rootdir/tools/scramble -add=c100"
@@ -2922,7 +2922,7 @@ fi
     t_manufacturer="s5l8700"
     t_model="meizu-m6sl"
     ;;
-    
+
    111|meizum6sp)
     target_id=46
     modelname="meizum6sp"
@@ -2944,7 +2944,7 @@ fi
     t_manufacturer="s5l8700"
     t_model="meizu-m6sp"
     ;;
-    
+
    112|meizum3)
     target_id=47
     modelname="meizum3"
@@ -2966,7 +2966,7 @@ fi
     t_manufacturer="s5l8700"
     t_model="meizu-m3"
     ;;
-    
+
     120|ondavx747)
     target_id=45
     modelname="ondavx747"
@@ -2988,7 +2988,7 @@ fi
     t_manufacturer="ingenic_jz47xx"
     t_model="onda_vx747"
     ;;
-    
+
     121|ondavx767)
     target_id=64
     modelname="ondavx767"
@@ -3010,7 +3010,7 @@ fi
     t_manufacturer="ingenic_jz47xx"
     t_model="onda_vx767"
     ;;
-    
+
     122|ondavx747p)
     target_id=54
     modelname="ondavx747p"
@@ -3032,7 +3032,7 @@ fi
     t_manufacturer="ingenic_jz47xx"
     t_model="onda_vx747"
     ;;
-    
+
     123|ondavx777)
     target_id=61
     modelname="ondavx777"
@@ -3054,7 +3054,7 @@ fi
     t_manufacturer="ingenic_jz47xx"
     t_model="onda_vx747"
     ;;
-    
+
     130|lyreproto1)
     target_id=56
     modelname="lyreproto1"
@@ -3076,7 +3076,7 @@ fi
     t_manufacturer="at91sam"
     t_model="lyre_proto1"
     ;;
-    
+
    131|mini2440)
     target_id=99
     modelname="mini2440"
@@ -3195,7 +3195,7 @@ fi
     t_manufacturer="s5l8700"
     t_model="yps3"
     ;;
-    
+
   144|samsungypz5)
     target_id=90
     modelname="samsungypz5"
@@ -4168,7 +4168,7 @@ if [ -z "$arch" ]; then
         arch="none"
         echo "Warning: Could not determine target arch"
     fi
-    if [ "$arch" != "none" ]; then        
+    if [ "$arch" != "none" ]; then
         if [ -n "$arch_version" ]; then
             echo "Automatically selected arch: $arch (ver $arch_version)"
         else
@@ -4208,7 +4208,7 @@ if [ "$ARG_RBDIR" != "" ]; then
         rbdir="/"$ARG_RBDIR
     else
         rbdir=$ARG_RBDIR
-    fi 
+    fi
   echo "Using alternate rockbox dir: ${rbdir}"
 fi
 
