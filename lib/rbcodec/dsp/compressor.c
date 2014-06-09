@@ -622,6 +622,10 @@ static intptr_t compressor_configure(struct dsp_proc_entry *this,
 
     case DSP_SET_OUT_FREQUENCY:
         compressor_update(dsp, &curr_set);
+        if (force_off)
+            this->process =NULL;
+        else if (!force_off && this->process ==NULL)
+            this->process = compressor_process; 
         break;
     }
 
