@@ -276,6 +276,7 @@ MAKE_MENU(sound_settings, ID2P(LANG_SOUND_SETTINGS), NULL, Icon_Audio,
 #endif
 #if CONFIG_CODEC == SWCODEC
           ,&crossfeed_menu, &space80_menu, &equalizer_menu, &dithering_enabled, &surround_menu,&aatube_enabled, &rdose
+          ,&crossfeed_menu, &space80_menu, &equalizer_menu, &dithering_enabled, &surround_menu, &aatube_enabled, &rdose
 #ifdef HAVE_PITCHCONTROL
           ,&timestretch_enabled
 #endif

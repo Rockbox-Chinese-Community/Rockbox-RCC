@@ -12260,15 +12260,15 @@
   user: core
   <source>
     *: none
-    swcodec: "抗鋸齒"
+    swcodec: "AA Tube"
   </source>
   <dest>
     *: none
-    swcodec: "抗鋸齒(Tube)"
+    swcodec: "抗混頻"
   </dest>
   <voice>
     *: none
-    swcodec: "抗鋸齒"
+    swcodec: "抗混頻"
   </voice>
 </phrase>
 <phrase>
@@ -12289,36 +12289,16 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_LIMITER
-  desc: in sound settings
+  id: LANG_ONPLAY_LYRICS
+  desc: Onplay snclrc/lycplayer
   user: core
   <source>
-    *: none
-    swcodec: "限幅器"
+    *: "Lyric"
   </source>
   <dest>
-    *: none
-    swcodec: "限幅器"
+    *: "歌詞"
   </dest>
   <voice>
-    *: none
-    swcodec: "限幅器"
-  </voice>
-</phrase>
-<phrase>
-  id: LANG_COMPRESSOR_LIMITER
-  desc: in sound settings
-  user: core
-  <source>
-    *: none
-    swcodec: "壓縮器+限幅器(LIMITER)"
-  </source>
-  <dest>
-    *: none
-    swcodec: "壓縮器+限幅器(LIMITER)"
-  </dest>
-  <voice>
-    *: none
-    swcodec: "壓縮器+限幅器(LIMITER)"
+    *: "檢視歌詞"
   </voice>
 </phrase>
