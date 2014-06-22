@@ -268,10 +268,142 @@ void crossfeed_meier_process(struct dsp_proc_entry *this,
 }
 #endif /* CPU */
 
+static int32_t tcoef1,tcoef2,tcoef3;
 
-static int32_t tcoef1,tcoef2;
+static const float kernel_44k[] = {
+	1, -0.020730974, -0.019022247, -0.018487588, -0.017449792, -0.024426898, -0.038292188,
+	-0.071077453, -0.11469807, -0.1874774, -0.20722037, -0.00073042441
+};
+typedef struct crossfeed_s {
+        /* 1st band */
+	int32_t mid[25];
+	int32_t side[25];
+        /* 2nd band */
+        int32_t mid2[25];
+	int32_t side2[25];
+        /* 3nd band */
+        int32_t mid3[25];
+	int32_t side3[25];
+	const float *filter;
+	unsigned char delay;
+        unsigned char delay_h;
+        unsigned char delay_sh;
+	unsigned char len;
+	unsigned char pos;
+        unsigned char pos2; 
+        unsigned char pos3;
+	unsigned char bypass;
+} crossfeed_t;
 
-static void crossfeed_LnxPrgr3_update_filter(int32_t freq_m,int32_t freq_l,
+static crossfeed_t *filter;
+static crossfeed_t filter_ins;
+
+void crossfeed_LnxPrgr3_init(crossfeed_t *filter) {
+        memset(filter, 0, sizeof(crossfeed_t));
+        filter->filter = kernel_44k;
+        filter->delay = 7;         
+        filter->delay_h = 10;      
+        filter->delay_sh = 12;     
+        filter->pos2 = 1;
+        filter->pos3 = 2;
+        filter->len = sizeof(kernel_44k)/sizeof(float);
+
+        struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
+        unsigned int fout = dsp_get_output_frequency(dsp);
+        tcoef1 = fp_div(680, fout, 31);
+        tcoef2 = fp_div(1280, fout, 31);
+        tcoef3 = fp_div(6800, fout, 31); 
+}
+
+static inline void crossfeed_process_sample(crossfeed_t *filter, int32_t left, int32_t right,
+                                            int32_t *oleft, int32_t *oright) {
+
+	int32_t mid = (left + right) / 2;
+	int32_t side = (left - right) / 2;
+	int32_t oside = 0;
+        int32_t oside_h = 0; 
+        int32_t oside_sh = 0;
+	filter->mid[(filter->pos + filter->delay) % filter->len] = mid;
+	filter->side[filter->pos] = side;
+
+        filter->mid2[(filter->pos2 + filter->delay_h) % filter->len] = mid;
+	filter->side2[filter->pos2] = side;
+
+        filter->mid3[(filter->pos3 + filter->delay_sh) % filter->len] = mid;
+	filter->side3[filter->pos3] = side;
+
+	if(!filter->bypass) {
+		for(unsigned int i=0;i<filter->len;++i) {
+			oside    += filter->side[(filter->pos + filter->len - i) % filter->len] * filter->filter[i];
+                        oside_h  += filter->side2[(filter->pos2 + filter->len - i) % filter->len] * filter->filter[i];
+                        oside_sh += filter->side3[(filter->pos3 + filter->len - i) % filter->len] * filter->filter[i];
+		}
+	} else {
+		oside    = filter->side[(filter->pos + filter->len - filter->delay) % filter->len];
+                oside_h  = filter->side2[(filter->pos2 + filter->len - filter->delay_h) % filter->len];
+                oside_sh = filter->side3[(filter->pos3 + filter->len - filter->delay_sh) % filter->len];
+	}
+/*
+        *oleft = filter->mid[filter->pos] + oside;
+        *oright = filter->mid[filter->pos] - oside;
+*/
+
+        *oleft = *oleft -FRACMUL(oleft[0],tcoef1) 
+                 + FRACMUL(filter->mid[filter->pos] + oside,tcoef1) 
+                 - FRACMUL(filter->mid[filter->pos] + oside,tcoef2) 
+                 + FRACMUL(filter->mid2[filter->pos2] + oside_h,tcoef2) 
+                 - FRACMUL(filter->mid2[filter->pos2] + oside_h,tcoef3)
+                 + FRACMUL(filter->mid3[filter->pos3] + oside_sh,tcoef3); 
+
+        *oright = *oright -FRACMUL(oright[0],tcoef1) 
+                 + FRACMUL(filter->mid[filter->pos] - oside,tcoef1)
+                 - FRACMUL(filter->mid[filter->pos] - oside,tcoef2)     
+                 + FRACMUL(filter->mid2[filter->pos2] - oside_h,tcoef2) 
+                 - FRACMUL(filter->mid2[filter->pos2] - oside_h,tcoef3) 
+                 + FRACMUL(filter->mid3[filter->pos3] - oside_sh,tcoef3); 
+ 
+	filter->pos = (filter->pos + 1) % filter->len;
+        filter->pos2 = (filter->pos2 + 1) % filter->len;
+        filter->pos3 = (filter->pos3 + 1) % filter->len;
+}
+
+
+void crossfeed_LnxPrgr3_process(struct dsp_proc_entry *this,
+                             struct dsp_buffer **buf_p)
+{
+    struct dsp_buffer *buf = *buf_p;
+    int count = buf->remcount; 
+    if (count < filter->len)
+    {
+        crossfeed_LnxPrgr3_init(filter);
+        return;
+    } 
+    for(int i=0;i<(count/2);++i)
+    {
+      crossfeed_process_sample(filter, buf->p32[0][i*2], buf->p32[1][i*2+1], &buf->p32[0][i*2],&buf->p32[1][i*2+1]);
+    }
+    (void)this;
+}
+
+void crossfeed_LnxPrgr3_inplace_noninterleaved_process(struct dsp_proc_entry *this,
+                             struct dsp_buffer **buf_p)
+{
+    struct dsp_buffer *buf = *buf_p;
+    int count = buf->remcount; 
+    if (count < filter->len)
+    {
+        crossfeed_LnxPrgr3_init(filter);
+        return;
+    } 
+
+    for(int i=0;i<count;++i) 
+    {
+      crossfeed_process_sample(filter, buf->p32[0][i], buf->p32[1][i], &buf->p32[0][i],&buf->p32[1][i]);
+    }
+    (void)this;
+}
+
+static void crossfeed_Lnx_update_filter(int32_t freq_m,int32_t freq_l,
                                          struct crossfeed_state *state,unsigned int fout)
 {
     tcoef1 = fp_div(freq_m, fout, 31);
@@ -282,7 +414,7 @@ static void crossfeed_LnxPrgr3_update_filter(int32_t freq_m,int32_t freq_l,
 
 
 
-void crossfeed_LnxPrgr3_process(struct dsp_proc_entry *this,
+void crossfeed_Lnx_process(struct dsp_proc_entry *this,
                              struct dsp_buffer **buf_p)
 {
     struct dsp_buffer *buf = *buf_p;
@@ -353,28 +485,41 @@ static void update_process_fn(struct dsp_proc_entry *this,
     }
     else if (crossfeed_type == CROSSFEED_TYPE_LNX)
     {
-        crossfeed_LnxPrgr3_update_filter(1280,640,state,fout);
-        fn = crossfeed_LnxPrgr3_process;
+        crossfeed_Lnx_update_filter(1280,640,state,fout);
+        fn = crossfeed_Lnx_process;
     }
     else if (crossfeed_type == CROSSFEED_TYPE_LNX2)
     {
-        crossfeed_LnxPrgr3_update_filter(640,320,state,fout);
-        fn = crossfeed_LnxPrgr3_process;
+        crossfeed_Lnx_update_filter(640,320,state,fout);
+        fn = crossfeed_Lnx_process;
     }
     else if (crossfeed_type == CROSSFEED_TYPE_LNX3)
     {
-        crossfeed_LnxPrgr3_update_filter(320,160,state,fout);
-        fn = crossfeed_LnxPrgr3_process;
+        crossfeed_Lnx_update_filter(320,160,state,fout);
+        fn = crossfeed_Lnx_process;
     }
     else if (crossfeed_type == CROSSFEED_TYPE_LNX4)
     {
-        crossfeed_LnxPrgr3_update_filter(160,80,state,fout);
-        fn = crossfeed_LnxPrgr3_process;
+        crossfeed_Lnx_update_filter(160,80,state,fout);
+        fn = crossfeed_Lnx_process;
     }
     else if (crossfeed_type == CROSSFEED_TYPE_LNX5)
     {
-        crossfeed_LnxPrgr3_update_filter(80,40,state,fout);
+        crossfeed_Lnx_update_filter(80,40,state,fout);
+        fn = crossfeed_Lnx_process;
+        
+    }
+    else if (crossfeed_type == CROSSFEED_TYPE_LNX6)
+    {
+        filter = &filter_ins;
+        crossfeed_LnxPrgr3_init(filter);
         fn = crossfeed_LnxPrgr3_process;
+    }
+    else if (crossfeed_type == CROSSFEED_TYPE_LNX7)
+    {
+        filter = &filter_ins;
+        crossfeed_LnxPrgr3_init(filter);
+        fn = crossfeed_LnxPrgr3_inplace_noninterleaved_process;
     }
     else
     {

@@ -13532,6 +13532,40 @@
   </voice>
 </phrase>
 <phrase>
+  id: LANG_CROSSFEED_LNX6
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Prgr3(interleaved)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Prgr3(interleaved)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Prgr3(interleaved)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_CROSSFEED_LNX7
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Prgr3(inplace)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Prgr3(inplace)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Prgr3(inplace)"
+  </voice>
+</phrase>
+<phrase>
   id: LANG_RDOSE
   desc: in sound settings
   user: core
