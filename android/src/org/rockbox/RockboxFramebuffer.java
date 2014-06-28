@@ -162,7 +162,7 @@ public class RockboxFramebuffer extends SurfaceView
            /* (bug!)getHolder may returned a SurfaceHolder with wrong size, ignoring the previous setFixedSize call. (pre-Kitkat) */
            /* needs to menually setFixedSize again, and lock update area according to source width and height. */
            holder.setFixedSize(fixedWidth,fixedHeight);   
-           dirty.set(0,0,fixedWidth,srcHeight+paddingHeight);
+           dirty.set(0,0,fixedWidth,fixedHeight);
         }
         else
            dirty = null;
@@ -264,6 +264,8 @@ public class RockboxFramebuffer extends SurfaceView
  
     private int getDpi()
     {
+        if (desHeight > srcHeight)
+            return  (int)(metrics.densityDpi / scaleHeightFactor);
         return metrics.densityDpi;
     }
     
