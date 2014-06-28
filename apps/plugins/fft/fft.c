@@ -342,7 +342,7 @@ GREY_INFO_STRUCT
 
 /******************************* FFT globals *******************************/
 
-#define LCD_SIZE MAX(LCD_WIDTH, LCD_HEIGHT)
+#define LCD_SIZE MIN(LCD_WIDTH, LCD_HEIGHT)
 
 #if (LCD_SIZE <= 511)
 #define FFT_SIZE 1024 /* 512*2 */
