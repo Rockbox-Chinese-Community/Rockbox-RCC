@@ -375,6 +375,17 @@
 
 #elif (CONFIG_KEYPAD == ANDROID_PAD)
 
+#elif CONFIG_KEYPAD == SONY_NWZ_PAD
+#define VUMETER_QUIT    BUTTON_BACK
+#define VUMETER_HELP    BUTTON_RIGHT
+#define VUMETER_MENU    BUTTON_LEFT
+#define VUMETER_UP      BUTTON_UP
+#define VUMETER_DOWN    BUTTON_DOWN
+#define LABEL_HELP      "Right"
+#define LABEL_QUIT      "Back"
+#define LABEL_MENU      "Left"
+#define LABEL_VOLUME    "Up/Down"
+
 #else
 #error No keymap defined!
 #endif

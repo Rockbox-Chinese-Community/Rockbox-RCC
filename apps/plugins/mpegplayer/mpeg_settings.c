@@ -276,6 +276,14 @@ struct mpeg_settings settings;
 #elif (CONFIG_KEYPAD == ANDROID_PAD)
 #define MPEG_START_TIME_EXIT  BUTTON_BACK
 
+#elif CONFIG_KEYPAD == SONY_NWZ_PAD
+#define MPEG_START_TIME_SELECT      BUTTON_PLAY
+#define MPEG_START_TIME_LEFT        BUTTON_LEFT
+#define MPEG_START_TIME_RIGHT       BUTTON_RIGHT
+#define MPEG_START_TIME_UP          BUTTON_UP
+#define MPEG_START_TIME_DOWN        BUTTON_DOWN
+#define MPEG_START_TIME_EXIT        BUTTON_BACK
+
 #else
 #error No keymap defined!
 #endif

@@ -3696,7 +3696,7 @@ fi
     output="rockbox.sony"
     bootoutput="bootloader-nwze370.sony"
     appextra="gui:recorder:radio"
-    plugins=""
+    plugins="yes"
     swcodec="yes"
     toolset=$scramblebitmaptools
     t_cpu="arm"
@@ -3716,7 +3716,7 @@ fi
     output="rockbox.sony"
     bootoutput="bootloader-nwze360.sony"
     appextra="gui:recorder:radio"
-    plugins=""
+    plugins="yes"
     swcodec="yes"
     toolset=$scramblebitmaptools
     t_cpu="arm"
