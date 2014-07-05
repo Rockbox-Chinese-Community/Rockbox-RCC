@@ -8,6 +8,7 @@
 #define DOLBY_SURROUND_MAX 3072
 static bool surround_enabled = false;
 static int surround_balance = 0;
+static bool surround_alter_method = false;
 /*1 sample ~ 11ns */
 #define dly_1ms  91
 #define dly_2ms  182
@@ -19,6 +20,7 @@ static int surround_balance = 0;
 /*only need to buffer right side for haas effect*/
 static int32_t b0[max_delay],b2[max_delay], bb[max_delay], hh[max_delay];
 static int32_t temp_buffer[2][DOLBY_SURROUND_MAX * 2];
+static int32_t mid_buffer[DOLBY_SURROUND_MAX * 2];
 
 /*voice from 300hz - 3400hz ?*/
 static int32_t tcoef1,tcoef2,bcoef,hcoef;
@@ -48,6 +50,12 @@ static void surround_update_filter(unsigned int fout)
 void dsp_surround_set_balance(int var)
 {
     surround_balance = var;
+}
+
+void dsp_surround_alter_method(bool var)
+{
+    dsp_surround_flush();
+    surround_alter_method = var;
 }
 
 void dsp_surround_set_cutoff(int frq_l, int frq_h)
@@ -96,6 +104,7 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
     int dly_shift1 = dly_size/2;
     int dly = dly_size;
     int i;
+    int32_t diff;
 
     if (count < dly_size)
     {
@@ -105,9 +114,20 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
 
     for (i = 0; i < count; i++)
     {
-        temp_buffer[0][i]= buf->p32[0][i];  /*copy whole left channal*/
-        /*only need middle band for right channel*/
-        temp_buffer[1][i]= FRACMUL(buf->p32[1][i], tcoef1) - FRACMUL(buf->p32[1][i], tcoef2);   
+        mid_buffer[i] = buf->p32[0][i] /2 + buf->p32[1][i] /2;
+        diff = buf->p32[0][i] - buf->p32[1][i];
+
+        if (!surround_alter_method)
+        { 
+            temp_buffer[0][i]= buf->p32[0][i];  /*copy whole left channal*/
+            /*only need middle band for right channel*/
+            temp_buffer[1][i]= FRACMUL(buf->p32[1][i], tcoef1) - FRACMUL(buf->p32[1][i], tcoef2);  
+        }
+        else
+        {
+            temp_buffer[0][i] = diff / 2;
+            temp_buffer[1][i] = FRACMUL(-diff,tcoef1)/2 - FRACMUL(-diff, tcoef2)/2; 
+        }       
     }
 
     /* apply 1/8 delay to frequency below fx2 */
@@ -172,17 +192,34 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
         hh[i] = FRACMUL(buf->p32[1][count-dly_shift1+i], hcoef);
     }
 
+
     for (i = 0; i < count; i++) /*balance*/
     { 
-        if (surround_balance > 0)
+        if (surround_balance > 0  && !surround_alter_method)
         {
             temp_buffer[0][i] -= temp_buffer[0][i]/200  * surround_balance;
             temp_buffer[1][i] += temp_buffer[1][i]/200  * surround_balance;
         }
+        else if (surround_balance > 0)
+        {
+            temp_buffer[0][i] += temp_buffer[0][i]/200  * surround_balance;
+            temp_buffer[1][i] -= temp_buffer[1][i]/200  * surround_balance;
+        }
     }
+
+//  
+    if  (surround_alter_method)
+    {
+        for (i = 0; i < count; i++)
+        {
+            temp_buffer[0][i] += mid_buffer[i];
+            temp_buffer[1][i] += mid_buffer[i];    
+        }
+    }  
+//
     memcpy(buf->p32[0],temp_buffer[0],count * sizeof(int32_t));
     memcpy(buf->p32[1],temp_buffer[1],count * sizeof(int32_t));
-
+   
     
     (void)this;
 }
