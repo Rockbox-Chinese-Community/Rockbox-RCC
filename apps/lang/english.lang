@@ -13633,3 +13633,54 @@
     swcodec: "SURROUND METHOD 2"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_MIDSIDE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "MID / SIDE"
+  </source>
+  <dest>
+    *: none
+    swcodec: "MID / SIDE"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "MID / SIDE"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_MIDSIDE_MID
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "MID Level"
+  </source>
+  <dest>
+    *: none
+    swcodec: "MID Level"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "MID Level"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_MIDSIDE_SIDE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "SIDE Level"
+  </source>
+  <dest>
+    *: none
+    swcodec: "SIDE Level"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "SIDE Level"
+  </voice>
+</phrase>

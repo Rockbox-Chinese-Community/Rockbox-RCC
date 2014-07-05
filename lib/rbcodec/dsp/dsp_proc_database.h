@@ -51,6 +51,7 @@ DSP_PROC_DB_START
     DSP_PROC_DB_ITEM(SURROUND)
     DSP_PROC_DB_ITEM(SPACE80)       /* space80 */ 
     DSP_PROC_DB_ITEM(CHANNEL_MODE)  /* channel modes */
+    DSP_PROC_DB_ITEM(MIDSIDE)       /* mid/side processing */
     DSP_PROC_DB_ITEM(COMPRESSOR)    /* dynamic-range compressor */
 DSP_PROC_DB_STOP
 
