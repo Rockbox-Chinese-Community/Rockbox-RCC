@@ -852,6 +852,7 @@ struct user_settings
     int surround_fx1;
     int surround_fx2;
     bool surround_method2;
+    int surround_mix;
 };
 
 /** global variables **/

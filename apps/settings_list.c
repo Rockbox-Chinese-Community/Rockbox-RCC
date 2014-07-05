@@ -2274,8 +2274,8 @@ const struct settings_list settings[] = {
     TABLE_SETTING(F_SOUNDSETTING, surround_enabled,
                   LANG_SURROUND, 0, "surround enabled", "off",
                   UNIT_MS, formatter_unit_0_is_off, getlang_unit_0_is_off,
-                  dsp_surround_enable, 6,
-                  0,1,2,5,8,10),
+                  dsp_surround_enable, 4,
+                  0,5,8,10),
 
     INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_balance,
                        LANG_BALANCE, 35,
@@ -2292,6 +2292,10 @@ const struct settings_list settings[] = {
                        40, NULL, NULL, surround_set_factor),
     OFFON_SETTING(F_SOUNDSETTING, surround_method2, LANG_SURROUND_METHOD2, false,
                   "surround method2", dsp_surround_alter_method),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_mix,
+                       LANG_SPACE80_MIX, 100,
+                       "surround mix", UNIT_PERCENT, 0, 100,
+                       5, NULL, NULL, dsp_surround_mix),
     /* aa-tube */
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, aatube_enabled,
                        LANG_ANTIALIAS_WARM, 0,"aatube enabled",
