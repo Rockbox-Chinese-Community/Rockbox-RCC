@@ -13616,3 +13616,20 @@
     swcodec: "f(x2)"
   </voice>
 </phrase>
+<phrase>
+  id: LANG_SURROUND_METHOD2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "SURROUND METHOD 2"
+  </source>
+  <dest>
+    *: none
+    swcodec: "SURROUND METHOD 2"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "SURROUND METHOD 2"
+  </voice>
+</phrase>
