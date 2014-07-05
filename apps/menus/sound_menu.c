@@ -193,13 +193,15 @@ static int timestretch_callback(int action,const struct menu_item_ex *this_item)
                      &global_settings.surround_fx2, lowlatency_callback);
     MENUITEM_SETTING(surround_method2,
                      &global_settings.surround_method2, lowlatency_callback);
+    MENUITEM_SETTING(surround_mix,
+                     &global_settings.surround_mix, lowlatency_callback);
     MENUITEM_SETTING(aatube_enabled,
                      &global_settings.aatube_enabled, lowlatency_callback);
     MENUITEM_SETTING(rdose,
                      &global_settings.rdose, lowlatency_callback);
 
     MAKE_MENU(surround_menu,ID2P(LANG_SURROUND), NULL, Icon_NOICON,
-              &surround_enabled,&surround_balance,&surround_fx1,&surround_fx2,&surround_method2);
+              &surround_enabled,&surround_balance,&surround_fx1,&surround_fx2,&surround_method2,&surround_mix);
     /* compressor submenu */
     MENUITEM_SETTING(compressor_switch,
                      &global_settings.compressor_switch,

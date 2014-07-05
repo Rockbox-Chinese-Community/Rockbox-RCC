@@ -9,9 +9,8 @@
 static bool surround_enabled = false;
 static int surround_balance = 0;
 static bool surround_alter_method = false;
+static int surround_mix = 100;
 /*1 sample ~ 11ns */
-#define dly_1ms  91
-#define dly_2ms  182
 #define dly_5ms  454
 #define dly_8ms  727
 #define dly_10ms 909
@@ -58,6 +57,11 @@ void dsp_surround_alter_method(bool var)
     surround_alter_method = var;
 }
 
+void dsp_surround_mix(int var)
+{
+    surround_mix = var;
+}
+
 void dsp_surround_set_cutoff(int frq_l, int frq_h)
 {
     cutoff_l = frq_l;/*fx2*/
@@ -73,11 +77,9 @@ static void surround_set_stepsize(int var)
     dsp_surround_flush();
     if (var > 0)
     {
-    if (var == 1) dly_size =  dly_1ms;
-    if (var == 2) dly_size =  dly_2ms;
-    if (var == 3) dly_size =  dly_5ms; 
-    if (var == 4) dly_size =  dly_8ms; 
-    if (var == 5) dly_size =  dly_10ms;
+    if (var == 1) dly_size =  dly_5ms;
+    if (var == 2) dly_size =  dly_8ms;
+    if (var == 3) dly_size =  dly_10ms; 
     }
 }
 
@@ -105,6 +107,7 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
     int dly = dly_size;
     int i;
     int32_t diff;
+    float mix = surround_mix;
 
     if (count < dly_size)
     {
@@ -217,10 +220,20 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
         }
     }  
 //
-    memcpy(buf->p32[0],temp_buffer[0],count * sizeof(int32_t));
-    memcpy(buf->p32[1],temp_buffer[1],count * sizeof(int32_t));
-   
-    
+    if (mix == 100)
+    {
+        memcpy(buf->p32[0],temp_buffer[0],count * sizeof(int32_t));
+        memcpy(buf->p32[1],temp_buffer[1],count * sizeof(int32_t));
+    }
+    else
+    {
+        /*dry wet mix*/
+        for (i = 0; i < count; i++)
+        {
+            buf->p32[0][i] = buf->p32[0][i] * ((float)(100-mix)/100) + temp_buffer[0][i] * (mix/100); 
+            buf->p32[1][i] = buf->p32[1][i] * ((float)(100-mix)/100) + temp_buffer[1][i] * (mix/100);     
+        }
+    }
     (void)this;
 }
 
