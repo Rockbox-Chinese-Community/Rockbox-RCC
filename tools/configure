@@ -27,7 +27,7 @@ bindir=
 libdir=
 sharedir=
 
-thread_support="HAVE_SIGALTSTACK_THREADS"
+thread_support="ASSEMBLER_THREADS"
 app_lcd_width=
 app_lcd_height=
 app_lcd_orientation=
