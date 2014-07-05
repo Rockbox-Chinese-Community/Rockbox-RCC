@@ -853,6 +853,10 @@ struct user_settings
     int surround_fx2;
     bool surround_method2;
     int surround_mix;
+
+    int midside_enabled;
+    int mid_mix_level;
+    int side_mix_level;
 };
 
 /** global variables **/

@@ -32,6 +32,7 @@
 #include "eq.h"
 #include "pga.h"
 #include "rdose.h"
+#include "midside.h"
 #ifdef HAVE_PITCHCONTROL
 #include "tdspeed.h"
 #endif
