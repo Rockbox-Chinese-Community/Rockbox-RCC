@@ -31,6 +31,8 @@ enum crossfeed_type
     CROSSFEED_TYPE_LNX3,
     CROSSFEED_TYPE_LNX4,
     CROSSFEED_TYPE_LNX5,
+    CROSSFEED_TYPE_LNX6,
+    CROSSFEED_TYPE_LNX7,
 };
 
 void dsp_set_crossfeed_type(int type);

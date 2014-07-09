@@ -23,8 +23,6 @@
 #include "lib/display_text.h"
 #include "pluginbitmaps/superdom_boarditems.h"
 
-
-extern const fb_data superdom_boarditems[];
 char buf[255];
 
 #define COLOUR_DARK 0
@@ -32,7 +30,7 @@ char buf[255];
 
 #define MARGIN 5
 
-#if (LCD_DEPTH == 16)
+#if (LCD_DEPTH >= 16)
 #define MY_BITMAP_PART   rb->lcd_bitmap_transparent_part
 #else
 #define MY_BITMAP_PART   rb->lcd_mono_bitmap_part
@@ -194,6 +192,14 @@ char buf[255];
 
 #elif CONFIG_KEYPAD == SANSA_FUZEPLUS_PAD
 #define SUPERDOM_OK     BUTTON_SELECT
+#define SUPERDOM_UP     BUTTON_UP
+#define SUPERDOM_DOWN   BUTTON_DOWN
+#define SUPERDOM_LEFT   BUTTON_LEFT
+#define SUPERDOM_RIGHT  BUTTON_RIGHT
+#define SUPERDOM_CANCEL BUTTON_BACK
+
+#elif CONFIG_KEYPAD == SONY_NWZ_PAD
+#define SUPERDOM_OK     BUTTON_PLAY
 #define SUPERDOM_UP     BUTTON_UP
 #define SUPERDOM_DOWN   BUTTON_DOWN
 #define SUPERDOM_LEFT   BUTTON_LEFT

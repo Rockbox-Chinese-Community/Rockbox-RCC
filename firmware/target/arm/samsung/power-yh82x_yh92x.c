@@ -20,7 +20,7 @@
  ****************************************************************************/
 
 /* Created from power.c using some iPod code, and some custom stuff based on 
-   GPIO analysis 
+   GPIO analysis
 */
 
 #include "config.h"
@@ -32,9 +32,26 @@
 #include "power.h"
 #include "logf.h"
 #include "usb.h"
+#include "fmradio_3wire.h"
+
+#if CONFIG_TUNER
+bool tuner_power(bool status)
+{
+    GPIO_SET_BITWISE(GPIOL_ENABLE, 0x04);
+    GPIO_SET_BITWISE(GPIOL_OUTPUT_EN, 0x04);
+    if (status)
+        GPIO_CLEAR_BITWISE(GPIOL_OUTPUT_VAL, 0x04);
+    else
+        GPIO_SET_BITWISE(GPIOL_OUTPUT_VAL, 0x04);
+    return status;
+}
+#endif
 
 void power_init(void)
 {
+#if CONFIG_TUNER
+    fmradio_3wire_init();
+#endif
 }
 
 unsigned int power_input_status(void)
@@ -52,15 +69,31 @@ unsigned int power_input_status(void)
 
 void ide_power_enable(bool on)
 {
+#if defined(SAMSUNG_YH920) || defined(SAMSUNG_YH925)
+    if (on)
+    {
+        GPIO_CLEAR_BITWISE(GPIOF_OUTPUT_VAL, 0x10);
+        DEV_EN |= DEV_IDE0;
+    }
+    else
+    {
+        DEV_EN &= ~DEV_IDE0;
+        GPIO_SET_BITWISE(GPIOF_OUTPUT_VAL, 0x10);
+    }
+#else
     (void)on;
     /* We do nothing */
+#endif
 }
-
 
 bool ide_powered(void)
 {
+#if defined(SAMSUNG_YH920) || defined(SAMSUNG_YH925)
+    return ((GPIOF_INPUT_VAL & 0x10) == 0);
+#else
     /* pretend we are always powered - we don't turn it off */
     return true;
+#endif
 }
 
 void power_off(void)

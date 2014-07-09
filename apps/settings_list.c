@@ -498,96 +498,96 @@ static int32_t get_precut_talkid(int value, int unit)
 }
 
 struct eq_band_setting eq_defaults[EQ_NUM_BANDS] = {
-    { 20, 4.3, 0 },
-    { 30, 4.3, 0 },
+    { 20, 43, 0 },
+    { 30, 43, 0 },
 #if EQ_NUM_BANDS > 3
-    { 40, 4.3, 0 },
+    { 40, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 4
-    { 50, 4.3, 0 },
+    { 50, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 5
-    { 60, 4.3, 0 },
+    { 60, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 6
-    { 70, 4.3, 0 },
+    { 80, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 7
-    { 90, 4.3, 0 },
+    { 100, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 8
-    { 110, 4.3, 0 },
+    { 130, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 9
-    { 140, 4.3, 0 },
+    { 160, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 10
-    { 180, 4.3, 0 },
+    { 200, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 11
-    { 230, 4.3, 0 },
+    { 250, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 12
-    { 290, 4.3, 0 },
+    { 320, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 13
-    { 360, 4.3, 0 },
+    { 400, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 14
-    { 450, 4.3, 0 },
+    { 500, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 15
-    { 570, 4.3, 0 },
+    { 630, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 16
-    { 720, 4.3, 0 },
+    { 800, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 17
-    { 910, 4.3, 0 },
+    { 1000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 18
-    { 1140, 4.3, 0 },
+    { 1250, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 19
-    { 1440, 4.3, 0 },
+    { 1600, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 20
-    { 1810, 4.3, 0 },
+    { 2000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 21
-    { 2280, 4.3, 0 },
+    { 2500, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 22
-    { 2880, 4.3, 0 },
+    { 3150, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 23
-    { 3620, 4.3, 0 },
+    { 4000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 24
-    { 4560, 4.3, 0 },
+    { 5000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 25
-    { 5750, 4.3, 0 },
+    { 6300, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 26
-    { 7250, 4.3, 0 },
+    { 8000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 27
-    { 9130, 4.3, 0 },
+    { 10000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 28
-    { 11500, 4.3, 0 },
+    { 12500, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 29
-    { 14490, 4.3, 0 },
+    { 16000, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 30
-    { 18260, 4.3, 0 },
+    { 18260, 43, 0 },
 #endif
 #if EQ_NUM_BANDS > 31
-    { 19420, 4.3, 0 },
+    { 19420, 43, 0 },
 #endif
-    { 19810, 4.3, 0 },
+    { 20000, 43, 0 },
 };
 
 static void eq_load_from_cfg(void *setting, char *value)
@@ -1633,10 +1633,10 @@ const struct settings_list settings[] = {
 
     /* crossfeed */
     CHOICE_SETTING(F_SOUNDSETTING, crossfeed, LANG_CROSSFEED, 0,"crossfeed",
-                   "off,meier,custom,lnx(1280Hz),lnx(640Hz),lnx(320Hz),lnx(160Hz),lnx(80Hz)", dsp_set_crossfeed_type, 8,
+                   "off,meier,custom,lnx(1280Hz),lnx(640Hz),lnx(320Hz),lnx(160Hz),lnx(80Hz),Prgr3(interleaved),Prgr3(inplace)", dsp_set_crossfeed_type, 10,
                    ID2P(LANG_OFF), ID2P(LANG_CROSSFEED_MEIER),
                    ID2P(LANG_CROSSFEED_CUSTOM),ID2P(LANG_CROSSFEED_LNX),ID2P(LANG_CROSSFEED_LNX2),ID2P(LANG_CROSSFEED_LNX3),
-                      ID2P(LANG_CROSSFEED_LNX4),ID2P(LANG_CROSSFEED_LNX5)),
+                      ID2P(LANG_CROSSFEED_LNX4),ID2P(LANG_CROSSFEED_LNX5),ID2P(LANG_CROSSFEED_LNX6),ID2P(LANG_CROSSFEED_LNX7)),
     INT_SETTING_NOWRAP(F_SOUNDSETTING, crossfeed_direct_gain,
                        LANG_CROSSFEED_DIRECT_GAIN, -15,
                        "crossfeed direct gain", UNIT_DB, -60, 0, 5,
@@ -2274,8 +2274,8 @@ const struct settings_list settings[] = {
     TABLE_SETTING(F_SOUNDSETTING, surround_enabled,
                   LANG_SURROUND, 0, "surround enabled", "off",
                   UNIT_MS, formatter_unit_0_is_off, getlang_unit_0_is_off,
-                  dsp_surround_enable, 6,
-                  0,1,2,5,8,10),
+                  dsp_surround_enable, 4,
+                  0,5,8,10),
 
     INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_balance,
                        LANG_BALANCE, 35,
@@ -2290,11 +2290,30 @@ const struct settings_list settings[] = {
                        LANG_SURROUND_FX2, 320,
                        "surround_fx2", UNIT_HERTZ, 40, 400,
                        40, NULL, NULL, surround_set_factor),
+    OFFON_SETTING(F_SOUNDSETTING, surround_method2, LANG_SURROUND_METHOD2, false,
+                  "surround method2", dsp_surround_alter_method),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, surround_mix,
+                       LANG_SPACE80_MIX, 100,
+                       "surround mix", UNIT_PERCENT, 0, 100,
+                       5, NULL, NULL, dsp_surround_mix),
     /* aa-tube */
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, aatube_enabled,
                        LANG_ANTIALIAS_WARM, 0,"aatube enabled",
                        "off,weak,moderate,strong", dsp_aatube_enable, 4,
                        ID2P(LANG_OFF), ID2P(LANG_WEAK),ID2P(LANG_MODERATE),ID2P(LANG_STRONG)),
+    /* mid-side */
+    CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, midside_enabled,
+                       LANG_MIDSIDE, 0,"midside enabled",
+                       "off,on", dsp_midside_enable, 2,
+                       ID2P(LANG_OFF), ID2P(LANG_ON)),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, mid_mix_level,
+                       LANG_MIDSIDE_MID, 100,
+                       "mid mix level", UNIT_PERCENT, 0, 100,
+                       1, NULL, NULL, dsp_midside_mid_level),
+    INT_SETTING_NOWRAP(F_SOUNDSETTING, side_mix_level,
+                       LANG_MIDSIDE_SIDE, 100,
+                       "side mix level", UNIT_PERCENT, 0, 100,
+                       1, NULL, NULL, dsp_midside_side_level),
     /* rDose */
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, rdose,
                    LANG_RDOSE, 0, "rdose enabled",

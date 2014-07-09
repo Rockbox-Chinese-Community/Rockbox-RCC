@@ -11,7 +11,7 @@
 
 /* Define bitmask of input sources - recordable bitmask can be defined
    explicitly if different */
-#define INPUT_SRC_CAPS (SRC_CAP_MIC | SRC_CAP_LINEIN )
+#define INPUT_SRC_CAPS (SRC_CAP_MIC | SRC_CAP_LINEIN | SRC_CAP_FMRADIO)
 
 /* define the bitmask of hardware sample rates */
 #define HW_SAMPR_CAPS   (SAMPR_CAP_48 | SAMPR_CAP_44 | SAMPR_CAP_32 | \
@@ -57,17 +57,17 @@
 #define HAVE_BACKLIGHT
 
 /* Define this if your LCD can set contrast */
-/* todo #define HAVE_LCD_CONTRAST */
+#define HAVE_LCD_CONTRAST
 
-#define MIN_CONTRAST_SETTING        0
-#define MAX_CONTRAST_SETTING        30
-#define DEFAULT_CONTRAST_SETTING    14 /* Match boot contrast */
+#define MIN_CONTRAST_SETTING        50
+#define MAX_CONTRAST_SETTING        70
+#define DEFAULT_CONTRAST_SETTING    61 /* Match boot contrast */
 
 /* define this if you can flip your LCD */
-/* todo #define HAVE_LCD_FLIP */
+#define HAVE_LCD_FLIP
 
 /* define this if you can invert the colours on your LCD */
-/* todo #define HAVE_LCD_INVERT */
+#define HAVE_LCD_INVERT
 
 /* put the lcd frame buffer in IRAM */
 /* #define IRAM_LCDFRAMEBUFFER IDATA_ATTR */
@@ -113,7 +113,10 @@
 #define HAVE_LBA48
 
 /* We're able to shut off power to the HDD */
-/* todo #define HAVE_ATA_POWER_OFF */
+#define HAVE_ATA_POWER_OFF
+
+/* Software controlled LED */
+#define CONFIG_LED LED_REAL
 
 /* Define this if you have a software controlled poweroff */
 #define HAVE_SW_POWEROFF
@@ -129,6 +132,12 @@
 
 /* AK4537 has no tone controls, so we use the software ones */
 #define HAVE_SW_TONE_CONTROLS
+
+/* FM Tuner */
+#define CONFIG_TUNER      TEA5767
+#define CONFIG_TUNER_XTAL 32768
+/* Define this if the tuner uses 3-wire bus instead of classic i2c */
+#define CONFIG_TUNER_3WIRE
 
 #define AB_REPEAT_ENABLE
 

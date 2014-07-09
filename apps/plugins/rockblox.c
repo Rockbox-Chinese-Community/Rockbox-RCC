@@ -429,6 +429,16 @@
 #define ROCKBLOX_DROP          BUTTON_SELECT
 #define ROCKBLOX_RESTART       BUTTON_PLAY
 
+#elif CONFIG_KEYPAD == SONY_NWZ_PAD
+#define ROCKBLOX_OFF           (BUTTON_BACK|BUTTON_REPEAT)
+#define ROCKBLOX_ROTATE_CCW    BUTTON_POWER
+#define ROCKBLOX_ROTATE_CW     BUTTON_UP
+#define ROCKBLOX_DOWN          BUTTON_DOWN
+#define ROCKBLOX_LEFT          BUTTON_LEFT
+#define ROCKBLOX_RIGHT         BUTTON_RIGHT
+#define ROCKBLOX_DROP          BUTTON_PLAY
+#define ROCKBLOX_RESTART       BUTTON_BACK
+
 #else
 #error No keymap defined!
 #endif
@@ -789,7 +799,7 @@ static const short scoring[4] = {  /* scoring for each number of lines */
 struct figure
 {
 #if LCD_DEPTH >= 2
-    unsigned short color[3];    /* color of figure (light,middle,shadow) */
+    unsigned int color[3];    /* color of figure (light,middle,shadow) */
 #endif
     unsigned short max_or;      /* max orientations */
     signed short shapeX[4], shapeY[4];  /* implementation of figures */

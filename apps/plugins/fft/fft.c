@@ -305,6 +305,15 @@ GREY_INFO_STRUCT
 #elif (CONFIG_KEYPAD == ANDROID_PAD)
 #   define define FFT_QUIT  BUTTON_BACK
 
+#elif (CONFIG_KEYPAD == SONY_NWZ_PAD)
+#define FFT_PREV_GRAPH      BUTTON_LEFT
+#define FFT_NEXT_GRAPH      BUTTON_RIGHT
+#define FFT_AMP_SCALE       BUTTON_UP
+#define FFT_FREQ_SCALE      BUTTON_DOWN
+#define FFT_QUIT            BUTTON_BACK
+#define FFT_ORIENTATION     BUTTON_POWER
+#define FFT_WINDOW          BUTTON_PLAY
+
 #elif !defined(HAVE_TOUCHSCREEN)
 #error No keymap defined!
 #endif
@@ -932,13 +941,15 @@ static void draw_spectrogram_vertical(unsigned this_max, unsigned graph_max)
         if(bins_acc >= ARRAYLEN_PLOT)
         {
             unsigned index = (SHADES-1)*bins_max / graph_max;
+            unsigned color;
 
             /* These happen because we exaggerate the graph a little for
              * linear mode */
             if(index >= SHADES)
                 index = SHADES-1;
 
-            mylcd_set_foreground(SPECTROGRAPH_PALETTE(index));
+            color = FB_UNPACK_SCALAR_LCD(SPECTROGRAPH_PALETTE(index));
+            mylcd_set_foreground(color);
             mylcd_drawpixel(fft_spectrogram_pos, y);
 
             if(--y < 0)
@@ -976,13 +987,15 @@ static void draw_spectrogram_horizontal(unsigned this_max, unsigned graph_max)
         if(bins_acc >= ARRAYLEN_PLOT)
         {
             unsigned index = (SHADES-1)*bins_max / graph_max;
+            unsigned color;
 
             /* These happen because we exaggerate the graph a little for
              * linear mode */
             if(index >= SHADES)
                 index = SHADES-1;
 
-            mylcd_set_foreground(SPECTROGRAPH_PALETTE(index));
+            color = FB_UNPACK_SCALAR_LCD(SPECTROGRAPH_PALETTE(index));
+            mylcd_set_foreground(color);
             mylcd_drawpixel(x, fft_spectrogram_pos);
 
             if(++x >= LCD_WIDTH)
