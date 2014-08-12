@@ -28,11 +28,7 @@
 #undef _FORTIFY_SOURCE
 #endif
 
-#include <stdbool.h>
-#include <stdio.h>
-#include "thread.h"
-#include "panic.h"
-#include "system.h"
+#include "thread-internal.h"
 #include "kernel.h"
 #include "cpu.h"
 #include "string.h"
@@ -40,8 +36,6 @@
 #include <profile.h>
 #endif
 #include "core_alloc.h"
-#include "gcc_extensions.h"
-#include "corelock.h"
 
 /****************************************************************************
  *                              ATTENTION!!                                 *
@@ -131,7 +125,6 @@
 
 /* Cast to the the machine pointer size, whose size could be < 4 or > 32
  * (someday :). */
-#define DEADBEEF ((uintptr_t)0xdeadbeefdeadbeefull)
 static struct core_entry cores[NUM_CORES] IBSS_ATTR;
 struct thread_entry threads[MAXTHREADS] IBSS_ATTR;
 
@@ -196,64 +189,39 @@ void switch_thread(void)
 #include "thread-pp.c"
 #endif /* CPU_PP */
 
-#ifndef IF_NO_SKIP_YIELD
-#define IF_NO_SKIP_YIELD(...)
-#endif
-
 /*
  * End Processor-specific section
  ***************************************************************************/
 
-#if THREAD_EXTRA_CHECKS
-static void thread_panicf(const char *msg, struct thread_entry *thread)
+static NO_INLINE
+  void thread_panicf(const char *msg, struct thread_entry *thread)
 {
     IF_COP( const unsigned int core = thread->core; )
-    static char name[32];
-    thread_get_name(name, 32, thread);
+    static char namebuf[sizeof (((struct thread_debug_info *)0)->name)];
+    const char *name = thread->name;
+    if (!name)
+        name = "";
+    snprintf(namebuf, sizeof (namebuf), *name ? "%s" : "%s%08lX",
+             name, (unsigned long)thread->id);
     panicf ("%s %s" IF_COP(" (%d)"), msg, name IF_COP(, core));
 }
+
 static void thread_stkov(struct thread_entry *thread)
 {
     thread_panicf("Stkov", thread);
 }
+
+#if THREAD_EXTRA_CHECKS
 #define THREAD_PANICF(msg, thread) \
     thread_panicf(msg, thread)
 #define THREAD_ASSERT(exp, msg, thread) \
     ({ if (!({ exp; })) thread_panicf((msg), (thread)); })
 #else
-static void thread_stkov(struct thread_entry *thread)
-{
-    IF_COP( const unsigned int core = thread->core; )
-    static char name[32];
-    thread_get_name(name, 32, thread);
-    panicf("Stkov %s" IF_COP(" (%d)"), name IF_COP(, core));
-}
-#define THREAD_PANICF(msg, thread)
-#define THREAD_ASSERT(exp, msg, thread)
+#define THREAD_PANICF(msg, thread) \
+    do {} while (0)
+#define THREAD_ASSERT(exp, msg, thread) \
+    do {} while (0)
 #endif /* THREAD_EXTRA_CHECKS */
-
-/* Thread locking */
-#if NUM_CORES > 1
-#define LOCK_THREAD(thread) \
-    ({ corelock_lock(&(thread)->slot_cl); })
-#define TRY_LOCK_THREAD(thread) \
-    ({ corelock_try_lock(&(thread)->slot_cl); })
-#define UNLOCK_THREAD(thread) \
-    ({ corelock_unlock(&(thread)->slot_cl); })
-#define UNLOCK_THREAD_AT_TASK_SWITCH(thread) \
-    ({ unsigned int _core = (thread)->core; \
-       cores[_core].blk_ops.flags |= TBOP_UNLOCK_CORELOCK; \
-       cores[_core].blk_ops.cl_p = &(thread)->slot_cl; })
-#else
-#define LOCK_THREAD(thread) \
-    ({ })
-#define TRY_LOCK_THREAD(thread) \
-    ({ })
-#define UNLOCK_THREAD(thread) \
-    ({ })
-#define UNLOCK_THREAD_AT_TASK_SWITCH(thread) \
-    ({ })
-#endif
 
 /* RTR list */
 #define RTR_LOCK(core) \
@@ -278,6 +246,100 @@ static void thread_stkov(struct thread_entry *thread)
 #define rtr_move_entry(core, from, to)
 #define rtr_move_entry_inl(core, from, to)
 #endif
+
+static inline void thread_store_context(struct thread_entry *thread)
+{
+#if (CONFIG_PLATFORM & PLATFORM_HOSTED)
+    thread->__errno = errno;
+#endif
+    store_context(&thread->context);
+}
+
+static inline void thread_load_context(struct thread_entry *thread)
+{
+    load_context(&thread->context);
+#if (CONFIG_PLATFORM & PLATFORM_HOSTED)
+    errno = thread->__errno;
+#endif
+}
+
+static inline unsigned int should_switch_tasks(void)
+{
+    unsigned int result = THREAD_OK;
+
+#ifdef HAVE_PRIORITY_SCHEDULING
+    struct thread_entry *current = cores[CURRENT_CORE].running;
+    if (current &&
+        priobit_ffs(&cores[IF_COP_CORE(current->core)].rtr.mask)
+            < current->priority)
+    {
+        /* There is a thread ready to run of higher priority on the same
+         * core as the current one; recommend a task switch. */
+        result |= THREAD_SWITCH;
+    }
+#endif /* HAVE_PRIORITY_SCHEDULING */
+
+    return result;
+}
+
+#ifdef HAVE_PRIORITY_SCHEDULING
+/*---------------------------------------------------------------------------
+ * Locks the thread registered as the owner of the block and makes sure it
+ * didn't change in the meantime
+ *---------------------------------------------------------------------------
+ */
+#if NUM_CORES == 1
+static inline struct thread_entry * lock_blocker_thread(struct blocker *bl)
+{
+    return bl->thread;
+}
+#else /* NUM_CORES > 1 */
+static struct thread_entry * lock_blocker_thread(struct blocker *bl)
+{
+    /* The blocker thread may change during the process of trying to
+       capture it */
+    while (1)
+    {
+        struct thread_entry *t = bl->thread;
+
+        /* TRY, or else deadlocks are possible */
+        if (!t)
+        {
+            struct blocker_splay *blsplay = (struct blocker_splay *)bl;
+            if (corelock_try_lock(&blsplay->cl))
+            {
+                if (!bl->thread)
+                    return NULL;    /* Still multi */
+
+                corelock_unlock(&blsplay->cl);
+            }
+        }
+        else
+        {
+            if (TRY_LOCK_THREAD(t))
+            {
+                if (bl->thread == t)
+                    return t;
+
+                UNLOCK_THREAD(t);
+            }
+        }
+    }
+}
+#endif /* NUM_CORES */
+
+static inline void unlock_blocker_thread(struct blocker *bl)
+{
+#if NUM_CORES > 1
+    struct thread_entry *blt = bl->thread;
+    if (blt)
+        UNLOCK_THREAD(blt);
+    else
+        corelock_unlock(&((struct blocker_splay *)bl)->cl);
+#endif /* NUM_CORES > 1*/
+    (void)bl;
+}
+#endif /* HAVE_PRIORITY_SCHEDULING */
 
 /*---------------------------------------------------------------------------
  * Thread list structure - circular:
@@ -420,7 +482,6 @@ static void remove_from_list_tmo(struct thread_entry *thread)
     }
 }
 
-
 #ifdef HAVE_PRIORITY_SCHEDULING
 /*---------------------------------------------------------------------------
  * Priority distribution structure (one category for each possible priority):
@@ -476,19 +537,9 @@ static void remove_from_list_tmo(struct thread_entry *thread)
 static inline unsigned int prio_add_entry(
     struct priority_distribution *pd, int priority)
 {
-    unsigned int count;
-    /* Enough size/instruction count difference for ARM makes it worth it to
-     * use different code (192 bytes for ARM). Only thing better is ASM. */
-#ifdef CPU_ARM
-    count = pd->hist[priority];
-    if (++count == 1)
-        pd->mask |= 1 << priority;
-    pd->hist[priority] = count;
-#else /* This one's better for Coldfire */
-    if ((count = ++pd->hist[priority]) == 1)
-        pd->mask |= 1 << priority;
-#endif
-
+    unsigned int count = ++pd->hist[priority];
+    if (count == 1)
+        priobit_set_bit(&pd->mask, priority);
     return count;
 }
 
@@ -499,18 +550,9 @@ static inline unsigned int prio_add_entry(
 static inline unsigned int prio_subtract_entry(
     struct priority_distribution *pd, int priority)
 {
-    unsigned int count;
-
-#ifdef CPU_ARM
-    count = pd->hist[priority];
-    if (--count == 0)
-        pd->mask &= ~(1 << priority);
-    pd->hist[priority] = count;
-#else
-    if ((count = --pd->hist[priority]) == 0)
-        pd->mask &= ~(1 << priority);
-#endif
-
+    unsigned int count = --pd->hist[priority];
+    if (count == 0)
+        priobit_clear_bit(&pd->mask, priority);
     return count;
 }
 
@@ -521,31 +563,38 @@ static inline unsigned int prio_subtract_entry(
 static inline void prio_move_entry(
     struct priority_distribution *pd, int from, int to)
 {
-    uint32_t mask = pd->mask;
-
-#ifdef CPU_ARM
-    unsigned int count;
-
-    count = pd->hist[from];
-    if (--count == 0)
-        mask &= ~(1 << from);
-    pd->hist[from] = count;
-
-    count = pd->hist[to];
-    if (++count == 1)
-        mask |= 1 << to;
-    pd->hist[to] = count;
-#else
     if (--pd->hist[from] == 0)
-        mask &= ~(1 << from);
+        priobit_clear_bit(&pd->mask, from);
 
     if (++pd->hist[to] == 1)
-        mask |= 1 << to;
-#endif
+        priobit_set_bit(&pd->mask, to);
+}
+#endif /* HAVE_PRIORITY_SCHEDULING */
 
-    pd->mask = mask;
+/*---------------------------------------------------------------------------
+ * Move a thread back to a running state on its core.
+ *---------------------------------------------------------------------------
+ */
+static void core_schedule_wakeup(struct thread_entry *thread)
+{
+    const unsigned int core = IF_COP_CORE(thread->core);
+
+    RTR_LOCK(core);
+
+    thread->state = STATE_RUNNING;
+
+    add_to_list_l(&cores[core].running, thread);
+    rtr_add_entry(core, thread->priority);
+
+    RTR_UNLOCK(core);
+
+#if NUM_CORES > 1
+    if (core != CURRENT_CORE)
+        core_wake(core);
+#endif
 }
 
+#ifdef HAVE_PRIORITY_SCHEDULING
 /*---------------------------------------------------------------------------
  * Change the priority and rtr entry for a running thread
  *---------------------------------------------------------------------------
@@ -605,191 +654,211 @@ static int find_highest_priority_in_list_l(
  * those are prevented, right? :-)
  *---------------------------------------------------------------------------
  */
-static struct thread_entry *
-    blocker_inherit_priority(struct thread_entry *current)
+static void inherit_priority(
+    struct blocker * const blocker0, struct blocker *bl,
+    struct thread_entry *blt, int newblpr)
 {
-    const int priority = current->priority;
-    struct blocker *bl = current->blocker;
-    struct thread_entry * const tstart = current;
-    struct thread_entry *bl_t = bl->thread;
+    int oldblpr = bl->priority;
 
-    /* Blocker cannot change since the object protection is held */
-    LOCK_THREAD(bl_t);
-
-    for (;;)
+    while (1)
     {
-        struct thread_entry *next;
-        int bl_pr = bl->priority;
-
-        if (priority >= bl_pr)
-            break; /* Object priority already high enough */
-
-        bl->priority = priority;
-
-        /* Add this one */
-        prio_add_entry(&bl_t->pdist, priority);
-
-        if (bl_pr < PRIORITY_IDLE)
+        if (blt == NULL)
         {
-            /* Not first waiter - subtract old one */
-            prio_subtract_entry(&bl_t->pdist, bl_pr);
+            /* Multiple owners */
+            struct blocker_splay *blsplay = (struct blocker_splay *)bl;
+            
+            /* Recurse down the all the branches of this; it's the only way.
+               We might meet the same queue several times if more than one of
+               these threads is waiting the same queue. That isn't a problem
+               for us since we early-terminate, just notable. */
+            FOR_EACH_BITARRAY_SET_BIT(&blsplay->mask, slotnum)
+            {
+                bl->priority = oldblpr; /* To see the change each time */
+                blt = &threads[slotnum];
+                LOCK_THREAD(blt);
+                inherit_priority(blocker0, bl, blt, newblpr);
+            }
+
+            corelock_unlock(&blsplay->cl);
+            return;
         }
 
-        if (priority >= bl_t->priority)
-            break; /* Thread priority high enough */
+        bl->priority = newblpr;
 
-        if (bl_t->state == STATE_RUNNING)
+        /* Update blocker thread inheritance record */
+        if (newblpr < PRIORITY_IDLE)
+            prio_add_entry(&blt->pdist, newblpr);
+
+        if (oldblpr < PRIORITY_IDLE)
+            prio_subtract_entry(&blt->pdist, oldblpr);
+
+        int oldpr = blt->priority;
+        int newpr = priobit_ffs(&blt->pdist.mask);
+        if (newpr == oldpr)
+            break; /* No blocker thread priority change */
+
+        if (blt->state == STATE_RUNNING)
         {
-            /* Blocking thread is a running thread therefore there are no
-             * further blockers. Change the "run queue" on which it
-             * resides. */
-            set_running_thread_priority(bl_t, priority);
-            break;
+            set_running_thread_priority(blt, newpr);
+            break; /* Running: last in chain */
         }
 
-        bl_t->priority = priority;
+        /* Blocker is blocked */
+        blt->priority = newpr;
 
-        /* If blocking thread has a blocker, apply transitive inheritance */
-        bl = bl_t->blocker;
+        bl = blt->blocker;
+        if (LIKELY(bl == NULL))
+            break; /* Block doesn't support PIP */
 
-        if (bl == NULL)
-            break; /* End of chain or object doesn't support inheritance */
+        if (UNLIKELY(bl == blocker0))
+            break; /* Full circle - deadlock! */
 
-        next = bl->thread;
+        /* Blocker becomes current thread and the process repeats */
+        struct thread_entry **bqp = blt->bqp;
+        struct thread_entry *t = blt;
+        blt = lock_blocker_thread(bl);
 
-        if (UNLIKELY(next == tstart))
-            break; /* Full-circle - deadlock! */
+        UNLOCK_THREAD(t);
 
-        UNLOCK_THREAD(current);
+        /* Adjust this wait queue */
+        oldblpr = bl->priority;
+        if (newpr <= oldblpr)
+            newblpr = newpr;
+        else if (oldpr <= oldblpr)
+            newblpr = find_highest_priority_in_list_l(*bqp);
 
-#if NUM_CORES > 1
-        for (;;)
-        {
-            LOCK_THREAD(next);
-
-            /* Blocker could change - retest condition */
-            if (LIKELY(bl->thread == next))
-                break;
-
-            UNLOCK_THREAD(next);
-            next = bl->thread;
-        }
-#endif
-        current = bl_t;
-        bl_t = next;
+        if (newblpr == oldblpr)
+            break; /* Queue priority not changing */
     }
 
-    UNLOCK_THREAD(bl_t);
-
-    return current;
+    UNLOCK_THREAD(blt);
 }
 
 /*---------------------------------------------------------------------------
- * Readjust priorities when waking a thread blocked waiting for another
- * in essence "releasing" the thread's effect on the object owner. Can be
- * performed from any context.
+ * Quick-disinherit of priority elevation. 'thread' must be a running thread.
  *---------------------------------------------------------------------------
  */
-struct thread_entry *
-    wakeup_priority_protocol_release(struct thread_entry *thread)
+static void priority_disinherit_internal(struct thread_entry *thread,
+                                         int blpr)
 {
-    const int priority = thread->priority;
-    struct blocker *bl = thread->blocker;
-    struct thread_entry * const tstart = thread;
-    struct thread_entry *bl_t = bl->thread;
-
-    /* Blocker cannot change since object will be locked */
-    LOCK_THREAD(bl_t);
-
-    thread->blocker = NULL; /* Thread not blocked */
-
-    for (;;)
+    if (blpr < PRIORITY_IDLE &&
+        prio_subtract_entry(&thread->pdist, blpr) == 0 &&
+        blpr <= thread->priority)
     {
-        struct thread_entry *next;
-        int bl_pr = bl->priority;
+        int priority = priobit_ffs(&thread->pdist.mask);
+        if (priority != thread->priority)
+            set_running_thread_priority(thread, priority);
+    }
+}
 
-        if (priority > bl_pr)
-            break; /* Object priority higher */
+void priority_disinherit(struct thread_entry *thread, struct blocker *bl)
+{
+    LOCK_THREAD(thread);
+    priority_disinherit_internal(thread, bl->priority);
+    UNLOCK_THREAD(thread);
+}
 
-        next = *thread->bqp;
+/*---------------------------------------------------------------------------
+ * Transfer ownership from a single owner to a multi-owner splay from a wait
+ * queue
+ *---------------------------------------------------------------------------
+ */
+static void wakeup_thread_queue_multi_transfer(struct thread_entry *thread)
+{
+    /* All threads will have the same blocker and queue; only we are changing
+       it now */
+    struct thread_entry **bqp = thread->bqp;
+    struct blocker_splay *blsplay = (struct blocker_splay *)thread->blocker;
+    struct thread_entry *blt = blsplay->blocker.thread;
 
-        if (next == NULL)
-        {
-            /* No more threads in queue */
-            prio_subtract_entry(&bl_t->pdist, bl_pr);
-            bl->priority = PRIORITY_IDLE;
-        }
-        else
-        {
-            /* Check list for highest remaining priority */
-            int queue_pr = find_highest_priority_in_list_l(next);
+    /* The first thread is already locked and is assumed tagged "multi" */
+    int count = 1;
+    struct thread_entry *temp_queue = NULL;
 
-            if (queue_pr == bl_pr)
-                break; /* Object priority not changing */
+    /* 'thread' is locked on entry */
+    while (1)
+    {
+        LOCK_THREAD(blt);
 
-            /* Change queue priority */
-            prio_move_entry(&bl_t->pdist, bl_pr, queue_pr);
-            bl->priority = queue_pr;
-        }
+        remove_from_list_l(bqp, thread);
+        thread->blocker = NULL;
 
-        if (bl_pr > bl_t->priority)
-            break; /* thread priority is higher */
-
-        bl_pr = find_first_set_bit(bl_t->pdist.mask);
-
-        if (bl_pr == bl_t->priority)
-            break; /* Thread priority not changing */
-
-        if (bl_t->state == STATE_RUNNING)
-        {
-            /* No further blockers */
-            set_running_thread_priority(bl_t, bl_pr);
+        struct thread_entry *tnext = *bqp;
+        if (tnext == NULL || tnext->retval == 0)
             break;
+
+        add_to_list_l(&temp_queue, thread);
+
+        UNLOCK_THREAD(thread);
+        UNLOCK_THREAD(blt);
+
+        count++;
+        thread = tnext;
+
+        LOCK_THREAD(thread);
+    }
+
+    int blpr = blsplay->blocker.priority;
+    priority_disinherit_internal(blt, blpr);
+
+    /* Locking order reverses here since the threads are no longer on the
+       queue side */
+    if (count > 1)
+    {
+        add_to_list_l(&temp_queue, thread);
+        UNLOCK_THREAD(thread);
+        corelock_lock(&blsplay->cl);
+
+        blpr = find_highest_priority_in_list_l(*bqp);
+        blsplay->blocker.thread = NULL;
+
+        thread = temp_queue;
+        LOCK_THREAD(thread);
+    }
+    else
+    {
+        /* Becomes a simple, direct transfer */
+        if (thread->priority <= blpr)
+            blpr = find_highest_priority_in_list_l(*bqp);
+        blsplay->blocker.thread = thread;
+    }
+
+    blsplay->blocker.priority = blpr;
+
+    while (1)
+    {
+        unsigned int slotnum = THREAD_ID_SLOT(thread->id);
+        threadbit_set_bit(&blsplay->mask, slotnum);
+
+        if (blpr < PRIORITY_IDLE)
+        {
+            prio_add_entry(&thread->pdist, blpr);
+            if (blpr < thread->priority)
+                thread->priority = blpr;
         }
 
-        bl_t->priority = bl_pr;
+        if (count > 1)
+            remove_from_list_l(&temp_queue, thread);
 
-        /* If blocking thread has a blocker, apply transitive inheritance */
-        bl = bl_t->blocker;
-
-        if (bl == NULL)
-            break; /* End of chain or object doesn't support inheritance */
-
-        next = bl->thread;
-
-        if (UNLIKELY(next == tstart))
-            break; /* Full-circle - deadlock! */
+        core_schedule_wakeup(thread);
 
         UNLOCK_THREAD(thread);
 
-#if NUM_CORES > 1
-        for (;;)
-        {
-            LOCK_THREAD(next);
+        thread = temp_queue;
+        if (thread == NULL)
+            break;
 
-            /* Blocker could change - retest condition */
-            if (LIKELY(bl->thread == next))
-                break;
-
-            UNLOCK_THREAD(next);
-            next = bl->thread;
-        }
-#endif
-        thread = bl_t;
-        bl_t = next;
+        LOCK_THREAD(thread);
     }
 
-    UNLOCK_THREAD(bl_t);
+    UNLOCK_THREAD(blt);
 
-#if NUM_CORES > 1
-    if (UNLIKELY(thread != tstart))
+    if (count > 1)
     {
-        /* Relock original if it changed */
-        LOCK_THREAD(tstart);
+        corelock_unlock(&blsplay->cl);
     }
-#endif
 
-    return cores[CURRENT_CORE].running;
+    blt->retval = count;
 }
 
 /*---------------------------------------------------------------------------
@@ -801,114 +870,165 @@ struct thread_entry *
  * it is the running thread is made.
  *---------------------------------------------------------------------------
  */
-struct thread_entry *
-    wakeup_priority_protocol_transfer(struct thread_entry *thread)
+static void wakeup_thread_transfer(struct thread_entry *thread)
 {
-    /* Waking thread inherits priority boost from object owner */
+    /* Waking thread inherits priority boost from object owner (blt) */
     struct blocker *bl = thread->blocker;
-    struct thread_entry *bl_t = bl->thread;
-    struct thread_entry *next;
-    int bl_pr;
+    struct thread_entry *blt = bl->thread;
 
-    THREAD_ASSERT(cores[CURRENT_CORE].running == bl_t,
+    THREAD_ASSERT(cores[CURRENT_CORE].running == blt,
                   "UPPT->wrong thread", cores[CURRENT_CORE].running);
 
-    LOCK_THREAD(bl_t);
+    LOCK_THREAD(blt);
 
-    bl_pr = bl->priority;
+    struct thread_entry **bqp = thread->bqp;
+    remove_from_list_l(bqp, thread);
+    thread->blocker = NULL;
+
+    int blpr = bl->priority;
 
     /* Remove the object's boost from the owning thread */
-    if (prio_subtract_entry(&bl_t->pdist, bl_pr) == 0 &&
-        bl_pr <= bl_t->priority)
+    if (prio_subtract_entry(&blt->pdist, blpr) == 0 && blpr <= blt->priority)
     {
         /* No more threads at this priority are waiting and the old level is
          * at least the thread level */
-        int priority = find_first_set_bit(bl_t->pdist.mask);
-
-        if (priority != bl_t->priority)
-        {
-            /* Adjust this thread's priority */
-            set_running_thread_priority(bl_t, priority);
-        }
+        int priority = priobit_ffs(&blt->pdist.mask);
+        if (priority != blt->priority)
+            set_running_thread_priority(blt, priority);
     }
 
-    next = *thread->bqp;
+    struct thread_entry *tnext = *bqp;
 
-    if (LIKELY(next == NULL))
+    if (LIKELY(tnext == NULL))
     {
         /* Expected shortcut - no more waiters */
-        bl_pr = PRIORITY_IDLE;
+        blpr = PRIORITY_IDLE;
     }
     else
     {
-        if (thread->priority <= bl_pr)
-        {
-            /* Need to scan threads remaining in queue */
-            bl_pr = find_highest_priority_in_list_l(next);
-        }
+        /* If lowering, we need to scan threads remaining in queue */
+        int priority = thread->priority;
+        if (priority <= blpr)
+            blpr = find_highest_priority_in_list_l(tnext);
 
-        if (prio_add_entry(&thread->pdist, bl_pr) == 1 &&
-            bl_pr < thread->priority)
-        {
-            /* Thread priority must be raised */
-            thread->priority = bl_pr;
-        }
+        if (prio_add_entry(&thread->pdist, blpr) == 1 && blpr < priority)
+            thread->priority = blpr; /* Raise new owner */
     }
 
-    bl->thread = thread;    /* This thread pwns */
-    bl->priority = bl_pr;   /* Save highest blocked priority */
-    thread->blocker = NULL; /* Thread not blocked */
+    core_schedule_wakeup(thread);
+    UNLOCK_THREAD(thread);
 
-    UNLOCK_THREAD(bl_t);
-
-    return bl_t;
+    bl->thread   = thread;  /* This thread pwns */
+    bl->priority = blpr;    /* Save highest blocked priority */
+    UNLOCK_THREAD(blt);
 }
 
 /*---------------------------------------------------------------------------
- * No threads must be blocked waiting for this thread except for it to exit.
- * The alternative is more elaborate cleanup and object registration code.
- * Check this for risk of silent data corruption when objects with
- * inheritable blocking are abandoned by the owner - not precise but may
- * catch something.
+ * Readjust priorities when waking a thread blocked waiting for another
+ * in essence "releasing" the thread's effect on the object owner. Can be
+ * performed from any context.
  *---------------------------------------------------------------------------
  */
-static void __attribute__((noinline)) check_for_obj_waiters(
-    const char *function, struct thread_entry *thread)
+static void wakeup_thread_release(struct thread_entry *thread)
 {
-    /* Only one bit in the mask should be set with a frequency on 1 which
-     * represents the thread's own base priority */
-    uint32_t mask = thread->pdist.mask;
-    if ((mask & (mask - 1)) != 0 ||
-        thread->pdist.hist[find_first_set_bit(mask)] > 1)
+    struct blocker *bl = thread->blocker;
+    struct thread_entry *blt = lock_blocker_thread(bl);
+    struct thread_entry **bqp = thread->bqp;
+    remove_from_list_l(bqp, thread);
+    thread->blocker = NULL;
+
+    /* Off to see the wizard... */
+    core_schedule_wakeup(thread);
+
+    if (thread->priority > bl->priority)
     {
-        unsigned char name[32];
-        thread_get_name(name, 32, thread);
-        panicf("%s->%s with obj. waiters", function, name);
+        /* Queue priority won't change */
+        UNLOCK_THREAD(thread);
+        unlock_blocker_thread(bl);
+        return;
     }
+
+    UNLOCK_THREAD(thread);
+
+    int newblpr = find_highest_priority_in_list_l(*bqp);
+    if (newblpr == bl->priority)
+    {
+        /* Blocker priority won't change */
+        unlock_blocker_thread(bl);
+        return;
+    }
+
+    inherit_priority(bl, bl, blt, newblpr);
 }
+
 #endif /* HAVE_PRIORITY_SCHEDULING */
 
 /*---------------------------------------------------------------------------
- * Move a thread back to a running state on its core.
+ * Explicitly wakeup a thread on a blocking queue. Only effects threads of
+ * STATE_BLOCKED and STATE_BLOCKED_W_TMO.
+ *
+ * This code should be considered a critical section by the caller meaning
+ * that the object's corelock should be held.
+ *
+ * INTERNAL: Intended for use by kernel objects and not for programs.
  *---------------------------------------------------------------------------
  */
-static void core_schedule_wakeup(struct thread_entry *thread)
+unsigned int wakeup_thread_(struct thread_entry **list
+                            IF_PRIO(, enum wakeup_thread_protocol proto))
 {
-    const unsigned int core = IF_COP_CORE(thread->core);
+    struct thread_entry *thread = *list;
 
-    RTR_LOCK(core);
+    /* Check if there is a blocked thread at all. */
+    if (*list == NULL)
+        return THREAD_NONE;
 
-    thread->state = STATE_RUNNING;
+    LOCK_THREAD(thread);
 
-    add_to_list_l(&cores[core].running, thread);
-    rtr_add_entry(core, thread->priority);
+    /* Determine thread's current state. */
+    switch (thread->state)
+    {
+    case STATE_BLOCKED:
+    case STATE_BLOCKED_W_TMO:
+#ifdef HAVE_PRIORITY_SCHEDULING
+        /* Threads with PIP blockers cannot specify "WAKEUP_DEFAULT" */
+        if (thread->blocker != NULL)
+        {
+            static void (* const funcs[])(struct thread_entry *thread)
+                ICONST_ATTR =
+            {
+                [WAKEUP_DEFAULT]        = NULL,
+                [WAKEUP_TRANSFER]       = wakeup_thread_transfer,
+                [WAKEUP_RELEASE]        = wakeup_thread_release,
+                [WAKEUP_TRANSFER_MULTI] = wakeup_thread_queue_multi_transfer,
+            };
 
-    RTR_UNLOCK(core);
+            /* Call the specified unblocking PIP (does the rest) */
+            funcs[proto](thread);
+        }
+        else
+#endif /* HAVE_PRIORITY_SCHEDULING */
+        {
+            /* No PIP - just boost the thread by aging */
+#ifdef HAVE_PRIORITY_SCHEDULING
+            thread->skip_count = thread->priority;
+#endif /* HAVE_PRIORITY_SCHEDULING */
+            remove_from_list_l(list, thread);
+            core_schedule_wakeup(thread);
+            UNLOCK_THREAD(thread);
+        }
 
-#if NUM_CORES > 1
-    if (core != CURRENT_CORE)
-        core_wake(core);
+        return should_switch_tasks();
+
+    /* Nothing to do. State is not blocked. */
+    default:
+#if THREAD_EXTRA_CHECKS
+        THREAD_PANICF("wakeup_thread->block invalid", thread);
+    case STATE_RUNNING:
+    case STATE_KILLED:
 #endif
+        UNLOCK_THREAD(thread);
+        return THREAD_NONE;
+    }
 }
 
 /*---------------------------------------------------------------------------
@@ -990,8 +1110,6 @@ void check_tmo_threads(void)
                 }
 #endif /* NUM_CORES */
 
-                remove_from_list_l(curr->bqp, curr);
-
 #ifdef HAVE_WAKEUP_EXT_CB
                 if (curr->wakeup_ext_cb != NULL)
                     curr->wakeup_ext_cb(curr);
@@ -999,8 +1117,11 @@ void check_tmo_threads(void)
 
 #ifdef HAVE_PRIORITY_SCHEDULING
                 if (curr->blocker != NULL)
-                    wakeup_priority_protocol_release(curr);
+                    wakeup_thread_release(curr);
+                else
 #endif
+                    remove_from_list_l(curr->bqp, curr);
+
                 corelock_unlock(ocl);
             }
             /* else state == STATE_SLEEPING */
@@ -1161,8 +1282,7 @@ void switch_thread(void)
     /* Begin task switching by saving our current context so that we can
      * restore the state of the current thread later to the point prior
      * to this call. */
-    store_context(&thread->context);
-
+    thread_store_context(thread);
 #ifdef DEBUG
     /* Check core_ctx buflib integrity */
     core_check_valid();
@@ -1178,9 +1298,8 @@ void switch_thread(void)
 #endif
 
 #ifdef HAVE_PRIORITY_SCHEDULING
-    IF_NO_SKIP_YIELD( if (thread->skip_count != -1) )
     /* Reset the value of thread's skip count */
-        thread->skip_count = 0;
+    thread->skip_count = 0;
 #endif
 
     for (;;)
@@ -1212,8 +1331,7 @@ void switch_thread(void)
             /* Select the new task based on priorities and the last time a
              * process got CPU time relative to the highest priority runnable
              * task. */
-            struct priority_distribution *pd = &cores[core].rtr;
-            int max = find_first_set_bit(pd->mask);
+            int max = priobit_ffs(&cores[core].rtr.mask);
 
             if (block == NULL)
             {
@@ -1241,7 +1359,6 @@ void switch_thread(void)
                  * processes aging; they must give up the processor by going
                  * off the run list. */
                 if (LIKELY(priority <= max) ||
-                    IF_NO_SKIP_YIELD( thread->skip_count == -1 || )
                     (priority > PRIORITY_REALTIME &&
                      (diff = priority - max,
                          ++thread->skip_count > diff*diff)))
@@ -1269,7 +1386,7 @@ void switch_thread(void)
     }
 
     /* And finally give control to the next thread. */
-    load_context(&thread->context);
+    thread_load_context(thread);
 
 #ifdef RB_PROFILE
     profile_thread_started(thread->id & THREAD_ID_SLOT_MASK);
@@ -1291,169 +1408,63 @@ void sleep_thread(int ticks)
     LOCK_THREAD(current);
 
     /* Set our timeout, remove from run list and join timeout list. */
-    current->tmo_tick = current_tick + ticks + 1;
+    current->tmo_tick = current_tick + MAX(ticks, 0) + 1;
     block_thread_on_l(current, STATE_SLEEPING);
 
     UNLOCK_THREAD(current);
 }
 
 /*---------------------------------------------------------------------------
- * Indefinitely block a thread on a blocking queue for explicit wakeup.
+ * Block a thread on a blocking queue for explicit wakeup. If timeout is
+ * negative, the block is infinite.
  *
  * INTERNAL: Intended for use by kernel objects and not for programs.
  *---------------------------------------------------------------------------
  */
-void block_thread(struct thread_entry *current)
+void block_thread(struct thread_entry *current, int timeout)
 {
-    /* Set the state to blocked and take us off of the run queue until we
-     * are explicitly woken */
     LOCK_THREAD(current);
 
-    /* Set the list for explicit wakeup */
-    block_thread_on_l(current, STATE_BLOCKED);
-
+    struct blocker *bl = NULL;
 #ifdef HAVE_PRIORITY_SCHEDULING
-    if (current->blocker != NULL)
-    {
-        /* Object supports PIP */
-        current = blocker_inherit_priority(current);
-    }
-#endif
-
-    UNLOCK_THREAD(current);
-}
-
-/*---------------------------------------------------------------------------
- * Block a thread on a blocking queue for a specified time interval or until
- * explicitly woken - whichever happens first.
- *
- * INTERNAL: Intended for use by kernel objects and not for programs.
- *---------------------------------------------------------------------------
- */
-void block_thread_w_tmo(struct thread_entry *current, int timeout)
-{
-    /* Get the entry for the current running thread. */
-    LOCK_THREAD(current);
-
-    /* Set the state to blocked with the specified timeout */
-    current->tmo_tick = current_tick + timeout;
-
-    /* Set the list for explicit wakeup */
-    block_thread_on_l(current, STATE_BLOCKED_W_TMO);
-
-#ifdef HAVE_PRIORITY_SCHEDULING
-    if (current->blocker != NULL)
-    {
-        /* Object supports PIP */
-        current = blocker_inherit_priority(current);
-    }
-#endif
-
-    UNLOCK_THREAD(current);
-}
-
-/*---------------------------------------------------------------------------
- * Explicitly wakeup a thread on a blocking queue. Only effects threads of
- * STATE_BLOCKED and STATE_BLOCKED_W_TMO.
- *
- * This code should be considered a critical section by the caller meaning
- * that the object's corelock should be held.
- *
- * INTERNAL: Intended for use by kernel objects and not for programs.
- *---------------------------------------------------------------------------
- */
-unsigned int wakeup_thread(struct thread_entry **list)
-{
-    struct thread_entry *thread = *list;
-    unsigned int result = THREAD_NONE;
-
-    /* Check if there is a blocked thread at all. */
-    if (thread == NULL)
-        return result;
-
-    LOCK_THREAD(thread);
-
-    /* Determine thread's current state. */
-    switch (thread->state)
-    {
-    case STATE_BLOCKED:
-    case STATE_BLOCKED_W_TMO:
-        remove_from_list_l(list, thread);
-
-        result = THREAD_OK;
-
-#ifdef HAVE_PRIORITY_SCHEDULING
-        struct thread_entry *current;
-        struct blocker *bl = thread->blocker;
-
-        if (bl == NULL)
-        {
-            /* No inheritance - just boost the thread by aging */
-            IF_NO_SKIP_YIELD( if (thread->skip_count != -1) )
-                thread->skip_count = thread->priority;
-            current = cores[CURRENT_CORE].running;
-        }
-        else
-        {
-            /* Call the specified unblocking PIP */
-            current = bl->wakeup_protocol(thread);
-        }
-
-        if (current != NULL &&
-            find_first_set_bit(cores[IF_COP_CORE(current->core)].rtr.mask)
-                < current->priority)
-        {
-            /* There is a thread ready to run of higher or same priority on
-             * the same core as the current one; recommend a task switch.
-             * Knowing if this is an interrupt call would be helpful here. */
-            result |= THREAD_SWITCH;
-        }
+    bl = current->blocker;
+    struct thread_entry *blt = bl ? lock_blocker_thread(bl) : NULL;
 #endif /* HAVE_PRIORITY_SCHEDULING */
 
-        core_schedule_wakeup(thread);
-        break;
-
-    /* Nothing to do. State is not blocked. */
-#if THREAD_EXTRA_CHECKS
-    default:
-        THREAD_PANICF("wakeup_thread->block invalid", thread);
-    case STATE_RUNNING:
-    case STATE_KILLED:
-        break;
-#endif
-    }
-
-    UNLOCK_THREAD(thread);
-    return result;
-}
-
-/*---------------------------------------------------------------------------
- * Wakeup an entire queue of threads - returns bitwise-or of return bitmask
- * from each operation or THREAD_NONE of nothing was awakened. Object owning
- * the queue must be locked first.
- *
- * INTERNAL: Intended for use by kernel objects and not for programs.
- *---------------------------------------------------------------------------
- */
-unsigned int thread_queue_wake(struct thread_entry **list)
-{
-    unsigned result = THREAD_NONE;
-
-    for (;;)
+    if (LIKELY(timeout < 0))
     {
-        unsigned int rc = wakeup_thread(list);
-
-        if (rc == THREAD_NONE)
-            break; /* No more threads */
-
-        result |= rc;
+        /* Block until explicitly woken */
+        block_thread_on_l(current, STATE_BLOCKED);
+    }
+    else
+    {
+        /* Set the state to blocked with the specified timeout */
+        current->tmo_tick = current_tick + timeout;
+        block_thread_on_l(current, STATE_BLOCKED_W_TMO);
     }
 
-    return result;
+    if (bl == NULL)
+    {
+        UNLOCK_THREAD(current);
+        return;
+    }
+
+#ifdef HAVE_PRIORITY_SCHEDULING
+    int newblpr = current->priority;
+    UNLOCK_THREAD(current);
+
+    if (newblpr >= bl->priority)
+    {
+        unlock_blocker_thread(bl);
+        return; /* Queue priority won't change */
+    }
+
+    inherit_priority(bl, bl, blt, newblpr);
+#endif /* HAVE_PRIORITY_SCHEDULING */
 }
 
 /*---------------------------------------------------------------------------
- * Assign the thread slot a new ID. Version is 1-255.
+ * Assign the thread slot a new ID. Version is 0x00000100..0xffffff00.
  *---------------------------------------------------------------------------
  */
 static void new_thread_id(unsigned int slot_num,
@@ -1488,7 +1499,7 @@ static struct thread_entry * find_empty_thread_slot(void)
         struct thread_entry *t = &threads[n];
         LOCK_THREAD(t);
 
-        if (t->state == STATE_KILLED IF_COP( && t->name != THREAD_DESTRUCT ))
+        if (t->state == STATE_KILLED)
         {
             /* Slot is empty - leave it locked and caller will unlock */
             thread = t;
@@ -1693,7 +1704,7 @@ void thread_wait(unsigned int thread_id)
         current->bqp = &thread->queue;
 
         disable_irq();
-        block_thread(current);
+        block_thread(current, TIMEOUT_BLOCK);
 
         corelock_unlock(&thread->waiter_cl);
 
@@ -1744,21 +1755,14 @@ void thread_exit(void)
     corelock_lock(&current->waiter_cl);
     LOCK_THREAD(current);
 
-#if defined (ALLOW_REMOVE_THREAD) && NUM_CORES > 1
-    if (current->name == THREAD_DESTRUCT)
-    {
-        /* Thread being killed - become a waiter */
-        unsigned int id = current->id;
-        UNLOCK_THREAD(current);
-        corelock_unlock(&current->waiter_cl);
-        thread_wait(id);
-        THREAD_PANICF("thread_exit->WK:*R", current);
-    }
-#endif
-
 #ifdef HAVE_PRIORITY_SCHEDULING
-    check_for_obj_waiters("thread_exit", current);
-#endif
+    /* Only one bit in the mask should be set with a frequency on 1 which
+     * represents the thread's own base priority otherwise threads are waiting
+     * on an abandoned object */
+    if (priobit_popcount(&current->pdist.mask) != 1 ||
+        current->pdist.hist[priobit_ffs(&current->pdist.mask)] > 1)
+        thread_panicf("abandon ship!", current);
+#endif /* HAVE_PRIORITY_SCHEDULING */
 
     if (current->tmo.prev != NULL)
     {
@@ -1780,188 +1784,6 @@ void thread_exit(void)
     thread_final_exit(current);
 }
 
-#ifdef ALLOW_REMOVE_THREAD
-/*---------------------------------------------------------------------------
- * Remove a thread from the scheduler. Not The Right Way to Do Things in
- * normal programs.
- *
- * Parameter is the ID as returned from create_thread().
- *
- * Use with care on threads that are not under careful control as this may
- * leave various objects in an undefined state.
- *---------------------------------------------------------------------------
- */
-void remove_thread(unsigned int thread_id)
-{
-#ifdef HAVE_CORELOCK_OBJECT
-    /* core is not constant here because of core switching */
-    unsigned int core = CURRENT_CORE;
-    unsigned int old_core = NUM_CORES;
-    struct corelock *ocl = NULL;
-#else
-    const unsigned int core = CURRENT_CORE;
-#endif
-    struct thread_entry *current = cores[core].running;
-    struct thread_entry *thread = thread_id_entry(thread_id);
-
-    unsigned state;
-    int oldlevel;
-
-    if (thread == current)
-        thread_exit(); /* Current thread - do normal exit */
-
-    oldlevel = disable_irq_save();
-
-    corelock_lock(&thread->waiter_cl);
-    LOCK_THREAD(thread);
-
-    state = thread->state;
-
-    if (thread->id != thread_id || state == STATE_KILLED)
-        goto thread_killed;
-
-#if NUM_CORES > 1
-    if (thread->name == THREAD_DESTRUCT)
-    {
-        /* Thread being killed - become a waiter */
-        UNLOCK_THREAD(thread);
-        corelock_unlock(&thread->waiter_cl);
-        restore_irq(oldlevel);
-        thread_wait(thread_id);
-        return;
-    }
-
-    thread->name = THREAD_DESTRUCT; /* Slot can't be used for now */
-
-#ifdef HAVE_PRIORITY_SCHEDULING
-    check_for_obj_waiters("remove_thread", thread);
-#endif
-
-    if (thread->core != core)
-    {
-        /* Switch cores and safely extract the thread there */
-        /* Slot HAS to be unlocked or a deadlock could occur which means other
-         * threads have to be guided into becoming thread waiters if they
-         * attempt to remove it. */
-        unsigned int new_core = thread->core;
-
-        corelock_unlock(&thread->waiter_cl);
-
-        UNLOCK_THREAD(thread);
-        restore_irq(oldlevel);
-
-        old_core = switch_core(new_core);
-
-        oldlevel = disable_irq_save();
-
-        corelock_lock(&thread->waiter_cl);
-        LOCK_THREAD(thread);
-
-        state = thread->state;
-        core = new_core;
-        /* Perform the extraction and switch ourselves back to the original
-           processor */
-    }
-#endif /* NUM_CORES > 1 */
-
-    if (thread->tmo.prev != NULL)
-    {
-        /* Clean thread off the timeout list if a timeout check hasn't
-         * run yet */
-        remove_from_list_tmo(thread);
-    }
-
-#ifdef HAVE_SCHEDULER_BOOSTCTRL
-    /* Cancel CPU boost if any */
-    boost_thread(thread, false);
-#endif
-
-IF_COP( retry_state: )
-
-    switch (state)
-    {
-    case STATE_RUNNING:
-        RTR_LOCK(core);
-        /* Remove thread from ready to run tasks */
-        remove_from_list_l(&cores[core].running, thread);
-        rtr_subtract_entry(core, thread->priority);
-        RTR_UNLOCK(core);
-        break;
-    case STATE_BLOCKED:
-    case STATE_BLOCKED_W_TMO:
-        /* Remove thread from the queue it's blocked on - including its
-         * own if waiting there */
-#if NUM_CORES > 1
-        if (&thread->waiter_cl != thread->obj_cl)
-        {
-            ocl = thread->obj_cl;
-
-            if (UNLIKELY(corelock_try_lock(ocl) == 0))
-            {
-                UNLOCK_THREAD(thread);
-                corelock_lock(ocl);
-                LOCK_THREAD(thread);
-
-                if (UNLIKELY(thread->state != state))
-                {
-                    /* Something woke the thread */
-                    state = thread->state;
-                    corelock_unlock(ocl);
-                    goto retry_state;
-                }
-            }
-        }
-#endif
-        remove_from_list_l(thread->bqp, thread);
-
-#ifdef HAVE_WAKEUP_EXT_CB
-        if (thread->wakeup_ext_cb != NULL)
-            thread->wakeup_ext_cb(thread);
-#endif
-
-#ifdef HAVE_PRIORITY_SCHEDULING
-        if (thread->blocker != NULL)
-        {
-            /* Remove thread's priority influence from its chain */
-            wakeup_priority_protocol_release(thread);
-        }
-#endif
-
-#if NUM_CORES > 1
-        if (ocl != NULL)
-            corelock_unlock(ocl);
-#endif
-        break;
-    /* Otherwise thread is frozen and hasn't run yet */
-    }
-
-    new_thread_id(thread_id, thread);
-    thread->state = STATE_KILLED;
-
-    /* If thread was waiting on itself, it will have been removed above.
-     * The wrong order would result in waking the thread first and deadlocking
-     * since the slot is already locked. */
-    thread_queue_wake(&thread->queue);
-
-    thread->name = NULL;
-
-thread_killed: /* Thread was already killed */
-    /* Removal complete - safe to unlock and reenable interrupts */
-    corelock_unlock(&thread->waiter_cl);
-    UNLOCK_THREAD(thread);
-    restore_irq(oldlevel);
-
-#if NUM_CORES > 1
-    if (old_core < NUM_CORES)
-    {
-        /* Did a removal on another processor's thread - switch back to
-           native core */
-        switch_core(old_core);
-    }
-#endif
-}
-#endif /* ALLOW_REMOVE_THREAD */
-
 #ifdef HAVE_PRIORITY_SCHEDULING
 /*---------------------------------------------------------------------------
  * Sets the thread's relative base priority for the core it runs on. Any
@@ -1970,130 +1792,77 @@ thread_killed: /* Thread was already killed */
  */
 int thread_set_priority(unsigned int thread_id, int priority)
 {
+    if (priority < HIGHEST_PRIORITY || priority > LOWEST_PRIORITY)
+        return -1; /* Invalid priority argument */
+
     int old_base_priority = -1;
     struct thread_entry *thread = thread_id_entry(thread_id);
 
-    /* A little safety measure */
-    if (priority < HIGHEST_PRIORITY || priority > LOWEST_PRIORITY)
-        return -1;
-
     /* Thread could be on any list and therefore on an interrupt accessible
        one - disable interrupts */
-    int oldlevel = disable_irq_save();
-
+    const int oldlevel = disable_irq_save();
     LOCK_THREAD(thread);
 
-    /* Make sure it's not killed */
-    if (thread->id == thread_id && thread->state != STATE_KILLED)
+    if (thread->id != thread_id || thread->state == STATE_KILLED)
+        goto done; /* Invalid thread */
+
+    old_base_priority = thread->base_priority;
+    if (priority == old_base_priority)
+        goto done; /* No base priority change */
+
+    thread->base_priority = priority;
+
+    /* Adjust the thread's priority influence on itself */
+    prio_move_entry(&thread->pdist, old_base_priority, priority);
+
+    int old_priority = thread->priority;
+    int new_priority = priobit_ffs(&thread->pdist.mask);
+
+    if (old_priority == new_priority)
+        goto done; /* No running priority change */
+
+    if (thread->state == STATE_RUNNING)
     {
-        int old_priority = thread->priority;
-
-        old_base_priority = thread->base_priority;
-        thread->base_priority = priority;
-
-        prio_move_entry(&thread->pdist, old_base_priority, priority);
-        priority = find_first_set_bit(thread->pdist.mask);
-
-        if (old_priority == priority)
-        {
-            /* No priority change - do nothing */
-        }
-        else if (thread->state == STATE_RUNNING)
-        {
-            /* This thread is running - change location on the run
-             * queue. No transitive inheritance needed. */
-            set_running_thread_priority(thread, priority);
-        }
-        else
-        {
-            thread->priority = priority;
-
-            if (thread->blocker != NULL)
-            {
-                /* Bubble new priority down the chain */
-                struct blocker *bl = thread->blocker;   /* Blocker struct */
-                struct thread_entry *bl_t = bl->thread; /* Blocking thread */
-                struct thread_entry * const tstart = thread;   /* Initial thread */
-                const int highest = MIN(priority, old_priority); /* Higher of new or old */
-
-                for (;;)
-                {
-                    struct thread_entry *next; /* Next thread to check */
-                    int bl_pr;    /* Highest blocked thread */
-                    int queue_pr; /* New highest blocked thread */
-#if NUM_CORES > 1
-                    /* Owner can change but thread cannot be dislodged - thread
-                     * may not be the first in the queue which allows other
-                     * threads ahead in the list to be given ownership during the
-                     * operation. If thread is next then the waker will have to
-                     * wait for us and the owner of the object will remain fixed.
-                     * If we successfully grab the owner -- which at some point
-                     * is guaranteed -- then the queue remains fixed until we
-                     * pass by. */
-                    for (;;)
-                    {
-                        LOCK_THREAD(bl_t);
-
-                        /* Double-check the owner - retry if it changed */
-                        if (LIKELY(bl->thread == bl_t))
-                            break;
-
-                        UNLOCK_THREAD(bl_t);
-                        bl_t = bl->thread;
-                    }
-#endif
-                    bl_pr = bl->priority;
-
-                    if (highest > bl_pr)
-                        break; /* Object priority won't change */
-
-                    /* This will include the thread being set */
-                    queue_pr = find_highest_priority_in_list_l(*thread->bqp);
-
-                    if (queue_pr == bl_pr)
-                        break; /* Object priority not changing */
-
-                    /* Update thread boost for this object */
-                    bl->priority = queue_pr;
-                    prio_move_entry(&bl_t->pdist, bl_pr, queue_pr);
-                    bl_pr = find_first_set_bit(bl_t->pdist.mask);
-
-                    if (bl_t->priority == bl_pr)
-                        break; /* Blocking thread priority not changing */
-
-                    if (bl_t->state == STATE_RUNNING)
-                    {
-                        /* Thread not blocked - we're done */
-                        set_running_thread_priority(bl_t, bl_pr);
-                        break;
-                    }
-
-                    bl_t->priority = bl_pr;
-                    bl = bl_t->blocker; /* Blocking thread has a blocker? */
-
-                    if (bl == NULL)
-                        break; /* End of chain */
-
-                    next = bl->thread;
-
-                    if (UNLIKELY(next == tstart))
-                        break; /* Full-circle */
-
-                    UNLOCK_THREAD(thread);
-
-                    thread = bl_t;
-                    bl_t = next;
-                } /* for (;;) */
-
-                UNLOCK_THREAD(bl_t);
-            }
-        }
+        /* This thread is running - just change location on the run queue.
+           Also sets thread->priority. */
+        set_running_thread_priority(thread, new_priority);
+        goto done;
     }
 
+    /* Thread is blocked */
+    struct blocker *bl = thread->blocker;
+    if (bl == NULL)
+    {
+        thread->priority = new_priority;
+        goto done; /* End of transitive blocks */
+    }
+
+    struct thread_entry *blt = lock_blocker_thread(bl);
+    struct thread_entry **bqp = thread->bqp;
+
+    thread->priority = new_priority;
+
     UNLOCK_THREAD(thread);
+    thread = NULL;
 
+    int oldblpr = bl->priority;
+    int newblpr = oldblpr;
+    if (new_priority < oldblpr)
+        newblpr = new_priority;
+    else if (old_priority <= oldblpr)
+        newblpr = find_highest_priority_in_list_l(*bqp);
+
+    if (newblpr == oldblpr)
+    {
+        unlock_blocker_thread(bl);
+        goto done;
+    }
+
+    inherit_priority(bl, bl, blt, newblpr);
+done:
+    if (thread)
+        UNLOCK_THREAD(thread);
     restore_irq(oldlevel);
-
     return old_base_priority;
 }
 
@@ -2168,19 +1937,8 @@ unsigned int switch_core(unsigned int new_core)
         return core;
     }
 
-    int oldlevel = disable_irq_save();
+    disable_irq();
     LOCK_THREAD(current);
-
-    if (current->name == THREAD_DESTRUCT)
-    {
-        /* Thread being killed - deactivate and let process complete */
-        unsigned int id = current->id;
-        UNLOCK_THREAD(current);
-        restore_irq(oldlevel);
-        thread_wait(id);
-        /* Should never be reached */
-        THREAD_PANICF("switch_core->D:*R", current);
-    }
 
     /* Get us off the running list for the current core */
     RTR_LOCK(core);
@@ -2237,7 +1995,7 @@ unsigned int switch_core(unsigned int new_core)
  * are safe to perform.
  *---------------------------------------------------------------------------
  */
-void init_threads(void)
+void INIT_ATTR init_threads(void)
 {
     const unsigned int core = CURRENT_CORE;
     struct thread_entry *thread;
@@ -2314,82 +2072,6 @@ void init_threads(void)
 #ifdef INIT_MAIN_THREAD
     init_main_thread(&thread->context);
 #endif
-}
-
-/* Shared stack scan helper for thread_stack_usage and idle_stack_usage */
-#if NUM_CORES == 1
-static inline int stack_usage(uintptr_t *stackptr, size_t stack_size)
-#else
-static int stack_usage(uintptr_t *stackptr, size_t stack_size)
-#endif
-{
-    unsigned int stack_words = stack_size / sizeof (uintptr_t);
-    unsigned int i;
-    int usage = 0;
-
-    for (i = 0; i < stack_words; i++)
-    {
-        if (stackptr[i] != DEADBEEF)
-        {
-            usage = ((stack_words - i) * 100) / stack_words;
-            break;
-        }
-    }
-
-    return usage;
-}
-
-/*---------------------------------------------------------------------------
- * Returns the maximum percentage of stack a thread ever used while running.
- * NOTE: Some large buffer allocations that don't use enough the buffer to
- * overwrite stackptr[0] will not be seen.
- *---------------------------------------------------------------------------
- */
-int thread_stack_usage(const struct thread_entry *thread)
-{
-    if (LIKELY(thread->stack_size > 0))
-        return stack_usage(thread->stack, thread->stack_size);
-    return 0;
-}
-
-#if NUM_CORES > 1
-/*---------------------------------------------------------------------------
- * Returns the maximum percentage of the core's idle stack ever used during
- * runtime.
- *---------------------------------------------------------------------------
- */
-int idle_stack_usage(unsigned int core)
-{
-    return stack_usage(idle_stacks[core], IDLE_STACK_SIZE);
-}
-#endif
-
-/*---------------------------------------------------------------------------
- * Fills in the buffer with the specified thread's name. If the name is NULL,
- * empty, or the thread is in destruct state a formatted ID is written
- * instead.
- *---------------------------------------------------------------------------
- */
-void thread_get_name(char *buffer, int size,
-                     struct thread_entry *thread)
-{
-    if (size <= 0)
-        return;
-
-    *buffer = '\0';
-
-    if (thread)
-    {
-        /* Display thread name if one or ID if none */
-        const char *name = thread->name;
-        const char *fmt = "%s";
-        if (name == NULL IF_COP(|| name == THREAD_DESTRUCT) || *name == '\0')
-        {
-            name = (const char *)(uintptr_t)thread->id;
-            fmt = "%04lX";
-        }
-        snprintf(buffer, size, fmt, name);
-    }
 }
 
 /* Unless otherwise defined, do nothing */

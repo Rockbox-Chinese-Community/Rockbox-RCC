@@ -18,18 +18,8 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-
-
-/****************************************************************************
- * Simple mutex functions ;)
- ****************************************************************************/
-
-#include <stdbool.h>
-#include "config.h"
-#include "kernel.h"
-#include "semaphore.h"
 #include "kernel-internal.h"
-#include "thread-internal.h"
+#include "semaphore.h"
 
 /****************************************************************************
  * Simple semaphore functions ;)
@@ -82,11 +72,7 @@ int semaphore_wait(struct semaphore *s, int timeout)
          * explicit in semaphore_release */
         current->retval = OBJ_WAIT_TIMEDOUT;
 
-        if(timeout > 0)
-            block_thread_w_tmo(current, timeout); /* ...or timed out... */
-        else
-            block_thread(current);                /* -timeout = infinite */
-
+        block_thread(current, timeout);
         corelock_unlock(&s->cl);
 
         /* ...and turn control over to next thread */
@@ -118,7 +104,7 @@ void semaphore_release(struct semaphore *s)
         KERNEL_ASSERT(s->count == 0,
             "semaphore_release->threads queued but count=%d!\n", s->count);
         s->queue->retval = OBJ_WAIT_SUCCEEDED; /* indicate explicit wake */
-        result = wakeup_thread(&s->queue);
+        result = wakeup_thread(&s->queue, WAKEUP_DEFAULT);
     }
     else
     {

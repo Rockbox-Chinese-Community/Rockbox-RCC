@@ -18,16 +18,10 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-
 #include <string.h>
-#include "config.h"
-#include "kernel.h"
-#include "system.h"
-#include "queue.h"
-#include "corelock.h"
 #include "kernel-internal.h"
+#include "queue.h"
 #include "general.h"
-#include "panic.h"
 
 /* This array holds all queues that are initiated. It is used for broadcast. */
 static struct
@@ -84,7 +78,7 @@ static void queue_release_sender(struct thread_entry * volatile * sender,
     *thread->bqp = thread;        /* Move blocking queue head to thread since
                                      wakeup_thread wakes the first thread in
                                      the list. */
-    wakeup_thread(thread->bqp);
+    wakeup_thread(thread->bqp, WAKEUP_RELEASE);
 }
 
 /* Releases any waiting threads that are queued with queue_send -
@@ -108,16 +102,16 @@ static void queue_release_all_senders(struct event_queue *q)
     }
 }
 
+#ifdef HAVE_WAKEUP_EXT_CB
 /* Callback to do extra forced removal steps from sender list in addition
  * to the normal blocking queue removal and priority dis-inherit */
 static void queue_remove_sender_thread_cb(struct thread_entry *thread)
 {
     *((struct thread_entry **)thread->retval) = NULL;
-#ifdef HAVE_WAKEUP_EXT_CB
     thread->wakeup_ext_cb = NULL;
-#endif
     thread->retval = 0;
 }
+#endif /* HAVE_WAKEUP_EXT_CB */
 
 /* Enables queue_send on the specified queue - caller allocates the extra
  * data structure. Only queues which are taken to be owned by a thread should
@@ -139,7 +133,6 @@ void queue_enable_queue_send(struct event_queue *q,
     {
         memset(send, 0, sizeof(*send));
 #ifdef HAVE_PRIORITY_SCHEDULING
-        send->blocker.wakeup_protocol = wakeup_priority_protocol_release;
         send->blocker.priority = PRIORITY_IDLE;
         if(owner_id != 0)
         {
@@ -325,7 +318,7 @@ void queue_wait(struct event_queue *q, struct queue_event *ev)
         IF_COP( current->obj_cl = &q->cl; )
         current->bqp = &q->queue;
 
-        block_thread(current);
+        block_thread(current, TIMEOUT_BLOCK);
 
         corelock_unlock(&q->cl);
         switch_thread();
@@ -386,7 +379,7 @@ void queue_wait_w_tmo(struct event_queue *q, struct queue_event *ev, int ticks)
         IF_COP( current->obj_cl = &q->cl; )
         current->bqp = &q->queue;
 
-        block_thread_w_tmo(current, ticks);
+        block_thread(current, ticks);
         corelock_unlock(&q->cl);    
 
         switch_thread();
@@ -443,7 +436,7 @@ void queue_post(struct event_queue *q, long id, intptr_t data)
     queue_do_unblock_sender(q->send, wr);
 
     /* Wakeup a waiting thread if any */
-    wakeup_thread(&q->queue);
+    wakeup_thread(&q->queue, WAKEUP_DEFAULT);
 
     corelock_unlock(&q->cl);
     restore_irq(oldlevel);
@@ -481,7 +474,7 @@ intptr_t queue_send(struct event_queue *q, long id, intptr_t data)
         }
 
         /* Wakeup a waiting thread if any */
-        wakeup_thread(&q->queue);
+        wakeup_thread(&q->queue, WAKEUP_DEFAULT);
 
         /* Save thread in slot, add to list and wait for reply */
         *spp = current;
@@ -493,7 +486,7 @@ intptr_t queue_send(struct event_queue *q, long id, intptr_t data)
         current->retval = (intptr_t)spp;
         current->bqp = &send->list;
 
-        block_thread(current);
+        block_thread(current, TIMEOUT_BLOCK);
 
         corelock_unlock(&q->cl);
         switch_thread();
@@ -502,7 +495,7 @@ intptr_t queue_send(struct event_queue *q, long id, intptr_t data)
     }
 
     /* Function as queue_post if sending is not enabled */
-    wakeup_thread(&q->queue);
+    wakeup_thread(&q->queue, WAKEUP_DEFAULT);
 
     corelock_unlock(&q->cl);
     restore_irq(oldlevel);
