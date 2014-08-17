@@ -110,9 +110,7 @@ MENUITEM_SETTING(treble_cutoff, &global_settings.treble_cutoff, NULL);
 #ifdef AUDIOHW_HAVE_TONE_GAIN
 MENUITEM_SETTING(tone_gain, &global_settings.tone_gain, NULL);
 #endif /* AUDIOHW_HAVE_TONE_GAIN */
-#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
 MENUITEM_SETTING(balance, &global_settings.balance, NULL);
-#endif
 MENUITEM_SETTING(channel_config, &global_settings.channel_config,
 #if CONFIG_CODEC == SWCODEC
     lowlatency_callback
@@ -272,9 +270,7 @@ MAKE_MENU(sound_settings, ID2P(LANG_SOUND_SETTINGS), NULL, Icon_Audio
 #ifdef AUDIOHW_HAVE_EQ
           ,&audiohw_eq_tone_controls
 #endif
-#if !(CONFIG_PLATFORM & PLATFORM_ANDROID)
           ,&balance
-#endif
           ,&channel_config,&stereo_width
 #ifdef AUDIOHW_HAVE_DEPTH_3D
           ,&depth_3d
