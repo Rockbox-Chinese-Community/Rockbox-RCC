@@ -52,11 +52,11 @@ col_loop:
     add     r5, r4, #8       /* col_num_bits */
     mov     r6, r3, lsl r5   /* offset to the col1 (1<<col_num_bits) */
     mov     r7, #0
-    str     r7, [r1]         /* *(0x60000000) = 0 */
-    str     r1, [r1, r6]     /* store test pattern in col1 addr */
-    ldr     r7, [r1]
+    str     r7, [r2]         /* *(0x60000000) = 0 */
+    str     r1, [r2, r6]     /* store test pattern in col1 addr */
+    ldr     r7, [r2]
     cmp     r7, #0           /* check if beginning of dram is not touched */
-    ldreq   r7, [r1, r6]     /* readback col1 addr */
+    ldreq   r7, [r2, r6]     /* readback col1 addr */
     cmpeq   r7, r1           /* check if test pattern is valid */
     beq     row_loop_setup   /* quit column loop */
     subs    r4, #1
@@ -70,18 +70,16 @@ row_loop:
     str     r7, [r0, #0x108] /* MCSDR_ADDCFG */
 
     add     r7, r5, #11      /* row_num_bits */
-    mov     r7, r3, lsl r7   /* 1<<row_num_bits */
-    mla     lr, r7, r6, r6   /* (1<<row_num_bits)*(1<<col_num_bits) + 
-                              * (1<<col_num_bits)  (row1, col1 mem cell)
-                              */
+    mov     lr, r3, lsl r7   /* 1<<row_num_bits */
+    mul     lr, lr, r6       /* (1<<row_num_bits)*(1<<col_num_bits) */
 
     mov     r7, #0
-    str     r7, [r1]         /* *(0x60000000) = 0 */   
-    str     r2, [r1, lr]     /* store test pattern */
-    ldr     r7, [r1]
+    str     r7, [r2]         /* *(0x60000000) = 0 */   
+    str     r1, [r2, lr]     /* store test pattern */
+    ldr     r7, [r2]
     cmp     r7, #0           /* check if beginning of dram is not touched */
-    ldreq   lr, [r1, lr]     /* readback row1,col1 addr */
-    cmpeq   lr, r2           /* check if test pattern is valid */
+    ldreq   r7, [r2, lr]     /* readback row1 addr */
+    cmpeq   r7, r1           /* check if test pattern is valid */
     beq     end
     subs    r5, #1
     bpl     row_loop

@@ -22,15 +22,14 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include "config.h"
 #include "thread.h"
 
 struct semaphore
 {
-    struct thread_entry *queue;         /* Waiter list */
-    int volatile count;                 /* # of waits remaining before unsignaled */
-    int max;                            /* maximum # of waits to remain signaled */
-    IF_COP( struct corelock cl; )       /* multiprocessor sync */
+    struct __wait_queue queue;    /* Waiter list */
+    int volatile        count;    /* # of waits remaining before unsignaled */
+    int                 max;      /* maximum # of waits to remain signaled */
+    IF_COP( struct corelock cl; ) /* multiprocessor sync */
 };
 
 extern void semaphore_init(struct semaphore *s, int max, int start);

@@ -23,56 +23,28 @@
 /****************************************************************************
  * Simple mutex functions ;)
  ****************************************************************************/
-
-#include <stdbool.h>
-#include "config.h"
-#include "system.h"
-#include "mutex.h"
-#include "corelock.h"
-#include "thread-internal.h"
 #include "kernel-internal.h"
-
-static inline void __attribute__((always_inline))
-mutex_set_thread(struct mutex *mtx, struct thread_entry *td)
-{
-#ifdef HAVE_PRIORITY_SCHEDULING
-    mtx->blocker.thread = td;
-#else
-    mtx->thread = td;
-#endif
-}
-
-static inline struct thread_entry * __attribute__((always_inline))
-mutex_get_thread(volatile struct mutex *mtx)
-{
-#ifdef HAVE_PRIORITY_SCHEDULING
-    return mtx->blocker.thread;
-#else
-    return mtx->thread;
-#endif
-}
+#include "mutex.h"
 
 /* Initialize a mutex object - call before any use and do not call again once
  * the object is available to other threads */
 void mutex_init(struct mutex *m)
 {
-    corelock_init(&m->cl);
-    m->queue = NULL;
+    wait_queue_init(&m->queue);
     m->recursion = 0;
-    mutex_set_thread(m, NULL);
+    blocker_init(&m->blocker);
 #ifdef HAVE_PRIORITY_SCHEDULING
-    m->blocker.priority = PRIORITY_IDLE;
-    m->blocker.wakeup_protocol = wakeup_priority_protocol_transfer;
     m->no_preempt = false;
 #endif
+    corelock_init(&m->cl);
 }
 
 /* Gain ownership of a mutex object or block until it becomes free */
 void mutex_lock(struct mutex *m)
 {
-    struct thread_entry *current = thread_self_entry();
+    struct thread_entry *current = __running_self_entry();
 
-    if(current == mutex_get_thread(m))
+    if(current == m->blocker.thread)
     {
         /* current thread already owns this mutex */
         m->recursion++;
@@ -83,21 +55,17 @@ void mutex_lock(struct mutex *m)
     corelock_lock(&m->cl);
 
     /* must read thread again inside cs (a multiprocessor concern really) */
-    if(LIKELY(mutex_get_thread(m) == NULL))
+    if(LIKELY(m->blocker.thread == NULL))
     {
         /* lock is open */
-        mutex_set_thread(m, current);
+        m->blocker.thread = current;
         corelock_unlock(&m->cl);
         return;
     }
 
     /* block until the lock is open... */
-    IF_COP( current->obj_cl = &m->cl; )
-    IF_PRIO( current->blocker = &m->blocker; )
-    current->bqp = &m->queue;
-
     disable_irq();
-    block_thread(current);
+    block_thread(current, TIMEOUT_BLOCK, &m->queue, &m->blocker);
 
     corelock_unlock(&m->cl);
 
@@ -109,10 +77,10 @@ void mutex_lock(struct mutex *m)
 void mutex_unlock(struct mutex *m)
 {
     /* unlocker not being the owner is an unlocking violation */
-    KERNEL_ASSERT(mutex_get_thread(m) == thread_self_entry(),
+    KERNEL_ASSERT(m->blocker.thread == __running_self_entry(),
                   "mutex_unlock->wrong thread (%s != %s)\n",
-                  mutex_get_thread(m)->name,
-                  thread_self_entry()->name);
+                  m->blocker.thread->name,
+                  __running_self_entry()->name);
 
     if(m->recursion > 0)
     {
@@ -125,28 +93,30 @@ void mutex_unlock(struct mutex *m)
     corelock_lock(&m->cl);
 
     /* transfer to next queued thread if any */
-    if(LIKELY(m->queue == NULL))
+    struct thread_entry *thread = WQ_THREAD_FIRST(&m->queue);
+    if(LIKELY(thread == NULL))
     {
         /* no threads waiting - open the lock */
-        mutex_set_thread(m, NULL);
+        m->blocker.thread = NULL;
         corelock_unlock(&m->cl);
         return;
     }
-    else
-    {
-        const int oldlevel = disable_irq_save();
-        /* Tranfer of owning thread is handled in the wakeup protocol
-         * if priorities are enabled otherwise just set it from the
-         * queue head. */
-        IFN_PRIO( mutex_set_thread(m, m->queue); )
-        IF_PRIO( unsigned int result = ) wakeup_thread(&m->queue);
-        restore_irq(oldlevel);
 
-        corelock_unlock(&m->cl);
+    const int oldlevel = disable_irq_save();
+    /* Tranfer of owning thread is handled in the wakeup protocol
+     * if priorities are enabled otherwise just set it from the
+     * queue head. */
+#ifndef HAVE_PRIORITY_SCHEDULING
+    m->blocker.thread = thread;
+#endif
+    unsigned int result = wakeup_thread(thread, WAKEUP_TRANSFER);
+    restore_irq(oldlevel);
+
+    corelock_unlock(&m->cl);
 
 #ifdef HAVE_PRIORITY_SCHEDULING
-        if((result & THREAD_SWITCH) && !m->no_preempt)
-            switch_thread();
+    if((result & THREAD_SWITCH) && !m->no_preempt)
+        switch_thread();
 #endif
-    }
+    (void)result;
 }

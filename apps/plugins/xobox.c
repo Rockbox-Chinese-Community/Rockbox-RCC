@@ -314,6 +314,14 @@ CONFIG_KEYPAD == MROBE500_PAD
 #define DOWN     BUTTON_DOWN
 #define PAUSE    BUTTON_PLAY
 
+#elif CONFIG_KEYPAD == CREATIVE_ZEN_PAD
+#define QUIT     BUTTON_BACK
+#define LEFT     BUTTON_LEFT
+#define RIGHT    BUTTON_RIGHT
+#define UP       BUTTON_UP
+#define DOWN     BUTTON_DOWN
+#define PAUSE    BUTTON_PLAYPAUSE
+
 #else
 #error No keymap defined!
 #endif
@@ -1225,7 +1233,7 @@ static int xobox_loop (void)
                     rb->splashf(HZ, "New High Score: %d", player.score);
                 }
 
-                highscore_show(-1, highscores, NUM_SCORES, true);
+                highscore_show(pos, highscores, NUM_SCORES, true);
             }
 
             if (xobox_menu(false)) {

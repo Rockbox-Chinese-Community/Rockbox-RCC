@@ -1571,8 +1571,6 @@ static int parse_touchregion(struct skin_element *element,
     {
         region->label = PTRTOSKINOFFSET(skin_buffer, get_param_text(element, 0));
         p = 1;
-        /* "[SI]III[SI]|SS" is the param list. There MUST be 4 numbers
-         * followed by at least one string. Verify that here */
         if (element->params_count < 6)
             return WPS_ERROR_INVALID_PARAM;
     }
@@ -1611,7 +1609,7 @@ static int parse_touchregion(struct skin_element *element,
         else if (param->type == PERCENT)
             region->width = curr_vp->vp.width  * param->data.number / 1000;
     }
-/*height*/    
+/*height*/
     param = get_param(element, ++p);
     region->height = curr_vp->vp.height;
     if (!isdefault(param))

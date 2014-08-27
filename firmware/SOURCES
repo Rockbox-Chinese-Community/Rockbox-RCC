@@ -172,6 +172,7 @@ common/dircache.c
 #endif /* HAVE_DIRCACHE */
 common/filefuncs.c
 common/format.c
+common/linked_list.c
 #ifdef APPLICATION
 common/rbpaths.c
 #endif
@@ -1825,6 +1826,9 @@ drivers/touchpad.c
 #ifdef HAVE_CORELOCK_OBJECT
 kernel/corelock.c
 #endif
+#if 0 /* pending dependent code */
+kernel/mrsw_lock.c
+#endif
 kernel/mutex.c
 kernel/queue.c
 #ifdef HAVE_SEMAPHORE_OBJECTS
@@ -1835,6 +1839,7 @@ target/hosted/sdl/thread-sdl.c
 #else
 kernel/thread.c
 #endif
+kernel/thread-common.c
 kernel/tick.c
 #ifdef INCLUDE_TIMEOUT_API
 kernel/timeout.c

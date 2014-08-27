@@ -88,7 +88,7 @@ struct queue_sender_list
     /* If non-NULL, there is a thread waiting for the corresponding event */
     /* Must be statically allocated to put in non-cached ram. */
     struct thread_entry *senders[QUEUE_LENGTH]; /* message->thread map */
-    struct thread_entry *list;                  /* list of senders in map */
+    struct __wait_queue list;                   /* list of senders in map */
     /* Send info for last message dequeued or NULL if replied or not sent */
     struct thread_entry * volatile curr_sender;
 #ifdef HAVE_PRIORITY_SCHEDULING
@@ -108,7 +108,7 @@ struct queue_sender_list
 
 struct event_queue
 {
-    struct thread_entry *queue;         /* waiter list */
+    struct __wait_queue queue;          /* waiter list */
     struct queue_event events[QUEUE_LENGTH]; /* list of events */
     unsigned int volatile read;         /* head of queue */
     unsigned int volatile write;        /* tail of queue */
@@ -143,6 +143,8 @@ extern bool queue_peek(struct event_queue *q, struct queue_event *ev);
 #define QPEEK_FILTER_COUNT_MASK (0xffu) /* 0x00=1 filter, 0xff=256 filters */
 #define QPEEK_FILTER_HEAD_ONLY  (1u << 8) /* Ignored if no filters */
 #define QPEEK_REMOVE_EVENTS     (1u << 9) /* Remove or discard events */
+#define QPEEK_FILTER1(a)    QPEEK_FILTER2((a), (a))
+#define QPEEK_FILTER2(a, b) (&(const long [2]){ (a), (b) })
 extern bool queue_peek_ex(struct event_queue *q,
                           struct queue_event *ev,
                           unsigned int flags,

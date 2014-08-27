@@ -118,46 +118,40 @@ int get_cpu_boost_counter(void);
 #define ALIGN_UP(n, a)       ALIGN_DOWN((n)+((a)-1),a)
 
 /* align start and end of buffer to nearest integer multiple of a */
-#define ALIGN_BUFFER(ptr,len,align) \
-{\
-    uintptr_t tmp_ptr1 = (uintptr_t)ptr; \
-    uintptr_t tmp_ptr2 = tmp_ptr1 + len;\
-    tmp_ptr1 = ALIGN_UP(tmp_ptr1,align); \
-    tmp_ptr2 = ALIGN_DOWN(tmp_ptr2,align); \
-    len = tmp_ptr2 - tmp_ptr1; \
-    ptr = (typeof(ptr))tmp_ptr1; \
-}
+#define ALIGN_BUFFER(ptr, size, align) \
+({                                           \
+    size_t    __sz = (size);                 \
+    size_t   __ali = (align);                \
+    uintptr_t __a1 = (uintptr_t)(ptr);       \
+    uintptr_t __a2 = __a1 + __sz;            \
+    __a1 = ALIGN_UP(__a1, __ali);            \
+    __a2 = ALIGN_DOWN(__a2, __ali);          \
+    (ptr)  = (typeof (ptr))__a1;             \
+    (size) = __a2 > __a1 ?  __a2 - __a1 : 0; \
+})
 
 #define PTR_ADD(ptr, x) ((typeof(ptr))((char*)(ptr) + (x)))
 #define PTR_SUB(ptr, x) ((typeof(ptr))((char*)(ptr) - (x)))
 
-/* newer? SDL includes endian.h, So we ignore it */
-#if (CONFIG_PLATFORM & PLATFORM_HOSTED) || defined(__PCTOOL__)
-#undef letoh16
-#undef letoh32
-#undef htole16
-#undef htole32
-#undef betoh16
-#undef betoh32
-#undef htobe16
-#undef htobe32
-#endif
-
-/* Android NDK contains swap16 and swap32, ignore them */
-#if (CONFIG_PLATFORM & PLATFORM_ANDROID)
-#undef swap16
-#undef swap32
-#endif
-
 /* Get the byte offset of a type's member */
-#define OFFSETOF(type, membername) ((off_t)&((type *)0)->membername)
+#ifndef offsetof
+#define offsetof(type, member)  __builtin_offsetof(type, member)
+#endif
 
-/* Get the type pointer from one of its members */
-#define TYPE_FROM_MEMBER(type, memberptr, membername) \
-    ((type *)((intptr_t)(memberptr) - OFFSETOF(type, membername)))
+/* Get the containing item of *ptr in type */
+#ifndef container_of
+#define container_of(ptr, type, member) ({              \
+    const typeof (((type *)0)->member) *__mptr = (ptr); \
+    (type *)((void *)(__mptr) - offsetof(type, member)); })
+#endif
 
 /* returns index of first set bit or 32 if no bits are set */
+#if defined(CPU_ARM) && ARM_ARCH >= 5 && !defined(__thumb__)
+static inline int find_first_set_bit(uint32_t val)
+    { return LIKELY(val) ? __builtin_ctz(val) : 32; }
+#else
 int find_first_set_bit(uint32_t val);
+#endif
 
 static inline __attribute__((always_inline))
 uint32_t isolate_first_bit(uint32_t val)
@@ -194,111 +188,11 @@ enum {
 #include "system-target.h"
 #elif defined(HAVE_SDL) /* SDL build */
 #include "system-sdl.h"
-#define NEED_GENERIC_BYTESWAPS
 #elif defined(__PCTOOL__)
 #include "system-sdl.h"
-#define NEED_GENERIC_BYTESWAPS
 #endif
 #include "bitswap.h"
-
-#ifdef NEED_GENERIC_BYTESWAPS
-static inline uint16_t swap16_hw(uint16_t value)
-    /*
-      result[15..8] = value[ 7..0];
-      result[ 7..0] = value[15..8];
-    */
-{
-    return (value >> 8) | (value << 8);
-}
-
-static inline uint32_t swap32_hw(uint32_t value)
-    /*
-      result[31..24] = value[ 7.. 0];
-      result[23..16] = value[15.. 8];
-      result[15.. 8] = value[23..16];
-      result[ 7.. 0] = value[31..24];
-    */
-{
-    uint32_t hi = swap16_hw(value >> 16);
-    uint32_t lo = swap16_hw(value & 0xffff);
-    return (lo << 16) | hi;
-}
-
-static inline uint32_t swap_odd_even32_hw(uint32_t value)
-{
-    /*
-      result[31..24],[15.. 8] = value[23..16],[ 7.. 0]
-      result[23..16],[ 7.. 0] = value[31..24],[15.. 8]
-    */
-    uint32_t t = value & 0xff00ff00;
-    return (t >> 8) | ((t ^ value) << 8);
-}
-
-static inline uint32_t swaw32_hw(uint32_t value)
-{
-    /*
-      result[31..16] = value[15.. 0];
-      result[15.. 0] = value[31..16];
-    */
-    return (value >> 16) | (value << 16);
-}
-
-#endif /* NEED_GENERIC_BYTESWAPS */
-
-/* static endianness conversion */
-#define SWAP16_CONST(x) \
-    ((typeof(x))( ((uint16_t)(x) >> 8) | ((uint16_t)(x) << 8) ))
-
-#define SWAP32_CONST(x) \
-    ((typeof(x))( ((uint32_t)(x) >> 24) | \
-                 (((uint32_t)(x) & 0xff0000) >> 8) | \
-                 (((uint32_t)(x) & 0xff00) << 8) | \
-                  ((uint32_t)(x) << 24) ))
-
-#define SWAP_ODD_EVEN32_CONST(x) \
-    ((typeof(x))( ((uint32_t)SWAP16_CONST((uint32_t)(x) >> 16) << 16) | \
-                             SWAP16_CONST((uint32_t)(x))) )
-
-#define SWAW32_CONST(x) \
-    ((typeof(x))( ((uint32_t)(x) << 16) | ((uint32_t)(x) >> 16) ))
-
-/* Select best method based upon whether x is a constant expression */
-#define swap16(x) \
-    ( __builtin_constant_p(x) ? SWAP16_CONST(x) : (typeof(x))swap16_hw(x) )
-
-#define swap32(x) \
-    ( __builtin_constant_p(x) ? SWAP32_CONST(x) : (typeof(x))swap32_hw(x) )
-
-#define swap_odd_even32(x) \
-    ( __builtin_constant_p(x) ? SWAP_ODD_EVEN32_CONST(x) : (typeof(x))swap_odd_even32_hw(x) )
-
-#define swaw32(x) \
-    ( __builtin_constant_p(x) ? SWAW32_CONST(x) : (typeof(x))swaw32_hw(x) )
-
-
-#ifdef ROCKBOX_LITTLE_ENDIAN
-#define letoh16(x) (x)
-#define letoh32(x) (x)
-#define htole16(x) (x)
-#define htole32(x) (x)
-#define betoh16(x) swap16(x)
-#define betoh32(x) swap32(x)
-#define htobe16(x) swap16(x)
-#define htobe32(x) swap32(x)
-#define swap_odd_even_be32(x) (x)
-#define swap_odd_even_le32(x) swap_odd_even32(x)
-#else
-#define letoh16(x) swap16(x)
-#define letoh32(x) swap32(x)
-#define htole16(x) swap16(x)
-#define htole32(x) swap32(x)
-#define betoh16(x) (x)
-#define betoh32(x) (x)
-#define htobe16(x) (x)
-#define htobe32(x) (x)
-#define swap_odd_even_be32(x) swap_odd_even32(x)
-#define swap_odd_even_le32(x) (x)
-#endif
+#include "rbendian.h"
 
 #ifndef BIT_N
 #define BIT_N(n) (1U << (n))
@@ -319,6 +213,11 @@ static inline uint32_t swaw32_hw(uint32_t value)
  * for all ARM CPUs. */
 #ifdef CPU_ARM
     #define HAVE_CPU_CACHE_ALIGN
+    #define MIN_STACK_ALIGN 8
+#endif
+
+#ifndef MIN_STACK_ALIGN
+#define MIN_STACK_ALIGN (sizeof (uintptr_t))
 #endif
 
 /* Calculate CACHEALIGN_SIZE from CACHEALIGN_BITS */

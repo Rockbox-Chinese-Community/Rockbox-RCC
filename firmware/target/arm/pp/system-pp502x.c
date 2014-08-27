@@ -154,6 +154,10 @@ void __attribute__((interrupt("IRQ"))) irq_handler(void)
         else if (CPU_HI_INT_STAT & GPIO0_MASK) {
             if (GPIOD_INT_STAT & 0x10)
                 usb_insert_int();
+#if !defined(SAMSUNG_YH820)
+            if (GPIOD_INT_STAT & 0x01)
+                remote_int();
+#endif
         }
 /* end SAMSUNG_YHxxx */
 #elif defined(PBELL_VIBE500)
@@ -489,6 +493,8 @@ void system_init(void)
         DEV_RS         = 0x00000000;
         DEV_RS2        = 0x00000000;
 #elif defined(PHILIPS_SA9200)
+        DEV_INIT1      = 0x00000000;
+        DEV_INIT2      = 0x40004000;
         /* reset all allowed devices */
         DEV_RS         = 0x3ffffef8;
         DEV_RS2        = 0xffffffff;
