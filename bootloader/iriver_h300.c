@@ -31,6 +31,7 @@
 #include "scroll_engine.h"
 #include "../kernel-internal.h"
 #include "storage.h"
+#include "file_internal.h"
 #include "usb.h"
 #include "disk.h"
 #include "font.h"
@@ -210,7 +211,7 @@ void main(void)
     lcd_setfont(FONT_SYSFIXED);
 
     printf("Rockbox boot loader");
-    printf("Version " RBVERSION);
+    printf("Version %s", rbversion);
 
     sleep(HZ/50); /* Allow the button driver to check the buttons */
     rec_button = ((button_status() & BUTTON_REC) == BUTTON_REC)
@@ -349,8 +350,7 @@ void main(void)
         while(!(button_get(true) & BUTTON_REL));
     }
 
-
-    disk_init();
+    filesystem_init();
 
     rc = disk_mount_all();
     if (rc<=0)
