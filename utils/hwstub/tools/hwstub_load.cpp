@@ -263,13 +263,13 @@ int main(int argc, char **argv)
     {
         printf("Warning: this tool is possibly incompatible with your device:\n");
         printf("Device version: %d.%d.%d\n", hwdev_ver.bMajor, hwdev_ver.bMinor, hwdev_ver.bRevision);
-        printf("Host version: %d.%d.%d\n", HWSTUB_VERSION_MAJOR, HWSTUB_VERSION_MINOR, HWSTUB_VERSION_REV);
+        printf("Host version: %d.%d\n", HWSTUB_VERSION_MAJOR, HWSTUB_VERSION_MINOR);
     }
 
     ret = hwstub_rw_mem(hwdev, 0, addr, buffer, size);
     if(ret != (int)size)
     {
-        fprintf(stderr, "Image write failed\n");
+        fprintf(stderr, "Image write failed: %d\n", ret);
         goto Lerr;
     }
     hwstub_jump(hwdev, addr);
