@@ -19,5 +19,5 @@
  *
  ****************************************************************************/
 
-#include "version.h"
+#include "rbversion.h"
 const char rbversion[] = RBVERSION;

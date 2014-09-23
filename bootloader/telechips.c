@@ -30,6 +30,7 @@
 #include "lcd.h"
 #include "../kernel-internal.h"
 #include "storage.h"
+#include "file_internal.h"
 #include "fat.h"
 #include "disk.h"
 #include "font.h"
@@ -152,7 +153,7 @@ void* main(void)
    available for loading the firmware. Otherwise display the debug screen. */
 #ifdef TCCBOOT
     printf("Rockbox boot loader");
-    printf("Version " RBVERSION);
+    printf("Version %s", rbversion);
 
     printf("ATA");
     rc = storage_init();
@@ -161,6 +162,8 @@ void* main(void)
         reset_screen();
         error(EATA, rc, true);
     }
+
+    filesystem_init();
 
     printf("mount");
     rc = disk_mount_all();

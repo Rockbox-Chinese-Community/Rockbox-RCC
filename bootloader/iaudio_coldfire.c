@@ -40,6 +40,7 @@
 #include "panic.h"
 #include "power.h"
 #include "powermgmt.h"
+#include "file_internal.h"
 #include "file.h"
 #include "version.h"
 #include "loader_strerror.h"
@@ -188,7 +189,7 @@ void main(void)
     }
 
     printf("Rockbox boot loader");
-    printf("Version " RBVERSION);
+    printf("Version %s", rbversion);
     
     check_battery();
     
@@ -196,7 +197,7 @@ void main(void)
     if(rc)
         error(EATA, rc, true);
 
-    disk_init();
+    filesystem_init();
 
     rc = disk_mount_all();
     if (rc<=0)

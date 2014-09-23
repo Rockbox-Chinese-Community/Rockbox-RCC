@@ -29,6 +29,7 @@
 #include "lcd.h"
 #include "../kernel-internal.h"
 #include "storage.h"
+#include "file_internal.h"
 #include "fat.h"
 #include "disk.h"
 #include "font.h"
@@ -79,7 +80,7 @@ int main(void)
         verbose = true;
         
     printf("Rockbox boot loader");
-    printf("Version " RBVERSION);
+    printf("Version %s", rbversion);
 
     rc = storage_init();
     if(rc)
@@ -88,7 +89,7 @@ int main(void)
         error(EATA, rc, true);
     }
 
-    disk_init(IF_MD(0));
+    filesystem_init();
     rc = disk_mount_all();
     if (rc<=0)
     {

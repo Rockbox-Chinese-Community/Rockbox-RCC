@@ -33,6 +33,7 @@
 #include "rb-loader.h"
 #include "loader_strerror.h"
 #include "storage.h"
+#include "file_internal.h"
 #include "disk.h"
 #include "string.h"
 #include "adc.h"
@@ -269,6 +270,8 @@ int main(void)
 
     show_logo();
 
+    filesystem_init();
+
     rc = storage_init();
     if(rc)
         error(EATA, rc, true);
@@ -297,7 +300,7 @@ int main(void)
     if(verbose)
         reset_screen();
     printf(MODEL_NAME" Rockbox Bootloader");
-    printf("Version " RBVERSION);
+    printf("Version %s", rbversion);
 
 #ifdef HAS_BUTTON_HOLD
     if(button_hold())

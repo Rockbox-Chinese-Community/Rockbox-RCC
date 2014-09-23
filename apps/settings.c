@@ -833,6 +833,10 @@ void settings_apply(bool read_disk)
 #ifdef HAVE_LCD_BITMAP
     int rc;
 #endif
+    CHART(">set_codepage");
+    set_codepage(global_settings.default_codepage);
+    CHART("<set_codepage");
+
     sound_settings_apply();
 
 #ifdef HAVE_DISK_STORAGE
@@ -1019,10 +1023,6 @@ void settings_apply(bool read_disk)
     lcd_scroll_delay(global_settings.scroll_delay);
 
 
-    CHART(">set_codepage");
-    set_codepage(global_settings.default_codepage);
-    CHART("<set_codepage");
-
 #ifdef HAVE_PLAY_FREQ
     settings_apply_play_freq(global_settings.play_frequency, false);
 #endif
@@ -1079,6 +1079,10 @@ void settings_apply(bool read_disk)
 
 #ifdef HAVE_TOUCHPAD_SENSITIVITY_SETTING
     touchpad_set_sensitivity(global_settings.touchpad_sensitivity);
+#endif
+
+#ifdef HAVE_TOUCHPAD_DEADZONE
+    touchpad_set_deadzone(global_settings.touchpad_deadzone);
 #endif
 
 #ifdef HAVE_USB_CHARGING_ENABLE

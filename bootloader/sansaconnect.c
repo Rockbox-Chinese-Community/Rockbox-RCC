@@ -21,6 +21,7 @@
 #include "lcd.h"
 #include "../kernel-internal.h"
 #include "storage.h"
+#include "file_internal.h"
 #include "disk.h"
 #include "font.h"
 #include "backlight.h"
@@ -66,13 +67,13 @@ void main(void)
     btn = button_read_device();
 
     printf("Rockbox boot loader");
-    printf("Version " RBVERSION);
+    printf("Version %s", rbversion);
 
     ret = storage_init();
     if(ret)
         printf("SD error: %d", ret);
 
-    disk_init(IF_MD(0));
+    filesystem_init();
 
     ret = disk_mount_all();
     if (ret <= 0)

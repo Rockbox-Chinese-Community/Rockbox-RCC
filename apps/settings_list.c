@@ -2379,13 +2379,13 @@ const struct settings_list settings[] = {
     OFFON_SETTING(F_BANFROMQS, tagcache_autoupdate, LANG_TAGCACHE_AUTOUPDATE, false,
                   "tagcache_autoupdate", NULL),
 #endif
-    CHOICE_SETTING(0, default_codepage, LANG_DEFAULT_CODEPAGE, 0,
+    CHOICE_SETTING(F_TEMPVAR, default_codepage, LANG_DEFAULT_CODEPAGE, 0,
                    "default codepage",
 #ifdef HAVE_LCD_BITMAP
                    /* The order must match with that in unicode.c */
                    "iso8859-1,iso8859-7,iso8859-8,cp1251,iso8859-11,cp1256,"
                    "iso8859-9,iso8859-2,cp1250,cp1252,sjis,gb2312,ksx1001,big5,utf-8",
-                   set_codepage, 15,
+                   NULL, 15,
                    ID2P(LANG_CODEPAGE_LATIN1),
                    ID2P(LANG_CODEPAGE_GREEK),
                    ID2P(LANG_CODEPAGE_HEBREW), ID2P(LANG_CODEPAGE_CYRILLIC),
@@ -2400,7 +2400,7 @@ const struct settings_list settings[] = {
 #else /* !HAVE_LCD_BITMAP */
                    /* The order must match with that in unicode.c */
                    "iso8859-1,iso8859-7,cp1251,iso8859-9,iso8859-2,cp1250,cp1252,utf-8",
-                   set_codepage, 8,
+                   NULL, 8,
                    ID2P(LANG_CODEPAGE_LATIN1), ID2P(LANG_CODEPAGE_GREEK),
                    ID2P(LANG_CODEPAGE_CYRILLIC), ID2P(LANG_CODEPAGE_TURKISH),
                    ID2P(LANG_CODEPAGE_LATIN_EXTENDED),
@@ -2679,6 +2679,14 @@ const struct settings_list settings[] = {
                    ID2P(LANG_NORMAL), ID2P(LANG_HIGH)),
 #endif /* boolean or analogig values */
 #endif /* HAVE_TOUCHPAD_SENSITIVITY_SETTING */
+
+#ifdef HAVE_TOUCHPAD_DEADZONE
+    INT_SETTING(F_NO_WRAP, touchpad_deadzone, LANG_DEADZONE,
+                DEFAULT_TOUCHPAD_DEADZONE_SETTING, "touchpad deadzone", UNIT_INT,
+                MIN_TOUCHPAD_DEADSPACE_SETTING, MAX_TOUCHPAD_DEADSPACE_SETTING, 1,
+                NULL, NULL, touchpad_set_deadzone),
+#endif
+
 #ifdef HAVE_QUICKSCREEN
    CUSTOM_SETTING(0, qs_items[QUICKSCREEN_TOP], LANG_TOP_QS_ITEM,
                   NULL, "qs top",

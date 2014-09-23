@@ -12,6 +12,7 @@
 #include "button.h"
 #include "common.h"
 #include "storage.h"
+#include "file_internal.h"
 #include "disk.h"
 #include "panic.h"
 #include "power.h"
@@ -146,8 +147,7 @@ void main(void)
     if(ret < 0)
         error(EATA, ret, true);
 
-    while(!disk_init(IF_MV(0)))
-        panicf("disk_init failed!");
+    filesystem_init();
 
     while((ret = disk_mount_all()) <= 0)
         error(EDISK, ret, true);
@@ -159,7 +159,7 @@ void main(void)
     else if (boot == of)
         snprintf(filename,sizeof(filename), BOOTDIR "/%s", "BASE.RKW");
 
-    printf("Bootloader version: %s", RBVERSION);
+    printf("Bootloader version: %s", rbversion);
     printf("Loading: %s", filename);
 
     ret = load_rkw(loadbuffer, filename, LOAD_SIZE);

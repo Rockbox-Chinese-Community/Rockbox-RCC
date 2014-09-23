@@ -231,7 +231,7 @@ int my_lua_udelay(lua_State *state)
 bool my_lua_import_hwstub()
 {
     int oldtop = lua_gettop(g_lua);
-    
+
     lua_newtable(g_lua); // hwstub
 
     lua_newtable(g_lua); // options
@@ -336,8 +336,6 @@ bool my_lua_import_hwstub()
     lua_setfield(g_lua, -2, "major");
     lua_pushinteger(g_lua, HWSTUB_VERSION_MINOR);
     lua_setfield(g_lua, -2, "minor");
-    lua_pushinteger(g_lua, HWSTUB_VERSION_REV);
-    lua_setfield(g_lua, -2, "revision");
     lua_setfield(g_lua, -2, "version");
     lua_setfield(g_lua, -2, "host");
 
@@ -446,7 +444,30 @@ int my_lua_write_field(lua_State *state)
         value = value << shift | (hw_read32(state, addr) & ~(mask << shift));
     else
         value <<= shift;
-    
+
+    hw_write32(state, addr, value);
+    return 0;
+}
+
+int my_lua_sct_reg(lua_State *state)
+{
+    int n = lua_gettop(state);
+    if(n != 1)
+        luaL_error(state, "sct() takes one argument");
+    soc_addr_t addr = lua_tounsigned(state, lua_upvalueindex(1));
+    char op = lua_tounsigned(state, lua_upvalueindex(2));
+
+    soc_word_t mask = luaL_checkunsigned(state, 1);
+    soc_word_t value = hw_read32(state, addr);
+    if(op == 's')
+        value |= mask;
+    else if(op == 'c')
+        value &= ~mask;
+    else if(op == 't')
+        value ^= mask;
+    else
+        luaL_error(state, "sct() internal error");
+
     hw_write32(state, addr, value);
     return 0;
 }
@@ -558,6 +579,23 @@ void my_lua_create_reg(soc_addr_t addr, size_t index, const soc_reg_t& reg)
 
         lua_pushunsigned(g_lua, addr + reg.addr[index].addr + 12);
         lua_pushcclosure(g_lua, my_lua_write_reg, 1);
+        lua_setfield(g_lua, -2, "tog");
+    }
+    else
+    {
+        lua_pushunsigned(g_lua, addr + reg.addr[index].addr);
+        lua_pushunsigned(g_lua, 's');
+        lua_pushcclosure(g_lua, my_lua_sct_reg, 2);
+        lua_setfield(g_lua, -2, "set");
+
+        lua_pushunsigned(g_lua, addr + reg.addr[index].addr);
+        lua_pushunsigned(g_lua, 'c');
+        lua_pushcclosure(g_lua, my_lua_sct_reg, 2);
+        lua_setfield(g_lua, -2, "clr");
+
+        lua_pushunsigned(g_lua, addr + reg.addr[index].addr);
+        lua_pushunsigned(g_lua, 't');
+        lua_pushcclosure(g_lua, my_lua_sct_reg, 2);
         lua_setfield(g_lua, -2, "tog");
     }
 
@@ -677,8 +715,8 @@ bool my_lua_import_soc(const std::vector< soc_t >& socs)
 
 void usage(void)
 {
-    printf("hwstub_tool, compiled with hwstub %d.%d.%d\n",
-        HWSTUB_VERSION_MAJOR, HWSTUB_VERSION_MINOR, HWSTUB_VERSION_REV);
+    printf("hwstub_tool, compiled with hwstub protocol %d.%d\n",
+        HWSTUB_VERSION_MAJOR, HWSTUB_VERSION_MINOR);
     printf("\n");
     printf("usage: hwstub_tool [options] <soc desc files>\n");
     printf("options:\n");
@@ -754,15 +792,22 @@ int main(int argc, char **argv)
 
     // look for device
     if(!g_quiet)
-        printf("Looking for device %#04x:%#04x...\n", HWSTUB_USB_VID, HWSTUB_USB_PID);
-
-    libusb_device_handle *handle = libusb_open_device_with_vid_pid(ctx,
-        HWSTUB_USB_VID, HWSTUB_USB_PID);
-    if(handle == NULL)
+        printf("Looking for hwstub device ...\n");
+    // open first device
+    libusb_device **list;
+    ssize_t cnt = hwstub_get_device_list(ctx, &list);
+    if(cnt <= 0)
     {
         printf("No device found\n");
         return 1;
     }
+    libusb_device_handle *handle;
+    if(libusb_open(list[0], &handle) != 0)
+    {
+        printf("Cannot open device\n");
+        return 1;
+    }
+    libusb_free_device_list(list, 1);
 
     // admin stuff
     libusb_device *mydev = libusb_get_device(handle);
@@ -790,7 +835,7 @@ int main(int argc, char **argv)
     {
         printf("Warning: this tool is possibly incompatible with your device:\n");
         printf("Device version: %d.%d.%d\n", g_hwdev_ver.bMajor, g_hwdev_ver.bMinor, g_hwdev_ver.bRevision);
-        printf("Host version: %d.%d.%d\n", HWSTUB_VERSION_MAJOR, HWSTUB_VERSION_MINOR, HWSTUB_VERSION_REV);
+        printf("Host version: %d.%d\n", HWSTUB_VERSION_MAJOR, HWSTUB_VERSION_MINOR);
     }
 
     // get memory layout information
