@@ -113,14 +113,7 @@ RegTab::RegTab(Backend *backend, QWidget *parent)
     m_right_panel = new QVBoxLayout;
     QGroupBox *data_sel_group = new QGroupBox("Data selection");
     QHBoxLayout *data_sel_layout = new QHBoxLayout;
-    m_data_selector = new QComboBox;
-    m_data_selector->addItem(QIcon::fromTheme("text-x-generic"), "Explore", QVariant(DataSelNothing));
-    m_data_selector->addItem(QIcon::fromTheme("document-open"), "File...", QVariant(DataSelFile));
-#ifdef HAVE_HWSTUB
-    m_data_selector->addItem(QIcon::fromTheme("multimedia-player"), "Device...", QVariant(DataSelDevice));
-#endif
-    m_data_sel_edit = new QLineEdit;
-    m_data_sel_edit->setReadOnly(true);
+    m_backend_selector = new BackendSelector(m_backend, this);
     m_readonly_check = new QCheckBox("Read-only");
     m_readonly_check->setCheckState(Qt::Checked);
     m_data_soc_label = new QLabel;
@@ -129,13 +122,7 @@ RegTab::RegTab(Backend *backend, QWidget *parent)
     m_data_sel_reload = new QPushButton(this);
     m_data_sel_reload->setIcon(QIcon::fromTheme("view-refresh"));
     m_data_sel_reload->setToolTip("Reload data");
-    data_sel_layout->addWidget(m_data_selector);
-    data_sel_layout->addWidget(m_data_sel_edit, 1);
-    data_sel_layout->addStretch(0);
-#ifdef HAVE_HWSTUB
-    m_dev_selector = new QComboBox;
-    data_sel_layout->addWidget(m_dev_selector, 1);
-#endif
+    data_sel_layout->addWidget(m_backend_selector);
     data_sel_layout->addWidget(m_readonly_check);
     data_sel_layout->addWidget(m_data_soc_label);
     data_sel_layout->addWidget(m_dump);
@@ -151,36 +138,36 @@ RegTab::RegTab(Backend *backend, QWidget *parent)
     this->addWidget(w);
     this->setStretchFactor(1, 2);
 
-    m_io_backend = m_backend->CreateDummyIoBackend();
+    m_io_backend = m_backend_selector->GetBackend();
 
     connect(m_soc_selector, SIGNAL(currentIndexChanged(int)),
         this, SLOT(OnSocChanged(int)));
     connect(m_backend, SIGNAL(OnSocListChanged()), this, SLOT(OnSocListChanged()));
-    connect(m_reg_tree, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)),
-        this, SLOT(OnRegItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
-    connect(m_data_selector, SIGNAL(activated(int)),
-        this, SLOT(OnDataSelChanged(int)));
+    connect(m_reg_tree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+        this, SLOT(OnRegItemClicked(QTreeWidgetItem*, int)));
     connect(m_data_soc_label, SIGNAL(linkActivated(const QString&)), this,
         SLOT(OnDataSocActivated(const QString&)));
-    connect(m_analysers_list, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-        this, SLOT(OnAnalyserChanged(QListWidgetItem *, QListWidgetItem *)));
-#ifdef HAVE_HWSTUB
-    connect(m_dev_selector, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(OnDevChanged(int)));
-#endif
+    connect(m_analysers_list, SIGNAL(itemClicked(QListWidgetItem *)),
+        this, SLOT(OnAnalyserClicked(QListWidgetItem *)));
+    connect(m_backend_selector, SIGNAL(OnSelect(IoBackend *)),
+        this, SLOT(OnBackendSelect(IoBackend *)));
     connect(m_readonly_check, SIGNAL(clicked(bool)), this, SLOT(OnReadOnlyClicked(bool)));
     connect(m_dump, SIGNAL(clicked(bool)), this, SLOT(OnDumpRegs(bool)));
+    connect(m_data_sel_reload, SIGNAL(clicked(bool)), this, SLOT(OnBackendReload(bool)));
+    connect(m_type_selector, SIGNAL(currentChanged(int)), this, SLOT(OnTypeChanged(int)));
 
     OnSocListChanged();
-    OnDataSelChanged(0);
+    SetDataSocName("");
+}
+
+QWidget *RegTab::GetWidget()
+{
+    return this;
 }
 
 RegTab::~RegTab()
 {
-#ifdef HAVE_HWSTUB
-    ClearDevList();
-#endif
-    delete m_io_backend;
+    /* backend will be deleted by backend selector */
 }
 
 bool RegTab::Quit()
@@ -210,77 +197,40 @@ void RegTab::OnDataSocActivated(const QString& str)
         m_soc_selector->setCurrentIndex(index);
 }
 
-void RegTab::OnDataSelChanged(int index)
+void RegTab::UpdateTabName()
 {
-    if(index == -1)
-        return;
-    QVariant var = m_data_selector->itemData(index);
-    if(var == DataSelFile)
-    {
-        m_data_sel_edit->show();
+    /* do it the ugly way: try to cast to the different possible backends */
+    FileIoBackend *file = dynamic_cast< FileIoBackend* >(m_io_backend);
 #ifdef HAVE_HWSTUB
-        m_dev_selector->hide();
+    HWStubIoBackend *hwstub = dynamic_cast< HWStubIoBackend* >(m_io_backend);
 #endif
-        m_readonly_check->show();
-        m_data_sel_reload->show();
-        m_dump->hide();
-        QFileDialog *fd = new QFileDialog(m_data_selector);
-        fd->setFilter("Textual files (*.txt);;All files (*)");
-        fd->setDirectory(Settings::Get()->value("loaddatadir", QDir::currentPath()).toString());
-        if(fd->exec())
-        {
-            QStringList filenames = fd->selectedFiles();
-            delete m_io_backend;
-            m_io_backend = m_backend->CreateFileIoBackend(filenames[0]);
-            m_data_sel_edit->setText(filenames[0]);
-            SetDataSocName(m_io_backend->GetSocName());
-            OnDataSocActivated(m_io_backend->GetSocName());
-        }
-        Settings::Get()->setValue("loaddatadir", fd->directory().absolutePath());
-        SetReadOnlyIndicator();
+    if(file)
+    {
+        QFileInfo info(file->GetFileName());
+        SetTabName(info.fileName());
     }
 #ifdef HAVE_HWSTUB
-    else if(var == DataSelDevice)
+    else if(hwstub)
     {
-        m_data_sel_edit->hide();
-        m_readonly_check->show();
-        m_dev_selector->show();
-        m_data_sel_reload->hide();
-        m_dump->show();
-        OnDevListChanged();
+        HWStubDevice *dev = hwstub->GetDevice();
+        SetTabName(QString("HWStub %1.%2").arg(dev->GetBusNumber())
+            .arg(dev->GetDevAddress()));
     }
 #endif
     else
     {
-        m_data_sel_edit->show();
-#ifdef HAVE_HWSTUB
-        m_dev_selector->hide();
-#endif
-        m_readonly_check->hide();
-        m_data_sel_reload->hide();
-        m_dump->hide();
-
-        delete m_io_backend;
-        m_io_backend = m_backend->CreateDummyIoBackend();
-        m_readonly_check->setCheckState(Qt::Checked);
-        SetDataSocName("");
-        UpdateSocFilename();
+        SetTabName("Register Tab");
     }
-    OnDataChanged();
 }
 
-void RegTab::UpdateSocFilename()
+void RegTab::OnBackendSelect(IoBackend *backend)
 {
-    int index = m_data_selector->currentIndex();
-    if(index == -1)
-        return;
-    if(m_data_selector->itemData(index) != DataSelNothing)
-        return;
-    index = m_soc_selector->currentIndex();
-    if(index == -1)
-        return;
-    SocRef ref = m_soc_selector->itemData(index).value< SocRef >();
-    m_data_sel_edit->setText(ref.GetSocFile()->GetFilename());
+    m_io_backend = backend;
+    SetReadOnlyIndicator();
+    SetDataSocName(m_io_backend->GetSocName());
+    OnDataSocActivated(m_io_backend->GetSocName());
+    OnDataChanged();
+    UpdateTabName();
 }
 
 void RegTab::SetReadOnlyIndicator()
@@ -291,13 +241,7 @@ void RegTab::SetReadOnlyIndicator()
 
 void RegTab::OnDataChanged()
 {
-    OnRegItemChanged(m_reg_tree->currentItem(), m_reg_tree->currentItem());
-}
-
-void RegTab::OnRegItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
-{
-    Q_UNUSED(previous);
-    OnRegItemClicked(current, 0);
+    OnRegItemClicked(m_reg_tree->currentItem(), 0);
 }
 
 void RegTab::OnRegItemClicked(QTreeWidgetItem *current, int col)
@@ -320,12 +264,6 @@ void RegTab::OnRegItemClicked(QTreeWidgetItem *current, int col)
         DevTreeItem *item = dynamic_cast< DevTreeItem * >(current);
         DisplayDevice(item->GetRef());
     }
-}
-
-void RegTab::OnAnalyserChanged(QListWidgetItem *current, QListWidgetItem *previous)
-{
-    Q_UNUSED(previous);
-    OnAnalyserClicked(current);
 }
 
 void RegTab::OnAnalyserClicked(QListWidgetItem *current)
@@ -370,51 +308,6 @@ void RegTab::OnSocListChanged()
         m_soc_selector->addItem(QString::fromStdString(socs[i].GetSoc().name), v);
     }
 }
-
-#ifdef HAVE_HWSTUB
-void RegTab::OnDevListChanged()
-{
-    ClearDevList();
-    QList< HWStubDevice* > list = m_hwstub_helper.GetDevList();
-    foreach(HWStubDevice *dev, list)
-    {
-        QString name = QString("Bus %1 Device %2: %3").arg(dev->GetBusNumber())
-            .arg(dev->GetDevAddress()).arg(dev->GetTargetInfo().bName);
-        m_dev_selector->addItem(QIcon::fromTheme("multimedia-player"), name,
-            QVariant::fromValue((void *)dev));
-    }
-    if(list.size() > 0)
-        m_dev_selector->setCurrentIndex(0);
-    else
-        SetDataSocName("");
-    SetReadOnlyIndicator();
-}
-
-void RegTab::OnDevChanged(int index)
-{
-    if(index == -1)
-        return;
-    HWStubDevice *dev = reinterpret_cast< HWStubDevice* >(m_dev_selector->itemData(index).value< void* >());
-    delete m_io_backend;
-    /* NOTE: make a copy of the HWStubDevice device because the one in the list
-     * might get destroyed when clearing the list while the backend is still
-     * active: this would result in a double free when the backend is also destroyed */
-    m_io_backend = m_backend->CreateHWStubIoBackend(new HWStubDevice(dev));
-    SetDataSocName(m_io_backend->GetSocName());
-    OnDataSocActivated(m_io_backend->GetSocName());
-    OnDataChanged();
-}
-
-void RegTab::ClearDevList()
-{
-    while(m_dev_selector->count() > 0)
-    {
-        HWStubDevice *dev = reinterpret_cast< HWStubDevice* >(m_dev_selector->itemData(0).value< void* >());
-        delete dev;
-        m_dev_selector->removeItem(0);
-    }
-}
-#endif
 
 void RegTab::FillDevSubTree(QTreeWidgetItem *_item)
 {
@@ -472,7 +365,6 @@ void RegTab::OnSocChanged(int index)
     m_cur_soc = m_soc_selector->itemData(index).value< SocRef >();
     FillRegTree();
     FillAnalyserList();
-    UpdateSocFilename();
 }
 
 void RegTab::OnReadOnlyClicked(bool checked)
@@ -480,7 +372,6 @@ void RegTab::OnReadOnlyClicked(bool checked)
     if(m_io_backend->IsReadOnly())
         return SetReadOnlyIndicator();
     m_right_content->AllowWrite(!checked);
-    UpdateSocFilename();
 }
 
 void RegTab::OnDumpRegs(bool c)
@@ -500,4 +391,21 @@ void RegTab::OnDumpRegs(bool c)
         QMessageBox::warning(this, "The register dump was not saved",
             "There was an error when dumping the registers");
     }
+}
+
+void RegTab::OnBackendReload(bool c)
+{
+    Q_UNUSED(c);
+    m_io_backend->Reload();
+    OnDataChanged();
+}
+
+void RegTab::OnTypeChanged(int index)
+{
+    if(index == -1)
+        return;
+    if(index == 0) /* registers */
+        OnRegItemClicked(m_reg_tree->currentItem(), 0);
+    else if(index == 1) /* analysers */
+        OnAnalyserClicked(m_analysers_list->currentItem());
 }
