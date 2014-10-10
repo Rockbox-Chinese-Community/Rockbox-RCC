@@ -92,6 +92,9 @@
 
 #define CONFIG_KEYPAD SAMSUNG_YH920_PAD
 
+/* Define this to enable morse code input */
+#define HAVE_MORSE_INPUT
+
 /* Define this if you do software codec */
 #define CONFIG_CODEC SWCODEC
 
@@ -141,9 +144,9 @@
 
 #define AB_REPEAT_ENABLE
 
-#define BATTERY_CAPACITY_DEFAULT 1550 /* default battery capacity */
-#define BATTERY_CAPACITY_MIN 1500  /* min. capacity selectable */
-#define BATTERY_CAPACITY_MAX 3200 /* max. capacity selectable */
+#define BATTERY_CAPACITY_DEFAULT 900 /* default battery capacity */
+#define BATTERY_CAPACITY_MIN 900  /* min. capacity selectable */
+#define BATTERY_CAPACITY_MAX 1600 /* max. capacity selectable */
 #define BATTERY_CAPACITY_INC 50   /* capacity increment */
 #define BATTERY_TYPES_COUNT  1    /* only one type */
 
@@ -181,6 +184,7 @@
 #define USE_ROCKBOX_USB
 #define USB_VENDOR_ID   0x04e8
 #define USB_PRODUCT_ID  0x5022
+#define HAVE_USB_HID_MOUSE
 
 /* Define this if you have adjustable CPU frequency */
 #define HAVE_ADJUSTABLE_CPU_FREQ
