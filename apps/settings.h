@@ -355,7 +355,6 @@ struct user_settings
     int  keyclick;          /* keyclick volume */
     int  keyclick_repeats;  /* keyclick on repeats */
     bool dithering_enabled;
-    int surround_enabled;
     int aatube_enabled;
 #ifdef HAVE_PITCHCONTROL
     bool timestretch_enabled;
@@ -538,7 +537,7 @@ struct user_settings
     int statusbar;    /* STATUSBAR_* enum values */
 #ifdef HAVE_REMOTE_LCD
     int remote_statusbar;
-#endif        
+#endif
 
 #if CONFIG_KEYPAD == RECORDER_PAD
     bool buttonbar;    /* 0=hide, 1=show */
@@ -696,7 +695,7 @@ struct user_settings
     bool backlight_fade_in;
     bool backlight_fade_out;
 #endif
-#ifdef HAVE_BACKLIGHT_BRIGHTNESS 
+#ifdef HAVE_BACKLIGHT_BRIGHTNESS
     int brightness;
 #endif
 
@@ -786,6 +785,7 @@ struct user_settings
 
 #if CONFIG_CODEC == SWCODEC
     struct compressor_settings compressor_settings;
+    int compressor_switch;
 #endif
 
     int sleeptimer_duration; /* In minutes; 0=off */
@@ -849,18 +849,16 @@ struct user_settings
 #endif
     int volume_limit; /* maximum volume limit */
 
-    int compressor_switch;
-
-    int rdose;
+    int surround_enabled;
     int surround_balance;
     int surround_fx1;
     int surround_fx2;
     bool surround_method2;
     int surround_mix;
 
-    int midside_enabled;
-    int mid_mix_level;
-    int side_mix_level;
+    int pbe;
+    int pbe_precut;
+    int afr_enabled;
 };
 
 /** global variables **/

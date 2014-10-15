@@ -26,13 +26,13 @@
 #include "compressor.h"
 #include "crossfeed.h"
 #include "emu10k_space80.h"
-#include "surround.h"
 #include "aatube.h"
 #include "dsp_misc.h"
 #include "eq.h"
 #include "pga.h"
-#include "rdose.h"
-#include "midside.h"
+#include "surround.h"
+#include "afr.h"
+#include "pbe.h"
 #ifdef HAVE_PITCHCONTROL
 #include "tdspeed.h"
 #endif

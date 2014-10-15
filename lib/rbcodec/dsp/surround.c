@@ -1,41 +1,76 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Chiwen Chang
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #include "surround.h"
 #include "config.h"
 #include "fixedpoint.h"
 #include "fracmul.h"
 #include "settings.h"
 #include "dsp_proc_entry.h"
+#include "dsp_filter.h"
 
-#define DOLBY_SURROUND_MAX 3072
 static bool surround_enabled = false;
 static int surround_balance = 0;
-static bool surround_alter_method = false;
+static bool surround_side_only = false;
 static int surround_mix = 100;
+static int surround_strength = 0;
 /*1 sample ~ 11ns */
-#define dly_5ms  454
-#define dly_8ms  727
-#define dly_10ms 909
-#define max_delay dly_10ms
+#define DLY_5MS  454
+#define DLY_8MS  727
+#define DLY_10MS 909
+#define MAX_DLY DLY_10MS
 
-/*only need to buffer right side for haas effect*/
-static int32_t b0[max_delay],b2[max_delay], bb[max_delay], hh[max_delay];
-static int32_t temp_buffer[2][DOLBY_SURROUND_MAX * 2];
-static int32_t mid_buffer[DOLBY_SURROUND_MAX * 2];
+#define B0_DLY  (MAX_DLY/8 + 1)
+#define B2_DLY  (MAX_DLY   + 1)
+#define BB_DLY  (MAX_DLY/4 + 1)
+#define HH_DLY  (MAX_DLY/2 + 1)
+/*only need to buffer right channel */
+static int32_t b0[B0_DLY],b2[B2_DLY], bb[BB_DLY], hh[HH_DLY];
+
+static int32_t temp_buffer[2];
+static int32_t mid, side;
 
 /*voice from 300hz - 3400hz ?*/
 static int32_t tcoef1,tcoef2,bcoef,hcoef;
 
-static int dly_size = max_delay;
+static int dly_size = MAX_DLY;
 static int cutoff_l = 320;
 static int cutoff_h = 3400;
+
+static int b0_r=0,b0_w=0,
+           b2_r=0,b2_w=0,
+           bb_r=0,bb_w=0,
+           hh_r=0,hh_w=0;
 
 static void dsp_surround_flush(void)
 {
     if (!surround_enabled)
-        return; 
-    memset(b0,0,max_delay * sizeof(int32_t)); 
-    memset(b2,0,max_delay * sizeof(int32_t));
-    memset(bb,0,max_delay * sizeof(int32_t)); 
-    memset(hh,0,max_delay * sizeof(int32_t));
+        return;
+    memset(b0,0,MAX_DLY/8 * sizeof(int32_t));
+    memset(b2,0,MAX_DLY   * sizeof(int32_t));
+    memset(bb,0,MAX_DLY/4 * sizeof(int32_t));
+    memset(hh,0,MAX_DLY/2 * sizeof(int32_t));
+    b0_r = 0;b0_w = dly_size/8 - 1;
+    b2_r = 0;b2_w = dly_size   - 1;
+    bb_r = 0;bb_w = dly_size/4 - 1;
+    hh_r = 0;hh_w = dly_size/2 - 1;
 }
 
 static void surround_update_filter(unsigned int fout)
@@ -51,10 +86,10 @@ void dsp_surround_set_balance(int var)
     surround_balance = var;
 }
 
-void dsp_surround_alter_method(bool var)
+void dsp_surround_side_only(bool var)
 {
     dsp_surround_flush();
-    surround_alter_method = var;
+    surround_side_only = var;
 }
 
 void dsp_surround_mix(int var)
@@ -72,29 +107,41 @@ void dsp_surround_set_cutoff(int frq_l, int frq_h)
     surround_update_filter(fout);
 }
 
-static void surround_set_stepsize(int var)
+static void surround_set_stepsize(int surround_strength)
 {
     dsp_surround_flush();
-    if (var > 0)
+    switch(surround_strength)
     {
-    if (var == 1) dly_size =  dly_5ms;
-    if (var == 2) dly_size =  dly_8ms;
-    if (var == 3) dly_size =  dly_10ms; 
+    case 1:
+        dly_size =  DLY_5MS;
+        break;
+    case 2:
+        dly_size =  DLY_8MS;
+        break;
+    case 3:
+        dly_size =  DLY_10MS;
+        break;
     }
 }
 
 void dsp_surround_enable(int var)
 {
-    bool prev_surround_enabled = surround_enabled;
-    surround_set_stepsize(var);
-    surround_enabled = (var > 0)?true:false;
-    if (prev_surround_enabled == surround_enabled)
-        return; /* No change */
+    if (var == surround_strength)
+        return; /* No setting change */
+
+    bool was_enabled = surround_strength > 0;
+    surround_strength = var;
+    surround_set_stepsize(surround_strength);
+
+    bool now_enabled = var > 0;
+
+    if (was_enabled == now_enabled && !now_enabled)
+        return; /* No change in enabled status */
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
-    dsp_proc_enable(dsp, DSP_PROC_SURROUND, surround_enabled);
+    dsp_proc_enable(dsp, DSP_PROC_SURROUND, now_enabled);
 }
 
-static void dolby_surround_process(struct dsp_proc_entry *this,
+static void surround_process(struct dsp_proc_entry *this,
                                struct dsp_buffer **buf_p)
 {
 
@@ -106,132 +153,83 @@ static void dolby_surround_process(struct dsp_proc_entry *this,
     int dly_shift1 = dly_size/2;
     int dly = dly_size;
     int i;
-    int32_t diff;
-    float mix = surround_mix;
-
-    if (count < dly_size)
-    {
-        dsp_surround_flush(); 
-        return;  
-    }
+    int32_t x;
 
     for (i = 0; i < count; i++)
     {
-        mid_buffer[i] = buf->p32[0][i] /2 + buf->p32[1][i] /2;
-        diff = buf->p32[0][i] - buf->p32[1][i];
+        mid = buf->p32[0][i] /2 + buf->p32[1][i] /2;
+        side = buf->p32[0][i] - buf->p32[1][i];
 
-        if (!surround_alter_method)
-        { 
-            temp_buffer[0][i]= buf->p32[0][i];  /*copy whole left channal*/
-            /*only need middle band for right channel*/
-            temp_buffer[1][i]= FRACMUL(buf->p32[1][i], tcoef1) - FRACMUL(buf->p32[1][i], tcoef2);  
+        if (!surround_side_only)
+        {
+            /*clone the left channal*/
+            temp_buffer[0]= buf->p32[0][i];
+            /*keep the middle band of right channel*/
+            temp_buffer[1]= FRACMUL(buf->p32[1][i], tcoef1) -
+                            FRACMUL(buf->p32[1][i], tcoef2);
         }
-        else
+        else /* apply haas to side only*/
         {
-            temp_buffer[0][i] = diff / 2;
-            temp_buffer[1][i] = FRACMUL(-diff,tcoef1)/2 - FRACMUL(-diff, tcoef2)/2; 
-        }       
-    }
+            temp_buffer[0] = side / 2;
+            temp_buffer[1] = FRACMUL(-side,tcoef1)/2 -
+                             FRACMUL(-side, tcoef2)/2;
+        }
 
-    /* apply 1/8 delay to frequency below fx2 */
-    for (i = 0; i < dly_shift3; i++) 
-    {
-        temp_buffer[1][i] +=b0[i];
-    }
-    for (i = 0; i < count-dly_shift3; i++)
-    {
-        temp_buffer[1][i+dly_shift3] += buf->p32[1][i] - FRACMUL(buf->p32[1][i], tcoef1);
-    }
-    for (i = 0; i < dly_shift3; i++)
-    {
-        b0[i] = buf->p32[1][count-dly_shift3+i] - FRACMUL(buf->p32[1][count-dly_shift3+i], tcoef1);
-    }
-    /* cut frequency below half fx2*/
-    for (i = 0; i < count; i++)
-        temp_buffer[1][i] = FRACMUL(temp_buffer[1][i], bcoef);
-    
-    /*apply 1/4 delay to below half fx2 */
-    /* using different delay will create the illusion of the lower frequency sound direction*/
-    for (i = 0; i < dly_shift2; i++) 
-    {
-        temp_buffer[1][i] +=bb[i];
-    }
-    for (i = 0; i < count-dly_shift2; i++)
-    {
-        temp_buffer[1][i+dly_shift2] += buf->p32[1][i] - FRACMUL(buf->p32[1][i], bcoef);
-    }
-    for (i = 0; i < dly_shift2; i++)
-    {
-        bb[i] = buf->p32[1][count-dly_shift2+i] - FRACMUL(buf->p32[1][count-dly_shift2+i], bcoef);
-    }
+        /* apply 1/8 delay to frequency below fx2 */
+        x = buf->p32[1][i] - FRACMUL(buf->p32[1][i], tcoef1);
+        temp_buffer[1] += dequeue(b0, &b0_r, dly_shift3);
+        enqueue(x, b0, &b0_w, dly_shift3 );
 
-    /*apply full delay to higher band*/
-    for (i = 0; i < dly; i++)
-    { 
-        temp_buffer[1][i] +=b2[i]; 
-    }
-    for (i = 0; i < count-dly; i++)
-    {  
-        temp_buffer[1][i+dly]+= FRACMUL(buf->p32[1][i], tcoef2);
-    } 
-    for (i = 0; i < dly; i++)
-    {  
-        b2[i] = FRACMUL(buf->p32[1][count-dly+i], tcoef2);
-    }
-    /*do the same direction trick,*/
-    for (i = 0; i < count; i++)
-        temp_buffer[1][i] -= FRACMUL(temp_buffer[1][i], hcoef);
-    /*apply the same trick using 1/2 delay to frequency twice the fx1*/
-    for (i = 0; i < dly_shift1; i++)
-    { 
-        temp_buffer[1][i] +=hh[i]; 
-    }
-    for (i = 0; i < count-dly_shift1; i++)
-    {  
-        temp_buffer[1][i+dly_shift1]+= FRACMUL(buf->p32[1][i], hcoef);
-    }
-    for (i = 0; i < dly_shift1; i++)
-    {  
-        hh[i] = FRACMUL(buf->p32[1][count-dly_shift1+i], hcoef);
-    }
+        /* cut frequency below half fx2*/
+        temp_buffer[1] = FRACMUL(temp_buffer[1], bcoef);
 
+        /* apply 1/4 delay to frequency below half fx2 */
+        /* use different delay to fake the sound direction*/
+        x = buf->p32[1][i] - FRACMUL(buf->p32[1][i], bcoef);
+        temp_buffer[1] += dequeue(bb, &bb_r, dly_shift2);
+        enqueue(x, bb, &bb_w, dly_shift2 );
 
-    for (i = 0; i < count; i++) /*balance*/
-    { 
-        if (surround_balance > 0  && !surround_alter_method)
+        /* apply full delay to higher band */
+        x = FRACMUL(buf->p32[1][i], tcoef2);
+        temp_buffer[1] += dequeue(b2, &b2_r, dly);
+        enqueue(x, b2, &b2_w, dly );
+
+        /* do the same direction trick again */
+        temp_buffer[1] -= FRACMUL(temp_buffer[1], hcoef);
+
+        x = FRACMUL(buf->p32[1][i], hcoef);
+        temp_buffer[1] += dequeue(hh, &hh_r, dly_shift1);
+        enqueue(x, hh, &hh_w, dly_shift1 );
+        /*balance*/
+        if (surround_balance > 0  && !surround_side_only)
         {
-            temp_buffer[0][i] -= temp_buffer[0][i]/200  * surround_balance;
-            temp_buffer[1][i] += temp_buffer[1][i]/200  * surround_balance;
+            temp_buffer[0] -= temp_buffer[0]/200  * surround_balance;
+            temp_buffer[1] += temp_buffer[1]/200  * surround_balance;
         }
         else if (surround_balance > 0)
         {
-            temp_buffer[0][i] += temp_buffer[0][i]/200  * surround_balance;
-            temp_buffer[1][i] -= temp_buffer[1][i]/200  * surround_balance;
+            temp_buffer[0] += temp_buffer[0]/200  * surround_balance;
+            temp_buffer[1] -= temp_buffer[1]/200  * surround_balance;
         }
-    }
 
-//  
-    if  (surround_alter_method)
-    {
-        for (i = 0; i < count; i++)
+        if  (surround_side_only)
         {
-            temp_buffer[0][i] += mid_buffer[i];
-            temp_buffer[1][i] += mid_buffer[i];    
+            temp_buffer[0] += mid;
+            temp_buffer[1] += mid;
         }
-    }  
-//
-    if (mix == 100)
-    {
-        memcpy(buf->p32[0],temp_buffer[0],count * sizeof(int32_t));
-        memcpy(buf->p32[1],temp_buffer[1],count * sizeof(int32_t));
-    }
-    else
-    {
-        /*dry wet mix*/
-        for (i = 0; i < count; i++)
+
+        if (surround_mix == 100)
         {
-            buf->p32[0][i] = buf->p32[0][i] * ((float)(100-mix)/100) + temp_buffer[0][i] * (mix/100); 
-            buf->p32[1][i] = buf->p32[1][i] * ((float)(100-mix)/100) + temp_buffer[1][i] * (mix/100);     
+            buf->p32[0][i] = temp_buffer[0];
+            buf->p32[1][i] = temp_buffer[1];
+        }
+        else
+        {
+            /*dry wet mix*/
+            buf->p32[0][i] = buf->p32[0][i]/100 * (100-surround_mix) +
+                             temp_buffer[0]/100 * surround_mix;
+            buf->p32[1][i] = buf->p32[1][i]/100 * (100-surround_mix) +
+                             temp_buffer[1]/100 * surround_mix;
         }
     }
     (void)this;
@@ -247,20 +245,20 @@ static intptr_t surround_configure(struct dsp_proc_entry *this,
     switch (setting)
     {
     case DSP_PROC_INIT:
-        if (value != 0)
-            break;
-        this->process = dolby_surround_process;
-        surround_update_filter(fout);
-        dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
+        if (value == 0)
+        {
+            this->process = surround_process;
+            dsp_surround_flush();
+            dsp_proc_activate(dsp, DSP_PROC_SURROUND, true);
+        }
+        else
+            surround_update_filter(fout);
         break;
     case DSP_FLUSH:
         dsp_surround_flush();
         break;
    case DSP_SET_OUT_FREQUENCY:
-        if (!surround_enabled)
-            this->process = NULL;
-        else
-           this->process = dolby_surround_process;
+        surround_update_filter(value);
         break;
    case DSP_PROC_CLOSE:
         break;

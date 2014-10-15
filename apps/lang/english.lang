@@ -130,23 +130,6 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_SURROUND
-  desc: in the sound settings menu
-  user: core
-  <source>
-    *: none
-    swcodec: "Surround"
-  </source>
-  <dest>
-    *: none
-    swcodec: "Surround"
-  </dest>
-  <voice>
-    *: none
-    swcodec: "Surround"
-  </voice>
-</phrase>
-<phrase>
   id: LANG_ANTIALIAS_WARM
   desc: in the sound settings menu
   user: core
@@ -13583,20 +13566,54 @@
   </voice>
 </phrase>
 <phrase>
-  id: LANG_RDOSE
+  id: LANG_PBE
   desc: in sound settings
   user: core
   <source>
     *: none
-    swcodec: "rDose"
+    swcodec: "Perceptual Bass Enhancement"
   </source>
   <dest>
     *: none
-    swcodec: "rDose"
+    swcodec: "Perceptual Bass Enhancement"
   </dest>
   <voice>
     *: none
-    swcodec: "rDose"
+    swcodec: "Perceptual Bass Enhancement"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AFR
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Auditory Fatigue Reduction"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Auditory Fatigue Reduction"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Auditory Fatigue Reduction"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "Haas Surround"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Haas Surround"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Haas Surround"
   </voice>
 </phrase>
 <phrase>
@@ -13639,65 +13656,31 @@
   user: core
   <source>
     *: none
-    swcodec: "SURROUND METHOD 2"
+    swcodec: "SIDE ONLY"
   </source>
   <dest>
     *: none
-    swcodec: "SURROUND METHOD 2"
+    swcodec: "SIDE ONLY"
   </dest>
   <voice>
     *: none
-    swcodec: "SURROUND METHOD 2"
+    swcodec: "SIDE ONLY"
   </voice>
 </phrase>
 <phrase>
-  id: LANG_MIDSIDE
+  id: LANG_SURROUND_MIX
   desc: in sound settings
   user: core
   <source>
     *: none
-    swcodec: "MID / SIDE"
+    swcodec: "Dry / Wet Mix"
   </source>
   <dest>
     *: none
-    swcodec: "MID / SIDE"
+    swcodec: "Dry / Wet Mix"
   </dest>
   <voice>
     *: none
-    swcodec: "MID / SIDE"
-  </voice>
-</phrase>
-<phrase>
-  id: LANG_MIDSIDE_MID
-  desc: in sound settings
-  user: core
-  <source>
-    *: none
-    swcodec: "MID Level"
-  </source>
-  <dest>
-    *: none
-    swcodec: "MID Level"
-  </dest>
-  <voice>
-    *: none
-    swcodec: "MID Level"
-  </voice>
-</phrase>
-<phrase>
-  id: LANG_MIDSIDE_SIDE
-  desc: in sound settings
-  user: core
-  <source>
-    *: none
-    swcodec: "SIDE Level"
-  </source>
-  <dest>
-    *: none
-    swcodec: "SIDE Level"
-  </dest>
-  <voice>
-    *: none
-    swcodec: "SIDE Level"
+    swcodec: "Dry / Wet Mix"
   </voice>
 </phrase>
