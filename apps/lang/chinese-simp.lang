@@ -8279,7 +8279,7 @@
 </phrase>
 <phrase>
   id: LANG_DELETING
-  desc: 
+  desc:
   user: core
   <source>
     *: "Deleting..."
@@ -8597,7 +8597,7 @@
 </phrase>
 <phrase>
   id: LANG_REC_DIR_NOT_WRITABLE
-  desc: 
+  desc:
   user: core
   <source>
     *: none
@@ -8698,7 +8698,7 @@
 </phrase>
 <phrase>
   id: LANG_BROWSE_CUESHEET
-  desc: 
+  desc:
   user: core
   <source>
     *: "Browse Cuesheet"
@@ -8816,7 +8816,7 @@
 </phrase>
 <phrase>
   id: LANG_ADD_TO_FAVES
-  desc: 
+  desc:
   user: core
   <source>
     *: "Add to Shortcuts"
@@ -8909,7 +8909,7 @@
 </phrase>
 <phrase>
   id: LANG_CLEAR_REC_DIR
-  desc: 
+  desc:
   user: core
   <source>
     *: none
@@ -9757,7 +9757,7 @@
 </phrase>
 <phrase>
   id: LANG_MOVING
-  desc: 
+  desc:
   user: core
   <source>
     *: "Moving..."
@@ -9813,7 +9813,7 @@
 </phrase>
 <phrase>
   id: VOICE_EXT_CUESHEET
-  desc: 
+  desc:
   user: core
   <source>
     *: ""
@@ -10122,7 +10122,7 @@
 </phrase>
 <phrase>
   id: LANG_COPYING
-  desc: 
+  desc:
   user: core
   <source>
     *: "Copying..."
@@ -12557,7 +12557,7 @@
 </phrase>
 <phrase>
   id: LANG_FILESIZE
-  desc: in record timesplit options and in track information viewer 
+  desc: in record timesplit options and in track information viewer
   user: core
   <source>
     *: "Filesize"

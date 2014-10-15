@@ -183,6 +183,14 @@ static int timestretch_callback(int action,const struct menu_item_ex *this_item)
 
     MENUITEM_SETTING(dithering_enabled,
                      &global_settings.dithering_enabled, lowlatency_callback);
+    MENUITEM_SETTING(afr_enabled,
+                     &global_settings.afr_enabled, lowlatency_callback);
+    MENUITEM_SETTING(pbe,
+                     &global_settings.pbe, lowlatency_callback);
+    MENUITEM_SETTING(pbe_precut,
+                     &global_settings.pbe_precut, lowlatency_callback);
+    MAKE_MENU(pbe_menu,ID2P(LANG_PBE), NULL, Icon_NOICON,
+              &pbe,&pbe_precut);
     MENUITEM_SETTING(surround_enabled,
                      &global_settings.surround_enabled, lowlatency_callback);
     MENUITEM_SETTING(surround_balance,
@@ -191,13 +199,15 @@ static int timestretch_callback(int action,const struct menu_item_ex *this_item)
                      &global_settings.surround_fx1, lowlatency_callback);
     MENUITEM_SETTING(surround_fx2,
                      &global_settings.surround_fx2, lowlatency_callback);
+    MENUITEM_SETTING(surround_method2,
+                     &global_settings.surround_method2, lowlatency_callback);
+    MENUITEM_SETTING(surround_mix,
+                     &global_settings.surround_mix, lowlatency_callback);
+    MAKE_MENU(surround_menu,ID2P(LANG_SURROUND), NULL, Icon_NOICON,
+              &surround_enabled,&surround_balance,&surround_fx1,&surround_fx2,&surround_method2,&surround_mix);
     MENUITEM_SETTING(aatube_enabled,
                      &global_settings.aatube_enabled, lowlatency_callback);
-    MENUITEM_SETTING(rdose,
-                     &global_settings.rdose, lowlatency_callback);
 
-    MAKE_MENU(surround_menu,ID2P(LANG_SURROUND), NULL, Icon_NOICON,
-              &surround_enabled,&surround_balance,&surround_fx1,&surround_fx2);
     /* compressor submenu */
     MENUITEM_SETTING(compressor_switch,
                      &global_settings.compressor_switch,
@@ -243,8 +253,8 @@ static int timestretch_callback(int action,const struct menu_item_ex *this_item)
 #ifdef AUDIOHW_HAVE_EQ
 #endif /* AUDIOHW_HAVE_EQ */
 
-MAKE_MENU(sound_settings, ID2P(LANG_SOUND_SETTINGS), NULL, Icon_Audio,
-          &volume
+MAKE_MENU(sound_settings, ID2P(LANG_SOUND_SETTINGS), NULL, Icon_Audio
+          ,&volume
           ,&volume_limit
 #ifdef AUDIOHW_HAVE_BASS
           ,&bass
@@ -275,7 +285,8 @@ MAKE_MENU(sound_settings, ID2P(LANG_SOUND_SETTINGS), NULL, Icon_Audio,
           ,&roll_off
 #endif
 #if CONFIG_CODEC == SWCODEC
-          ,&crossfeed_menu, &space80_menu, &equalizer_menu, &dithering_enabled, &surround_menu, &aatube_enabled, &rdose
+          ,&crossfeed_menu, &space80_menu, &equalizer_menu, &dithering_enabled, &aatube_enabled
+          ,&surround_menu, &pbe_menu, &afr_enabled
 #ifdef HAVE_PITCHCONTROL
           ,&timestretch_enabled
 #endif
