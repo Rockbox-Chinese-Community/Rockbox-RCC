@@ -2290,8 +2290,6 @@ const struct settings_list settings[] = {
                        LANG_SURROUND_FX2, 320,
                        "surround_fx2", UNIT_HERTZ, 40, 400,
                        40, NULL, NULL, surround_set_factor),
-    OFFON_SETTING(F_SOUNDSETTING, surround_method2, LANG_SURROUND_METHOD2, false,
-                  "surround method2", dsp_surround_alter_method),
     /* aa-tube */
     CHOICE_SETTING(F_SOUNDSETTING|F_NO_WRAP, aatube_enabled,
                        LANG_ANTIALIAS_WARM, 0,"aatube enabled",

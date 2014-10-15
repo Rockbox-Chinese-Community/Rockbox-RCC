@@ -855,7 +855,6 @@ struct user_settings
     int surround_balance;
     int surround_fx1;
     int surround_fx2;
-    bool surround_method2;
 };
 
 /** global variables **/
