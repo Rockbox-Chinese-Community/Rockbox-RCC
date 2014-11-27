@@ -178,17 +178,17 @@ static void handle_std_dev_desc(struct usb_ctrlrequest *req)
         case USB_DT_OTHER_SPEED_CONFIG:
         case USB_DT_CONFIG:
         {
-            int max_packet_size;
+            /* int max_packet_size; */
 
             /* config desc */
-            if((req->wValue >> 8) ==USB_DT_CONFIG)
+            if((req->wValue >> 8) == USB_DT_CONFIG)
             {
-                max_packet_size = (usb_drv_port_speed() ? 512 : 64);
+                /* max_packet_size = (usb_drv_port_speed() ? 512 : 64); */
                 config_descriptor.bDescriptorType = USB_DT_CONFIG;
             }
             else
             {
-                max_packet_size = (usb_drv_port_speed() ? 64 : 512);
+                /* max_packet_size = (usb_drv_port_speed() ? 64 : 512); */
                 config_descriptor.bDescriptorType = USB_DT_OTHER_SPEED_CONFIG;
             }
             size = sizeof(struct usb_config_descriptor);
@@ -356,6 +356,49 @@ static void handle_get_log(struct usb_ctrlrequest *req)
     enable_logf(true);
 }
 
+/* default implementation, relying on the compiler to produce correct code,
+ * targets should reimplement this... */
+uint8_t __attribute__((weak)) target_read8(const void *addr)
+{
+    return *(volatile uint8_t *)addr;
+}
+
+uint16_t __attribute__((weak)) target_read16(const void *addr)
+{
+    return *(volatile uint16_t *)addr;
+}
+
+uint32_t __attribute__((weak)) target_read32(const void *addr)
+{
+    return *(volatile uint32_t *)addr;
+}
+
+void __attribute__((weak)) target_write8(void *addr, uint8_t val)
+{
+    *(volatile uint8_t *)addr = val;
+}
+
+void __attribute__((weak)) target_write16(void *addr, uint16_t val)
+{
+    *(volatile uint16_t *)addr = val;
+}
+
+void __attribute__((weak)) target_write32(void *addr, uint32_t val)
+{
+    *(volatile uint32_t *)addr = val;
+}
+
+static bool read_atomic(void *dst, void *src, size_t sz)
+{
+    switch(sz)
+    {
+        case 1: *(uint8_t *)dst = target_read8(src); return true;
+        case 2: *(uint16_t *)dst = target_read16(src); return true;
+        case 4: *(uint32_t *)dst = target_read32(src); return true;
+        default: return false;
+    }
+}
+
 static void handle_read(struct usb_ctrlrequest *req)
 {
     static uint32_t last_addr = 0;
@@ -377,12 +420,29 @@ static void handle_read(struct usb_ctrlrequest *req)
     {
         if(id != last_id)
             return usb_drv_stall(EP_CONTROL, true, true);
-        memcpy(usb_buffer, (void *)last_addr, req->wLength);
+        if(req->bRequest == HWSTUB_READ2_ATOMIC)
+        {
+            if(!read_atomic(usb_buffer, (void *)last_addr, req->wLength))
+                return usb_drv_stall(EP_CONTROL, true, true);
+        }
+        else
+            memcpy(usb_buffer, (void *)last_addr, req->wLength);
         asm volatile("nop" : : : "memory");
         usb_drv_send(EP_CONTROL, usb_buffer, req->wLength);
         usb_drv_recv(EP_CONTROL, NULL, 0);
     }
 };
+
+static bool write_atomic(void *dst, void *src, size_t sz)
+{
+    switch(sz)
+    {
+        case 1: target_write8(dst, *(uint8_t *)src); return true;
+        case 2: target_write16(dst, *(uint16_t *)src); return true;
+        case 4: target_write32(dst, *(uint32_t *)src); return true;
+        default: return false;
+    }
+}
 
 static void handle_write(struct usb_ctrlrequest *req)
 {
@@ -392,7 +452,13 @@ static void handle_write(struct usb_ctrlrequest *req)
     int sz_hdr = sizeof(struct hwstub_write_req_t);
     if(size < sz_hdr)
         return usb_drv_stall(EP_CONTROL, true, true);
-    memcpy((void *)write->dAddress, usb_buffer + sz_hdr, size - sz_hdr);
+    if(req->bRequest == HWSTUB_WRITE_ATOMIC)
+    {
+        if(!write_atomic((void *)write->dAddress, usb_buffer + sz_hdr, size - sz_hdr))
+            return usb_drv_stall(EP_CONTROL, true, true);
+    }
+    else
+        memcpy((void *)write->dAddress, usb_buffer + sz_hdr, size - sz_hdr);
     usb_drv_send(EP_CONTROL, NULL, 0);
 }
 
@@ -411,9 +477,12 @@ static void handle_exec(struct usb_ctrlrequest *req)
 
     if(exec->bmFlags & HWSTUB_EXEC_CALL)
     {
-#ifdef CPU_ARM
+#if defined(CPU_ARM)
         /* in case of call, respond after return */
         asm volatile("blx %0\n" : : "r"(addr) : "memory");
+        usb_drv_send(EP_CONTROL, NULL, 0);
+#elif defined(CPU_MIPS)
+        asm volatile("jalr %0\nnop\n" : : "r"(addr) : "memory");
         usb_drv_send(EP_CONTROL, NULL, 0);
 #else
 #warning call is unsupported on this platform
@@ -425,9 +494,11 @@ static void handle_exec(struct usb_ctrlrequest *req)
         /* in case of jump, respond immediately and disconnect usb */
         usb_drv_send(EP_CONTROL, NULL, 0);
         usb_drv_exit();
-#ifdef CPU_ARM
+#if defined(CPU_ARM)
         asm volatile("bx %0\n" : : "r" (addr) : "memory");
-#else
+#elif defined(CPU_MIPS)
+        asm volatile("jr %0\nnop\n" : : "r" (addr) : "memory");
+#else 
 #warning jump is unsupported on this platform
         usb_drv_stall(EP_CONTROL, true, true);
 #endif
@@ -446,8 +517,10 @@ static void handle_class_intf_req(struct usb_ctrlrequest *req)
             return handle_get_log(req);
         case HWSTUB_READ:
         case HWSTUB_READ2:
+        case HWSTUB_READ2_ATOMIC:
             return handle_read(req);
         case HWSTUB_WRITE:
+        case HWSTUB_WRITE_ATOMIC:
             return handle_write(req);
         case HWSTUB_EXEC:
             return handle_exec(req);
