@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #ifndef REGDISPLAYPANEL_H
 #define REGDISPLAYPANEL_H
 
@@ -86,7 +106,8 @@ protected:
     bool m_allow_write;
     RegLineEdit *m_raw_val_edit;
     RegSexyDisplay *m_sexy_display;
-    GrowingTableWidget *m_value_table;
+    GrowingTableView *m_value_table;
+    RegFieldTableModel *m_value_model;
     QStyledItemDelegate *m_table_delegate;
     QItemEditorFactory *m_table_edit_factory;
     RegItemEditorCreator *m_regedit_creator;
@@ -95,11 +116,10 @@ protected:
     QLabel *m_desc;
     QWidget *m_viewport;
     QScrollArea *m_scroll;
-    bool m_ignore_cell_change;
 
 private slots:
     void OnRawRegValueReturnPressed();
-    void OnRegFieldValueChanged(int row, int col);
+    void OnRegValueChanged(int index);
 };
 
 #endif /* REGDISPLAYPANEL_H */ 

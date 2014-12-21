@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #ifndef __BACKEND_H__
 #define __BACKEND_H__
 
@@ -33,6 +53,8 @@ public:
      * HW.dev.reg
      * where <dev> is the device name (including index like APPUART1)
      * and <reg> is the register name (including index like PRIORITY29) */
+    /* report whether backend is valid */
+    virtual bool IsValid() = 0;
     /* report whether backend supports register access type */
     virtual bool SupportAccess(AccessType type) = 0;
     /* get SoC name */
@@ -63,6 +85,7 @@ class DummyIoBackend : public IoBackend
 public:
     DummyIoBackend() {}
 
+    virtual bool IsValid() { return false; }
     virtual bool SupportAccess(AccessType type) { Q_UNUSED(type); return false; }
     virtual QString GetSocName() { return ""; }
     virtual bool ReadRegister(const QString& name, soc_word_t& value) 
@@ -79,34 +102,58 @@ public:
     virtual bool Commit() { return false; }
 };
 
+/** The RAM backend doesn't have any backend storage and stores all values in
+ * an associative map */
+class RamIoBackend : public IoBackend
+{
+    Q_OBJECT
+public:
+    RamIoBackend(const QString& soc_name = "");
+
+    virtual bool IsValid() { return m_soc != ""; }
+    virtual bool SupportAccess(AccessType type) { return type == ByName; }
+    virtual QString GetSocName() { return m_soc; }
+    virtual void SetSocName(const QString& soc_name) { m_soc = soc_name; }
+    virtual bool ReadRegister(const QString& name, soc_word_t& value);
+    virtual bool ReadRegister(soc_addr_t addr, soc_word_t& value)
+        { Q_UNUSED(addr); Q_UNUSED(value); return false; }
+    virtual bool Reload() { return false; }
+    virtual bool IsReadOnly() { return false; }
+    virtual bool WriteRegister(const QString& name, soc_word_t value, WriteMode mode);
+    virtual bool WriteRegister(soc_addr_t addr, soc_word_t value, WriteMode mode)
+        { Q_UNUSED(addr); Q_UNUSED(value); Q_UNUSED(mode); return false; }
+    virtual bool IsDirty() { return false; }
+    virtual bool Commit() { return false; }
+    /* clear all entries of the backend */
+    virtual void DeleteAll();
+
+protected:
+    QString m_soc;
+    QMap< QString, soc_word_t > m_map;
+};
+
 /** NOTE the File backend makes a difference between writes and commits:
  * a write will *never* touch the underlying file unless it was committed. */
-class FileIoBackend : public IoBackend
+class FileIoBackend : public RamIoBackend
 {
     Q_OBJECT
 public:
     FileIoBackend(const QString& filename, const QString& soc_name = "");
 
+    virtual bool IsValid() { return m_valid; }
     virtual bool SupportAccess(AccessType type) { return type == ByName; }
-    virtual QString GetSocName();
-    virtual bool ReadRegister(const QString& name, soc_word_t& value);
-    virtual bool ReadRegister(soc_addr_t addr, soc_word_t& value)
-        { Q_UNUSED(addr); Q_UNUSED(value); return false; }
     virtual bool Reload();
     virtual bool IsReadOnly() { return m_readonly; }
     virtual bool WriteRegister(const QString& name, soc_word_t value, WriteMode mode);
-    virtual bool WriteRegister(soc_addr_t addr, soc_word_t value, WriteMode mode)
-        { Q_UNUSED(addr); Q_UNUSED(value); Q_UNUSED(mode); return false; }
     virtual bool IsDirty() { return m_dirty; }
     virtual bool Commit();
     QString GetFileName() { return m_filename; }
 
 protected:
     QString m_filename;
-    QString m_soc;
     bool m_readonly;
     bool m_dirty;
-    QMap< QString, soc_word_t > m_map;
+    bool m_valid;
 };
 
 #ifdef HAVE_HWSTUB
@@ -153,6 +200,7 @@ public:
     HWStubIoBackend(HWStubDevice *dev);
     virtual ~HWStubIoBackend();
 
+    virtual bool IsValid() { return m_dev->IsValid(); }
     virtual bool SupportAccess(AccessType type) { return type == ByAddress; }
     virtual QString GetSocName();
     virtual bool ReadRegister(const QString& name, soc_word_t& value)
@@ -315,7 +363,11 @@ public:
     bool GetRegRef(const SocDevRef& dev, const QString& reg, SocRegRef& ref);
     bool GetFieldRef(const SocRegRef& reg, const QString& field, SocFieldRef& ref);
     bool GetRegisterAddress(const QString& dev, const QString& reg, soc_addr_t& addr);
-    bool DumpAllRegisters(const QString& filename);
+    /* NOTE: does not commit writes to the backend
+     * if ignore_errors is true, the dump will continue even on errors, and the
+     * function will return false if one or more errors occured */
+    bool DumpAllRegisters(IoBackend *backend, bool ignore_errors = true);
+    bool DumpAllRegisters(const QString& filename, bool ignore_errors = true);
 
 private:
     IoBackend *m_io_backend;

@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #include "utils.h"
 #include <QFontMetrics>
 #include <QPainter>
@@ -320,6 +340,26 @@ void SocFieldEditor::setField(uint field)
     setText(QString("0x%1").arg(field, digits, 16, QChar('0')));
 }
 
+void SocFieldEditor::SetRegField(const soc_reg_field_t& field)
+{
+    setValidator(0);
+    delete m_validator;
+    m_validator = new SocFieldValidator(field);
+    setValidator(m_validator);
+    m_reg_field = field;
+}
+
+/**
+ * SocFieldCachedValue
+ */
+SocFieldCachedValue::SocFieldCachedValue(const soc_reg_field_t& field, uint value)
+    :m_field(field), m_value(value)
+{
+    int idx = field.find_value(value);
+    if(idx != -1)
+        m_name = QString::fromStdString(field.value[idx].name);
+}
+
 /**
  * SocFieldCachedItemDelegate
  */
@@ -331,7 +371,22 @@ QString SocFieldCachedItemDelegate::displayText(const QVariant& value, const QLo
     {
         const SocFieldCachedValue& v = value.value< SocFieldCachedValue >();
         int bitcount = v.field().last_bit - v.field().first_bit;
-        return QString("0x%1").arg(v.value(), (bitcount + 3) / 4, 16, QChar('0'));
+        QString name = v.value_name();
+        QString strval = QString("0x%1").arg(v.value(), (bitcount + 3) / 4, 16, QChar('0'));
+        switch(m_mode)
+        {
+            case DisplayName:
+                if(name.size() > 0)
+                    return name;
+                /* fallthrough */
+            case DisplayValueAndName:
+                if(name.size() > 0)
+                    return QString("%1 (%2)").arg(strval).arg(name);
+                /* fallthrough */
+            case DisplayValue:
+            default:
+                return strval;
+        }
     }
     else
         return QStyledItemDelegate::displayText(value, locale);
@@ -385,6 +440,229 @@ QWidget *SocFieldCachedEditorCreator::createWidget(QWidget *parent) const
 QByteArray SocFieldCachedEditorCreator::valuePropertyName() const
 {
     return QByteArray("value");
+}
+
+/**
+ * RegFieldTableModel
+ */
+
+RegFieldTableModel::RegFieldTableModel(QObject *parent)
+    :QAbstractTableModel(parent)
+{
+    m_read_only = true;
+}
+
+int RegFieldTableModel::rowCount(const QModelIndex& /* parent */) const
+{
+    return m_reg.field.size();
+}
+
+int RegFieldTableModel::columnCount(const QModelIndex& /* parent */) const
+{
+    return ColumnCountOffset + m_value.size();
+}
+
+QVariant RegFieldTableModel::data(const QModelIndex& index, int role) const
+{
+    int section = index.column();
+    const soc_reg_field_t& field = m_reg.field[index.row()];
+    /* column independent code */
+    const RegThemeGroup *theme = 0;
+    switch(m_status[index.row()])
+    {
+        case Normal: theme = &m_theme.normal; break;
+        case Diff: theme = &m_theme.diff; break;
+        case Error: theme = &m_theme.error; break;
+        case None: default: break;
+    }
+    if(role == Qt::FontRole)
+        return theme ? QVariant(theme->font) : QVariant();
+    if(role == Qt::BackgroundRole)
+        return theme ? QVariant(theme->background) : QVariant();
+    if(role == Qt::ForegroundRole)
+        return theme ? QVariant(theme->foreground) : QVariant();
+    /* column dependent code */
+    if(section == BitRangeColumn)
+    {
+        if(role == Qt::DisplayRole)
+        {
+            if(field.first_bit == field.last_bit)
+                return QVariant(QString("%1").arg(field.first_bit));
+            else
+                return QVariant(QString("%1:%2").arg(field.last_bit).arg(field.first_bit));
+        }
+        else if(role == Qt::TextAlignmentRole)
+            return QVariant(Qt::AlignVCenter | Qt::AlignHCenter);
+        else
+            return QVariant();
+    }
+    if(section == NameColumn)
+    {
+        if(role == Qt::DisplayRole)
+            return QVariant(QString::fromStdString(field.name));
+        else
+            return QVariant();
+    }
+    if(section < FirstValueColumn + m_value.size())
+    {
+        int idx = section - FirstValueColumn;
+        if(role == Qt::DisplayRole)
+        {
+            if(!m_value[idx].isValid())
+                return QVariant("<error>");
+            return QVariant::fromValue(SocFieldCachedValue(field,
+                field.extract(m_value[idx].value< soc_word_t >())));
+        }
+        else if(role == Qt::EditRole)
+        {
+            if(!m_value[idx].isValid())
+                return QVariant();
+            return QVariant::fromValue(SocFieldCachedValue(field,
+                field.extract(m_value[idx].value< soc_word_t >())));
+        }
+        else if(role == Qt::TextAlignmentRole)
+            return QVariant(Qt::AlignVCenter | Qt::AlignHCenter);
+        else
+            return QVariant();
+    }
+    section -= m_value.size();
+    if(section == DescColumnOffset)
+    {
+        if(role == Qt::DisplayRole)
+            return QVariant(QString::fromStdString(field.desc));
+        else
+            return QVariant();
+    }
+    return QVariant();
+}
+
+bool RegFieldTableModel::setData(const QModelIndex& idx, const QVariant& value, int role)
+{
+    if(role != Qt::EditRole)
+        return false;
+    int section = idx.column();
+    if(section < FirstValueColumn || section >= FirstValueColumn + m_value.size())
+        return false;
+    section -= FirstValueColumn;
+    const SocFieldCachedValue& v = value.value< SocFieldCachedValue >();
+    if(!m_value[section].isValid())
+        return false;
+    soc_word_t old_val = m_value[section].value< soc_word_t >();
+    m_value[section] = QVariant(v.field().replace(old_val, v.value()));
+    // update column
+    RecomputeTheme();
+    emit dataChanged(index(0, section), index(rowCount() - 1, section));
+    emit OnValueModified(section);
+    return true;
+}
+
+Qt::ItemFlags RegFieldTableModel::flags(const QModelIndex& index) const
+{
+    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    int section = index.column();
+    if(section < FirstValueColumn || section >= FirstValueColumn + m_value.size())
+        return flags;
+    section -= FirstValueColumn;
+    if(m_value[section].isValid() && !m_read_only)
+        flags |= Qt::ItemIsEditable;
+    return flags;
+}
+
+QVariant RegFieldTableModel::headerData(int section, Qt::Orientation orientation,
+    int role) const
+{
+    if(orientation == Qt::Vertical)
+        return QVariant();
+    if(role != Qt::DisplayRole)
+        return QVariant();
+    if(section == BitRangeColumn)
+        return QVariant("Bits");
+    if(section == NameColumn)
+        return QVariant("Name");
+    if(section < FirstValueColumn + m_value.size())
+    {
+        int idx = section - FirstValueColumn;
+        if(m_value.size() == 1)
+            return QVariant("Value");
+        else
+            return QVariant(QString("Value %1").arg((QChar)('A' + idx)));
+    }
+    section -= m_value.size();
+    if(section == DescColumnOffset)
+        return QVariant("Description");
+    return QVariant();
+}
+
+void RegFieldTableModel::SetReadOnly(bool en)
+{
+    if(en == m_read_only)
+        return;
+    m_read_only = en;
+}
+
+void RegFieldTableModel::SetRegister(const soc_reg_t& reg)
+{
+    /* remove all rows */
+    beginRemoveRows(QModelIndex(), 0, rowCount() - 1);
+    m_reg.field.clear();
+    endRemoveRows();
+    /* add them all */
+    beginInsertRows(QModelIndex(), 0, reg.field.size() - 1);
+    m_reg = reg;
+    RecomputeTheme();
+    endInsertRows();
+}
+
+void RegFieldTableModel::SetValues(const QVector< QVariant >& values)
+{
+    /* remove all value columns */
+    beginRemoveColumns(QModelIndex(), FirstValueColumn,
+        FirstValueColumn + m_value.size() - 1);
+    m_value.clear();
+    endRemoveColumns();
+    /* add them back */
+    beginInsertColumns(QModelIndex(), FirstValueColumn,
+        FirstValueColumn + values.size() - 1);
+    m_value = values;
+    RecomputeTheme();
+    endInsertColumns();
+}
+
+QVariant RegFieldTableModel::GetValue(int index)
+{
+    return m_value[index];
+}
+
+void RegFieldTableModel::SetTheme(const RegTheme& theme)
+{
+    m_theme = theme;
+    RecomputeTheme();
+    emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1));
+}
+
+void RegFieldTableModel::RecomputeTheme()
+{
+    m_status.resize(m_reg.field.size());
+    for(size_t i = 0; i < m_reg.field.size(); i++)
+    {
+        m_status[i] = None;
+        if(!m_theme.valid || m_value.size() == 0)
+            continue;
+        m_status[i] = Normal;
+        const soc_reg_field_t& field = m_reg.field[i];
+        QVariant val;
+        for(int j = 0; j < m_value.size(); j++)
+        {
+            QVariant val2 = m_value[j];
+            if(!val2.isValid())
+                continue;
+            val2 = QVariant(field.extract(val2.value< soc_word_t >()));
+            if(!val.isValid())
+                val = val2;
+            else if(val != val2)
+                m_status[i] = Diff;
+        }
+    }
 }
 
 /**
@@ -528,34 +806,25 @@ void RegSexyDisplay::paintEvent(QPaintEvent *event)
 }
 
 /**
- * GrowingTextEdit
+ * GrowingTableView
  */
-GrowingTextEdit::GrowingTextEdit(QWidget *parent)
-    :QTextEdit(parent)
+GrowingTableView::GrowingTableView(QWidget *parent)
+    :QTableView(parent)
 {
-    connect(this, SIGNAL(textChanged()), this, SLOT(TextChanged()));
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
-void GrowingTextEdit::TextChanged()
+void GrowingTableView::setModel(QAbstractItemModel *m)
 {
-    int content_size = document()->documentLayout()->documentSize().height();
-    content_size = qMax(content_size, fontMetrics().height());
-    setFixedHeight(content_size + contentsMargins().top() + contentsMargins().bottom());
-}
-
-/**
- * GrowingTableWidget
- */
-GrowingTableWidget::GrowingTableWidget(QWidget *parent)
-    :QTableWidget(parent)
-{
+    if(model())
+        disconnect(model(), SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
+        this, SLOT(DataChanged(const QModelIndex&, const QModelIndex&)));
+    QTableView::setModel(m);
     connect(model(), SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)),
         this, SLOT(DataChanged(const QModelIndex&, const QModelIndex&)));
+    DataChanged(QModelIndex(), QModelIndex());
 }
 
-void GrowingTableWidget::DataChanged(const QModelIndex& tl, const QModelIndex& br)
+void GrowingTableView::DataChanged(const QModelIndex& tl, const QModelIndex& br)
 {
     Q_UNUSED(tl);
     Q_UNUSED(br);
@@ -563,7 +832,7 @@ void GrowingTableWidget::DataChanged(const QModelIndex& tl, const QModelIndex& b
     resizeColumnsToContents();
     int h = contentsMargins().top() + contentsMargins().bottom();
     h += horizontalHeader()->height();
-    for(int i = 0; i < rowCount(); i++)
+    for(int i = 0; i < model()->rowCount(); i++)
         h += rowHeight(i);
     setMinimumHeight(h);
 }
@@ -706,116 +975,25 @@ bool MyTextEditor::IsModified()
 }
 
 /**
- * MySwitchableTextEditor
- */
-MySwitchableTextEditor::MySwitchableTextEditor(QWidget *parent)
-    :QWidget(parent)
-{
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    m_edit = new MyTextEditor(this);
-    m_label = new QLabel(this);
-    m_label->setTextFormat(Qt::RichText);
-    m_label->setAlignment(Qt::AlignTop);
-    m_line = new QLineEdit(this);
-
-    layout->addWidget(m_label);
-    layout->addWidget(m_edit);
-    layout->addWidget(m_line);
-
-    setLayout(layout);
-
-    m_editor_mode = false;
-    m_line_mode = false;
-    UpdateVisibility();
-}
-
-void MySwitchableTextEditor::SetEditorMode(bool edit)
-{
-    if(edit == m_editor_mode)
-        return;
-    QString text = GetTextHtml();
-    m_editor_mode = edit;
-    UpdateVisibility();
-    SetTextHtml(text);
-}
-
-QString MySwitchableTextEditor::GetTextHtml()
-{
-    if(m_editor_mode)
-        return m_line_mode ? m_line->text() : m_edit->GetTextHtml();
-    else
-        return m_label->text();
-}
-
-void MySwitchableTextEditor::SetTextHtml(const QString& text)
-{
-    if(m_editor_mode)
-    {
-        if(m_line_mode)
-            m_line->setText(text);
-        else
-            m_edit->SetTextHtml(text);
-    }
-    else
-        m_label->setText(text);
-}
-
-MyTextEditor *MySwitchableTextEditor::GetEditor()
-{
-    return m_edit;
-}
-
-void MySwitchableTextEditor::SetLineMode(bool en)
-{
-    if(m_line_mode == en)
-        return;
-    QString text = GetTextHtml();
-    m_line_mode = en;
-    SetTextHtml(text);
-    UpdateVisibility();
-}
-
-QLineEdit *MySwitchableTextEditor::GetLineEdit()
-{
-    return m_line;
-}
-
-void MySwitchableTextEditor::UpdateVisibility()
-{
-    m_label->setVisible(!m_editor_mode);
-    m_edit->setVisible(m_editor_mode && !m_line_mode);
-    m_line->setVisible(m_editor_mode && m_line_mode);
-}
-
-QLabel *MySwitchableTextEditor::GetLabel()
-{
-    return m_label;
-}
-
-bool MySwitchableTextEditor::IsModified()
-{
-    if(!m_editor_mode)
-        return false;
-    return m_line_mode ? m_line->isModified() : m_edit->IsModified();
-}
-
-/**
  * BackendSelector
  */
 BackendSelector::BackendSelector(Backend *backend, QWidget *parent)
     :QWidget(parent), m_backend(backend)
 {
-    m_data_selector = new QComboBox;
+    m_data_selector = new QComboBox(this);
     m_data_selector->addItem(QIcon::fromTheme("text-x-generic"), "Nothing...", QVariant(DataSelNothing));
     m_data_selector->addItem(QIcon::fromTheme("document-open"), "File...", QVariant(DataSelFile));
 #ifdef HAVE_HWSTUB
     m_data_selector->addItem(QIcon::fromTheme("multimedia-player"), "Device...", QVariant(DataSelDevice));
 #endif
-    m_data_sel_edit = new QLineEdit;
+    m_data_sel_edit = new QLineEdit(this);
     m_data_sel_edit->setReadOnly(true);
+    m_nothing_text = new QLabel(this);
+    m_nothing_text->setTextFormat(Qt::RichText);
     QHBoxLayout *data_sel_layout = new QHBoxLayout(this);
     data_sel_layout->addWidget(m_data_selector);
     data_sel_layout->addWidget(m_data_sel_edit, 1);
+    data_sel_layout->addWidget(m_nothing_text, 1);
     data_sel_layout->addStretch(0);
 #ifdef HAVE_HWSTUB
     m_dev_selector = new QComboBox;
@@ -843,6 +1021,11 @@ BackendSelector::~BackendSelector()
     delete m_io_backend;
 }
 
+void BackendSelector::SetNothingMessage(const QString& msg)
+{
+    m_nothing_text->setText(msg);
+}
+
 void BackendSelector::OnDataSelChanged(int index)
 {
     if(index == -1)
@@ -850,25 +1033,27 @@ void BackendSelector::OnDataSelChanged(int index)
     QVariant var = m_data_selector->itemData(index);
     if(var == DataSelFile)
     {
+        m_nothing_text->hide();
         m_data_sel_edit->show();
 #ifdef HAVE_HWSTUB
         m_dev_selector->hide();
 #endif
         QFileDialog *fd = new QFileDialog(m_data_selector);
         fd->setFilter("Textual files (*.txt);;All files (*)");
-        fd->setDirectory(Settings::Get()->value("loaddatadir", QDir::currentPath()).toString());
+        fd->setDirectory(Settings::Get()->value("regtab/loaddatadir", QDir::currentPath()).toString());
         if(fd->exec())
         {
             QStringList filenames = fd->selectedFiles();
             ChangeBackend(m_backend->CreateFileIoBackend(filenames[0]));
             m_data_sel_edit->setText(filenames[0]);
         }
-        Settings::Get()->setValue("loaddatadir", fd->directory().absolutePath());
+        Settings::Get()->setValue("regtab/loaddatadir", fd->directory().absolutePath());
     }
 #ifdef HAVE_HWSTUB
     else if(var == DataSelDevice)
     {
-        m_data_sel_edit->hide();;
+        m_nothing_text->hide();
+        m_data_sel_edit->hide();
         m_dev_selector->show();
         OnDevListChanged();
     }
@@ -876,6 +1061,7 @@ void BackendSelector::OnDataSelChanged(int index)
     else
     {
         m_data_sel_edit->hide();
+        m_nothing_text->show();
 #ifdef HAVE_HWSTUB
         m_dev_selector->hide();
 #endif
@@ -943,4 +1129,93 @@ void BackendSelector::ChangeBackend(IoBackend *new_backend)
     emit OnSelect(new_backend);
     delete m_io_backend;
     m_io_backend = new_backend;
+}
+
+/**
+ * MessageWidget
+ */
+MessageWidget::MessageWidget(QWidget *parent)
+    :QFrame(parent)
+{
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+    m_icon = new QLabel(this);
+    m_icon->hide();
+    m_text = new QLabel(this);
+    m_text->setTextFormat(Qt::RichText);
+    m_close = new QToolButton(this);
+    m_close->setText("close");
+    m_close->setIcon(style()->standardIcon(QStyle::SP_DialogCloseButton));
+    m_close->setAutoRaise(true);
+
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->addWidget(m_icon, 0);
+    layout->addWidget(m_text, 1);
+    layout->addWidget(m_close, 0);
+
+    m_id = 0;
+
+    connect(m_close, SIGNAL(clicked(bool)), this, SLOT(OnClose(bool)));
+
+    hide();
+}
+
+MessageWidget::~MessageWidget()
+{
+}
+
+void MessageWidget::UpdateType()
+{
+    /* style stolen from KMessageWidget */
+    QColor bg, border;
+    switch(m_type)
+    {
+        case Positive:
+            bg.setRgb(140, 228, 124);
+            border.setRgb(56, 175, 58);
+            break;
+        case Information:
+            bg.setRgb(161, 178, 202);
+            border.setRgb(59, 79, 175);
+            break;
+        case Warning:
+            bg.setRgb(228, 227, 127);
+            border.setRgb(175, 169, 61);
+            break;
+        case Error:
+            bg.setRgb(233, 199, 196);
+            border.setRgb(175, 74, 60);
+            break;
+        default:
+            break;
+    }
+    setStyleSheet(QString(
+        "QFrame { background-color: %1;"
+            "border-radius: 5px;"
+            "border: 1px solid %2;"
+        "}"
+        "QLabel { border: none; }")
+        .arg(bg.name())
+        .arg(border.name()));
+}
+
+int MessageWidget::SetMessage(MessageType type, const QString& msg)
+{
+    m_type = type;
+    m_text->setText(msg);
+    UpdateType();
+    show();
+    return ++m_id;
+}
+
+void MessageWidget::HideMessage(int id)
+{
+    if(m_id == id)
+        OnClose(true);
+}
+
+void MessageWidget::OnClose(bool clicked)
+{
+    Q_UNUSED(clicked);
+    hide();
 }

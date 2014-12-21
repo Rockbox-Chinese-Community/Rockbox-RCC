@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #include <QWidget>
 #include <QApplication>
 #include <QDesktopWidget>
@@ -23,8 +43,15 @@ void DocumentTab::OnModified(bool modified)
         m_tab->SetTabModified(this, modified);
 }
 
+void DocumentTab::SetTabWidget(MyTabWidget *tab)
+{
+    m_tab = tab;
+    SetTabName(m_tabname);
+}
+
 void DocumentTab::SetTabName(const QString& name)
 {
+    m_tabname = name;
     if(m_tab)
         m_tab->SetTabName(this, name);
 }
@@ -181,20 +208,20 @@ void MainWindow::OnLoadDesc()
     }
 }
 
-void MainWindow::AddTab(DocumentTab *doc, const QString& title)
+void MainWindow::AddTab(DocumentTab *doc)
 {
-    m_tab->setCurrentIndex(m_tab->addTab(doc->GetWidget(), title));
+    m_tab->setCurrentIndex(m_tab->addTab(doc->GetWidget(), ""));
     doc->SetTabWidget(m_tab);
 }
 
 void MainWindow::OnNewRegTab()
 {
-    AddTab(new RegTab(m_backend, this), "Register Tab");
+    AddTab(new RegTab(m_backend, this));
 }
 
 void MainWindow::OnNewRegEdit()
 {
-    AddTab(new RegEdit(m_backend, this), "Register Editor");
+    AddTab(new RegEdit(m_backend, this));
 }
 
 bool MainWindow::Quit()
