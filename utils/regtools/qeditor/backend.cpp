@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -87,35 +107,61 @@ IoBackend *Backend::CreateHWStubIoBackend(HWStubDevice *dev)
 #endif
 
 /**
+ * RamIoBackend
+ */
+RamIoBackend::RamIoBackend(const QString& soc_name)
+{
+    m_soc = soc_name;
+}
+
+bool RamIoBackend::ReadRegister(const QString& name, soc_word_t& value)
+{
+    QMap<QString, soc_word_t>::const_iterator it = m_map.find(name);
+    if(it == m_map.end())
+        return false;
+    value = it.value();
+    return true;
+}
+
+void RamIoBackend::DeleteAll()
+{
+    m_map.clear();
+}
+
+bool RamIoBackend::WriteRegister(const QString& name, soc_word_t value, WriteMode mode)
+{
+    switch(mode)
+    {
+        case Write: m_map[name] = value; return true;
+        case Set: m_map[name] |= value; return true;
+        case Clear: m_map[name] &= ~value; return true;
+        case Toggle: m_map[name] ^= value; return true;
+        default: return false;
+    }
+}
+
+
+
+/**
  * FileIoBackend
  */
 
 FileIoBackend::FileIoBackend(const QString& filename, const QString& soc_name)
+    :RamIoBackend(soc_name)
 {
     m_filename = filename;
-    m_soc = soc_name;
+    m_valid = false;
     Reload();
 }
 
-QString FileIoBackend::GetSocName()
-{
-    return m_soc;
-}
-
-bool FileIoBackend::ReadRegister(const QString& name, soc_word_t& value)
-{
-    if(m_map.find(name) == m_map.end())
-        return false;
-    value = m_map[name];
-    return true;
-}
 
 bool FileIoBackend::Reload()
 {
+    m_valid = false;
     QFile file(m_filename);
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
-    m_map.clear();
+    DeleteAll();
 
     QTextStream in(&file);
     while(!in.atEnd())
@@ -130,25 +176,19 @@ bool FileIoBackend::Reload()
         if(key == "HW")
             m_soc = line.mid(idx + 1).trimmed();
         else if(ok)
-            m_map[key] = val;
+            RamIoBackend::WriteRegister(key, val, Write);
     }
 
     m_readonly = !QFileInfo(file).isWritable();
     m_dirty = false;
+    m_valid = true;
     return true;
 }
 
 bool FileIoBackend::WriteRegister(const QString& name, soc_word_t value, WriteMode mode)
 {
     m_dirty = true;
-    switch(mode)
-    {
-        case Write: m_map[name] = value; return true;
-        case Set: m_map[name] |= value; return true;
-        case Clear: m_map[name] &= ~value; return true;
-        case Toggle: m_map[name] ^= value; return true;
-        default: return false;
-    }
+    return RamIoBackend::WriteRegister(name, value, mode);
 }
 
 bool FileIoBackend::Commit()
@@ -548,10 +588,17 @@ bool BackendHelper::ReadRegisterField(const QString& dev, const QString& reg,
     return true;
 }
 
-bool BackendHelper::DumpAllRegisters(const QString& filename)
+bool BackendHelper::DumpAllRegisters(const QString& filename, bool ignore_errors)
 {
     FileIoBackend b(filename, QString::fromStdString(m_soc.GetSoc().name));
-    BackendHelper bh(&b, m_soc);
+    bool ret = DumpAllRegisters(&b, ignore_errors);
+    return ret && b.Commit();
+}
+
+bool BackendHelper::DumpAllRegisters(IoBackend *backend, bool ignore_errors)
+{
+    BackendHelper bh(backend, m_soc);
+    bool ret = true;
     for(size_t i = 0; i < m_soc.GetSoc().dev.size(); i++)
     {
         const soc_dev_t& dev = m_soc.GetSoc().dev[i];
@@ -566,12 +613,20 @@ bool BackendHelper::DumpAllRegisters(const QString& filename)
                     QString regname = QString::fromStdString(reg.addr[l].name);
                     soc_word_t val;
                     if(!ReadRegister(devname, regname, val))
-                        return false;
-                    if(!bh.WriteRegister(devname, regname, val))
-                        return false;
+                    {
+                        ret = false;
+                        if(!ignore_errors)
+                            return false;
+                    }
+                    else if(!bh.WriteRegister(devname, regname, val))
+                    {
+                        ret = false;
+                        if(!ignore_errors)
+                            return false;
+                    }
                 }
             }
         }
     }
-    return b.Commit();
+    return ret;
 }

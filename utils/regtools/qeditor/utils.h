@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #ifndef AUX_H
 #define AUX_H
 
@@ -109,7 +129,7 @@ public:
 
     uint field() const;
     void setField(uint field);
-    void SetRegField(const soc_reg_field_t& field) { m_reg_field = field; }
+    void SetRegField(const soc_reg_field_t& field);
 
 protected:
     SocFieldValidator *m_validator;
@@ -134,14 +154,16 @@ class SocFieldCachedValue
 {
 public:
     SocFieldCachedValue():m_value(0) {}
-    SocFieldCachedValue(const soc_reg_field_t& field, uint value)
-        :m_field(field), m_value(value) {}
+    SocFieldCachedValue(const soc_reg_field_t& field, uint value);
     virtual ~SocFieldCachedValue() {}
     const soc_reg_field_t& field() const { return m_field; }
     uint value() const { return m_value; }
+    /* return empty string if there no match */
+    QString value_name() const { return m_name; }
 protected:
     soc_reg_field_t m_field;
     uint m_value;
+    QString m_name;
 };
 
 Q_DECLARE_METATYPE(SocFieldCachedValue)
@@ -149,9 +171,20 @@ Q_DECLARE_METATYPE(SocFieldCachedValue)
 class SocFieldCachedItemDelegate : public QStyledItemDelegate
 {
 public:
-    SocFieldCachedItemDelegate(QObject *parent = 0):QStyledItemDelegate(parent) {}
+    enum DisplayMode
+    {
+        DisplayValueAndName, /* "value (name)" or "value" if no name */
+        DisplayName, /* "name" or "value" if no name */
+        DisplayValue, /* "value" */
+    };
 
+    SocFieldCachedItemDelegate(QObject *parent = 0):QStyledItemDelegate(parent) {}
     virtual QString displayText(const QVariant& value, const QLocale& locale) const;
+    void SetMode(DisplayMode mode) { m_mode = mode; }
+    DisplayMode GetMode() const { return m_mode; }
+
+protected:
+    DisplayMode m_mode;
 };
 
 class SocFieldCachedEditor : public SocFieldEditor
@@ -179,6 +212,72 @@ public:
 protected:
 };
 
+struct RegThemeGroup
+{
+    QBrush foreground;
+    QBrush background;
+    QFont font;
+};
+
+struct RegTheme
+{
+    RegTheme():valid(false) {}
+    bool valid;
+    RegThemeGroup normal;
+    RegThemeGroup diff;
+    RegThemeGroup error;
+};
+
+class RegFieldTableModel : public QAbstractTableModel
+{
+    Q_OBJECT
+public:
+    RegFieldTableModel(QObject *parent);
+    virtual int rowCount(const QModelIndex & parent = QModelIndex()) const;
+    virtual int columnCount(const QModelIndex & parent = QModelIndex()) const;
+    virtual QVariant data(const QModelIndex & index, int role) const;
+    virtual QVariant headerData(int section, Qt::Orientation orientation, int role) const;
+    virtual Qt::ItemFlags flags (const QModelIndex & index) const;
+    virtual bool setData(const QModelIndex& index, const QVariant& value, int role);
+
+    void SetRegister(const soc_reg_t& reg);
+    /* values can either be an invalid QVariant() (means no value/error), or a
+     * QVariant containing a soc_word_t */
+    void SetValues(const QVector< QVariant >& values);
+    QVariant GetValue(int index);
+    void SetTheme(const RegTheme& theme);
+    void SetReadOnly(bool en);
+
+signals:
+    void OnValueModified(int index);
+
+protected:
+    void RecomputeTheme();
+
+    enum
+    {
+        BitRangeColumn = 0,
+        NameColumn,
+        FirstValueColumn,
+        DescColumnOffset = FirstValueColumn, /* offset from nr_values */
+        ColumnCountOffset, /* offset from nr_values */
+    };
+
+    enum ColorStatus
+    {
+        None,
+        Normal,
+        Diff,
+        Error
+    };
+
+    soc_reg_t m_reg;
+    QVector< QVariant > m_value;
+    QVector< ColorStatus > m_status;
+    RegTheme m_theme;
+    bool m_read_only;
+};
+
 class RegSexyDisplay : public QWidget
 {
     Q_OBJECT
@@ -203,21 +302,12 @@ private:
     mutable QSize m_size;
 };
 
-class GrowingTextEdit : public QTextEdit
+class GrowingTableView : public QTableView
 {
     Q_OBJECT
 public:
-    GrowingTextEdit(QWidget *parent = 0);
-
-protected slots:
-    void TextChanged();
-};
-
-class GrowingTableWidget : public QTableWidget
-{
-    Q_OBJECT
-public:
-    GrowingTableWidget(QWidget *parent = 0);
+    GrowingTableView(QWidget *parent = 0);
+    virtual void setModel(QAbstractItemModel *model);
 
 protected slots:
     void DataChanged(const QModelIndex& tl, const QModelIndex& br);
@@ -253,30 +343,6 @@ protected:
     QToolButton *m_underline_button;
 };
 
-class MySwitchableTextEditor : public QWidget
-{
-    Q_OBJECT
-public:
-    MySwitchableTextEditor(QWidget *parent = 0);
-    QString GetTextHtml();
-    void SetTextHtml(const QString& text);
-    void SetEditorMode(bool en);
-    MyTextEditor *GetEditor();
-    QLineEdit *GetLineEdit();
-    QLabel *GetLabel();
-    void SetLineMode(bool en);
-    bool IsModified();
-
-protected:
-    void UpdateVisibility();
-
-    bool m_editor_mode;
-    bool m_line_mode;
-    QLabel *m_label;
-    MyTextEditor *m_edit;
-    QLineEdit *m_line;
-};
-
 class BackendSelector : public QWidget
 {
     Q_OBJECT
@@ -284,11 +350,14 @@ public:
     BackendSelector(Backend *backend, QWidget *parent = 0);
     virtual ~BackendSelector();
     IoBackend *GetBackend();
+    void SetNothingMessage(const QString& msg);
 
 signals:
     void OnSelect(IoBackend *backend);
 
 protected:
+    void ChangeBackend(IoBackend *new_backend);
+
     enum
     {
         DataSelNothing,
@@ -306,7 +375,7 @@ protected:
     QComboBox *m_dev_selector;
     HWStubBackendHelper m_hwstub_helper;
 #endif
-    void ChangeBackend(IoBackend *new_backend);
+    QLabel *m_nothing_text;
 
 private slots:
 #ifdef HAVE_HWSTUB
@@ -316,6 +385,38 @@ private slots:
     void ClearDevList();
 #endif
     void OnDataSelChanged(int index);
+};
+
+class MessageWidget : public QFrame
+{
+    Q_OBJECT
+public:
+    enum MessageType
+    {
+        Positive,
+        Information,
+        Warning,
+        Error
+    };
+
+    MessageWidget(QWidget *parent = 0);
+    virtual ~MessageWidget();
+    /* returns message ID */
+    int SetMessage(MessageType type, const QString& msg);
+    /* clear message if ID match, nop otherwise */
+    void HideMessage(int id);
+
+protected:
+    void UpdateType();
+
+    QLabel *m_icon;
+    QLabel *m_text;
+    QToolButton *m_close;
+    MessageType m_type;
+    int m_id;
+
+private slots:
+    void OnClose(bool clicked);
 };
 
 #endif /* AUX_H */

@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -15,12 +35,13 @@ public:
     DocumentTab() { m_tab = 0; }
     virtual bool Quit() = 0;
     virtual QWidget *GetWidget() = 0;
-    void SetTabWidget(MyTabWidget *tab) { m_tab = tab; }
+    void SetTabWidget(MyTabWidget *tab);
 
 protected:
     void OnModified(bool modified);
     void SetTabName(const QString& name);
     MyTabWidget *m_tab;
+    QString m_tabname;
 };
 
 class MyTabWidget : public QTabWidget
@@ -50,7 +71,7 @@ private:
     void closeEvent(QCloseEvent *event);
 
 protected:
-    void AddTab(DocumentTab *tab, const QString& title);
+    void AddTab(DocumentTab *tab);
     bool Quit();
 
 private slots:

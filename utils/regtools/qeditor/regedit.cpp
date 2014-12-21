@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #include "regedit.h"
 #include <QFileDialog>
 #include <QDebug>
@@ -941,6 +961,7 @@ RegEdit::RegEdit(Backend *backend, QWidget *parent)
     SetModified(false, false);
     m_right_panel = 0;
     SetPanel(new EmptyEditPanel(this));
+    UpdateTabName();
 
     connect(m_file_open, SIGNAL(clicked()), this, SLOT(OnOpen()));
     connect(m_file_save, SIGNAL(clicked()), this, SLOT(OnSave()));
@@ -1001,12 +1022,12 @@ bool RegEdit::GetFilename(QString& filename, bool save)
     if(save)
         fd->setAcceptMode(QFileDialog::AcceptSave);
     fd->setFilter("Description files (*.xml);;All files (*)");
-    fd->setDirectory(Settings::Get()->value("loaddescdir", QDir::currentPath()).toString());
+    fd->setDirectory(Settings::Get()->value("regedit/loaddescdir", QDir::currentPath()).toString());
     if(fd->exec())
     {
         QStringList filenames = fd->selectedFiles();
         filename = filenames[0];
-        Settings::Get()->setValue("loaddescdir", fd->directory().absolutePath());
+        Settings::Get()->setValue("regedit/loaddescdir", fd->directory().absolutePath());
         return true;
     }
     else
@@ -1060,7 +1081,10 @@ bool RegEdit::SaveSocFile(const QString& filename)
 void RegEdit::UpdateTabName()
 {
     QFileInfo info(m_cur_socfile.GetFilename());
-    SetTabName(info.fileName());
+    if(info.exists())
+        SetTabName(info.fileName());
+    else
+        SetTabName("Register Editor");
 }
 
 void RegEdit::LoadSocFile(const QString& filename)

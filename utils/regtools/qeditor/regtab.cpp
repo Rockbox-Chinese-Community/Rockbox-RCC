@@ -1,3 +1,23 @@
+/***************************************************************************
+ *             __________               __   ___.
+ *   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+ *   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+ *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+ *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+ *                     \/            \/     \/    \/            \/
+ * $Id$
+ *
+ * Copyright (C) 2014 by Amaury Pouly
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ ****************************************************************************/
 #include "regtab.h"
 
 #include <QSizePolicy>
@@ -114,6 +134,7 @@ RegTab::RegTab(Backend *backend, QWidget *parent)
     QGroupBox *data_sel_group = new QGroupBox("Data selection");
     QHBoxLayout *data_sel_layout = new QHBoxLayout;
     m_backend_selector = new BackendSelector(m_backend, this);
+    m_backend_selector->SetNothingMessage("<i>Select a data source to analyse its content.</i>");
     m_readonly_check = new QCheckBox("Read-only");
     m_readonly_check->setCheckState(Qt::Checked);
     m_data_soc_label = new QLabel;
@@ -129,8 +150,10 @@ RegTab::RegTab(Backend *backend, QWidget *parent)
     data_sel_layout->addWidget(m_data_sel_reload);
     data_sel_group->setLayout(data_sel_layout);
     m_data_soc_label->setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
+    m_msg = new MessageWidget(this);
 
     m_right_panel->addWidget(data_sel_group, 0);
+    m_right_panel->addWidget(m_msg, 0);
     m_right_content = 0;
     SetPanel(new EmptyRegTabPanel);
     QWidget *w = new QWidget;
@@ -156,8 +179,13 @@ RegTab::RegTab(Backend *backend, QWidget *parent)
     connect(m_data_sel_reload, SIGNAL(clicked(bool)), this, SLOT(OnBackendReload(bool)));
     connect(m_type_selector, SIGNAL(currentChanged(int)), this, SLOT(OnTypeChanged(int)));
 
+    m_msg_select_id = SetMessage(MessageWidget::Information,
+        "You can browse the registers. Select a data source to analyse the values.");
+    m_msg_error_id = 0;
+
     OnSocListChanged();
     SetDataSocName("");
+    UpdateTabName();
 }
 
 QWidget *RegTab::GetWidget()
@@ -195,6 +223,12 @@ void RegTab::OnDataSocActivated(const QString& str)
     int index = m_soc_selector->findText(str);
     if(index != -1)
         m_soc_selector->setCurrentIndex(index);
+    else if(str.size() > 0)
+    {
+        m_msg_error_id = SetMessage(MessageWidget::Error,
+            "Description file for this SoC is not available.");
+        SetPanel(new EmptyRegTabPanel);
+    }
 }
 
 void RegTab::UpdateTabName()
@@ -225,6 +259,9 @@ void RegTab::UpdateTabName()
 
 void RegTab::OnBackendSelect(IoBackend *backend)
 {
+    /* Hide "Please select two SoC" and errors message */
+    HideMessage(m_msg_select_id);
+    HideMessage(m_msg_error_id);
     m_io_backend = backend;
     SetReadOnlyIndicator();
     SetDataSocName(m_io_backend->GetSocName());
@@ -287,6 +324,16 @@ void RegTab::DisplayDevice(const SocDevRef& ref)
 void RegTab::DisplaySoc(const SocRef& ref)
 {
     SetPanel(new SocDisplayPanel(this, ref));
+}
+
+int RegTab::SetMessage(MessageWidget::MessageType type, const QString& msg)
+{
+    return m_msg->SetMessage(type, msg);
+}
+
+void RegTab::HideMessage(int id)
+{
+    m_msg->HideMessage(id);
 }
 
 void RegTab::SetPanel(RegTabPanel *panel)
@@ -380,11 +427,11 @@ void RegTab::OnDumpRegs(bool c)
     QFileDialog *fd = new QFileDialog(this);
     fd->setAcceptMode(QFileDialog::AcceptSave);
     fd->setFilter("Textual files (*.txt);;All files (*)");
-    fd->setDirectory(Settings::Get()->value("loaddatadir", QDir::currentPath()).toString());
+    fd->setDirectory(Settings::Get()->value("regtab/loaddatadir", QDir::currentPath()).toString());
     if(!fd->exec())
         return;
     QStringList filenames = fd->selectedFiles();
-    Settings::Get()->setValue("loaddatadir", fd->directory().absolutePath());
+    Settings::Get()->setValue("regtab/loaddatadir", fd->directory().absolutePath());
     BackendHelper bh(m_io_backend, m_cur_soc);
     if(!bh.DumpAllRegisters(filenames[0]))
     {
