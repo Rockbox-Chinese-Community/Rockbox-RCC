@@ -205,8 +205,6 @@ static int timestretch_callback(int action,const struct menu_item_ex *this_item)
                      &global_settings.surround_mix, lowlatency_callback);
     MAKE_MENU(surround_menu,ID2P(LANG_SURROUND), NULL, Icon_NOICON,
               &surround_enabled,&surround_balance,&surround_fx1,&surround_fx2,&surround_method2,&surround_mix);
-    MENUITEM_SETTING(aatube_enabled,
-                     &global_settings.aatube_enabled, lowlatency_callback);
 
     /* compressor submenu */
     MENUITEM_SETTING(compressor_switch,
@@ -285,7 +283,7 @@ MAKE_MENU(sound_settings, ID2P(LANG_SOUND_SETTINGS), NULL, Icon_Audio
           ,&roll_off
 #endif
 #if CONFIG_CODEC == SWCODEC
-          ,&crossfeed_menu, &space80_menu, &equalizer_menu, &dithering_enabled, &aatube_enabled
+          ,&crossfeed_menu, &space80_menu, &equalizer_menu, &dithering_enabled
           ,&surround_menu, &pbe_menu, &afr_enabled
 #ifdef HAVE_PITCHCONTROL
           ,&timestretch_enabled
