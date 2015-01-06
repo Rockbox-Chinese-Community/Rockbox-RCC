@@ -6,7 +6,7 @@ use Cwd;
 
 require "tools/builds.pm";
 
-my $verbose, $strip, $update, $doonly, $version;
+my ($verbose, $strip, $update, $doonly, $version);
 my @doonly;
 
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
@@ -221,8 +221,6 @@ for my $b (sort byname keys %builds) {
 }
 
 #The following ports are in the unusable category, but the simulator does build
-runone("gogearhdd1630");
-runone("gogearsa9200");
 runone("mini2440");
 runone("ondavx747");
 runone("ondavx747p");
@@ -235,7 +233,6 @@ runone("creativezenxfi2");
 runone("creativezenxfi3");
 runone("sonynwze360");
 runone("sonynwze370");
-runone("samsungypr0");
 runone("creativezenxfi");
 runone("creativezen");
 runone("creativezenmozaic");
