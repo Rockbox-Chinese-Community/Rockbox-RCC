@@ -186,10 +186,9 @@
 
 /* enable these for the experimental usb stack */
 #define HAVE_USBSTACK
-#define USE_ROCKBOX_USB
 #define USB_VENDOR_ID 0x0781
 #define USB_PRODUCT_ID 0x74d1
-
+#define HAVE_BOOTLOADER_USB_MODE
 
 /* Virtual LED (icon) */
 #define CONFIG_LED LED_VIRTUAL
