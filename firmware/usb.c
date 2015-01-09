@@ -48,10 +48,8 @@
      (defined(HAVE_USBSTACK) && defined(HAVE_BOOTLOADER_USB_MODE)) || \
      (defined(HAVE_USBSTACK) && (defined(CREATIVE_ZVx))) || \
      (defined(HAVE_USBSTACK) && (defined(OLYMPUS_MROBE_500))) || \
-     (defined(HAVE_USBSTACK) && CONFIG_USBOTG == USBOTG_S3C6400X) || \
      defined(CPU_TCC77X) || defined(CPU_TCC780X) || \
-     (CONFIG_USBOTG == USBOTG_JZ4740) || \
-     (defined(HAVE_USBSTACK) && CONFIG_USBOTG == USBOTG_AS3525)
+     (CONFIG_USBOTG == USBOTG_JZ4740)
 #define USB_FULL_INIT
 #endif
 
@@ -87,6 +85,8 @@ static long usb_last_broadcast_tick = 0;
 #ifdef HAVE_USB_POWER
 static bool usb_charging_only = false;
 #endif
+
+static int usb_release_exclusive_storage(void);
 
 #if defined(USB_FIREWIRE_HANDLING)
 static void try_reboot(void)
@@ -769,7 +769,7 @@ int usb_release_exclusive_storage(void)
 }
 
 #ifdef HAVE_USB_POWER
-bool usb_powered(void)
+bool usb_powered_only(void)
 {
     return usb_state == USB_POWERED;
 }
