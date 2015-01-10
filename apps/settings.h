@@ -858,6 +858,7 @@ struct user_settings
 
     int pbe;
     int pbe_precut;
+
     int afr_enabled;
 };
 
