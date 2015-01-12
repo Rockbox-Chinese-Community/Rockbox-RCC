@@ -31,7 +31,7 @@ static bool _backlight_on = true;
 static int _brightness = DEFAULT_BRIGHTNESS_SETTING;
 
 /* Returns the current state of the backlight (true=ON, false=OFF). */
-bool _backlight_init(void)
+bool backlight_hw_init(void)
 {
 #ifdef BOOTLOADER
     and_l(~(1<<28),&GPIO_OUT);
@@ -41,26 +41,26 @@ bool _backlight_init(void)
     return true;
 }
 
-void _backlight_hw_on(void)
+void backlight_hw_on(void)
 {
 #ifndef BOOTLOADER
     if (_backlight_on)
         return;
 #endif
    
-    _backlight_set_brightness(_brightness);
+    backlight_hw_brightness(_brightness);
     _backlight_on = true;
 
 }
 
-void _backlight_hw_off(void)
+void backlight_hw_off(void)
 {
     /* GPIO28 low */
     and_l(~(1<<28),&GPIO_OUT);
     _backlight_on = false;
 }
 
-void _backlight_set_brightness(int val)
+void backlight_hw_brightness(int val)
 {
     unsigned char i;
 
@@ -83,12 +83,12 @@ void _backlight_set_brightness(int val)
     _brightness = val;
 }
 
-void _remote_backlight_on(void)
+void remote_backlight_hw_on(void)
 {
     /* I don't have remote to play with */
 }
 
-void _remote_backlight_off(void)
+void remote_backlight_hw_off(void)
 {
     /* I don't have remote to play with */
 }

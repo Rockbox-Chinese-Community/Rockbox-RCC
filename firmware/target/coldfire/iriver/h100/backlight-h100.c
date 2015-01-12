@@ -27,7 +27,7 @@
 #include "lcd.h"
 
 /* Returns the current state of the backlight (true=ON, false=OFF). */
-bool _backlight_init(void)
+bool backlight_hw_init(void)
 {
     or_l(0x00020000, &GPIO1_ENABLE);
     or_l(0x00020000, &GPIO1_FUNCTION);
@@ -35,22 +35,22 @@ bool _backlight_init(void)
     return (GPIO1_OUT & 0x00020000) ? false : true;
 }
 
-void _backlight_hw_on(void)
+void backlight_hw_on(void)
 {
     and_l(~0x00020000, &GPIO1_OUT);
 }
 
-void _backlight_hw_off(void)
+void backlight_hw_off(void)
 {
     or_l(0x00020000, &GPIO1_OUT);
 }
 
-void _remote_backlight_on(void)
+void remote_backlight_hw_on(void)
 {
     and_l(~0x00000800, &GPIO_OUT);
 }
 
-void _remote_backlight_off(void)
+void remote_backlight_hw_off(void)
 {
     or_l(0x00000800, &GPIO_OUT);
 }
