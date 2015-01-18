@@ -24,6 +24,7 @@ static unsigned char audiobuffer[(9*1024-768)*1024+(MEMORYSIZE-8)*1024*1024];
 #else
 static unsigned char audiobuffer[(MEMORYSIZE*1024-768)*1024];
 #endif
+unsigned char *audiobufend = audiobuffer + sizeof(audiobuffer);
 extern unsigned char *audiobufend;
 #endif
 
