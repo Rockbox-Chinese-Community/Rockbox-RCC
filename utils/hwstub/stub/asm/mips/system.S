@@ -5,9 +5,8 @@
  *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
  *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
  *                     \/            \/     \/    \/            \/
- * $Id$
  *
- * Copyright (C) 2008 by Maurus Cuelenaere
+ * Copyright (C) 2015 by Marcin Bukat
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,22 +17,35 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
- 
- #include "i2c-dm320.h"
- 
- #define I2C_ADDRESS 0x51
- 
- unsigned char* rtc_send_command(short unk1, short unk2)
- {
-    static unsigned char ret[12];
-    i2c_write(I2C_ADDRESS, (unk2 & 0xFF) | (unk << 8), 1);
-    i2c_read(I2C_ADDRESS, ret, 12);
-    return ret;
- }
+#include "mips.h"
 
- unsigned char* rtc_read(void)
- {
-    static unsigned char ret[12];
-    i2c_read(I2C_ADDRESS, ret, 12);
-    return ret;
- }
+/* Handling of data abort:
+ * the code can register a "longjmp" buffer to restore the context in case of
+ * fault */
+.data
+.global data_abort_jmp_ctx_ptr
+data_abort_jmp_ctx_ptr:
+/* buffer contains in order: s0-s7, sp, s8, ra */
+.skip   44 /* = 4 * (9 callee saved registers + sp + ra) */
+
+.set noreorder
+.section .icode, "ax", %progbits
+/* Prototype: int set_data_abort_jmp()
+ * Return: 1 in case of data abort, 0 otherwise */
+.global set_data_abort_jmp
+set_data_abort_jmp:
+    la v0,  data_abort_jmp_ctx_ptr
+    sw s0,  0(v0)
+    sw s1,  4(v0)
+    sw s2,  8(v0)
+    sw s3, 12(v0)
+    sw s4, 16(v0)
+    sw s5, 20(v0)
+    sw s6, 24(v0)
+    sw s7, 28(v0)
+    sw sp, 32(v0)
+    sw s8, 36(v0)
+    sw ra, 40(v0)
+    jr ra
+    move v0, zero
+.set reorder
