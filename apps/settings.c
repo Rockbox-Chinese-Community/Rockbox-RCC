@@ -1053,7 +1053,6 @@ void settings_apply(bool read_disk)
     dsp_surround_set_cutoff(global_settings.surround_fx1, global_settings.surround_fx2);
     dsp_surround_mix(global_settings.surround_mix);
     dsp_surround_enable(global_settings.surround_enabled);
-    dsp_aatube_enable(global_settings.aatube_enabled);
     dsp_afr_enable(global_settings.afr_enabled);
     dsp_pbe_precut(global_settings.pbe_precut);
     dsp_pbe_enable(global_settings.pbe);

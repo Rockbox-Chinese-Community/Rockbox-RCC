@@ -150,7 +150,7 @@ static void __shutdown(void)
     }
 
     /* Backlight OFF */
-    _backlight_off();
+    backlight_hw_off();
     __reset_cookie();
 
         power_off();
@@ -372,7 +372,7 @@ void main(void)
     cpu_idle_mode(true);
 
     /* lowlevel init only */
-    _backlight_init();
+    backlight_hw_init();
 
     /* Handle wakeup event. Possibilities are:
      * RTC alarm (HD300)
@@ -390,9 +390,9 @@ void main(void)
         if ( hold != last_hold )
         {
             if ( hold )
-                _backlight_hw_off();
+                backlight_hw_off();
             else
-                _backlight_hw_on();
+                backlight_hw_on();
 
             last_hold = hold;
         }

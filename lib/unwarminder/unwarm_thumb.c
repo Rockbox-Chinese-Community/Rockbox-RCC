@@ -244,7 +244,7 @@ UnwResult UnwStartThumb(UnwState * const state)
                 case 3: /* SUB */
                     UnwPrintd5("SUB r%d, #0x%d\t; r%d %s",
                                rd, offset8, rd, M_Origin2Str(state->regData[rd].o));
-                    state->regData[rd].v += offset8;
+                    state->regData[rd].v -= offset8;
                     state->regData[rd].o |= REG_VAL_ARITHMETIC;
                     break;
             }
@@ -469,8 +469,8 @@ UnwResult UnwStartThumb(UnwState * const state)
                 case 2: /* MOV */
                     UnwPrintd5("MOV r%d, r%d\t; r%d %s",
                                rhd, rhs, rhd, M_Origin2Str(state->regData[rhs].o));
-                    state->regData[rhd].v += state->regData[rhs].v;
-                    state->regData[rhd].o  = state->regData[rhd].o;
+                    state->regData[rhd].v  = state->regData[rhs].v;
+                    state->regData[rhd].o  = state->regData[rhs].o;
                     break;
 
                 case 3: /* BX */

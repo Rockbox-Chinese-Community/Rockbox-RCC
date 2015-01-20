@@ -25,6 +25,7 @@
 #include "dsp_proc_entry.h"
 #include "dsp_misc.h"
 #include "dsp_filter.h"
+#include "core_alloc.h"
 
 /* Perceptual bass enhancement */
 
@@ -39,13 +40,47 @@
 static int pbe_strength = 100;
 static int pbe_precut = 0;
 static int32_t tcoef1, tcoef2, tcoef3;
-static int32_t b0[2][B0_SIZE], b2[2][B2_SIZE], b3[2][B3_SIZE];
+static int32_t *b0[2], *b2[2], *b3[2];
 static int b0_r[2],b2_r[2],b3_r[2],b0_w[2],b2_w[2],b3_w[2];
 int32_t temp_buffer;
-static struct dsp_filter pbe_filter IBSS_ATTR;
+static struct dsp_filter pbe_filter[5];
+static int handle = -1;
+
+static void pbe_buffer_alloc(void)
+{
+    if (handle > 0)
+        return; /* already-allocated */
+
+    unsigned int total_len = (B0_SIZE + B2_SIZE + B3_SIZE) * 2;
+    handle = core_alloc("dsp_pbe_buffer",sizeof(int32_t) * total_len);
+
+    if (handle < 0)
+    {
+        pbe_strength = 0;
+        return;
+    }
+    memset(core_get_data(handle),0,sizeof(int32_t) * total_len);
+}
+
+static void pbe_buffer_get_data(void)
+{
+    if (handle < 0)
+        return;
+    b0[0] = core_get_data(handle);
+    b0[1] = b0[0] + B0_SIZE;
+    b2[0] = b0[1] + B0_SIZE;
+    b2[1] = b2[0] + B2_SIZE;
+    b3[0] = b2[1] + B2_SIZE;
+    b3[1] = b3[0] + B3_SIZE;
+}
 
 static void dsp_pbe_flush(void)
 {
+    if (pbe_strength == 0)
+        return; /* Not currently enabled */
+
+    pbe_buffer_get_data();
+
     memset(b0[0], 0, B0_DLY * sizeof(int32_t));
     memset(b0[1], 0, B0_DLY * sizeof(int32_t));
     memset(b2[0], 0, B2_DLY * sizeof(int32_t));
@@ -59,7 +94,8 @@ static void dsp_pbe_flush(void)
     b3_r[0] = 0; b3_w[0] = B3_DLY;
     b3_r[1] = 0; b3_w[1] = B3_DLY;
 
-    filter_flush(&pbe_filter);
+    for (int i = 0; i < 5; i++)
+        filter_flush(&pbe_filter[i]);
 }
 
 static void pbe_update_filter(unsigned int fout)
@@ -67,11 +103,20 @@ static void pbe_update_filter(unsigned int fout)
     tcoef1 = fp_div(160, fout, 31);
     tcoef2 = fp_div(500, fout, 31);
     tcoef3 = fp_div(1150, fout, 31);
+    /* Biophonic EQ */
+    filter_bishelf_coefs(fp_div(20, fout, 32),
+                         fp_div(16000, fout, 32),
+                         0, 53, -5 + pbe_precut,
+                         &pbe_filter[0]);
+    filter_pk_coefs(fp_div(64, fout, 32), 28, 53,
+                     &pbe_filter[1]);
+    filter_pk_coefs(fp_div(2000, fout, 32), 28, 58,
+                     &pbe_filter[2]);
+    filter_pk_coefs(fp_div(7500, fout, 32), 43, -82,
+                     &pbe_filter[3]);
+    filter_pk_coefs(fp_div(10000, fout, 32), 43, -29,
+                     &pbe_filter[4]);
 
-    filter_bishelf_coefs(fp_div(200, fout, 32),
-                         fp_div(1280, fout, 32),
-                         50, 30, -5 + pbe_precut,
-                         &pbe_filter);
 }
 
 void dsp_pbe_precut(int var)
@@ -90,6 +135,7 @@ void dsp_pbe_precut(int var)
     dsp_proc_enable(dsp, DSP_PROC_PBE, true);
 }
 
+
 void dsp_pbe_enable(int var)
 {
     if (var == pbe_strength)
@@ -101,6 +147,12 @@ void dsp_pbe_enable(int var)
 
     if (now_enabled == was_enabled)
         return; /* No change in enabled status */
+
+    if (now_enabled == false && handle > 0)
+    {
+        core_free(handle);
+        handle = -1;
+    }
 
     struct dsp_config *dsp = dsp_get_config(CODEC_IDX_AUDIO);
     dsp_proc_enable(dsp, DSP_PROC_PBE, now_enabled);
@@ -115,6 +167,8 @@ static void pbe_process(struct dsp_proc_entry *this,
     int b2_level = (B2_DLY * pbe_strength) / 100;
     int b0_level = (B0_DLY * pbe_strength) / 100;
     int32_t x;
+
+    pbe_buffer_get_data();
 
     for(int ch = 0; ch < num_channels; ch++)
     {
@@ -145,9 +199,10 @@ static void pbe_process(struct dsp_proc_entry *this,
         }
     }
 
-    /* bishelf boost */
-    filter_process(&pbe_filter, buf->p32, buf->remcount,
-                   buf->format.num_channels);
+    /* apply Biophonic EQ   */
+    for (int i = 0; i < 5; i++)
+        filter_process(&pbe_filter[i], buf->p32, buf->remcount,
+                       buf->format.num_channels);
 
     (void)this;
 }
@@ -167,6 +222,7 @@ static intptr_t pbe_configure(struct dsp_proc_entry *this,
         {
             /* Coming online; was disabled */
             this->process = pbe_process;
+            pbe_buffer_alloc();
             dsp_pbe_flush();
             dsp_proc_activate(dsp, DSP_PROC_PBE, true);
         }
