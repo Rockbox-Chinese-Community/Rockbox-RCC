@@ -36,14 +36,17 @@ static int surround_strength = 0;
 #define DLY_5MS  454
 #define DLY_8MS  727
 #define DLY_10MS 909
-#define MAX_DLY DLY_10MS
+#define DLY_15MS 1363
+#define DLY_30MS 2727
+#define MAX_DLY DLY_30MS
 
 #define B0_DLY  (MAX_DLY/8 + 1)
 #define B2_DLY  (MAX_DLY   + 1)
 #define BB_DLY  (MAX_DLY/4 + 1)
 #define HH_DLY  (MAX_DLY/2 + 1)
+#define CL_DLY  B2_DLY
 /*only need to buffer right channel */
-static int32_t *b0, *b2, *bb, *hh;
+static int32_t *b0, *b2, *bb, *hh, *cl;
 static int32_t temp_buffer[2];
 static int32_t mid, side;
 
@@ -57,7 +60,8 @@ static int cutoff_h = 3400;
 static int b0_r=0,b0_w=0,
            b2_r=0,b2_w=0,
            bb_r=0,bb_w=0,
-           hh_r=0,hh_w=0;
+           hh_r=0,hh_w=0,
+           cl_r=0,cl_w=0;
 static int handle = -1;
 
 static void surround_buffer_alloc(void)
@@ -65,7 +69,7 @@ static void surround_buffer_alloc(void)
     if (handle > 0)
         return; /* already-allocated */
 
-    unsigned int total_len = B0_DLY + B2_DLY + BB_DLY + HH_DLY;
+    unsigned int total_len = B0_DLY + B2_DLY + BB_DLY + HH_DLY + CL_DLY;
     handle = core_alloc("dsp_surround_buffer",sizeof(int32_t) * total_len);
 
     if (handle < 0)
@@ -84,6 +88,7 @@ static void surround_buffer_get_data(void)
     b2 = b0 + B0_DLY;
     bb = b2 + B2_DLY;
     hh = bb + BB_DLY;
+    cl = hh + HH_DLY;
 }
 
 static void dsp_surround_flush(void)
@@ -97,10 +102,12 @@ static void dsp_surround_flush(void)
     memset(b2,0,MAX_DLY   * sizeof(int32_t));
     memset(bb,0,MAX_DLY/4 * sizeof(int32_t));
     memset(hh,0,MAX_DLY/2 * sizeof(int32_t));
+    memset(cl,0,MAX_DLY   * sizeof(int32_t));
     b0_r = 0;b0_w = dly_size/8 - 1;
     b2_r = 0;b2_w = dly_size   - 1;
     bb_r = 0;bb_w = dly_size/4 - 1;
     hh_r = 0;hh_w = dly_size/2 - 1;
+    cl_r = 0;cl_w = dly_size   - 1;
 }
 
 static void surround_update_filter(unsigned int fout)
@@ -150,6 +157,12 @@ static void surround_set_stepsize(int surround_strength)
         break;
     case 3:
         dly_size =  DLY_10MS;
+        break;
+    case 4:
+        dly_size =  DLY_15MS;
+        break;
+    case 5:
+        dly_size =  DLY_30MS;
         break;
     }
 }
@@ -213,6 +226,11 @@ static void surround_process(struct dsp_proc_entry *this,
             temp_buffer[1] = FRACMUL(-side,tcoef1)/2 -
                              FRACMUL(-side, tcoef2)/2;
         }
+
+        /* inverted crossfeed delay (left channel) to make sound wider*/
+        x = temp_buffer[1]/100 * 35;
+        temp_buffer[0] += dequeue(cl, &cl_r, dly);
+        enqueue(-x, cl, &cl_w, dly);
 
         /* apply 1/8 delay to frequency below fx2 */
         x = buf->p32[1][i] - FRACMUL(buf->p32[1][i], tcoef1);
