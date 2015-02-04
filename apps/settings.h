@@ -291,7 +291,7 @@ struct user_settings
     /* audio settings */
 
     int volume;     /* audio output volume in decibels range depends on the dac       */
-    int balance;    /* stereo balance:          0-100 0=left  50=bal 100=right        */
+    int balance;    /* stereo balance: -100 - +100 -100=left  0=bal +100=right  */
     int bass;       /* bass boost/cut in decibels                                     */
     int treble;     /* treble boost/cut in decibels                                   */
     int tone_gain;  /* bass/treble boost gain in decibels */
@@ -860,6 +860,11 @@ struct user_settings
     int pbe_precut;
 
     int afr_enabled;
+
+#if defined(DX50) || defined(DX90)
+    int governor;
+    int usb_mode;
+#endif
 };
 
 /** global variables **/
