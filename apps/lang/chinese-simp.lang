@@ -13178,7 +13178,7 @@
   </source>
   <dest>
     *: none
-    swcodec: "哈斯环绕环绕"
+    swcodec: "哈斯环绕"
   </dest>
   <voice>
     *: none
