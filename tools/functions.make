@@ -13,8 +13,9 @@
 # to make this do right when used on Mac OS X.
 #
 # The sed line is to prepend the directory to all source files
+convpath = $(shell cygpath -m $(1))
 
-preprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(1) | \
+preprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(convpath, $(1)) | \
 		grep -v '^\#' | grep -v "^ *$$" | \
 		sed -e 's:^..*:$(dir $(1))&:')
 
