@@ -95,7 +95,7 @@ RBLIBS = rbspeex ipodpatcher sansapatcher mkamsboot mktccboot \
 }
 win32-msvc* {
     INCLUDEPATH += msvc
-    LIBS += -L$$_PRO_FILE_/msvc
+    LIBS += -L$$_PRO_FILE_PWD_/msvc
     LIBS += -ladvapi32 # required for MSVC / Qt Creator combination
 }
 
@@ -163,10 +163,10 @@ dbg {
     message("release")
 }
 
-DEFINES += RBUTIL _LARGEFILE64_SOURCE CUTELOGGER_STATIC
+DEFINES += RBUTIL _LARGEFILE64_SOURCE
 
 # check version of Qt installation
-!contains(QT_MAJOR_VERSION, 5):!macx:!*-msvc* {
+!contains(QT_MAJOR_VERSION, 5):!macx:linux-g++* {
     # suppress warnings in Qt 4.8 shown by gcc 4.8
     QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
 }
@@ -246,4 +246,6 @@ unix {
 
 # source files are separate.
 include(rbutilqt.pri)
+include(quazip/quazip.pri)
+include(logger/logger.pri)
 
