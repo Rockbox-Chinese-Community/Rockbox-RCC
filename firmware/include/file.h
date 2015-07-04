@@ -32,12 +32,9 @@
 #include "gcc_extensions.h"
 
 #undef MAX_PATH /* this avoids problems when building simulator */
-#if (CONFIG_PLATFORM & PLATFORM_ANDROID)
-/*The default MAX_PATH is too small to suit for Android 4.X. */
-#define MAX_PATH 520
-#else
+
 #define MAX_PATH 260
-#endif
+
 
 enum relate_result
 {
