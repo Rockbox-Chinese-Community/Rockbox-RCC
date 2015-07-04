@@ -14,10 +14,16 @@
 #
 # The sed line is to prepend the directory to all source files
 convpath = $(shell cygpath -m $(1))
-
-preprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(convpath, $(1)) | \
+ 
+ifeq (`uname`,"CYGWIN")
+reprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(convpath, $(1)) | \
 		grep -v '^\#' | grep -v "^ *$$" | \
 		sed -e 's:^..*:$(dir $(1))&:')
+else
+preprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(1) | \
+ 		grep -v '^\#' | grep -v "^ *$$" | \
+ 		sed -e 's:^..*:$(dir $(1))&:')
+endif
 
 preprocess2file = $(SILENT)$(CC) $(PPCFLAGS) $(3) -E -P -x c -include config.h $(1) | \
 		grep -v '^\#' | grep -v "^$$" > $(2)
