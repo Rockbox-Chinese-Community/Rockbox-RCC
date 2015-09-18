@@ -287,11 +287,15 @@ public class RockboxPCM extends AudioTrack
         return super.setStereoVolume(leftVolume, rightVolume);
     }
 
-    private void set_volume(int volume)
+    private native int RockboxNativeVolume();
+
+    private void set_volume()
     {
+        int volume = RockboxNativeVolume();
+
         /*启动rockbox后会读取保存在data的音量数据，判断是否锁定音量 */
         if (VolumeLock.getRockboxVolLockStatus() == true)
-        volume = (VolumeLock.getVol()-100)*10;
+            volume = (VolumeLock.getVol()-100)*10;
         Logger.d("java:set_volume("+volume+")");
         /* Rockbox 'volume' is 0..-990 deci-dB attenuation.
            Android streams have rather low resolution volume control,
@@ -300,7 +304,6 @@ public class RockboxPCM extends AudioTrack
            every android stream volume step.
            It's not "real" dB, but it gives us 100 volume steps.
         */
-
         float fraction = 1 - (volume / -990.0f);
         int streamvolume = (int)Math.ceil(maxstreamvolume * fraction);
         if (streamvolume > 0) {

@@ -701,7 +701,7 @@ androidcc () {
     fi
     SHARED_LDFLAG="-shared"
     SHARED_CFLAGS=''
-    GLOBAL_LDOPTS="-Wl,-z,defs -Wl,-z,noexecstack"
+    GLOBAL_LDOPTS="-Wl,-z,defs -Wl,-z,noexecstack -fuse-ld=bfd"
     ANDROID_ARCH=$1 # for android.make too
     gccchoice="4.6"
     # arch dependant stuff
