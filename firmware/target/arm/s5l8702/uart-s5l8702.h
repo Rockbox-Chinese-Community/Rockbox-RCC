@@ -7,20 +7,26 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2002 by Alan Korr & Nick Robinson
+ * Copyright (C) 2014 by Cástor Muñoz
  *
- * All files in this archive are subject to the GNU General Public License.
- * See the file COPYING in the source tree root for full license agreement.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
  ****************************************************************************/
+#ifndef __UART_S5L8702_H__
+#define __UART_S5L8702_H__
 
-void iap_handlepkt_mode0(const unsigned int len, const unsigned char *buf);
-#ifdef HAVE_LINE_REC
-void iap_handlepkt_mode1(const unsigned int len, const unsigned char *buf);
-#endif
-void iap_handlepkt_mode2(const unsigned int len, const unsigned char *buf);
-void iap_handlepkt_mode3(const unsigned int len, const unsigned char *buf);
-void iap_handlepkt_mode4(const unsigned int len, const unsigned char *buf);
+#include "uc8702.h"
+
+/* s5l8702 low level routines */
+void uart_init (void);
+void uart_close(void);
+void uart_port_init (struct uartc_port *port);
+void uart_port_close (struct uartc_port *port);
+
+#endif /* __UART_S5L8702_H__ */

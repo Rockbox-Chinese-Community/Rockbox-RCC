@@ -20,11 +20,13 @@
 #define HAVE_LBA48
 
 /* define this if you have recording possibility */
-//#define HAVE_RECORDING
+#define HAVE_RECORDING
+//#define HAVE_AGC
+//#define HAVE_HISTOGRAM
 
 /* Define bitmask of input sources - recordable bitmask can be defined
    explicitly if different */
-#define INPUT_SRC_CAPS (SRC_CAP_LINEIN)
+#define INPUT_SRC_CAPS (SRC_CAP_MIC | SRC_CAP_LINEIN)
 
 /* define the bitmask of hardware sample rates */
 #define HW_SAMPR_CAPS   (SAMPR_CAP_44 | SAMPR_CAP_22 | SAMPR_CAP_11 \
@@ -101,8 +103,8 @@
 /* Define this to have CPU boosted while scrolling in the UI */
 #define HAVE_GUI_BOOST
 
-//#define AB_REPEAT_ENABLE
-//#define ACTION_WPSAB_SINGLE ACTION_WPS_BROWSE
+#define AB_REPEAT_ENABLE
+#define ACTION_WPSAB_SINGLE ACTION_WPS_BROWSE
 
 /* define this if you have a disk storage, i.e. something
    that needs spinups and can cause skips when shaked */
@@ -199,6 +201,8 @@
 
 #define STORAGE_NEEDS_ALIGN
 
+#define HAVE_ATA_SMART
+
 /* define this if the device has larger sectors when accessed via USB */
 /* (only relevant in disk.c, fat.c now always supports large virtual sectors) */
 //#define MAX_LOG_SECTOR_SIZE 4096
@@ -245,10 +249,14 @@
 #define USB_NUM_ENDPOINTS 6
 #define USB_DEVBSS_ATTR __attribute__((aligned(16)))
 
+#define HAVE_SERIAL
+/* Disable iAP when LOGF_SERIAL is enabled to avoid conflicts */
+#ifndef LOGF_SERIAL
+#define IPOD_ACCESSORY_PROTOCOL
+#endif
+
 /* Define this if you can switch on/off the accessory power supply */
 #define HAVE_ACCESSORY_SUPPLY
-//#define IPOD_ACCESSORY_PROTOCOL
-//#define HAVE_SERIAL
 
 /* Define this, if you can switch on/off the lineout */
 #define HAVE_LINEOUT_POWEROFF
