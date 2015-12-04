@@ -43,8 +43,8 @@ import getopt
 import time
 import hashlib
 import tempfile
-import string
 import gitscraper
+from datetime import datetime
 
 # modules that are not part of python itself.
 cpus = 1
@@ -127,13 +127,12 @@ def findversion(versionfile):
     h = open(versionfile, "r")
     c = h.read()
     h.close()
-    r = re.compile("#define +VERSION +\"(.[0-9\.a-z]+)\"")
-    m = re.search(r, c)
-    s = re.compile("\$Revision: +([0-9]+)")
-    n = re.search(s, c)
-    if n == None:
-        print "WARNING: Revision not found!"
-    return m.group(1)
+    version = dict()
+    for v in ['MAJOR', 'MINOR', 'MICRO']:
+        r = re.compile("#define +VERSION_" + v + " +([0-9a-z]+)")
+        m = re.search(r, c)
+        version[v] = m.group(1)
+    return "%s.%s.%s" % (version['MAJOR'], version['MINOR'], version['MICRO'])
 
 
 def findqt(cross=""):
@@ -355,11 +354,7 @@ def zipball(programfiles, versionstring, buildfolder, platform=sys.platform):
     for root, dirs, files in os.walk(outfolder):
         for name in files:
             physname = os.path.normpath(os.path.join(root, name))
-            filename = string.replace(physname, os.path.normpath(buildfolder), "")
-            zf.write(physname, filename)
-        for name in dirs:
-            physname = os.path.normpath(os.path.join(root, name))
-            filename = string.replace(physname, os.path.normpath(buildfolder), "")
+            filename = os.path.relpath(physname, buildfolder)
             zf.write(physname, filename)
     zf.close()
     # remove output folder
@@ -542,12 +537,12 @@ def deploy():
         archivename = program + "-" + str(revision) + versionextra + "-src.tar.bz2"
         ver = str(revision)
         os.mkdir(sourcefolder)
+        print "Version: %s" % revision
     else:
         workfolder = "."
         sourcefolder = "."
         archivename = ""
     # check if project file explicitly given. If yes, don't get sources from svn
-    print "Version: %s" % revision
     if proj == "":
         proj = sourcefolder + project
         # get sources and pack source tarball
@@ -590,7 +585,7 @@ def deploy():
     else:
         # figure version from sources. Need to take path to project file into account.
         versionfile = re.subn('[\w\.]+$', "version.h", proj)[0]
-        ver = findversion(versionfile)
+        ver = findversion(versionfile) + "-dev" + datetime.now().strftime('%Y%m%d%H%M%S')
     # append buildid if any.
     if buildid != None:
         ver += "-" + buildid

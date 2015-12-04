@@ -71,6 +71,15 @@ RbUtilQt::RbUtilQt(QWidget *parent) : QMainWindow(parent)
     LOG_INFO() << "======================================";
     LOG_INFO() << "Rockbox Utility" << VERSION;
     LOG_INFO() << "Qt version:" << qVersion();
+#if defined(__clang__)
+    LOG_INFO("compiled using clang %i.%i.%i",
+             __clang_major__, __clang_minor__, __clang_patchlevel__);
+#elif defined(__GNUC__)
+    LOG_INFO("compiled using gcc %i.%i.%i",
+             __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
+#elif defined(_MSC_VER)
+    LOG_INFO() << "compiled using MSVC" << _MSC_FULL_VER;
+#endif
     LOG_INFO() << "======================================";
 
     absolutePath = qApp->applicationDirPath();
@@ -539,8 +548,11 @@ void RbUtilQt::uninstallBootloader(void)
 
     BootloaderInstallBase::BootloaderType currentbl = bl->installed();
     if((bl->capabilities() & BootloaderInstallBase::Uninstall) == 0) {
-        logger->addItem(tr("Rockbox Utility can not uninstall the bootloader on this target. "
-                            "Try a normal firmware update to remove the booloader."), LOGERROR);
+        logger->addItem(tr("Rockbox Utility can not uninstall the bootloader on your player. "
+                           "Please perform a firmware update using your player vendors "
+                           "firmware update process."), LOGERROR);
+        logger->addItem(tr("Important: make sure to boot your player into the original "
+                           "firmware before using the vendors firmware update process."), LOGERROR);
         logger->setFinished();
         delete bl;
         return;
@@ -726,10 +738,11 @@ void RbUtilQt::downloadUpdateDone(bool error)
 #endif
             url += foundVersion;
 
-            QMessageBox::information(this,tr("RockboxUtility Update available"),
-                        tr("<b>New RockboxUtility Version available.</b> <br><br>"
-                        "Download it from here: <a href='%1'>%2</a>")
-                        .arg(url).arg(foundVersion));
+            QMessageBox::information(this,tr("Rockbox Utility Update available"),
+                        tr("<b>New Rockbox Utility version available.</b><br><br>"
+                           "You are currently using version %1. "
+                           "Get version %2 at <a href='%3'>%3</a>")
+                           .arg(VERSION).arg(Utils::trimVersionString(foundVersion)).arg(url));
             ui.statusbar->showMessage(tr("New version of Rockbox Utility available."));
         }
         else {

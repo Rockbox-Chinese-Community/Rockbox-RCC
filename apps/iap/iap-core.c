@@ -154,7 +154,11 @@ unsigned char* iap_txnext;
  */
 unsigned char lingo_versions[32][2] = {
     {1, 9},     /* General lingo, 0x00 */
-    {0, 0},     /* Microphone lingo, 0x01, unsupported */
+#ifdef HAVE_LINE_REC
+    {1, 1},     /* Microphone lingo, 0x01 */
+#else
+    {0, 0},     /* Microphone lingo, 0x01, disabled */
+#endif
     {1, 2},     /* Simple remote lingo, 0x02 */
     {1, 5},     /* Display remote lingo, 0x03 */
     {1, 12},    /* Extended Interface lingo, 0x04 */
@@ -718,7 +722,8 @@ void iap_periodic(void)
              * is in the RX buffer right now.
              */
             IAP_TX_INIT(0x00, 0x17);
-            IAP_TX_PUT_DATA(iap_rxstart, 20);
+            IAP_TX_PUT_DATA(iap_rxstart,
+                        (device.auth.version == 0x100) ? 16 : 20);
             IAP_TX_PUT(0x01);
 
             iap_send_tx();
@@ -1261,6 +1266,9 @@ void iap_handlepkt(void)
     unsigned char mode = *(iap_rxstart+2);
     switch (mode) {
     case 0: iap_handlepkt_mode0(length, iap_rxstart+2); break;
+#ifdef HAVE_LINE_REC
+    case 1: iap_handlepkt_mode1(length, iap_rxstart+2); break;
+#endif
     case 2: iap_handlepkt_mode2(length, iap_rxstart+2); break;
     case 3: iap_handlepkt_mode3(length, iap_rxstart+2); break;
     case 4: iap_handlepkt_mode4(length, iap_rxstart+2); break;

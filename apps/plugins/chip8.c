@@ -1145,7 +1145,8 @@ CONFIG_KEYPAD == MROBE500_PAD
 
 #elif (CONFIG_KEYPAD == SAMSUNG_YH820_PAD) || \
       (CONFIG_KEYPAD == SAMSUNG_YH920_PAD)
-#define CHIP8_OFF  BUTTON_REC
+#define CHIP8_OFF  BUTTON_REW
+#define CHIP8_KEY0 BUTTON_FFWD
 #define CHIP8_KEY2 BUTTON_UP
 #define CHIP8_KEY4 BUTTON_LEFT
 #define CHIP8_KEY5 BUTTON_PLAY
@@ -1431,6 +1432,10 @@ static void chip8_keyboard(void)
 #ifdef CHIP8_KEY9
     case CHIP8_KEY9:                chip8_virtual_keys[9] = 1; break;
     case CHIP8_KEY9 | BUTTON_REL:   chip8_virtual_keys[9] = 0; break;
+#endif
+#ifdef CHIP8_KEYA
+    case CHIP8_KEYA:                chip8_virtual_keys[10] = 1; break;
+    case CHIP8_KEYA | BUTTON_REL:   chip8_virtual_keys[10] = 0; break;
 #endif
 
     default:

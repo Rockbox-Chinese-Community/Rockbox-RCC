@@ -25,7 +25,7 @@ contains(QMAKE_CC,($$find(QMAKE_CC,.*gcc.*))) {
 unix:!mac:!noccache {
     CCACHE = $$system(which ccache)
     !isEmpty(CCACHE) {
-        message("using ccache")
+        message("using ccache at $$CCACHE")
         QMAKE_CXX = ccache $$QMAKE_CXX
         QMAKE_CC = ccache $$QMAKE_CC
     }
@@ -54,13 +54,13 @@ RCC_DIR = $$MYBUILDDIR/rcc
         message("Qt >= 4.5 required!")
         !isEmpty(QT_VERSION) error("Qt found:" $$[QT_VERSION])
     }
-message("Qt version used:" $$VER)
+message("using Qt version $$VER at $$[QT_INSTALL_PREFIX]")
 }
 
 RBBASE_DIR = $$_PRO_FILE_PWD_
 RBBASE_DIR = $$replace(RBBASE_DIR,/rbutil/rbutilqt,)
 
-message("Rockbox Base dir: "$$RBBASE_DIR)
+message("using Rockbox basedir $$RBBASE_DIR")
 
 # check for system speex. Add a custom rule for pre-building librbspeex if not
 # found. Newer versions of speex are split up into libspeex and libspeexdsp,
@@ -95,7 +95,7 @@ RBLIBS = rbspeex ipodpatcher sansapatcher mkamsboot mktccboot \
 }
 win32-msvc* {
     INCLUDEPATH += msvc
-    LIBS += -L$$_PRO_FILE_/msvc
+    LIBS += -L$$_PRO_FILE_PWD_/msvc
     LIBS += -ladvapi32 # required for MSVC / Qt Creator combination
 }
 
@@ -105,10 +105,18 @@ tags.depends = $(SOURCES)
 QMAKE_EXTRA_TARGETS += tags
 
 # add a custom rule for making the translations
-lrelease.commands = $$[QT_INSTALL_BINS]/lrelease -silent $$_PRO_FILE_
+LRELEASE = $$[QT_INSTALL_BINS]/lrelease
+win32:!cross {
+    LRELEASE = $$[QT_INSTALL_BINS]/lrelease.exe
+}
+lrelease.commands = $$LRELEASE -silent $$_PRO_FILE_
 QMAKE_EXTRA_TARGETS += lrelease
-!dbg {
+exists($$LRELEASE) {
+    message("using lrelease at $$LRELEASE")
     PRE_TARGETDEPS += lrelease
+}
+!exists($$LRELEASE) {
+    warning("could not find lrelease. Skipping translations.")
 }
 
 # Needed by QT on Win
@@ -155,18 +163,18 @@ contains(QT_MAJOR_VERSION, 5) {
 dbg {
     CONFIG += debug thread qt warn_on
     DEFINES += DBG
-    message("debug")
+    message("creating debug version")
 }
 !dbg {
     CONFIG += release thread qt
     DEFINES += NODEBUG
-    message("release")
+    message("creating release version")
 }
 
-DEFINES += RBUTIL _LARGEFILE64_SOURCE CUTELOGGER_STATIC
+DEFINES += RBUTIL _LARGEFILE64_SOURCE
 
 # check version of Qt installation
-!contains(QT_MAJOR_VERSION, 5):!macx:!*-msvc* {
+!contains(QT_MAJOR_VERSION, 5):!macx:linux-g++* {
     # suppress warnings in Qt 4.8 shown by gcc 4.8
     QMAKE_CXXFLAGS += -Wno-unused-local-typedefs
 }
@@ -246,4 +254,6 @@ unix {
 
 # source files are separate.
 include(rbutilqt.pri)
+include(quazip/quazip.pri)
+include(logger/logger.pri)
 

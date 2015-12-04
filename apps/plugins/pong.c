@@ -215,14 +215,21 @@ CONFIG_KEYPAD == ONDAVX777_PAD || \
 CONFIG_KEYPAD == MROBE500_PAD
 #define PONG_QUIT BUTTON_POWER
 
-#elif (CONFIG_KEYPAD == SAMSUNG_YH820_PAD) || \
-      (CONFIG_KEYPAD == SAMSUNG_YH920_PAD)
-#define PONG_QUIT        BUTTON_REC
-#define PONG_PAUSE       BUTTON_PLAY
+#elif CONFIG_KEYPAD == SAMSUNG_YH920_PAD
+#define PONG_QUIT        (BUTTON_PLAY|BUTTON_REPEAT)
+#define PONG_PAUSE       (BUTTON_PLAY|BUTTON_REL)
 #define PONG_LEFT_UP     BUTTON_UP
 #define PONG_LEFT_DOWN   BUTTON_DOWN
 #define PONG_RIGHT_UP    BUTTON_FFWD
 #define PONG_RIGHT_DOWN  BUTTON_REW
+
+#elif CONFIG_KEYPAD == SAMSUNG_YH820_PAD
+#define PONG_QUIT        BUTTON_REW
+#define PONG_PAUSE       BUTTON_PLAY
+#define PONG_LEFT_UP     BUTTON_UP
+#define PONG_LEFT_DOWN   BUTTON_DOWN
+#define PONG_RIGHT_UP    BUTTON_REC
+#define PONG_RIGHT_DOWN  BUTTON_FFWD
 
 #elif CONFIG_KEYPAD == PBELL_VIBE500_PAD
 #define PONG_QUIT        BUTTON_REC
@@ -631,9 +638,9 @@ static int keys(struct pong *p)
             return 2; /* Pause game */
 #endif
 
-        if(key & PONG_QUIT
+        if(key == PONG_QUIT
 #ifdef PONG_RC_QUIT
-           || key & PONG_RC_QUIT
+           || key == PONG_RC_QUIT
 #endif
         )
             return 0; /* exit game NOW */
@@ -719,13 +726,6 @@ enum plugin_status plugin_start(const void* parameter)
 
     /* go go go */
     while(game > 0) {
-        if (game == 2) { /* Game Paused */
-            rb->splash(0, "PAUSED");
-            while(game == 2)
-                game = keys(&pong); /* short circuit */
-            rb->lcd_clear_display();
-        }
-
         if( pong.player[0].iscpu && pong.player[1].iscpu ) {
             if(blink_timer<blink_rate) {
                 ++blink_timer;
@@ -751,6 +751,13 @@ enum plugin_status plugin_start(const void* parameter)
         rb->lcd_update();
 
         game = keys(&pong); /* deal with keys */
+
+        if (game == 2) { /* Game Paused */
+            rb->splash(0, "PAUSED");
+            while(game == 2)
+                game = keys(&pong); /* short circuit */
+            rb->lcd_clear_display();
+        }
     }
 
     /* Turn on backlight timeout (revert to settings) */

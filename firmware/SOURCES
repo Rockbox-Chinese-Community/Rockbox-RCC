@@ -1597,6 +1597,9 @@ target/arm/s5l8702/ipod6g/powermgmt-ipod6g.c
 target/arm/s5l8702/ipod6g/power-ipod6g.c
 target/arm/s5l8702/kernel-s5l8702.c
 target/arm/s5l8702/system-s5l8702.c
+target/arm/s5l8702/gpio-s5l8702.c
+target/arm/s5l8702/pl080.c
+target/arm/s5l8702/dma-s5l8702.c
 target/arm/s5l8702/ipod6g/lcd-ipod6g.c
 target/arm/s5l8702/ipod6g/lcd-asm-ipod6g.S
 #if 0 //TODO
@@ -1605,6 +1608,11 @@ target/arm/s5l8702/postmortemstub.S
 target/arm/s5l8702/ipod6g/pmu-ipod6g.c
 target/arm/s5l8702/ipod6g/rtc-ipod6g.c
 target/arm/s5l8700/usb-nano2g-6g.c
+#ifdef HAVE_SERIAL
+target/arm/s5l8702/uc8702.c
+target/arm/s5l8702/uart-s5l8702.c
+target/arm/s5l8702/ipod6g/serial-ipod6g.c
+#endif
 #ifndef BOOTLOADER
 target/arm/s5l8702/timer-s5l8702.c
 target/arm/s5l8702/debug-s5l8702.c

@@ -4129,6 +4129,7 @@
     gigabeats: "BACK = Revert"
     gogearsa9200: "LEFT = Revert"
     vibe500: "CANCEL = Revert"
+    samsungyh*: "REW = Revert"
   </source>
   <dest>
     *: none
@@ -4144,6 +4145,7 @@
     gigabeats: "BACK = Reverter"
     gogearsa9200: "LEFT = Reverter"
     vibe500: "C = Reverter"
+    samsungyh*: "REW = Reverter"
   </dest>
   <voice>
     *: none
@@ -4210,6 +4212,7 @@
     iriverh100,iriverh120,iriverh300: "The disk is full. Press STOP to continue."
     iaudiom5,iaudiox5: "The disk is full. Press POWER to continue."
     sansae200*,sansac200*,vibe500: "The disk is full. Press PREV to continue."
+    samsungyh*: "Disk full. Press LEFT to continue."
   </source>
   <dest>
     *: none
@@ -4217,6 +4220,7 @@
     iriverh100,iriverh120,iriverh300: "O Disco Está Cheio. Carregue STOP Para Continuar"
     iaudiom5,iaudiox5: "O Disco Está Cheio. Carregue POWER Para Continuar"
     sansae200*,sansac200*,vibe500: "O Disco Está Cheio. Carregue PREV Para Continuar"
+    samsungyh*: "O Disco Está Cheio. Carregue LEFT Para Continuar"
   </dest>
   <voice>
     *: none
@@ -7587,19 +7591,21 @@
     *: "PLAY = Yes"
     cowond2*: "MENU, or top-right = Yes"
     iriverh100,iriverh120,iriverh300: "NAVI = Yes"
-    samsungyh*,ipod*,iaudiox5,iaudiom5,gigabeat*,sansae200*,sansac200*,iriverh10,iriverh10_5gb,mrobe100,sansaclip*,sansafuze*,sansaconnect: "SELECT = Yes"
+    ipod*,iaudiox5,iaudiom5,gigabeat*,sansae200*,sansac200*,iriverh10,iriverh10_5gb,mrobe100,sansaclip*,sansafuze*,sansaconnect: "SELECT = Yes"
     mrobe500: "PLAY, POWER, or top-right = Yes"
     archosplayer: "(PLAY/STOP)"
     vibe500: "OK = Yes"
+    creativezen*: "Select = Yes"
   </source>
   <dest>
     *: "PLAY = Sim"
     cowond2*: "MENU, ou canto superior direito = Sim"
     iriverh100,iriverh120,iriverh300: "NAVI = Sim"
-    samsungyh*,ipod*,iaudiox5,iaudiom5,gigabeat*,sansae200*,sansac200*,iriverh10,iriverh10_5gb,mrobe100,sansaclip*,sansafuze*,sansaconnect: "SELECT = Sim"
+    ipod*,iaudiox5,iaudiom5,gigabeat*,sansae200*,sansac200*,iriverh10,iriverh10_5gb,mrobe100,sansaclip*,sansafuze*,sansaconnect: "SELECIONAR = Sim"
     mrobe500: "PLAY, POWER, ou canto superior direito = Sim"
     archosplayer: "(PLAY/STOP)"
     vibe500: "OK = Sim"
+    creativezen*: "Selecionar = Sim"
   </dest>
   <voice>
     *: ""
@@ -7615,7 +7621,7 @@
     mrobe500: "HEART = Set"
     iriverh100,iriverh120,iriverh300: "NAVI = Set"
     ipod*,iaudiox5,iaudiom5,iriverh10,iriverh10_5gb,sansae200*,sansac200*,gigabeat*,mrobe100,sansaclip*,sansafuze*,sansaconnect: "SELECT = Set"
-    gogearsa9200: "PLAY = Set"
+    gogearsa9200,samsungyh*: "PLAY = Set"
     vibe500: "OK = Set"
     mpiohd300: "ENTER = Set"
   </source>
@@ -7625,7 +7631,7 @@
     mrobe500: "HEART = Definir"
     iriverh100,iriverh120,iriverh300: "NAVI = Definir"
     ipod*,iaudiox5,iaudiom5,iriverh10,iriverh10_5gb,sansae200*,sansac200*,gigabeat*,mrobe100,sansaclip*,sansafuze*,sansaconnect: "SELECT = Definir"
-    gogearsa9200: "PLAY = Definir"
+    gogearsa9200,samsungyh*: "PLAY = Definir"
     vibe500: "OK = Definir"
     mpiohd300: "ENTER = Definir"
   </dest>
@@ -9673,7 +9679,7 @@
     *: "Building database... %d found (OFF to return)"
     iriverh100,iriverh120,iriverh300: "Building database... %d found (STOP to return)"
     ipod*: "Building database... %d found (PREV to return)"
-    iaudiox5,iaudiom5,gigabeat*,mrobe100: "Building database... %d found (LEFT to return)"
+    iaudiox5,iaudiom5,gigabeat*,mrobe100,samsungyh*: "Building database... %d found (LEFT to return)"
     iriverh10,iriverh10_5gb,sansae200*,sansac200*,sansafuze*,vibe500: "Building database... %d found (PREV to return)"
     gogearsa9200: "Building database... %d found (REW to return)"
     archosplayer: "Building DB %d found"
@@ -9682,7 +9688,7 @@
     *: "Construindo Base de Dados... %d encontrados (OFF para voltar)"
     iriverh100,iriverh120,iriverh300: "Construindo Base de Dados... %d encontrados (STOP para voltar)"
     ipod*: "Construindo Base de Dados... %d encontrado (PREV para voltar)"
-    iaudiox5,iaudiom5,gigabeat*,mrobe100: "Construindo Base de Dados... %d encontrados (LEFT para voltar)"
+    iaudiox5,iaudiom5,gigabeat*,mrobe100,samsungyh*: "Construindo Base de Dados... %d encontrados (LEFT para voltar)"
     iriverh10,iriverh10_5gb,sansae200*,sansac200*,sansafuze*,vibe500: "Construindo Base de Dados... %d encontrados (PREV para voltar)"
     gogearsa9200: "Construindo Base de Dados... %d encontrados (REW para voltar)"
     archosplayer: "Const. DB %d encontr."
@@ -13165,5 +13171,224 @@
   </dest>
   <voice>
     *: "Cor do Separador de linha"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_AFR
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Auditory Fatigue Reduction"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Redução de Fadiga Auditória"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Redução de Fadiga Auditória"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_IBASSO_USB_MODE_MASS_STORAGE
+  desc: in Settings -> General -> System -> USB Mode: Mass Storage
+  user: core
+  <source>
+    *: none
+    ibassodx50: "Mass Storage"
+    ibassodx90: "Mass Storage"
+  </source>
+  <dest>
+    *: none
+    ibassodx50: "Armazenamento em Massa"
+    ibassodx90: "Armazenamento em Massa"
+  </dest>
+  <voice>
+    *: none
+    ibassodx50: "Armazenamento em Massa"
+    ibassodx90: "Armazenamento em Massa"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_IBASSO_FREQ_SCALING_GOVERNOR
+  desc: in Settings -> General -> System -> Freq Scaling Governor
+  user: core
+  <source>
+    *: none
+    ibassodx50: "Freq Scaling Governor"
+    ibassodx90: "Freq Scaling Governor"
+  </source>
+  <dest>
+    *: none
+    ibassodx50: "Governador de Escala de Frequência"
+    ibassodx90: "Governador de Escala de Frequência"
+  </dest>
+  <voice>
+    *: none
+    ibassodx50: "Governador de Escala de Frequência"
+    ibassodx90: "Governador de Escala de Frequência"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_PBE
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Perceptual Bass Enhancement"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Melhoramento Perceptual de Bass"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Melhoramento Perceptual de Bass"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND_FX1
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "f(x1)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "f(x1)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "f(x1)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND
+  desc: in the sound settings menu
+  user: core
+  <source>
+    *: none
+    swcodec: "Haas Surround"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Surround Haas "
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Surround Haas"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_IBASSO_USB_MODE
+  desc: in Settings -> General -> System -> USB Mode
+  user: core
+  <source>
+    *: none
+    ibassodx50: "USB Mode"
+    ibassodx90: "USB Mode"
+  </source>
+  <dest>
+    *: none
+    ibassodx50: "Modo USB"
+    ibassodx90: "Modo USB"
+  </dest>
+  <voice>
+    *: none
+    ibassodx50: "Modo USB"
+    ibassodx90: "Modo USB"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_IBASSO_USB_MODE_CHARGE
+  desc: in Settings -> General -> System -> USB Mode: Charge Only
+  user: core
+  <source>
+    *: none
+    ibassodx50: "Charge Only"
+    ibassodx90: "Charge Only"
+  </source>
+  <dest>
+    *: none
+    ibassodx50: "Carregar só"
+    ibassodx90: "Carregar só"
+  </dest>
+  <voice>
+    *: none
+    ibassodx50: "Carregar só"
+    ibassodx90: "Carregar só"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND_MIX
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "Dry / Wet Mix"
+  </source>
+  <dest>
+    *: none
+    swcodec: "Mistura Seca / Molhada"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "Mistura Seca / Molhada"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND_FX2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "f(x2)"
+  </source>
+  <dest>
+    *: none
+    swcodec: "f(x2)"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "f(x2)"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_SURROUND_METHOD2
+  desc: in sound settings
+  user: core
+  <source>
+    *: none
+    swcodec: "SIDE ONLY"
+  </source>
+  <dest>
+    *: none
+    swcodec: "LADO SÓ"
+  </dest>
+  <voice>
+    *: none
+    swcodec: "LADO SÓ"
+  </voice>
+</phrase>
+<phrase>
+  id: LANG_IBASSO_USB_MODE_ADB
+  desc: in Settings -> General -> System -> USB Mode: Android Debug Bridge
+  user: core
+  <source>
+    *: none
+    ibassodx50: "Android Debug Bridge"
+    ibassodx90: "Android Debug Bridge"
+  </source>
+  <dest>
+    *: none
+    ibassodx50: "Ponte de Debug Android"
+    ibassodx90: "Ponte de Debug Android"
+  </dest>
+  <voice>
+    *: none
+    ibassodx50: "Ponte de Debug Android"
+    ibassodx90: "Ponte de Debug Android"
   </voice>
 </phrase>

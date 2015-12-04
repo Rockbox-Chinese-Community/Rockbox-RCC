@@ -13,10 +13,17 @@
 # to make this do right when used on Mac OS X.
 #
 # The sed line is to prepend the directory to all source files
-
-preprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(1) | \
+convpath = $(shell cygpath -m $(1))
+ 
+ifeq (`uname`,"CYGWIN")
+reprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(convpath, $(1)) | \
 		grep -v '^\#' | grep -v "^ *$$" | \
 		sed -e 's:^..*:$(dir $(1))&:')
+else
+preprocess = $(shell $(CC) $(PPCFLAGS) $(2) -E -P -x c -include config.h $(1) | \
+ 		grep -v '^\#' | grep -v "^ *$$" | \
+ 		sed -e 's:^..*:$(dir $(1))&:')
+endif
 
 preprocess2file = $(SILENT)$(CC) $(PPCFLAGS) $(3) -E -P -x c -include config.h $(1) | \
 		grep -v '^\#' | grep -v "^$$" > $(2)

@@ -24,6 +24,9 @@
 #include "panic.h"
 #include "system-target.h"
 #include "pmu-target.h"
+#include "gpio-s5l8702.h"
+#include "dma-s5l8702.h"
+#include "uart-s5l8702.h"
 
 #define default_interrupt(name) \
   extern __attribute__((weak,alias("UIRQ"))) void name (void)
@@ -32,10 +35,10 @@ void irq_handler(void) __attribute__((interrupt ("IRQ"), naked));
 void fiq_handler(void) __attribute__((interrupt ("FIQ"), naked, \
                                       weak, alias("fiq_dummy")));
 
-default_interrupt(INT_IRQ0);
-default_interrupt(INT_IRQ1);
-default_interrupt(INT_IRQ2);
-default_interrupt(INT_IRQ3);
+default_interrupt(INT_EXT0);    /* GPIOIC group 6 (GPIO 0..31) */
+default_interrupt(INT_EXT1);    /* GPIOIC group 5 (GPIO 32..63) */
+default_interrupt(INT_EXT2);    /* GPIOIC group 4 (GPIO 64..95) */
+default_interrupt(INT_EXT3);    /* GPIOIC group 3 (GPIO 96..123) */
 default_interrupt(INT_IRQ4);
 default_interrupt(INT_IRQ5);
 default_interrupt(INT_IRQ6);
@@ -54,38 +57,24 @@ default_interrupt(INT_IRQ12);
 default_interrupt(INT_IRQ13);
 default_interrupt(INT_IRQ14);
 default_interrupt(INT_IRQ15);
-default_interrupt(INT_DMAC0C0);
-default_interrupt(INT_DMAC0C1);
-default_interrupt(INT_DMAC0C2);
-default_interrupt(INT_DMAC0C3);
-default_interrupt(INT_DMAC0C4);
-default_interrupt(INT_DMAC0C5);
-default_interrupt(INT_DMAC0C6);
-default_interrupt(INT_DMAC0C7);
-default_interrupt(INT_DMAC1C0);
-default_interrupt(INT_DMAC1C1);
-default_interrupt(INT_DMAC1C2);
-default_interrupt(INT_DMAC1C3);
-default_interrupt(INT_DMAC1C4);
-default_interrupt(INT_DMAC1C5);
-default_interrupt(INT_DMAC1C6);
-default_interrupt(INT_DMAC1C7);
+default_interrupt(INT_DMAC0);
+default_interrupt(INT_DMAC1);
 default_interrupt(INT_IRQ18);
 default_interrupt(INT_USB_FUNC);
 default_interrupt(INT_IRQ20);
 default_interrupt(INT_IRQ21);
 default_interrupt(INT_IRQ22);
 default_interrupt(INT_WHEEL);
-default_interrupt(INT_IRQ24);
-default_interrupt(INT_IRQ25);
-default_interrupt(INT_IRQ26);
-default_interrupt(INT_IRQ27);
-default_interrupt(INT_IRQ28);
+default_interrupt(INT_UART0);
+default_interrupt(INT_UART1);
+default_interrupt(INT_UART2);
+default_interrupt(INT_UART3);
+default_interrupt(INT_IRQ28);   /* obsolete/not implemented UART4 ??? */
 default_interrupt(INT_ATA);
 default_interrupt(INT_IRQ30);
-default_interrupt(INT_IRQ31);
-default_interrupt(INT_IRQ32);
-default_interrupt(INT_IRQ33);
+default_interrupt(INT_EXT4);    /* GPIOIC group 2 (not used) */
+default_interrupt(INT_EXT5);    /* GPIOIC group 1 (not used) */
+default_interrupt(INT_EXT6);    /* GPIOIC group 0 */
 default_interrupt(INT_IRQ34);
 default_interrupt(INT_IRQ35);
 default_interrupt(INT_IRQ36);
@@ -140,41 +129,13 @@ void INT_TIMER32()
     if ((THCON >> 12) & 0x7 & tstat) INT_TIMERH();
 }
 
-void INT_DMAC0(void) ICODE_ATTR;
-void INT_DMAC0()
-{
-    uint32_t intsts = DMAC0INTSTS;
-    if (intsts & 1) INT_DMAC0C0();
-    if (intsts & 2) INT_DMAC0C1();
-    if (intsts & 4) INT_DMAC0C2();
-    if (intsts & 8) INT_DMAC0C3();
-    if (intsts & 0x10) INT_DMAC0C4();
-    if (intsts & 0x20) INT_DMAC0C5();
-    if (intsts & 0x40) INT_DMAC0C6();
-    if (intsts & 0x80) INT_DMAC0C7();
-}
-
-void INT_DMAC1(void) ICODE_ATTR;
-void INT_DMAC1()
-{
-    uint32_t intsts = DMAC1INTSTS;
-    if (intsts & 1) INT_DMAC1C0();
-    if (intsts & 2) INT_DMAC1C1();
-    if (intsts & 4) INT_DMAC1C2();
-    if (intsts & 8) INT_DMAC1C3();
-    if (intsts & 0x10) INT_DMAC1C4();
-    if (intsts & 0x20) INT_DMAC1C5();
-    if (intsts & 0x40) INT_DMAC1C6();
-    if (intsts & 0x80) INT_DMAC1C7();
-}
-
 static void (* const irqvector[])(void) =
 {
-    INT_IRQ0,INT_IRQ1,INT_IRQ2,INT_IRQ3,INT_IRQ4,INT_IRQ5,INT_IRQ6,INT_TIMER32,
+    INT_EXT0,INT_EXT1,INT_EXT2,INT_EXT3,INT_IRQ4,INT_IRQ5,INT_IRQ6,INT_TIMER32,
     INT_TIMER,INT_IRQ9,INT_IRQ10,INT_IRQ11,INT_IRQ12,INT_IRQ13,INT_IRQ14,INT_IRQ15,
     INT_DMAC0,INT_DMAC1,INT_IRQ18,INT_USB_FUNC,INT_IRQ20,INT_IRQ21,INT_IRQ22,INT_WHEEL,
-    INT_IRQ24,INT_IRQ25,INT_IRQ26,INT_IRQ27,INT_IRQ28,INT_ATA,INT_IRQ30,INT_IRQ31,
-    INT_IRQ32,INT_IRQ33,INT_IRQ34,INT_IRQ35,INT_IRQ36,INT_IRQ37,INT_IRQ38,INT_IRQ39,
+    INT_UART0,INT_UART1,INT_UART2,INT_UART3,INT_IRQ28,INT_ATA,INT_IRQ30,INT_EXT4,
+    INT_EXT5,INT_EXT6,INT_IRQ34,INT_IRQ35,INT_IRQ36,INT_IRQ37,INT_IRQ38,INT_IRQ39,
     INT_IRQ40,INT_IRQ41,INT_IRQ42,INT_IRQ43,INT_MMC,INT_IRQ45,INT_IRQ46,INT_IRQ47,
     INT_IRQ48,INT_IRQ49,INT_IRQ50,INT_IRQ51,INT_IRQ52,INT_IRQ53,INT_IRQ54,INT_IRQ55,
     INT_IRQ56,INT_IRQ57,INT_IRQ58,INT_IRQ59,INT_IRQ60,INT_IRQ61,INT_IRQ62,INT_IRQ63
@@ -222,7 +183,12 @@ void fiq_dummy(void)
 
 void system_init(void)
 {
+    gpio_init();
     pmu_init();
+    dma_init();
+#ifdef HAVE_SERIAL
+    uart_init();
+#endif
     VIC0INTENABLE = 1 << IRQ_WHEEL;
     VIC0INTENABLE = 1 << IRQ_ATA;
     VIC1INTENABLE = 1 << (IRQ_MMC - 32);

@@ -30,6 +30,9 @@
 #include "power.h"
 #include "pmu-target.h"
 #include "pcm-target.h"
+#ifdef HAVE_SERIAL
+#include "uc8702.h"
+#endif
 
 #define DEBUG_CANCEL BUTTON_MENU
 
@@ -39,12 +42,18 @@
 #define _DEBUG_PRINTF(a, varargs...) lcd_putsf(0, line++, (a), ##varargs);
 
 extern int lcd_type;
+extern int rec_hw_ver;
+
 bool dbg_hw_info(void)
 {
     int line;
     int i;
     unsigned int state = 0;
+#ifdef UC8702_DEBUG
     const unsigned int max_states=3;
+#else
+    const unsigned int max_states=2;
+#endif
 
     lcd_clear_display();
     lcd_setfont(FONT_SYSFIXED);
@@ -69,6 +78,9 @@ bool dbg_hw_info(void)
             line++;
 
             _DEBUG_PRINTF("LCD type: %d", lcd_type);
+            line++;
+
+            _DEBUG_PRINTF("capture HW: %d", rec_hw_ver);
             line++;
         }
         else if(state==1)
@@ -95,16 +107,41 @@ bool dbg_hw_info(void)
             _DEBUG_PRINTF("backlight: %s", pmu_read(0x29) ? "on" : "off");
             _DEBUG_PRINTF("brightness value: %d", pmu_read(0x28));
         }
+#ifdef UC8702_DEBUG
         else if(state==2)
         {
-            _DEBUG_PRINTF("Audio DMA:");
-            _DEBUG_PRINTF(">%08X %08X %08X %08X %08X", DMAC0C0CONFIG, DMAC0C0SRCADDR,
-                          DMAC0C0DESTADDR, DMAC0C0NEXTLLI, DMAC0C0CONTROL);
-            for(i = 0; i < PCM_LLICOUNT; i++)
-                _DEBUG_PRINTF("%08X: %08X %08X %08X %08X", &pcm_lli[i], pcm_lli[i].srcaddr,
-                              pcm_lli[i].dstaddr, pcm_lli[i].nextlli, pcm_lli[i].control);
-            _DEBUG_PRINTF("chunk: %08X %08X", pcm_chunksize, pcm_remaining);
+            extern struct uartc_port ser_port;
+            int tx_stat, rx_stat, tx_speed, rx_speed;
+            char line_cfg[4];
+            int abr_stat;
+            unsigned int abr_cnt;
+
+            char *abrstatus[] = {"Idle", "Launched", "Counting", "Abnormal"};
+
+            uartc_port_get_line_info(&ser_port, &tx_stat, &rx_stat,
+                                        &tx_speed, &rx_speed, line_cfg);
+
+            abr_stat = uartc_port_get_abr_info(&ser_port, &abr_cnt);
+
+            _DEBUG_PRINTF("UART %d:", ser_port.id);
+            line++;
+            _DEBUG_PRINTF("line: %s", line_cfg);
+            _DEBUG_PRINTF("Tx: %s, speed: %d", tx_stat ? "On":"Off", tx_speed);
+            _DEBUG_PRINTF("Rx: %s, speed: %d", rx_stat ? "On":"Off", rx_speed);
+            _DEBUG_PRINTF("ABR: %s, cnt: %d", abrstatus[abr_stat], abr_cnt);
+            line++;
+            _DEBUG_PRINTF("n_tx_bytes: %u", ser_port.n_tx_bytes);
+            _DEBUG_PRINTF("n_rx_bytes: %u", ser_port.n_rx_bytes);
+            _DEBUG_PRINTF("n_ovr_err: %u", ser_port.n_ovr_err);
+            _DEBUG_PRINTF("n_parity_err: %u", ser_port.n_parity_err);
+            _DEBUG_PRINTF("n_frame_err: %u", ser_port.n_frame_err);
+            _DEBUG_PRINTF("n_break_detect: %u", ser_port.n_break_detect);
+            _DEBUG_PRINTF("n_abnormal0: %u", ser_port.n_abnormal0);
+            _DEBUG_PRINTF("n_abnormal1: %u", ser_port.n_abnormal1);
+
+            sleep(HZ/20);
         }
+#endif
         else
         {
             state=0;
