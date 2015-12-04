@@ -38,18 +38,15 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.umeng.analytics.MobclickAgent;
-import com.umeng.fb.NotificationType;
-import com.umeng.fb.UMFeedbackService;
 
-public class RockboxActivity extends Activity 
+public class RockboxActivity extends Activity
 {
     private RockboxApp RockboxAppSetting = RockboxApp.getInstance();
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(Bundle savedInstanceState) 
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        UMFeedbackService.enableNewReplyNotification(this, NotificationType.AlertDialog);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         if (RockboxAppSetting.getTitlebarStatus())
         {
@@ -121,14 +118,14 @@ public class RockboxActivity extends Activity
                 .show();
         }
     }
-    
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
         menu.add(0, 0, 0, R.string.rockbox_simulatebutton);
         menu.add(0, 1, 0, R.string.rockbox_preference);
         menu.add(0, 2, 0, R.string.rockbox_about);
-        menu.add(0, 3, 0, R.string.rockbox_exit);        
+        menu.add(0, 3, 0, R.string.rockbox_exit);
         return true;
     }
 
@@ -162,10 +159,10 @@ public class RockboxActivity extends Activity
                 RockboxFramebuffer.buttonHandler(0, false); //release
                 break;
             case 1:
-                Intent intent = new Intent();  
-                intent.setClass(RockboxActivity.this, RockboxPref.class);  
-                 /* 调用一个新的Activity */ 
-                startActivity(intent);  
+                Intent intent = new Intent();
+                intent.setClass(RockboxActivity.this, RockboxPref.class);
+                 /* 调用一个新的Activity */
+                startActivity(intent);
             	break;
          }
         return true;
@@ -186,12 +183,12 @@ public class RockboxActivity extends Activity
         setVisible(true);
         setServiceActivity(true);
     }
-    
+
     /* this is also called when the backlight goes off,
-     * which is nice 
+     * which is nice
      */
     @Override
-    protected void onPause() 
+    protected void onPause()
     {
         super.onPause();
         RockboxAppSetting.acquireWakeLock();
@@ -200,16 +197,16 @@ public class RockboxActivity extends Activity
          * us to disable drawing */
         setVisible(false);
     }
-    
+
     @Override
-    protected void onStop() 
+    protected void onStop()
     {
         super.onStop();
         setServiceActivity(false);
     }
-    
+
     @Override
-    protected void onDestroy() 
+    protected void onDestroy()
     {
         super.onDestroy();
         setServiceActivity(false);
