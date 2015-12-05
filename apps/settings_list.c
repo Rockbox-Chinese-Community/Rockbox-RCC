@@ -2267,9 +2267,7 @@ const struct settings_list settings[] = {
 #if EQ_NUM_BANDS > 30
     EQ_BAND(30, "eq peak filter 30"),
 #endif
-#if EQ_NUM_BANDS > 31
-    EQ_BAND(EQ_NUM_BANDS-1, "eq high shelf filter"),
-#endif
+    EQ_BAND(EQ_NUM_BANDS - 1, "eq high shelf filter"),
 #undef EQ_BAND
 
     /* dithering */
