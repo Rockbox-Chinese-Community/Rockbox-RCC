@@ -156,7 +156,7 @@ void pcm_play_dma_start(const void *addr, size_t size)
 {
     pcm_data_start = addr;
     pcm_data_size = size;
-    
+
     pcm_play_dma_pause(false);
 }
 
@@ -180,7 +180,7 @@ void pcm_play_dma_stop(void)
     jni_call(pcm_play_dma_stop_);
 }
 
-void pcm_play_dma_pause_(bool pause)
+static void pcm_play_dma_pause_(bool pause)
 {
     (*env_ptr)->CallVoidMethod(env_ptr,
                                RockboxPCM_instance,
