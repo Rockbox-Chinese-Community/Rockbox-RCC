@@ -1,4 +1,4 @@
-#             __________               __   ___.
+ #             __________               __   ___.
 #   Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
 #   Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
 #   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
@@ -36,7 +36,7 @@ $(CUSTOMJNIOBJS_PATH)/%.o: $(CUSTOMJNI_SRC)/%.c
 .PHONY: apk classes clean dex dirs libs jar
 
 # API version
-ANDROID_PLATFORM_VERSION=22
+ANDROID_PLATFORM_VERSION=23
 ANDROID_PLATFORM=$(ANDROID_SDK_PATH)/platforms/android-$(ANDROID_PLATFORM_VERSION)
 
 # android tools
