@@ -502,13 +502,14 @@ QString Utils::resolveDevicename(QString path)
     // get the extents
     if(DeviceIoControl(h, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS,
                 NULL, 0, extents, sizeof(buffer), &written, NULL)) {
-        if(extents->NumberOfDiskExtents > 1) {
-            LOG_INFO() << "resolving device name: volume spans multiple disks!";
-            return "";
+        if(extents->NumberOfDiskExtents == 1) {
+            CloseHandle(h);
+            LOG_INFO() << "device name is" << extents->Extents[0].DiskNumber;
+            return QString("%1").arg(extents->Extents[0].DiskNumber);
         }
-        LOG_INFO() << "device name is" << extents->Extents[0].DiskNumber;
-        return QString("%1").arg(extents->Extents[0].DiskNumber);
+        LOG_INFO() << "resolving device name: volume spans multiple disks!";
     }
+    CloseHandle(h);
 #endif
     return QString("");
 
@@ -669,13 +670,13 @@ QStringList Utils::mountpoints(enum MountpointsFilter type)
 
 
 /** Check if a process with a given name is running
- *  @param names list of names to check
- *  @return list of detected processes.
+ *  @param names list of names to filter on. All processes if empty list.
+ *  @return list of processname, process ID pairs.
  */
-QStringList Utils::findRunningProcess(QStringList names)
+QMap<QString, QList<int> > Utils::findRunningProcess(QStringList names)
 {
-    QStringList processlist;
-    QStringList found;
+    QMap<QString, QList<int> > processlist;
+    QMap<QString, QList<int> > found;
 #if defined(Q_OS_WIN32)
     HANDLE hdl;
     PROCESSENTRY32 entry;
@@ -693,14 +694,16 @@ QStringList Utils::findRunningProcess(QStringList names)
         return found;
     }
 
-    processlist.append(QString::fromWCharArray(entry.szExeFile));
     do {
+        int pid = entry.th32ProcessID;  // FIXME: DWORD vs int!
+        QString name = QString::fromWCharArray(entry.szExeFile);
+        if(processlist.find(name) == processlist.end()) {
+            processlist.insert(name, QList<int>());
+        }
+        processlist[name].append(pid);
         entry.dwSize = sizeof(PROCESSENTRY32);
         entry.szExeFile[0] = '\0';
         result = Process32Next(hdl, &entry);
-        if(result) {
-            processlist.append(QString::fromWCharArray(entry.szExeFile));
-        }
     } while(result);
     CloseHandle(hdl);
 #endif
@@ -725,28 +728,38 @@ QStringList Utils::findRunningProcess(QStringList names)
                     if(isprint(buf[i])) break;
                 }
                 // avoid adding duplicates.
-                QString process = QString::fromUtf8(&buf[i]);
-                if(!processlist.contains(process)) {
-                    processlist.append(process);
+                QString name = QString::fromUtf8(&buf[i]);
+                if(processlist.find(name) == processlist.end()) {
+                    processlist.insert(name, QList<int>());
                 }
-
+                processlist[name].append(pid);
             }
         }
     } while(err == noErr);
 #endif
-    // check for given names in list of processes
-    for(int i = 0; i < names.size(); ++i) {
-#if defined(Q_OS_WIN32)
-        // the process name might be truncated. Allow the extension to be partial.
-        int index = processlist.indexOf(QRegExp(names.at(i) + "(\\.(e(x(e?)?)?)?)?"));
-#else
-        int index = processlist.indexOf(names.at(i));
+#if defined(Q_OS_LINUX)
+    // not implemented for Linux!
 #endif
-        if(index != -1) {
-            found.append(processlist.at(index));
+    //  Filter for names (unless empty)
+    if(names.size() > 0) {
+        for(int i = 0; i < names.size(); ++i) {
+            QStringList k(processlist.keys());
+#if defined(Q_OS_WIN32)
+            // the process name might be truncated. Allow the extension to be partial.
+            int index = k.indexOf(QRegExp(names.at(i) + "(\\.(e(x(e?)?)?)?)?",
+                                          Qt::CaseInsensitive));
+#else
+            int index = k.indexOf(names.at(i));
+#endif
+            if(index != -1) {
+                found.insert(k[index], processlist[k[index]]);
+            }
         }
     }
-    LOG_INFO() << "Found listed processes running:" << found;
+    else {
+        found = processlist;
+    }
+    LOG_INFO() << "Looking for processes" << names << "found" << found;
     return found;
 }
 
