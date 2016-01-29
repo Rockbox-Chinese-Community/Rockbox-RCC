@@ -51,6 +51,10 @@
 #define LOAD_FIRMWARE(a,b,c) load_firmware(a,b,c)
 #endif
 
+#if CONFIG_CPU == AS3525v2
+#include "ascodec.h"
+#endif
+
 #if !defined(IRIVER_IFP7XX_SERIES)
 /* FIX: this doesn't work on iFP */
 
@@ -267,6 +271,10 @@ int rolo_load(const char* filename)
     lcd_remote_update();
 #endif
     adc_close();
+#if CONFIG_CPU == AS3525v2
+    /* Set CVDD1 power supply to default*/
+    ascodec_write_pmu(0x17, 1, 0);
+#endif
 
 #if CONFIG_CPU != IMX31L /* We're not finished yet */
 #ifdef CPU_ARM
