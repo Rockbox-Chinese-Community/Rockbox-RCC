@@ -1510,58 +1510,55 @@ static int disk_callback(int btn, struct gui_synclist *lists)
 }
 
 #ifdef HAVE_ATA_SMART
-static struct ata_smart_values *smart_data = NULL;
+static struct ata_smart_values smart_data STORAGE_ALIGN_ATTR;
 
 static const char * ata_smart_get_attr_name(unsigned char id)
 {
-    switch (id)
-    {
-        case 1:     return "Raw Read Error Rate";
-        case 2:     return "Throughput Performance";
-        case 3:     return "Spin-Up Time";
-        case 4:     return "Start/Stop Count";
-        case 5:     return "Reallocated Sector Count";
-        case 7:     return "Seek Error Rate";
-        case 8:     return "Seek Time Performance";
-        case 9:     return "Power-On Hours Count";
-        case 10:    return "Spin-Up Retry Count";
-        case 12:    return "Power Cycle Count";
-        case 192:   return "Power-Off Retract Count";
-        case 193:   return "Load/Unload Cycle Count";
-        case 194:   return "HDA Temperature";
-        case 196:   return "Reallocated Event Count";
-        case 197:   return "Current Pending Sector Count";
-        case 198:   return "Uncorrectable Sector Count";
-        case 199:   return "UltraDMA CRC Error Count";
-        case 220:   return "Disk Shift";
-        case 222:   return "Loaded Hours";
-        case 223:   return "Load/Unload Retry Count";
-        case 224:   return "Load Friction";
-        case 226:   return "Load-In Time";
-        case 240:   return "Transfer Error Rate";   /* Fujitsu */
-        /*case 240:   return "Head Flying Hours";*/
-        default:    return "Unknown Attribute";
-    }
+    if (id == 1)    return "Raw Read Error Rate";
+    if (id == 2)    return "Throughput Performance";
+    if (id == 3)    return "Spin-Up Time";
+    if (id == 4)    return "Start/Stop Count";
+    if (id == 5)    return "Reallocated Sector Count";
+    if (id == 7)    return "Seek Error Rate";
+    if (id == 8)    return "Seek Time Performance";
+    if (id == 9)    return "Power-On Hours Count";
+    if (id == 10)   return "Spin-Up Retry Count";
+    if (id == 12)   return "Power Cycle Count";
+    if (id == 191)  return "G-Sense Error Rate";
+    if (id == 192)  return "Power-Off Retract Count";
+    if (id == 193)  return "Load/Unload Cycle Count";
+    if (id == 194)  return "HDA Temperature";
+    if (id == 195)  return "Hardware ECC Recovered";
+    if (id == 196)  return "Reallocated Event Count";
+    if (id == 197)  return "Current Pending Sector Count";
+    if (id == 198)  return "Uncorrectable Sector Count";
+    if (id == 199)  return "UDMA CRC Error Count";
+    if (id == 200)  return "Write Error Rate";
+    if (id == 201)  return "TA Counter Detected";
+    if (id == 220)  return "Disk Shift";
+    if (id == 222)  return "Loaded Hours";
+    if (id == 223)  return "Load/Unload Retry Count";
+    if (id == 224)  return "Load Friction";
+    if (id == 225)  return "Load Cycle Count";
+    if (id == 226)  return "Load-In Time";
+    if (id == 240)  return "Transfer Error Rate";   /* Fujitsu */
+    return "Unknown Attribute";
 };
 
 static int ata_smart_get_attr_rawfmt(unsigned char id)
 {
-    switch (id)
-    {
-        case 3:   /* Spin-up time */
-            return RAWFMT_RAW16_OPT_AVG16;
+    if (id == 3)      /* Spin-up time */
+        return RAWFMT_RAW16_OPT_AVG16;
 
-        case 5:   /* Reallocated sector count */
-        case 196: /* Reallocated event count */
-            return RAWFMT_RAW16_OPT_RAW16;
+    if (id == 5 ||    /* Reallocated sector count */
+        id == 196)    /* Reallocated event count */
+        return RAWFMT_RAW16_OPT_RAW16;
 
-        case 190: /* Airflow Temperature */
-        case 194: /* HDA Temperature */
-            return RAWFMT_TEMPMINMAX;
+    if (id == 190 ||  /* Airflow Temperature */
+        id == 194)    /* HDA Temperature */
+        return RAWFMT_TEMPMINMAX;
 
-        default:
-            return RAWFMT_RAW48;
-    }
+    return RAWFMT_RAW48;
 };
 
 static int ata_smart_attr_to_string(
@@ -1639,7 +1636,7 @@ static bool ata_smart_dump(void)
     fd = creat("/smart_data.bin", 0666);
     if(fd >= 0)
     {
-        write(fd, smart_data, sizeof(struct ata_smart_values));
+        write(fd, &smart_data, sizeof(struct ata_smart_values));
         close(fd);
     }
 
@@ -1651,7 +1648,7 @@ static bool ata_smart_dump(void)
         for (i = 0; i < NUMBER_ATA_SMART_ATTRIBUTES; i++)
         {
             if (ata_smart_attr_to_string(
-                    &smart_data->vendor_attributes[i], buf, sizeof(buf)))
+                    &smart_data.vendor_attributes[i], buf, sizeof(buf)))
             {
                 write(fd, buf, strlen(buf));
                 write(fd, "\n", 1);
@@ -1666,32 +1663,47 @@ static bool ata_smart_dump(void)
 static int ata_smart_callback(int btn, struct gui_synclist *lists)
 {
     (void)lists;
+    static bool read_done = false;
 
     if (btn == ACTION_STD_CANCEL)
     {
-        smart_data = NULL;
+        read_done = false;
         return btn;
     }
 
     /* read S.M.A.R.T. data only on first redraw */
-    if (!smart_data)
+    if (!read_done)
     {
-        int i;
-        char buf[SIMPLELIST_MAX_LINELENGTH];
-        smart_data = ata_read_smart();
+        int rc;
+        memset(&smart_data, 0, sizeof(struct ata_smart_values));
+        rc = ata_read_smart(&smart_data);
         simplelist_set_line_count(0);
-        simplelist_addline("Id  Name:  Current,Worst  Raw");
-        for (i = 0; i < NUMBER_ATA_SMART_ATTRIBUTES; i++) {
-            if (ata_smart_attr_to_string(
-                        &smart_data->vendor_attributes[i], buf, sizeof(buf)))
-                simplelist_addline(buf);
+        if (rc == 0)
+        {
+            int i;
+            char buf[SIMPLELIST_MAX_LINELENGTH];
+            simplelist_addline("Id  Name:  Current,Worst  Raw");
+            for (i = 0; i < NUMBER_ATA_SMART_ATTRIBUTES; i++)
+            {
+                if (ata_smart_attr_to_string(
+                        &smart_data.vendor_attributes[i], buf, sizeof(buf)))
+                {
+                    simplelist_addline(buf);
+                }
+            }
         }
+        else
+        {
+            simplelist_addline("ATA SMART error: 0x%x", rc);
+        }
+        read_done = true;
     }
 
     if (btn == ACTION_STD_CONTEXT)
     {
+        splash(0, "Dumping data...");
         ata_smart_dump();
-        splashf(HZ, "S.M.A.R.T. data dumped");
+        splash(HZ, "SMART data dumped");
     }
 
     return btn;
