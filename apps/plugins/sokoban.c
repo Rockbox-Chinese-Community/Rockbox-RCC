@@ -490,12 +490,13 @@
 #define BUTTON_SAVE          BUTTON_PLAY
 #define BUTTON_SAVE_NAME "PLAY"
 
-#elif CONFIG_KEYPAD == SAMSUNG_YH920_PAD
+#elif CONFIG_KEYPAD == SAMSUNG_YH92X_PAD
 #define SOKOBAN_LEFT         BUTTON_LEFT
 #define SOKOBAN_RIGHT        BUTTON_RIGHT
 #define SOKOBAN_UP           BUTTON_UP
 #define SOKOBAN_DOWN         BUTTON_DOWN
-#define SOKOBAN_MENU         BUTTON_PLAY
+#define SOKOBAN_MENU_PRE     BUTTON_PLAY
+#define SOKOBAN_MENU         (BUTTON_PLAY | BUTTON_REL)
 #define SOKOBAN_UNDO         BUTTON_REW
 #define SOKOBAN_REDO         BUTTON_FFWD
 #define SOKOBAN_LEVEL_DOWN   (BUTTON_PLAY | BUTTON_DOWN)
@@ -1621,7 +1622,7 @@ static int sokoban_menu(void)
                 rb->lcd_putsxy(3, 36, "[VOL-] Previous Level");
                 rb->lcd_putsxy(3, 46, "[NEXT+PREV] Restart Level");
                 rb->lcd_putsxy(3, 56, "[VOL+] Next Level");
-#elif CONFIG_KEYPAD == SAMSUNG_YH920_PAD
+#elif CONFIG_KEYPAD == SAMSUNG_YH92X_PAD
                 rb->lcd_putsxy(3,  6, "[PLAY] Menu");
                 rb->lcd_putsxy(3, 16, "[REW]  Undo");
                 rb->lcd_putsxy(3, 26, "[FFWD] Redo");
@@ -1690,7 +1691,7 @@ static bool sokoban_loop(void)
 {
     bool moved;
     int i = 0, button = 0;
-#if defined(SOKOBAN_UNDO_PRE)
+#if defined(SOKOBAN_UNDO_PRE) || defined(SOKOBAN_MENU_PRE)
     int lastbutton = 0;
 #endif
     int w, h;
@@ -1703,10 +1704,15 @@ static bool sokoban_loop(void)
 
         switch(button)
         {
+            case SOKOBAN_MENU:
+#ifdef SOKOBAN_MENU_PRE
+                if (lastbutton != SOKOBAN_MENU_PRE)
+                    break;
+                /* fallthrough */
+#endif
 #ifdef SOKOBAN_RC_MENU
             case SOKOBAN_RC_MENU:
 #endif
-            case SOKOBAN_MENU:
                 switch (sokoban_menu()) {
                     case 5: /* Quit */
                     case 6: /* Save & quit */
@@ -1794,7 +1800,7 @@ static bool sokoban_loop(void)
                     return PLUGIN_USB_CONNECTED;
                 break;
         }
-#if defined(SOKOBAN_UNDO_PRE)
+#if defined(SOKOBAN_UNDO_PRE) || defined(SOKOBAN_MENU_PRE)
         lastbutton = button;
 #endif
 

@@ -191,14 +191,15 @@
 #define ZX_MENU         BUTTON_POWER
 
 #elif (CONFIG_KEYPAD == SAMSUNG_YH820_PAD) || \
-      (CONFIG_KEYPAD == SAMSUNG_YH920_PAD)
+      (CONFIG_KEYPAD == SAMSUNG_YH92X_PAD)
 
 #define ZX_UP           BUTTON_UP
 #define ZX_DOWN         BUTTON_DOWN
 #define ZX_LEFT         BUTTON_LEFT
 #define ZX_RIGHT        BUTTON_RIGHT
 #define ZX_SELECT       BUTTON_PLAY
-#define ZX_MENU         BUTTON_FFWD
+#define ZX_SELECT2      BUTTON_FFWD
+#define ZX_MENU         BUTTON_REW
 
 #elif CONFIG_KEYPAD == PBELL_VIBE500_PAD
 

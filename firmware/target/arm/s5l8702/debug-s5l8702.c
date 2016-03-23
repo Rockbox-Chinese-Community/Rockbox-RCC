@@ -33,6 +33,7 @@
 #ifdef HAVE_SERIAL
 #include "uc8702.h"
 #endif
+#include "clocking-s5l8702.h"
 
 #define DEBUG_CANCEL BUTTON_MENU
 
@@ -66,22 +67,34 @@ bool dbg_hw_info(void)
 
         if(state == 0)
         {
+            unsigned cpu_hz;
+            get_system_freqs(&cpu_hz, NULL, NULL);
             _DEBUG_PRINTF("CPU:");
-            _DEBUG_PRINTF("speed: %d MHz", ((CLKCON0 & 1) ?
-                                CPUFREQ_NORMAL : CPUFREQ_MAX) / 1000000);
+            _DEBUG_PRINTF("speed: %d MHz", cpu_hz / 1000000);
             _DEBUG_PRINTF("current_tick: %d", (unsigned int)current_tick);
-            uint32_t __res;
-            asm volatile ("mrc p15, 0, %0, c0, c0, 0" : "=r"(__res));
-            _DEBUG_PRINTF("ID code: %08x", __res);
-            asm volatile ("mrc p15, 0, %0, c0, c0, 1" : "=r"(__res));
-            _DEBUG_PRINTF("cache type: %08x", __res);
             line++;
-
             _DEBUG_PRINTF("LCD type: %d", lcd_type);
             line++;
-
-            _DEBUG_PRINTF("capture HW: %d", rec_hw_ver);
+            _DEBUG_PRINTF("capture HW type: %d", rec_hw_ver);
             line++;
+#ifdef CLOCKING_DEBUG
+            /* show all clocks */
+            unsigned f_clk, c_clk, h_clk, p_clk, l_clk, s_clk;
+
+            f_clk = get_system_freqs(&c_clk, &h_clk, &p_clk);
+            s_clk = h_clk / soc_get_hsdiv();
+            l_clk = h_clk >> ((LCD_CONFIG & 7) + 1); /* div = 2^(val+1) */
+
+            #define MHZ 1000000
+            #define TMHZ 100000
+            _DEBUG_PRINTF("Clocks (MHz):");
+            _DEBUG_PRINTF("FClk: %d.%d",  f_clk / MHZ, (f_clk % MHZ) / TMHZ);
+            _DEBUG_PRINTF(" CPU: %d.%d",  c_clk / MHZ, (c_clk % MHZ) / TMHZ);
+            _DEBUG_PRINTF(" AHB: %d.%d",  h_clk / MHZ, (h_clk % MHZ) / TMHZ);
+            _DEBUG_PRINTF("  SM1: %d.%d", s_clk / MHZ, (s_clk % MHZ) / TMHZ);
+            _DEBUG_PRINTF("  LCD: %d.%d", l_clk / MHZ, (l_clk % MHZ) / TMHZ);
+            _DEBUG_PRINTF(" APB: %d.%d",  p_clk / MHZ, (p_clk % MHZ) / TMHZ);
+#endif
         }
         else if(state==1)
         {

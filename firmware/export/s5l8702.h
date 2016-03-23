@@ -31,13 +31,19 @@
 #define CACHEALIGN_BITS (5) /* 2^5 = 32 bytes */
 
 #define DRAM_ORIG 0x08000000
-#define IRAM_ORIG 0
+#define IRAM_ORIG 0x22000000
 
 #define DRAM_SIZE (MEMORYSIZE * 0x100000)
 #define IRAM_SIZE 0x40000
 
-#define TTB_SIZE                  0x4000
-#define TTB_BASE_ADDR             (DRAM_ORIG + DRAM_SIZE - TTB_SIZE)
+#define TTB_SIZE        0x4000
+#define TTB_BASE_ADDR   (DRAM_ORIG + DRAM_SIZE - TTB_SIZE)
+
+#define IRAM0_ORIG      0x22000000
+#define IRAM0_SIZE      0x20000
+#define IRAM1_ORIG      0x22020000
+#define IRAM1_SIZE      0x20000
+
 
 /////SYSTEM CONTROLLER/////
 #define CLKCON0      (*((volatile uint32_t*)(0x3C500000)))
@@ -60,6 +66,29 @@
                                              ((i) == 2 ? 0x58 : \
                                              ((i) == 1 ? 0x4C : \
                                                          0x48)))))))
+/* SW Reset Control Register */
+#define SWRCON      (*((volatile uint32_t*)(0x3C500050)))
+/* Reset Status Register */
+#define RSTSR       (*((volatile uint32_t*)(0x3C500054)))
+#define RSTSR_WDR_BIT   (1 << 2)
+#define RSTSR_SWR_BIT   (1 << 1)
+#define RSTSR_HWR_BIT   (1 << 0)
+
+
+/////WATCHDOG/////
+#define WDTCON      (*((volatile uint32_t*)(0x3C800000)))
+#define WDTCNT      (*((volatile uint32_t*)(0x3C800004)))
+
+
+/////MEMCONTROLLER/////
+#define MIU_BASE        (0x38100000)
+#define MIU_REG(off)    (*((uint32_t volatile*)(MIU_BASE + (off))))
+/* following registers are similar to s5l8700x */
+#define MIUCON          (*((uint32_t volatile*)(0x38100000)))
+#define MIUCOM          (*((uint32_t volatile*)(0x38100004)))
+#define MIUAREF         (*((uint32_t volatile*)(0x38100008)))
+#define MIUMRS          (*((uint32_t volatile*)(0x3810000C)))
+#define MIUSDPARA       (*((uint32_t volatile*)(0x38100010)))
 
 
 /////TIMER/////
@@ -151,10 +180,16 @@
 
 
 /////I2C/////
-#define IICCON(bus)  (*((uint32_t volatile*)(0x3C600000 + 0x300000 * (bus))))
-#define IICSTAT(bus) (*((uint32_t volatile*)(0x3C600004 + 0x300000 * (bus))))
-#define IICADD(bus)  (*((uint32_t volatile*)(0x3C600008 + 0x300000 * (bus))))
-#define IICDS(bus)   (*((uint32_t volatile*)(0x3C60000C + 0x300000 * (bus))))
+#define I2CCLKGATE(i)   ((i) == 1 ? CLOCKGATE_I2C1 : \
+                                    CLOCKGATE_I2C0)
+
+#define IICCON(bus)     (*((uint32_t volatile*)(0x3C600000 + 0x300000 * (bus))))
+#define IICSTAT(bus)    (*((uint32_t volatile*)(0x3C600004 + 0x300000 * (bus))))
+#define IICADD(bus)     (*((uint32_t volatile*)(0x3C600008 + 0x300000 * (bus))))
+#define IICDS(bus)      (*((uint32_t volatile*)(0x3C60000C + 0x300000 * (bus))))
+#define IICUNK10(bus)   (*((uint32_t volatile*)(0x3C600010 + 0x300000 * (bus))))
+#define IICUNK14(bus)   (*((uint32_t volatile*)(0x3C600014 + 0x300000 * (bus))))
+#define IICUNK18(bus)   (*((uint32_t volatile*)(0x3C600018 + 0x300000 * (bus))))
 
 
 /////INTERRUPT CONTROLLERS/////
@@ -335,6 +370,7 @@
 #define PDAT(i)       (*((uint32_t volatile*)(0x3cf00004 + ((i) << 5))))
 #define PUNA(i)       (*((uint32_t volatile*)(0x3cf00008 + ((i) << 5))))
 #define PUNB(i)       (*((uint32_t volatile*)(0x3cf0000c + ((i) << 5))))
+#define PUNC(i)       (*((uint32_t volatile*)(0x3cf00010 + ((i) << 5))))
 #define PCON0         (*((uint32_t volatile*)(0x3cf00000)))
 #define PDAT0         (*((uint32_t volatile*)(0x3cf00004)))
 #define PCON1         (*((uint32_t volatile*)(0x3cf00020)))
@@ -374,21 +410,21 @@
 #define SPIBASE(i)      ((i) == 2 ? 0x3d200000 : \
                          (i) == 1 ? 0x3ce00000 : \
                                     0x3c300000)
-#define SPICLKGATE(i)   ((i) == 2 ? 0x2f : \
-                         (i) == 1 ? 0x2b : \
-                                    0x22)
+#define SPICLKGATE(i)   ((i) == 2 ? CLOCKGATE_SPI2 : \
+                         (i) == 1 ? CLOCKGATE_SPI1 : \
+                                    CLOCKGATE_SPI0)
 #define SPIDMA(i)       ((i) == 2 ? 0xd : \
                          (i) == 1 ? 0xf : \
                                     0x5)
 #define SPICTRL(i)    (*((uint32_t volatile*)(SPIBASE(i))))
 #define SPISETUP(i)   (*((uint32_t volatile*)(SPIBASE(i) + 0x4)))
 #define SPISTATUS(i)  (*((uint32_t volatile*)(SPIBASE(i) + 0x8)))
-#define SPIUNKREG1(i) (*((uint32_t volatile*)(SPIBASE(i) + 0xc)))
+#define SPIPIN(i)     (*((uint32_t volatile*)(SPIBASE(i) + 0xc)))
 #define SPITXDATA(i)  (*((uint32_t volatile*)(SPIBASE(i) + 0x10)))
 #define SPIRXDATA(i)  (*((uint32_t volatile*)(SPIBASE(i) + 0x20)))
 #define SPICLKDIV(i)  (*((uint32_t volatile*)(SPIBASE(i) + 0x30)))
 #define SPIRXLIMIT(i) (*((uint32_t volatile*)(SPIBASE(i) + 0x34)))
-#define SPIUNKREG3(i) (*((uint32_t volatile*)(SPIBASE(i) + 0x38)))
+#define SPIDD(i)      (*((uint32_t volatile*)(SPIBASE(i) + 0x38)))  /* TBC */
 
 
 /////AES/////
@@ -424,6 +460,7 @@
 #define LCD_CONFIG (*((uint32_t volatile*)(0x38300000)))
 #define LCD_WCMD   (*((uint32_t volatile*)(0x38300004)))
 #define LCD_STATUS (*((uint32_t volatile*)(0x3830001c)))
+#define LCD_PHTIME (*((uint32_t volatile*)(0x38300020)))
 #define LCD_WDATA  (*((uint32_t volatile*)(0x38300040)))
 
 
@@ -658,6 +695,10 @@
 
 
 /////I2S/////
+#define I2SCLKGATE(i)   ((i) == 2 ? CLOCKGATE_I2S2 : \
+                         (i) == 1 ? CLOCKGATE_I2S1 : \
+                                    CLOCKGATE_I2S0)
+
 #define I2SCLKCON           (*((volatile uint32_t*)(0x3CA00000)))
 #define I2STXCON            (*((volatile uint32_t*)(0x3CA00004)))
 #define I2STXCOM            (*((volatile uint32_t*)(0x3CA00008)))
@@ -676,38 +717,67 @@
 
 
 /////CLOCK GATES/////
-#define CLOCKGATE_USB_1 2
-#define CLOCKGATE_USB_2 35
-#define CLOCKGATE_DMAC0 25
-#define CLOCKGATE_DMAC1 26
-#define CLOCKGATE_UART  41
+#define CLOCKGATE_SHA       0
+#define CLOCKGATE_LCD       1
+#define CLOCKGATE_USBOTG    2
+#define CLOCKGATE_SMx       3
+#define CLOCKGATE_SM1       4
+#define CLOCKGATE_ATA       5
+#define CLOCKGATE_SDCI      9
+#define CLOCKGATE_AES       10
+#define CLOCKGATE_DMAC0     25
+#define CLOCKGATE_DMAC1     26
+#define CLOCKGATE_ROM       30
+
+#define CLOCKGATE_RTC       32
+#define CLOCKGATE_CWHEEL    33
+#define CLOCKGATE_SPI0      34
+#define CLOCKGATE_USBPHY    35
+#define CLOCKGATE_I2C0      36
+#define CLOCKGATE_TIMER     37
+#define CLOCKGATE_I2C1      38
+#define CLOCKGATE_I2S0      39
+#define CLOCKGATE_UART      41
+#define CLOCKGATE_I2S1      42
+#define CLOCKGATE_SPI1      43
+#define CLOCKGATE_GPIO      44
+#define CLOCKGATE_CHIPID    46
+#define CLOCKGATE_I2S2      47
+#define CLOCKGATE_SPI2      48
 
 
 /////INTERRUPTS/////
-#define IRQ_TIMER32 7
-#define IRQ_TIMER 8
-#define IRQ_USB_FUNC 19
-#define IRQ_DMAC(d) 16 + d
-#define IRQ_DMAC0 16
-#define IRQ_DMAC1 17
-#define IRQ_WHEEL 23
-#define IRQ_ATA 29
-#define IRQ_MMC 44
+#define IRQ_TIMER32     7
+#define IRQ_TIMER       8
+#define IRQ_SPI(i)      (9+i) /* TBC */
+#define IRQ_SPI0        9
+#define IRQ_SPI1        10
+#define IRQ_SPI2        11
+#define IRQ_LCD         14
+#define IRQ_DMAC(d)     (16+d)
+#define IRQ_DMAC0       16
+#define IRQ_DMAC1       17
+#define IRQ_USB_FUNC    19
+#define IRQ_I2C         21    /* TBC */
+#define IRQ_WHEEL       23
+#define IRQ_UART(i)     (24+i)
+#define IRQ_UART0       24
+#define IRQ_UART1       25
+#define IRQ_UART2       26
+#define IRQ_UART3       27
+#define IRQ_UART4       28    /* obsolete/not implemented on s5l8702 ??? */
+#define IRQ_ATA         29
+#define IRQ_SBOOT       36
+#define IRQ_AES         39
+#define IRQ_SHA         40
+#define IRQ_MMC         44
 
-#define IRQ_UART(i) (24+i)
-#define IRQ_UART0 24
-#define IRQ_UART1 25
-#define IRQ_UART2 26
-#define IRQ_UART3 27
-#define IRQ_UART4 28    /* obsolete/not implemented on s5l8702 ??? */
-
-#define IRQ_EXT0    0
-#define IRQ_EXT1    1
-#define IRQ_EXT2    2
-#define IRQ_EXT3    3
-#define IRQ_EXT4    31
-#define IRQ_EXT5    32
-#define IRQ_EXT6    33
+#define IRQ_EXT0        0
+#define IRQ_EXT1        1
+#define IRQ_EXT2        2
+#define IRQ_EXT3        3
+#define IRQ_EXT4        31
+#define IRQ_EXT5        32
+#define IRQ_EXT6        33
 
 #endif
-

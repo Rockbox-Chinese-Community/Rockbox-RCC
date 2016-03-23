@@ -92,6 +92,8 @@
 /* define this if the target has volume keys which can be used in the lists */
 #define HAVE_VOLUME_IN_LIST
 
+#define HAVE_GUI_BOOST
+
 /* Define this if you do software codec */
 #define CONFIG_CODEC SWCODEC
 /* There is no hardware tone control */
@@ -175,7 +177,7 @@
 #define CURRENT_MAX_CHG   150
 
 /* Define this to the CPU frequency */
-#define CPU_FREQ      240000000
+#define CPU_FREQ      192000000
 
 /* Type of LCD */
 #define CONFIG_LCD LCD_CLIPZIP
@@ -193,7 +195,7 @@
 #define CONFIG_LED LED_VIRTUAL
 
 /* Define this if you have adjustable CPU frequency */
-//#define HAVE_ADJUSTABLE_CPU_FREQ
+#define HAVE_ADJUSTABLE_CPU_FREQ
 
 #define BOOTFILE_EXT    "sansa"
 #define BOOTFILE        "rockbox." BOOTFILE_EXT

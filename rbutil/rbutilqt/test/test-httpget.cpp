@@ -32,10 +32,12 @@
 {
     Q_OBJECT
     public:
-        HttpDaemon(quint16 port, QObject* parent = 0) : QTcpServer(parent)
+        HttpDaemon(quint16 port = 0, QObject* parent = 0) : QTcpServer(parent)
         {
             listen(QHostAddress::Any, port);
         }
+
+        quint16 port(void) { return this->serverPort(); }
 
 #if QT_VERSION < 0x050000
         void incomingConnection(int socket)
@@ -118,6 +120,7 @@ class TestHttpGet : public QObject
 {
     Q_OBJECT
     private slots:
+        void testFileUrlRequest(void);
         void testCachedRequest(void);
         void testUncachedRepeatedRequest(void);
         void testUncachedMovedRequest(void);
@@ -132,7 +135,10 @@ class TestHttpGet : public QObject
         void cleanup(void);
 
     public slots:
-        void waitTimeout(void) { m_waitTimeoutOccured = true; }
+        void waitTimeout(void)
+        {
+            m_waitTimeoutOccured = true;
+        }
         QDir temporaryFolder(void)
         {
             // Qt unfortunately doesn't support creating temporary folders so
@@ -159,22 +165,26 @@ class TestHttpGet : public QObject
         }
     private:
         HttpDaemon *m_daemon;
+        QByteArray m_port;
         bool m_waitTimeoutOccured;
         QString m_now;
         QDir m_cachedir;
         HttpGet *m_getter;
         QSignalSpy *m_doneSpy;
+        QSignalSpy *m_progressSpy;
 };
 
 
 void TestHttpGet::init(void)
 {
     m_now = QDateTime::currentDateTime().toString("ddd, d MMM yyyy hh:mm:ss");
-    m_daemon = new HttpDaemon(8080, this);
+    m_daemon = new HttpDaemon(0, this);  // use port 0 to auto-pick
     m_daemon->reset();
+    m_port = QString("%1").arg(m_daemon->port()).toLatin1();
     m_cachedir = temporaryFolder();
     m_getter = new HttpGet(this);
     m_doneSpy = new QSignalSpy(m_getter, SIGNAL(done(bool)));
+    m_progressSpy = new QSignalSpy(m_getter, SIGNAL(dataReadProgress(int, int)));
     m_waitTimeoutOccured = false;
 }
 
@@ -182,11 +192,34 @@ void TestHttpGet::cleanup(void)
 {
     rmTree(m_cachedir.absolutePath());
     if(m_getter) {
-        m_getter->abort(); delete m_getter;
+        m_getter->abort(); delete m_getter; m_getter = NULL;
     }
-    if(m_daemon) delete m_daemon;
-    if(m_doneSpy) delete m_doneSpy;
+    if(m_daemon) { delete m_daemon; m_daemon = NULL; }
+    if(m_doneSpy) { delete m_doneSpy; m_doneSpy = NULL; }
+    if(m_progressSpy) { delete m_progressSpy; m_progressSpy = NULL; }
 }
+
+void TestHttpGet::testFileUrlRequest(void)
+{
+    QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
+
+    QString teststring = "The quick brown fox jumps over the lazy dog.";
+    QTemporaryFile datafile;
+    datafile.open();
+    datafile.write(teststring.toLatin1());
+    m_getter->getFile(QUrl("file://" + datafile.fileName()));
+    datafile.close();
+    while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
+        QCoreApplication::processEvents();
+
+    QCOMPARE(m_doneSpy->count(), 1);
+    QCOMPARE(m_waitTimeoutOccured, false);
+    QCOMPARE(m_daemon->lastRequestData().size(), 0);
+    QCOMPARE(m_getter->readAll(), teststring.toLatin1());
+    QCOMPARE(m_getter->httpResponse(), 200);
+    QCOMPARE(m_progressSpy->at(0).at(0).toInt(), 0);
+}
+
 
 /* On uncached requests, HttpGet is supposed to sent a GET request only.
  */
@@ -208,7 +241,7 @@ void TestHttpGet::testUncachedRepeatedRequest(void)
 
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
 
-    m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -218,7 +251,7 @@ void TestHttpGet::testUncachedRepeatedRequest(void)
     QCOMPARE(m_daemon->lastRequestData().at(0).startsWith("GET"), true);
 
     // request second time
-    m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
     while(m_doneSpy->count() < 2 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
     QCOMPARE(m_doneSpy->count(), 2);
@@ -237,7 +270,7 @@ void TestHttpGet::testCachedRequest(void)
     QList<QByteArray> responses;
     responses << QByteArray(
         "HTTP/1.1 302 Found\r\n"
-        "Location: http://localhost:8080/test2.txt\r\n"
+        "Location: http://localhost:" + m_port + "/test2.txt\r\n"
         "Date: " + m_now.toLatin1() + "\r\n"
         "Last-Modified: " + m_now.toLatin1() + "\r\n"
         "\r\n");
@@ -257,7 +290,7 @@ void TestHttpGet::testCachedRequest(void)
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
 
     m_getter->setCache(m_cachedir);
-    m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -271,7 +304,7 @@ void TestHttpGet::testCachedRequest(void)
     QCOMPARE(m_getter->httpResponse(), 200);
 
     // request real file, this time the response should come from cache.
-    m_getter->getFile(QUrl("http://localhost:8080/test2.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test2.txt"));
     while(m_doneSpy->count() < 2 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
     QCOMPARE(m_doneSpy->count(), 2);  // 2 requests, 2 times done()
@@ -307,7 +340,7 @@ void TestHttpGet::testUserAgent(void)
 
     m_getter->setGlobalUserAgent(TEST_USER_AGENT);
     m_getter->setCache(m_cachedir);
-    m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -331,7 +364,7 @@ void TestHttpGet::testUncachedMovedRequest(void)
     QList<QByteArray> responses;
     responses << QByteArray(
         "HTTP/1.1 302 Found\r\n"
-        "Location: http://localhost:8080/test2.txt\r\n"
+        "Location: http://localhost:" + m_port + "/test2.txt\r\n"
         "Date: " + m_now.toLatin1() + "\r\n"
         "Last-Modified: " + m_now.toLatin1() + "\r\n"
         "\r\n");
@@ -345,7 +378,7 @@ void TestHttpGet::testUncachedMovedRequest(void)
 
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
 
-    m_getter->getFile(QUrl("http://localhost:8080/test1.php?var=1&b=foo"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.php?var=1&b=foo"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -360,7 +393,7 @@ void TestHttpGet::testResponseCode(void)
 {
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
 
-    m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -385,7 +418,7 @@ void TestHttpGet::testContentToBuffer(void)
 
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
 
-    m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -394,6 +427,8 @@ void TestHttpGet::testContentToBuffer(void)
     QCOMPARE(m_getter->readAll(), QByteArray(TEST_BINARY_BLOB));
     // sizeof(TEST_BINARY_BLOB) will include an additional terminating NULL.
     QCOMPARE((unsigned long)m_getter->readAll().size(), sizeof(TEST_BINARY_BLOB) - 1);
+    QCOMPARE(m_progressSpy->at(m_progressSpy->count() - 1).at(0).toInt(), (int)sizeof(TEST_BINARY_BLOB) - 1);
+    QCOMPARE(m_progressSpy->at(m_progressSpy->count() - 1).at(1).toInt(), (int)sizeof(TEST_BINARY_BLOB) - 1);
 }
 
 void TestHttpGet::testContentToFile(void)
@@ -411,7 +446,7 @@ void TestHttpGet::testContentToFile(void)
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
 
     m_getter->setFile(&tf);
-    m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -428,7 +463,7 @@ void TestHttpGet::testContentToFile(void)
 void TestHttpGet::testNoServer(void)
 {
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
-    m_getter->getFile(QUrl("http://localhost:8081/test1.txt"));
+    m_getter->getFile(QUrl("http://localhost:53/test1.txt"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 
@@ -463,7 +498,7 @@ void TestHttpGet::testServerTimestamp(void)
 
     int count = m_doneSpy->count();
     for(int i = 0; i < responses.size(); ++i) {
-        m_getter->getFile(QUrl("http://localhost:8080/test1.txt"));
+        m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.txt"));
         while(m_doneSpy->count() == count && m_waitTimeoutOccured == false)
             QCoreApplication::processEvents();
         count = m_doneSpy->count();
@@ -476,7 +511,7 @@ void TestHttpGet::testMovedQuery(void)
     QList<QByteArray> responses;
     responses << QByteArray(
         "HTTP/1.1 302 Found\r\n"
-        "Location: http://localhost:8080/test2.php\r\n"
+        "Location: http://localhost:" + m_port + "/test2.php\r\n"
         "Date: " + m_now.toLatin1() + "\r\n"
         "Last-Modified: " + m_now.toLatin1() + "\r\n"
         "\r\n");
@@ -490,7 +525,7 @@ void TestHttpGet::testMovedQuery(void)
 
     QTimer::singleShot(TEST_HTTP_TIMEOUT, this, SLOT(waitTimeout(void)));
 
-    m_getter->getFile(QUrl("http://localhost:8080/test1.php?var=1&b=foo"));
+    m_getter->getFile(QUrl("http://localhost:" + m_port + "/test1.php?var=1&b=foo"));
     while(m_doneSpy->count() == 0 && m_waitTimeoutOccured == false)
         QCoreApplication::processEvents();
 

@@ -1261,8 +1261,8 @@ read_comment_sgf (char *buffer, size_t buffer_size)
         return -1;
     }
 
-    if (!read_char_no_whitespace (unhandled_fd) == 'C' ||
-        !read_char_no_whitespace (unhandled_fd) == '[')
+    if (!(read_char_no_whitespace (unhandled_fd) == 'C') ||
+        !(read_char_no_whitespace (unhandled_fd) == '['))
     {
         DEBUGF ("comment prop points to incorrect place in unhandled_fd!!\n");
         return -1;
@@ -1360,8 +1360,8 @@ write_comment_sgf (char *string)
 
     if (overwriting)
     {
-        if (!read_char_no_whitespace (unhandled_fd) == 'C' ||
-            !read_char_no_whitespace (unhandled_fd) == '[')
+        if (!(read_char_no_whitespace (unhandled_fd) == 'C') ||
+            !(read_char_no_whitespace (unhandled_fd) == '['))
         {
             DEBUGF ("non-comment while overwriting!!\n");
             return -1;

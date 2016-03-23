@@ -43,6 +43,10 @@
 #define UNCACHED_ADDR AS3525_UNCACHED_ADDR
 #define PHYSICAL_ADDR AS3525_PHYSICAL_ADDR
 static inline void discard_dma_buffer_cache(void) {}
+#elif CONFIG_CPU == S5L8702
+#define UNCACHED_ADDR S5L8702_UNCACHED_ADDR
+#define PHYSICAL_ADDR S5L8702_PHYSICAL_ADDR
+static inline void discard_dma_buffer_cache(void) {}
 #else
 #define UNCACHED_ADDR
 #define PHYSICAL_ADDR
@@ -93,7 +97,7 @@ static struct ep_type endpoints[USB_NUM_ENDPOINTS][2];
 static union {
     struct usb_ctrlrequest header; /* 8 bytes */
     unsigned char payload[64];
-} _ep0_setup_pkt USB_DEVBSS_ATTR;
+} _ep0_setup_pkt USB_DEVBSS_ATTR __attribute__((aligned(32)));
 
 static struct usb_ctrlrequest *ep0_setup_pkt = UNCACHED_ADDR(&_ep0_setup_pkt.header);
 
@@ -147,7 +151,7 @@ static void ep_transfer(int ep, void *ptr, int len, bool out)
     else
         commit_dcache_range(ptr, len);
 
-    logf("pkt=%d dma=%lx", nb_packets, DEPDMA(ep, out));
+    logf("pkt=%d dma=%lx", nb_packets, (unsigned long)DEPDMA(ep, out));
 
 //    if (!out) while (((GNPTXSTS & 0xffff) << 2) < MIN(mps, length));
 
@@ -194,8 +198,6 @@ void usb_drv_set_test_mode(int mode)
 
 void usb_attach(void)
 {
-    usb_enable(true); // s5l only ?
-    /* Nothing to do */
 }
 
 static void prepare_setup_ep0(void)
@@ -428,7 +430,7 @@ void usb_drv_exit(void)
     ORSTCON = 7;  /* Put the PHY into reset (needed to get current down) */
     udelay(10);
     PCGCCTL = 1;  /* Shut down PHY clock */
-    
+
 #if CONFIG_CPU==S5L8701
     PWRCON |= 0x4000;
     PWRCONEXT |= 0x800;
@@ -503,7 +505,7 @@ static void handle_ep_int(int ep, bool out)
             panicf("usb-drv: setup not on EP0, this is impossible");
         if((DEPTSIZ(ep, true) & DEPTSIZ_xfersize_bits) != 0)
         {
-            logf("usb-drv: ignore spurious setup (xfersize=%ld)", DOEPTSIZ(ep) & DEPTSIZ_xfersize_bits);
+            logf("usb-drv: ignore spurious setup (xfersize=%ld)", DEPTSIZ(ep, true) & DEPTSIZ_xfersize_bits);
             prepare_setup_ep0();
         }
         else
@@ -615,7 +617,7 @@ int usb_drv_send(int ep, void *ptr, int len)
     struct ep_type *endpoint = &endpoints[ep][1];
     endpoint->done = false;
     ep_transfer(ep, ptr, len, false);
-    while (endpoint->busy && !endpoint->done)
-        semaphore_wait(&endpoint->complete, TIMEOUT_BLOCK);
+    while (endpoint->busy && !endpoint->done && usb_detect() != USB_EXTRACTED)
+        semaphore_wait(&endpoint->complete, HZ);
     return endpoint->status;
 }

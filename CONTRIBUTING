@@ -1,0 +1,82 @@
+               __________               __   ___.
+     Open      \______   \ ____   ____ |  | _\_ |__   _______  ___
+     Source     |       _//  _ \_/ ___\|  |/ /| __ \ /  _ \  \/  /
+     Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
+     Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
+                       \/            \/     \/    \/            \/
+                                 Contribution Policies
+
+
+In order for the project to run as smoothly as possible, it's best if all
+contributors adhere to a few simple source code conventions:
+
+Exceptions
+----------
+This project borrows and imports quite a lot of code from other free software
+projects. We do not change style of such code unless we really have to, even
+though they might be using style very different from others.
+
+Language
+--------
+Write all code in C. Sometimes assembly is faster, but C is always more
+readable and maintainable.
+
+Language features
+-----------------
+Write normal C code. Keep it simple. Don't redefine the language. No new types
+(structs are structs, not typedefs). No C++isms or Javaisms. No code in .h
+files or #defines.
+
+Identifiers
+-----------
+We do not want mixed case identifiers.
+Variables and function names should be all lower case.
+Struct and enum names should be all lower case.
+Preprocessor symbols and enum constants should be all upper case.
+
+Comments
+--------
+We only use plain old /* C standard comments */.
+If you want to comment out large blocks containing other comments, use #if 0.
+
+Style
+-----
+When changing code, follow the code style of the file you are editing.
+
+When writing new files, you may use the brace placement style of your choice.
+
+Braces for function declarations are put in a new line under the name, as in:
+
+  int foo(char *name)
+  {
+     return FOO_NAME:
+  }
+
+Always indent your code with four spaces. Don't use TAB characters, as that
+will mess up code display, printing, and a zillion other places.
+
+Keep lines below 80 columns length. Use whitespace and newlines to make the
+code easy to browse/read.
+
+Text format
+-----------
+Use "unix style" line feeds: "LF" only. Do not use "CR+LF".
+
+Use UTF-8 character set, but try to refrain from using any non-ascii
+letters as they will only appear weird in some camps no matter what.
+
+Contributing code
+-------
+We have a public code review system based on git, which is also how you can
+check out the latest version of the Rockbox sources.
+See http://www.rockbox.org/wiki/UsingGit for details on how to setup your
+environment and how to upload a change you have made for review.
+
+We'd prefer that you don't submit patches to the bug tracker any more,
+as it's much harder to read and discuss them there.
+
+Credits
+-------
+We believe in crediting all contributors by name. Before committing a patch to
+Git, we ask that you give us your full real name (no pseudonyms or nicknames)
+for adding to the credits list.
