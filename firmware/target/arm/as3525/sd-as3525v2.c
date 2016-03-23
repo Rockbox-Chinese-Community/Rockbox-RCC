@@ -777,7 +777,7 @@ static int sd_transfer_sectors(IF_MD(int drive,) unsigned long start,
     bool aligned = !((uintptr_t)buf & (CACHEALIGN_SIZE - 1));
     int const retry_all_max = 1;
     int retry_all = 0;
-    int const retry_data_max = 100; /* Generous, methinks */
+    int const retry_data_max = 3;
     int retry_data;
     unsigned int real_numblocks;
 
@@ -867,13 +867,6 @@ sd_transfer_retry_with_reinit:
 
         MCI_BYTCNT = transfer * SD_BLOCK_SIZE;
 
-        ret = sd_wait_for_tran_state(drive);
-        if (ret < 0)
-        {
-            ret -= 25;
-            goto sd_transfer_error;
-        }
-
         int arg = start;
         if(!(card_info[drive].ocr & (1<<30))) /* not SDHC */
             arg *= SD_BLOCK_SIZE;
@@ -907,6 +900,18 @@ sd_transfer_retry_with_reinit:
             goto sd_transfer_error;
         }
 
+        ret = sd_wait_for_tran_state(drive);
+        if (ret < 0)
+        {
+            ret -= 25;
+            goto sd_transfer_error;
+        }
+
+        /* According to datasheet DMA channel should be automatically disabled
+         * when transfer completes. But it not true for DMA_PERI_SD.
+         * Disable DMA channel manually to prevent problems with DMA. */
+        dma_disable_channel(1);
+
         if(!retry)
         {
             if(!write && !aligned)
@@ -925,6 +930,9 @@ sd_transfer_retry_with_reinit:
                 ;
             if (--retry_data >= 0)
                 continue;
+
+            ret -= 24;
+            goto sd_transfer_error;
         }
 
         break;
