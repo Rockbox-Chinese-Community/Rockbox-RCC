@@ -528,13 +528,13 @@ long default_event_handler_ex(long event, void (*callback)(void *), void *parame
 #if CONFIG_PLATFORM & (PLATFORM_ANDROID|PLATFORM_MAEMO)
     static bool resume = false;
 #endif
-
     void ((*func)(void));
     switch(event)
     {
         case SYS_JNI_CALL:
             func = (void *)button_get_data();
             func();
+            queue_remove_from_head(&button_queue, (long)func);
             break;
         case SYS_BATTERY_UPDATE:
             if(global_settings.talk_battery_level)

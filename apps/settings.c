@@ -110,6 +110,11 @@ struct system_status global_status;
 #include "usb-ibasso.h"
 #endif
 
+#if CONFIG_PLATFORM & PLATFORM_ANDROID
+#include "kernel.h"
+#include "button.h"
+extern void jni_call(void(*fn)(void));
+#endif
 
 long lasttime = 0;
 
@@ -773,7 +778,11 @@ void settings_apply_play_freq(int value, bool playback)
 }
 #endif /* HAVE_PLAY_FREQ */
 
+#if CONFIG_PLATFORM & PLATFORM_ANDROID
+static void _sound_settings_apply(void)
+#else
 void sound_settings_apply(void)
+#endif
 {
 #ifdef AUDIOHW_HAVE_BASS
     sound_set(SOUND_BASS, global_settings.bass);
@@ -833,6 +842,13 @@ void sound_settings_apply(void)
     }
 #endif
 }
+
+#if CONFIG_PLATFORM & PLATFORM_ANDROID
+void sound_settings_apply(void)
+{
+    jni_call(_sound_settings_apply);
+}
+#endif
 
 void settings_apply(bool read_disk)
 {
