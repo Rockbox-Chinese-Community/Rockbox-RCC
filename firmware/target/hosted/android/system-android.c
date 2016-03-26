@@ -162,8 +162,15 @@ void set_rockbox_ready(void)
 
 void jni_call(void(*fn)(void))
 {
+    JNIEnv *env;
+
     if (thread_main())
         fn();
     else
-        queue_post(&button_queue, SYS_JNI_CALL, (uintptr_t)fn);
+    {
+        if ((*vm_ptr)->AttachCurrentThread(vm_ptr,  &env, NULL) == JNI_OK)
+            fn();
+        else
+            queue_post(&button_queue, SYS_JNI_CALL, (uintptr_t)fn);
+    }
 }
