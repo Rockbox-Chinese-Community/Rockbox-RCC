@@ -137,7 +137,6 @@ static const struct { int source; void (*isr) (void); } vec_int_srcs[] =
     { INT_SRC_USB, INT_USB_FUNC, },
     { INT_SRC_TIMER1, INT_TIMER1 },
     { INT_SRC_TIMER2, INT_TIMER2 },
-    { INT_SRC_I2C_AUDIO, INT_I2C_AUDIO },
     { INT_SRC_AUDIO, INT_AUDIO },
     /* Lowest priority at the end of the list */
 };
@@ -333,8 +332,8 @@ void system_init(void)
     ascodec_write_pmu(0x18, 1, 0x35);
     /* AVDD17:    set AVDD17 power supply to 2.5V */
     ascodec_write_pmu(0x18, 7, 0x31);
-    /* CVDD2:     set CVDD2 power supply (digital for DAC/SD/etc) to 2.65V */
-    ascodec_write_pmu(0x17, 2, 0x80 | 113);
+    /* CVDD2:     set CVDD2 power supply (digital for DAC/SD/etc) to 2.70V */
+    ascodec_write_pmu(0x17, 2, 0x80 | 114);
 #else /* HAVE_AS3543 */
     ascodec_write(AS3514_CVDD_DCDC3, AS314_CP_DCDC3_SETTING);
 #endif /* HAVE_AS3543 */
@@ -460,9 +459,12 @@ void set_cpu_frequency(long frequency)
 {
     if(frequency == CPUFREQ_MAX)
     {
+#ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
         /* Set CVDD1 power supply */
-        /*ascodec_write_pmu(0x17, 1, 0x80 | 47);*/
-
+        ascodec_write_pmu(0x17, 1, 0x80 | 47);
+        /* dely for voltage rising */
+        udelay(50);
+#endif
         CGU_PROC = ((AS3525_FCLK_POSTDIV << 4) |
                     (AS3525_FCLK_PREDIV  << 2) |
                     AS3525_FCLK_SEL);
@@ -478,13 +480,13 @@ void set_cpu_frequency(long frequency)
         cpu_frequency = CPUFREQ_NORMAL;
 
         /* Set CVDD1 power supply */
-        /*
+#ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
 #ifdef SANSA_CLIPZIP
         ascodec_write_pmu(0x17, 1, 0x80 | 19);
 #else
         ascodec_write_pmu(0x17, 1, 0x80 | 22);
 #endif
-        */
+#endif
     }
 }
 #endif

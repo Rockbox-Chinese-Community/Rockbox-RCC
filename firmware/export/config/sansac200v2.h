@@ -154,8 +154,7 @@
 #define CONFIG_I2C I2C_AS3525
 
 /* define this if the hardware can be powered off while charging */
-/* Sansa can't be powered off while charging */
-/* #define HAVE_POWEROFF_WHILE_CHARGING */
+#define HAVE_POWEROFF_WHILE_CHARGING
 
 #define CURRENT_NORMAL     50
 #define CURRENT_BACKLIGHT  25
@@ -173,9 +172,10 @@
 /* Type of LCD : Samsung S6B33B2 */
 #define CONFIG_LCD LCD_C200
 
-#ifndef BOOTLOADER
 #define HAVE_MULTIDRIVE
 #define NUM_DRIVES 2
+
+#ifndef BOOTLOADER
 #define HAVE_HOTSWAP
 #endif /* BOOTLOADER */
 

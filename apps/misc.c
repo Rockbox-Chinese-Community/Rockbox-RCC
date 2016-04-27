@@ -322,7 +322,9 @@ static bool clean_shutdown(void (*callback)(void *), void *parameter)
         }
 #endif
 
+#ifdef HAVE_DISK_STORAGE
         if (batt_safe) /* do not save on critical battery */
+#endif
         {
 #if defined(HAVE_RECORDING) && CONFIG_CODEC == SWCODEC
             if (audio_stat & AUDIO_STATUS_RECORD)
@@ -376,7 +378,7 @@ static bool clean_shutdown(void (*callback)(void *), void *parameter)
             }
 #endif
         }
-#ifdef HAVE_DIRCACHE
+#if defined(HAVE_DIRCACHE) && defined(HAVE_DISK_STORAGE)
         else
             dircache_disable();
 #endif
@@ -576,8 +578,7 @@ long default_event_handler_ex(long event, void (*callback)(void *), void *parame
 
         case SYS_CHARGER_DISCONNECTED:
             car_adapter_mode_processing(false);
-            /*reset rockbox battery runtime*/
-            global_status.runtime = 0;
+            reset_runtime();
             return SYS_CHARGER_DISCONNECTED;
 
         case SYS_CAR_ADAPTER_RESUME:

@@ -39,6 +39,9 @@ typedef uint32_t soc_addr_t;
 typedef uint32_t soc_word_t;
 typedef int soc_id_t;
 
+/** Default value for IDs */
+const soc_id_t DEFAULT_ID = 0xcafebabe;
+
 /** Error class */
 class error_t
 {
@@ -74,6 +77,21 @@ protected:
  * Bare representation of the format
  */
 
+/** Register access type and rules
+ *
+ * Access can be specified on registers and register variants. When left
+ * unspecified (aka DEFAULT), a register variant inherit the access from
+ * the register, and a register defaults to read-write if unspecified.
+ * When specified, the register variant access takes precedence over the register
+ * access. */
+enum access_t
+{
+    UNSPECIFIED = 0, /** Register: read-write, fields: inherit from register */
+    READ_ONLY, /** Read-only */
+    READ_WRITE, /** Read-write */
+    WRITE_ONLY, /** Write-only */
+};
+
 /** Enumerated value (aka named value), represents a special value for a field */
 struct enum_t
 {
@@ -81,6 +99,9 @@ struct enum_t
     std::string name; /** Name (must be unique among field enums) */
     std::string desc; /** Optional description of the meaning of this value */
     soc_word_t value; /** Value of the field */
+
+    /** Default constructor: default ID and value is 0 */
+    enum_t():id(DEFAULT_ID), value(0) {}
 };
 
 /** Register field information */
@@ -92,6 +113,9 @@ struct field_t
     size_t pos; /** Position of the least significant bit */
     size_t width; /** Width of the field in bits  */
     std::vector< enum_t > enum_; /** List of special values */
+
+    /** Default constructor: default ID, position is 0, width is 1 */
+    field_t():id(DEFAULT_ID), pos(0), width(1) {}
 
     /** Returns the bit mask of the field within the register */
     soc_word_t bitmask() const
@@ -128,27 +152,37 @@ struct field_t
 /** Register variant information
  *
  * A register variant provides an alternative access to the register, potentially
- * we special semantics. Although there are no constraints on the type string,
+ * with special semantics. Although there are no constraints on the type string,
  * the following types have well-defined semantics:
  * - alias: the same register at another address
  * - set: writing to this register will set the 1s bits and ignore the 0s
  * - clr: writing to this register will clear the 1s bits and ignore the 0s
  * - tog: writing to this register will toggle the 1s bits and ignore the 0s
+ * Note that by default, variants inherit the access type of the register but
+ * can override it.
  */
 struct variant_t
 {
     soc_id_t id; /** ID (must be unique among register variants) */
     std::string type; /** type of the variant */
     soc_addr_t offset; /** offset of the variant */
+    access_t access; /** Access type */
+
+    /** Default constructor: default ID, offset is 0, access is unspecified */
+    variant_t():id(DEFAULT_ID), offset(0), access(UNSPECIFIED) {}
 };
 
 /** Register information */
 struct register_t
 {
     size_t width; /** Size in bits */
+    access_t access; /** Access type */
     std::string desc; /** Optional description of the register */
     std::vector< field_t > field; /** List of fields */
     std::vector< variant_t > variant; /** List of variants */
+
+    /** Default constructor: width is 32 */
+    register_t():width(32), access(UNSPECIFIED) {}
 };
 
 /** Node address range information */
@@ -169,6 +203,9 @@ struct range_t
     std::string formula; /** Formula (for FORMULA) */
     std::string variable; /** Formula variable name (for FORMULA) */
     std::vector< soc_word_t > list; /** Address list (for LIST) */
+
+    /** Default constructor: empty stride */
+    range_t():type(STRIDE), first(0), count(0), base(0), stride(0) {}
 
     /** Return the number of indexes (based on count or list) */
     size_t size()
@@ -193,6 +230,9 @@ struct instance_t
     type_t type; /** Instance type */
     soc_word_t addr; /** Address (for SINGLE) */
     range_t range; /** Range (for RANGE) */
+
+    /** Default constructor: single instance at 0 */
+    instance_t():id(DEFAULT_ID), type(SINGLE), addr(0) {}
 };
 
 /** Node information */
@@ -205,6 +245,9 @@ struct node_t
     std::vector< register_t> register_; /** Optional register */
     std::vector< instance_t> instance; /** List of instances */
     std::vector< node_t > node; /** List of sub-nodes */
+
+    /** Default constructor: default ID */
+    node_t():id(DEFAULT_ID) {}
 };
 
 /** System-on-chip information */

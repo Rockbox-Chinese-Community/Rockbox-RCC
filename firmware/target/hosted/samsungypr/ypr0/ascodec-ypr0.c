@@ -61,13 +61,11 @@ void ascodec_close(void)
         close(afe_dev);
 }
 
-/* Write register.
- * Returns >= 0 if success, -1 if fail
- */
-int ascodec_write(unsigned int reg, unsigned int value)
+/* Write register */
+void ascodec_write(unsigned int reg, unsigned int value)
 {
     struct codec_req_struct r = { .reg = reg, .value = value };
-    return ioctl(afe_dev, IOCTL_REG_WRITE, &r);
+    ioctl(afe_dev, IOCTL_REG_WRITE, &r);
 }
 
 /* Read register.
@@ -102,18 +100,12 @@ int ascodec_read_pmu(unsigned int index, unsigned int subreg)
         return retval;
 }
 
-int ascodec_readbytes(unsigned int index, unsigned int len, unsigned char *data)
+void ascodec_readbytes(unsigned int index, unsigned int len, unsigned char *data)
 {
-    int i, val, ret = 0;
+    unsigned int i;
 
-    for (i = 0; i < (int)len; i++)
-    {
-        val = ascodec_read(i + index);
-        if (val >= 0) data[i] = val;
-        else ret = -1;
-    }
-
-    return (ret ?: (int)len);
+    for (i = 0; i < len; i++)
+        data[i] = ascodec_read(i + index);
 }
 
 /*

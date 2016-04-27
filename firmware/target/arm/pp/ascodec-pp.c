@@ -66,9 +66,9 @@ void audiohw_init(void)
     audiohw_preinit();
 }
 
-int ascodec_write(unsigned int reg, unsigned int value)
+void ascodec_write(unsigned int reg, unsigned int value)
 {
-    return pp_i2c_send(AS3514_I2C_ADDR, reg, value);
+    pp_i2c_send(AS3514_I2C_ADDR, reg, value);
 }
 
 int ascodec_read(unsigned int reg)
@@ -76,9 +76,9 @@ int ascodec_read(unsigned int reg)
     return i2c_readbyte(AS3514_I2C_ADDR, reg);
 }
 
-int ascodec_readbytes(unsigned int addr, unsigned int len, unsigned char *data)
+void ascodec_readbytes(unsigned int addr, unsigned int len, unsigned char *data)
 {
-    return i2c_readbytes(AS3514_I2C_ADDR, addr, len, data);
+    i2c_readbytes(AS3514_I2C_ADDR, addr, len, data);
 }
 
 void ascodec_lock(void)

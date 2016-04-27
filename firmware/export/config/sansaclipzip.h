@@ -8,10 +8,10 @@
 #define FIRMWARE_OFFSET_FILE_DATA 8
 #define FIRMWARE_OFFSET_FILE_CRC 0
 
-
-#ifndef BOOTLOADER
 #define HAVE_MULTIDRIVE
 #define NUM_DRIVES 2
+
+#ifndef BOOTLOADER
 #define HAVE_HOTSWAP
 #define HAVE_RDS_CAP
 #endif
@@ -165,11 +165,10 @@
 #define CONFIG_I2C I2C_AS3525
 
 /* define this if the hardware can be powered off while charging */
-/* Sansa can't be powered off while charging */
-/* #define HAVE_POWEROFF_WHILE_CHARGING */
+#define HAVE_POWEROFF_WHILE_CHARGING
 
 /* define current usage levels (based on battery bench) */
-#define CURRENT_NORMAL     19               /* TODO copied from clipplus */
+#define CURRENT_NORMAL     11
 #define CURRENT_BACKLIGHT  15               /* TODO copied from clipplus */
 #define CURRENT_RECORD     CURRENT_NORMAL   /* TODO */
 
@@ -196,6 +195,9 @@
 
 /* Define this if you have adjustable CPU frequency */
 #define HAVE_ADJUSTABLE_CPU_FREQ
+
+/*define this to enable CPU voltage scaling on AMS devices*/
+#define HAVE_ADJUSTABLE_CPU_VOLTAGE
 
 #define BOOTFILE_EXT    "sansa"
 #define BOOTFILE        "rockbox." BOOTFILE_EXT
