@@ -33,7 +33,6 @@
 #include "led.h"
 #include "ata_idle_notify.h"
 #include "disk_cache.h"
-#include "splash.h"
 
 
 #ifndef ATA_RETRIES
@@ -51,7 +50,6 @@
 static uint8_t ceata_taskfile[16] STORAGE_ALIGN_ATTR;
 static uint16_t ata_identify_data[0x100] STORAGE_ALIGN_ATTR;
 static bool ceata;
-static bool ata_swap;
 static bool ata_lba48;
 static bool ata_dma;
 static uint64_t ata_total_sectors;
@@ -71,42 +69,6 @@ static int dma_mode = 0;
 static char aligned_buffer[SECTOR_SIZE] STORAGE_ALIGN_ATTR;
 
 static int ata_reset(void);
-static void ata_power_down(void);
-
-#ifdef ATA_HAVE_BBT
-char ata_bbt_buf[ATA_BBT_PAGES * 64] STORAGE_ALIGN_ATTR;
-uint16_t (*ata_bbt)[0x20];
-uint64_t ata_virtual_sectors;
-uint32_t ata_last_offset;
-uint64_t ata_last_phys;
-
-int ata_rw_sectors_internal(uint64_t sector, uint32_t count,
-                            void* buffer, bool write);
-
-int ata_bbt_read_sectors(uint32_t sector, uint32_t count, void* buffer)
-{
-    if (ata_last_phys != sector - 1 && ata_last_phys > sector - 64) ata_reset();
-    int rc = ata_rw_sectors_internal(sector, count, buffer, false);
-    if (rc) rc = ata_rw_sectors_internal(sector, count, buffer, false);
-    if (rc)
-    {
-        ata_reset();
-        rc = ata_rw_sectors_internal(sector, count, buffer, false);
-    }
-    if (rc)
-    {
-        ata_power_down();
-        sleep(HZ * 10);
-        rc = ata_rw_sectors_internal(sector, count, buffer, false);
-    }
-    ata_last_phys = sector + count - 1;
-    ata_last_offset = 0;
-    if (IS_ERR(rc))
-        panicf("ATA: Error %08X while reading BBT (sector %d, count %d)",
-               (unsigned int)rc, (unsigned int)sector, (unsigned int)count);
-    return rc;
-}
-#endif
 
 
 static uint16_t ata_read_cbr(uint32_t volatile* reg)
@@ -532,14 +494,11 @@ static int ata_identify(uint16_t* buf)
     }
     else
     {
-        uint32_t old = ATA_CFG;
-        ATA_CFG |= BIT(6);
         PASS_RC(ata_wait_for_not_bsy(10000000), 1, 0);
         ata_write_cbr(&ATA_PIO_DVR, 0);
         ata_write_cbr(&ATA_PIO_CSD, 0xec);
         PASS_RC(ata_wait_for_start_of_transfer(10000000), 1, 1);
         for (i = 0; i < 0x100; i++) buf[i] = ata_read_cbr(&ATA_PIO_DTR);
-        ATA_CFG = old;
     }
     return 0;
 }
@@ -578,6 +537,25 @@ static int ata_set_feature(uint32_t feature, uint32_t param)
     return 0;
 }
 
+/*
+ * ATA_UDMA_TIME register is documented on s3c6400 datasheet, information
+ * included in s5l8700 datasheet is wrong or not valid for s5l8702.
+ *
+ * On Classic (boosted):
+ *  HClk = 108 MHz. -> T = ~9.26 ns.
+ *
+ * Configured values (in nanoseconds):
+ *
+ *  UDMA  ATA_UDMA_TIME  tACK  tRP    tSS   tDVS  tDVH  Tcyc   WR(MB/s)
+ *  0     0x4071152      27.8  166.7  55.6  74.1  46.3  120.4  16.6
+ *  1     0x2050d52      27.8  129.6  55.6  55.6  27.8   83.4  24
+ *  2     0x2030a52      27.8  101.8  55.6  37    27.8   64.8  30.9
+ *  3     0x1020a52      27.8  101.8  55.6  27.8  18.5   46.3  43.2
+ *  4     0x1010a52      27.8  101.8  55.6  18.5  18.5   37    54
+ *
+ *  Tcyc = tDVS+tDVH
+ *  WR[bytes/s] = 1/Tcyc[s] * 2[bytes]
+ */
 static int ata_power_up(void)
 {
     ata_set_active();
@@ -628,12 +606,12 @@ static int ata_power_up(void)
         sleep(HZ / 5);
         ATA_PIO_TIME = 0x191f7;
         ATA_PIO_LHR = 0;
-        if (!ata_swap) ATA_CFG = BIT(6);
+        ATA_CFG = BIT(6);
         while (!(ATA_PIO_READY & BIT(1))) yield();
         PASS_RC(ata_identify(ata_identify_data), 3, 3);
         uint32_t piotime = 0x11f3;
         uint32_t mdmatime = 0x1c175;
-        uint32_t udmatime = 0x5071152;
+        uint32_t udmatime = 0x4071152;
         uint32_t param = 0;
         ata_dma_flags = 0;
         ata_lba48 = ata_identify_data[83] & BIT(10) ? true : false;
@@ -661,22 +639,22 @@ static int ata_power_up(void)
         {
             if (ata_identify_data[88] & BIT(4))
             {
-                udmatime = 0x2010a52;
+                udmatime = 0x1010a52;
                 param = 0x44;
             }
             else if (ata_identify_data[88] & BIT(3))
             {
-                udmatime = 0x2020a52;
+                udmatime = 0x1020a52;
                 param = 0x43;
             }
             else if (ata_identify_data[88] & BIT(2))
             {
-                udmatime = 0x3030a52;
+                udmatime = 0x2030a52;
                 param = 0x42;
             }
             else if (ata_identify_data[88] & BIT(1))
             {
-                udmatime = 0x3050a52;
+                udmatime = 0x2050d52;
                 param = 0x41;
             }
             else if (ata_identify_data[88] & BIT(0))
@@ -692,11 +670,7 @@ static int ata_power_up(void)
         dma_mode = param;
         PASS_RC(ata_set_feature(0x03, param), 3, 4);
         if (ata_identify_data[82] & BIT(5))
-#ifdef ATA_HAVE_BBT
-            PASS_RC(ata_set_feature(ata_bbt ? 0x82 : 0x02, 0), 3, 5);
-#else
             PASS_RC(ata_set_feature(0x02, 0), 3, 5);
-#endif
         if (ata_identify_data[82] & BIT(6)) PASS_RC(ata_set_feature(0xaa, 0), 3, 6);
         ATA_PIO_TIME = piotime;
         ATA_MDMA_TIME = mdmatime;
@@ -718,7 +692,6 @@ static int ata_power_up(void)
 static void ata_power_down(void)
 {
     if (!ata_powered) return;
-    ata_powered = false;
     if (ceata)
     {
         memset(ceata_taskfile, 0, 16);
@@ -746,6 +719,7 @@ static void ata_power_down(void)
     PCON(10) &= ~0xffff;
     PCON(11) &= ~0xf;
     ide_power_enable(false);
+    ata_powered = false;
 }
 
 static int ata_rw_chunk_internal(uint64_t sector, uint32_t cnt, void* buffer, bool write)
@@ -855,59 +829,6 @@ static int ata_rw_chunk(uint64_t sector, uint32_t cnt, void* buffer, bool write)
     return rc;
 }
 
-#ifdef ATA_HAVE_BBT
-int ata_bbt_translate(uint64_t sector, uint32_t count, uint64_t* phys, uint32_t* physcount)
-{
-    if (sector + count > ata_virtual_sectors) RET_ERR(0);
-    if (!ata_bbt)
-    {
-        *phys = sector;
-        *physcount = count;
-        return 0;
-    }
-    if (!count)
-    {
-        *phys = 0;
-        *physcount = 0;
-        return 0;
-    }
-    uint32_t offset;
-    uint32_t l0idx = sector >> 15;
-    uint32_t l0offs = sector & 0x7fff;
-    *physcount = MIN(count, 0x8000 - l0offs);
-    uint32_t l0data = ata_bbt[0][l0idx << 1];
-    uint32_t base = ata_bbt[0][(l0idx << 1) | 1] << 12;
-    if (l0data < 0x8000) offset = l0data + base;
-    else
-    {
-        uint32_t l1idx = (sector >> 10) & 0x1f;
-        uint32_t l1offs = sector & 0x3ff;
-        *physcount = MIN(count, 0x400 - l1offs);
-        uint32_t l1data = ata_bbt[l0data & 0x7fff][l1idx];
-        if (l1data < 0x8000) offset = l1data + base;
-        else
-        {
-            uint32_t l2idx = (sector >> 5) & 0x1f;
-            uint32_t l2offs = sector & 0x1f;
-            *physcount = MIN(count, 0x20 - l2offs);
-            uint32_t l2data = ata_bbt[l1data & 0x7fff][l2idx];
-            if (l2data < 0x8000) offset = l2data + base;
-            else
-            {
-                uint32_t l3idx = sector & 0x1f;
-                uint32_t l3data = ata_bbt[l2data & 0x7fff][l3idx];
-                for (*physcount = 1; *physcount < count && l3idx + *physcount < 0x20; (*physcount)++)
-                    if (ata_bbt[l2data & 0x7fff][l3idx + *physcount] != l3data)
-                        break;
-                offset = l3data + base;
-            }
-        }
-    }
-    *phys = sector + offset;
-    return 0;
-}
-#endif
-
 static int ata_rw_sectors(uint64_t sector, uint32_t count, void* buffer, bool write)
 {
     if (STORAGE_OVERLAP((uint32_t)buffer))
@@ -930,30 +851,6 @@ static int ata_rw_sectors(uint64_t sector, uint32_t count, void* buffer, bool wr
         return 0;
     }
 
-#ifdef ATA_HAVE_BBT
-    if (sector + count > ata_virtual_sectors) RET_ERR(0);
-    if (ata_bbt)
-        while (count)
-        {
-            uint64_t phys;
-            uint32_t cnt;
-            PASS_RC(ata_bbt_translate(sector, count, &phys, &cnt), 0, 0);
-            uint32_t offset = phys - sector;
-            if (offset != ata_last_offset && phys - ata_last_phys < 64) ata_reset();
-            ata_last_offset = offset;
-            ata_last_phys = phys + cnt;
-            PASS_RC(ata_rw_sectors_internal(phys, cnt, buffer, write), 0, 0);
-            buffer += cnt * SECTOR_SIZE;
-            sector += cnt;
-            count -= cnt;
-        }
-    else PASS_RC(ata_rw_sectors_internal(sector, count, buffer, write), 0, 0);
-    return 0;
-}
-
-int ata_rw_sectors_internal(uint64_t sector, uint32_t count, void* buffer, bool write)
-{
-#endif
     if (!ata_powered) ata_power_up();
     if (sector + count > ata_total_sectors) RET_ERR(0);
     ata_set_active();
@@ -1110,11 +1007,7 @@ void ata_spin(void)
 void ata_get_info(IF_MD(int drive,) struct storage_info *info)
 {
     (*info).sector_size = SECTOR_SIZE;
-#ifdef ATA_HAVE_BBT
-    (*info).num_sectors = ata_virtual_sectors;
-#else
     (*info).num_sectors = ata_total_sectors;
-#endif
     (*info).vendor = "Apple";
     (*info).product = "iPod Classic";
     (*info).revision = "1.0";
@@ -1125,58 +1018,6 @@ long ata_last_disk_activity(void)
     return ata_last_activity_value;
 }
 
-#ifdef ATA_HAVE_BBT
-void ata_bbt_disable(void)
-{
-    mutex_lock(&ata_mutex);
-    ata_bbt = NULL;
-    ata_virtual_sectors = ata_total_sectors;
-    mutex_unlock(&ata_mutex);
-}
-
-int ata_bbt_reload(void)
-{
-    mutex_lock(&ata_mutex);
-    ata_bbt_disable();
-    PASS_RC(ata_power_up(), 1, 0);
-    uint32_t* buf = (uint32_t*)(ata_bbt_buf + sizeof(ata_bbt_buf) - SECTOR_SIZE);
-    if (buf)
-    {
-        if (IS_ERR(ata_bbt_read_sectors(0, 1, buf)))
-            ata_virtual_sectors = ata_total_sectors;
-        else if (!memcmp(buf, "emBIbbth", 8))
-        {
-            if (!ceata)
-                if (ata_identify_data[82] & BIT(5)) PASS_RC(ata_set_feature(0x02, 0), 1, 1);
-            ata_virtual_sectors = (((uint64_t)buf[0x1fd]) << 32) | buf[0x1fc];
-            uint32_t count = buf[0x1ff];
-            if (count > ATA_BBT_PAGES / 64)
-                panicf("ATA: BBT too big! (space: %d, size: %d)",
-                       ATA_BBT_PAGES, (unsigned int)(count * 64));
-            uint32_t i;
-            uint32_t cnt;
-            ata_bbt = (typeof(ata_bbt))ata_bbt_buf;
-            for (i = 0; i < count; i += cnt)
-            {
-                uint32_t phys = buf[0x200 + i];
-                for (cnt = 1; cnt < count; cnt++)
-                    if (buf[0x200 + i + cnt] != phys + cnt)
-                        break;
-                if (IS_ERR(ata_bbt_read_sectors(phys, cnt, ata_bbt[i << 6])))
-                {
-                    ata_virtual_sectors = ata_total_sectors;
-                    break;
-                }
-            }
-        }
-        else ata_virtual_sectors = ata_total_sectors;
-    }
-    else ata_virtual_sectors = ata_total_sectors;
-    mutex_unlock(&ata_mutex);
-	return 0;
-}
-#endif
-
 int ata_init(void)
 {
     mutex_init(&ata_mutex);
@@ -1184,33 +1025,15 @@ int ata_init(void)
     semaphore_init(&mmc_wakeup, 1, 0);
     semaphore_init(&mmc_comp_wakeup, 1, 0);
     ceata = PDAT(11) & BIT(1);
-    ata_swap = false;
     ata_powered = false;
     ata_total_sectors = 0;
-#ifdef ATA_HAVE_BBT
-    PASS_RC(ata_bbt_reload(), 0, 0);
-#endif
-    
-    /* HDD data endianness check:
-         During the transition period Rockbox needs to detect the HDD data
-         endianness automatically and support both. We're now using the correct
-         endianness by default and only switching back to swapped bytes if we
-         find a reversed MBR signature.
-         To make this warning go away, update your emCORE version. The HDD will
-         be reformatted with the correct endianness during the process.
-         Once most users have switched over, this code may be removed again.
-         -- Michael Sparmann (theseven), 2011-10-22 */
-    if (!ceata)
-    {
-        unsigned char* sector = aligned_buffer;
-        ata_rw_sectors(0, 1, sector, false);
-        if (sector[510] == 0xaa && sector[511] == 0x55)
-        {
-            ata_swap = true;
-            splashf(5000, "Wrong HDD endianness, please update your emCORE version!");
-        }
-    }
-    
+
+    /* get ata_identify_data */
+    mutex_lock(&ata_mutex);
+    int rc = ata_power_up();
+    mutex_unlock(&ata_mutex);
+    if (IS_ERR(rc)) return rc;
+
     create_thread(ata_thread, ata_stack,
                     sizeof(ata_stack), 0, "ATA idle monitor"
                     IF_PRIO(, PRIORITY_USER_INTERFACE)
@@ -1243,8 +1066,6 @@ static int ata_smart(uint16_t* buf)
     else
     {
         int i;
-        uint32_t old = ATA_CFG;
-        ATA_CFG |= BIT(6);  /* 16bit big-endian */
         PASS_RC(ata_wait_for_not_bsy(10000000), 3, 6);
         ata_write_cbr(&ATA_PIO_FED, 0xd0);
         ata_write_cbr(&ATA_PIO_LMR, 0x4f);
@@ -1253,7 +1074,6 @@ static int ata_smart(uint16_t* buf)
         ata_write_cbr(&ATA_PIO_CSD, 0xb0);
         PASS_RC(ata_wait_for_start_of_transfer(10000000), 3, 7);
         for (i = 0; i < 0x100; i++) buf[i] = ata_read_cbr(&ATA_PIO_DTR);
-        ATA_CFG = old;
     }
     ata_set_active();
     return 0;

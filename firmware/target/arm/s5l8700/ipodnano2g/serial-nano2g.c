@@ -26,7 +26,7 @@
 #include "system.h"
 #include "serial.h"
 
-#include "s5l8702.h"
+#include "s5l8700.h"
 #include "uc870x.h"
 
 /* Define LOGF_ENABLE to enable logf output in this file */
@@ -35,18 +35,18 @@
 
 
 /* shall include serial HW configuracion for specific target */
-#define IPOD6G_UART_CLK_HZ      12000000  /* external OSC0 ??? */
+#define NANO2G_UART_CLK_HZ      24000000  /* external OSC0 ??? */
 
-/* This values below are valid with a UCLK of 12MHz */
-#define BRDATA_9600         (77)                    /* 9615   */
-#define BRDATA_19200        (38)                    /* 19231  */
-#define BRDATA_28800        (25)                    /* 28846  */
-#define BRDATA_38400        (19 | (0xc330c << 8))   /* 38305  */
-#define BRDATA_57600        (12)                    /* 57692  */
-#define BRDATA_115200       (6 | (0xffffff << 8))   /* 114286 */
+/* This values below are valid with a UCLK of 24MHz */
+#define BRDATA_9600         (155)  /* 9615   */
+#define BRDATA_19200        (77)   /* 19231  */
+#define BRDATA_28800        (51)   /* 28846  */
+#define BRDATA_38400        (38)   /* 38462  */
+#define BRDATA_57600        (25)   /* 57692  */
+#define BRDATA_115200       (12)   /* 115385 */
 
 
-extern const struct uartc s5l8702_uartc;
+extern const struct uartc s5l8701_uartc0;
 #ifdef IPOD_ACCESSORY_PROTOCOL
 void iap_rx_isr(int, char*, char*, uint32_t);
 #endif
@@ -54,14 +54,14 @@ void iap_rx_isr(int, char*, char*, uint32_t);
 struct uartc_port ser_port IDATA_ATTR =
 {
     /* location */
-    .uartc = &s5l8702_uartc,
+    .uartc = &s5l8701_uartc0,
     .id = 0,
 
     /* configuration */
     .rx_trg = UFCON_RX_FIFO_TRG_4,
     .tx_trg = UFCON_TX_FIFO_TRG_EMPTY,
     .clksel = UCON_CLKSEL_ECLK,
-    .clkhz = IPOD6G_UART_CLK_HZ,
+    .clkhz = NANO2G_UART_CLK_HZ,
 
     /* interrupt callbacks */
 #ifdef IPOD_ACCESSORY_PROTOCOL
@@ -88,7 +88,8 @@ void serial_setup(void)
     /* enable Tx interrupt request or POLLING mode */
     uartc_port_set_tx_mode(&ser_port, UCON_MODE_INTREQ);
 
-    logf("[%lu] "MODEL_NAME" port %d ready!", USEC_TIMER, ser_port.id);
+    logf("[%lu] "MODEL_NAME" port %d ready!",
+                (uint32_t)USEC_TIMER, ser_port.id);
 }
 
 int tx_rdy(void)
@@ -113,7 +114,7 @@ static enum {
 
 void serial_bitrate(int rate)
 {
-    logf("[%lu] serial_bitrate(%d)", USEC_TIMER, rate);
+    logf("[%lu] serial_bitrate(%d)", (uint32_t)USEC_TIMER, rate);
 
     if (rate == 0) {
         /* Using auto-bitrate (ABR) to detect accessory Tx speed:
@@ -160,7 +161,7 @@ void iap_rx_isr(int len, char *data, char *err, uint32_t abr_cnt)
     if (abr_status == ABR_STATUS_LAUNCHED) {
         /* autobauding */
         if (abr_cnt) {
-            #define BR2CNT(s) (IPOD6G_UART_CLK_HZ / (unsigned)(s))
+            #define BR2CNT(s) (NANO2G_UART_CLK_HZ / (unsigned)(s))
             if (abr_cnt < BR2CNT(57600*1.1) || abr_cnt > BR2CNT(9600*0.9)) {
                 /* detected speed out of range, relaunch ABR */
                 uartc_port_abr_start(&ser_port);

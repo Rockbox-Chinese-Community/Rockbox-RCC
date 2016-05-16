@@ -5,9 +5,9 @@
  *   Jukebox    |    |   (  <_> )  \___|    < | \_\ (  <_> > <  <
  *   Firmware   |____|_  /\____/ \___  >__|_ \|___  /\____/__/\_ \
  *                     \/            \/     \/    \/            \/
- * $Id: i2c-s5l8700.h 21533 2009-06-27 20:11:11Z bertrik $
+ * $Id$
  *
- * Copyright (C) 2009 by Bertrik Sikken
+ * Copyright (C) 2014 by Cástor Muñoz
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,19 +18,21 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+#ifndef __UART_TARGET_H__
+#define __UART_TARGET_H__
 
-#ifndef _I2C_S5l8702_H
-#define _I2C_S5l8702_H
+/* Define this to show debug data on "View HW Info" */
+/* #define UC870X_DEBUG */
 
-#include "config.h"
+void uart_init(void);
 
-void i2c_init(void);
-int i2c_write(int bus, unsigned char slave, int address, int len, const unsigned char *data);
-int i2c_read(int bus, unsigned char slave, int address, int len, unsigned char *data);
+/* s5l870x low level routines */
+void uart_target_enable_clocks(int uart_id);
+void uart_target_disable_clocks(int uart_id);
+void uart_target_enable_irq(int uart_id, int port_id);
+void uart_target_disable_irq(int uart_id, int port_id);
+void uart_target_clear_irq(int uart_id, int port_id);
+void uart_target_enable_gpio(int uart_id, int port_id);
+void uart_target_disable_gpio(int uart_id, int port_id);
 
-#ifdef BOOTLOADER
-int i2c_wr(int bus, unsigned char slave, int address, int len, const unsigned char *data);
-int i2c_rd(int bus, unsigned char slave, int address, int len, unsigned char *data);
-#endif
-
-#endif /* _I2C_S5l8702_H */
+#endif /* __UART_TARGET_H__ */

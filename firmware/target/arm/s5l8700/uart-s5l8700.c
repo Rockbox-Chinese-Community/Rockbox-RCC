@@ -22,18 +22,22 @@
 #include <stdbool.h>
 
 #include "config.h"
-#include "cpu.h"
 #include "system.h"
 
-#include "s5l8702.h"
+#include "s5l8700.h"
 #include "uc870x.h"
 
 
 /*
- * s5l8702 UC870X HW: 1 UARTC, 4 ports
+ * XXX: This code is based on datasheets and NEVER TESTED !!!
+ */
+
+
+/*
+ * s5l8700 UC870X HW: 1 UARTC, 2 ports
  */
 static struct uartc_port *uartc_port_l[UARTC_N_PORTS];
-const struct uartc s5l8702_uartc =
+const struct uartc s5l8700_uartc =
 {
     .id       = 0,
     .baddr    = UARTC_BASE_ADDR,
@@ -42,25 +46,21 @@ const struct uartc s5l8702_uartc =
     .port_l   = uartc_port_l,
 };
 
+static int intmsk_uart[S5L8700_N_PORTS] = { INTMSK_UART0, INTMSK_UART1 };
+
 /*
- * Device level functions specific to S5L8702
+ * Device level functions specific to S5L8700
  */
 void uart_target_enable_gpio(int uart_id, int port_id)
 {
     (void) uart_id;
     switch (port_id) {
+        /* configure UARTx Tx/Rx GPIO ports */
         case 0:
-            /* configure UART0 Tx/Rx GPIO ports */
-            PCON0 = (PCON0 & 0xff00ffff) | 0x00220000;
+            PCON0 = (PCON0 & 0x0fff) | 0xa000;
             break;
         case 1:
-            /* configure UART1 GPIO ports, including RTS/CTS signals */
-            PCOND = (PCOND & 0xff0000ff) | 0x00222200;
-            break;
-        case 2:
-        case 3:
-            /* unknown */
-        default:
+            PCON6 = (PCON6 & 0xfff00fff) | 0x00044000;
             break;
     }
 }
@@ -69,16 +69,12 @@ void uart_target_disable_gpio(int uart_id, int port_id)
 {
     (void) uart_id;
     switch (port_id) {
-        /* configure minimal power consumption */
+        /* configure default reset values */
         case 0:
-            PCON0 = (PCON0 & 0xff00ffff) | 0x00ee0000;
+            PCON0 = (PCON0 & 0x0fff) | 0x0000;
             break;
         case 1:
-            PCOND = (PCOND & 0xff0000ff) | 0x00eeee00;
-            break;
-        case 2:
-        case 3:
-        default:
+            PCON6 = (PCON6 & 0xfff00fff) | 0x00000000;
             break;
     }
 }
@@ -86,65 +82,48 @@ void uart_target_disable_gpio(int uart_id, int port_id)
 void uart_target_enable_irq(int uart_id, int port_id)
 {
     (void) uart_id;
-    VIC0INTENABLE = 1 << IRQ_UART(port_id);
+    INTMSK |= intmsk_uart[port_id];
 }
 
 void uart_target_disable_irq(int uart_id, int port_id)
 {
     (void) uart_id;
-    VIC0INTENCLEAR = 1 << IRQ_UART(port_id);
+    INTMSK &= ~intmsk_uart[port_id];
 }
 
 void uart_target_clear_irq(int uart_id, int port_id)
 {
     (void) uart_id;
-    (void) port_id;
+    SRCPND |= intmsk_uart[port_id];
 }
 
 void uart_target_enable_clocks(int uart_id)
 {
     (void) uart_id;
-    PWRCON(1) &= ~(1 << (CLOCKGATE_UARTC - 32));
+    PWRCON &= ~(1 << CLOCKGATE_UARTC);
 }
 
 void uart_target_disable_clocks(int uart_id)
 {
     (void) uart_id;
-    PWRCON(1) |= (1 << (CLOCKGATE_UARTC - 32));
+    PWRCON |= (1 << CLOCKGATE_UARTC);
 }
 
 /*
  * ISRs
  */
-
-/* On Classic, PORT0 interrupts are not used when iAP is disabled */
-#if !defined(IPOD_6G) || defined(IPOD_ACCESSORY_PROTOCOL)
 void ICODE_ATTR INT_UART0(void)
 {
-    uartc_callback(&s5l8702_uartc, 0);
+    uartc_callback(&s5l8700_uartc, 0);
 }
-#endif
 
-/* PORT1,2,3 not used on Classic */
-#ifndef IPOD_6G
 void ICODE_ATTR INT_UART1(void)
 {
-    uartc_callback(&s5l8702_uartc, 1);
+    uartc_callback(&s5l8700_uartc, 1);
 }
-
-void ICODE_ATTR INT_UART2(void)
-{
-    uartc_callback(&s5l8702_uartc, 2);
-}
-
-void ICODE_ATTR INT_UART3(void)
-{
-    uartc_callback(&s5l8702_uartc, 3);
-}
-#endif
 
 /* Main init */
 void uart_init(void)
 {
-    uartc_open(&s5l8702_uartc);
+    uartc_open(&s5l8700_uartc);
 }
