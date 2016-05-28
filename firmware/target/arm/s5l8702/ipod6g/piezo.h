@@ -18,9 +18,19 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
+#ifndef __PIEZO_H__
+#define __PIEZO_H__
 
 void piezo_init(void);
 void piezo_stop(void);
 void piezo_clear(void);
 bool piezo_busy(void);
 void piezo_button_beep(bool beep, bool force);
+
+#ifdef BOOTLOADER
+#include <inttypes.h>
+void piezo_tone(uint32_t period, int32_t duration);
+void piezo_seq(uint16_t *seq);
+#endif
+
+#endif /* __PIEZO_H__ */

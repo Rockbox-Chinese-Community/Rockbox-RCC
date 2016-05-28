@@ -102,14 +102,14 @@ bool dbg_hw_info(void)
             _DEBUG_PRINTF("PMU:");
             for(i=0;i<7;i++)
             {
-                char *device[] = {"(unknown)", 
-                                  "(unknown)", 
-                                  "(unknown)", 
-                                  "(unknown)", 
-                                  "(unknown)", 
-                                  "(unknown)",
-                                  "(unknown)"};
-                _DEBUG_PRINTF("ldo%d %s: %dmV %s",i,
+                char *device[] = {"unknown",
+                                  "unknown",
+                                  "LCD",
+                                  "AUDIO",
+                                  "unknown",
+                                  "CLICKWHEEL",
+                                  "ACCESSORY"};
+                _DEBUG_PRINTF("ldo%d %s: %dmV (%s)",i,
                     pmu_read(0x2e + (i << 1))?" on":"off",
                     900 + pmu_read(0x2d + (i << 1))*100,
                     device[i]);
@@ -120,27 +120,47 @@ bool dbg_hw_info(void)
             _DEBUG_PRINTF("charging: %s", charging_state() ? "true" : "false");
             _DEBUG_PRINTF("backlight: %s", pmu_read(0x29) ? "on" : "off");
             _DEBUG_PRINTF("brightness value: %d", pmu_read(0x28));
+            line++;
+            _DEBUG_PRINTF("USB present: %s",
+                    (power_input_status() & POWER_INPUT_USB) ? "true" : "false");
+#if CONFIG_CHARGING
+            _DEBUG_PRINTF("FW present: %s",
+                            pmu_firewire_present() ? "true" : "false");
+#endif
+            _DEBUG_PRINTF("holdswitch locked: %s",
+                            pmu_holdswitch_locked() ? "true" : "false");
+#ifdef IPOD_ACCESSORY_PROTOCOL
+            _DEBUG_PRINTF("accessory present: %s",
+                            pmu_accessory_present() ? "true" : "false");
+#endif
+            line++;
+            extern unsigned long i2c_rd_err, i2c_wr_err;
+            _DEBUG_PRINTF("i2c rd/wr errors: %lu/%lu", i2c_rd_err, i2c_wr_err);
         }
 #ifdef UC870X_DEBUG
         else if(state==2)
         {
             extern struct uartc_port ser_port;
-            int tx_stat, rx_stat, tx_speed, rx_speed;
-            char line_cfg[4];
-            int abr_stat;
-            uint32_t abr_cnt;
-            char *abrstatus[] = {"Idle", "Launched", "Counting", "Abnormal"};
+            bool opened = !!ser_port.uartc->port_l[ser_port.id];
+            _DEBUG_PRINTF("UART %d: %s", ser_port.id, opened ? "opened":"closed");
+            if (opened)
+            {
+                int tx_stat, rx_stat, tx_speed, rx_speed;
+                char line_cfg[4];
+                int abr_stat;
+                uint32_t abr_cnt;
+                char *abrstatus[] = {"Idle", "Launched", "Counting", "Abnormal"};
 
-            uartc_port_get_line_info(&ser_port,
-                        &tx_stat, &rx_stat, &tx_speed, &rx_speed, line_cfg);
-            abr_stat = uartc_port_get_abr_info(&ser_port, &abr_cnt);
+                uartc_port_get_line_info(&ser_port,
+                            &tx_stat, &rx_stat, &tx_speed, &rx_speed, line_cfg);
+                abr_stat = uartc_port_get_abr_info(&ser_port, &abr_cnt);
 
-            _DEBUG_PRINTF("UART %d:", ser_port.id);
-            line++;
-            _DEBUG_PRINTF("line: %s", line_cfg);
-            _DEBUG_PRINTF("Tx: %s, speed: %d", tx_stat ? "On":"Off", tx_speed);
-            _DEBUG_PRINTF("Rx: %s, speed: %d", rx_stat ? "On":"Off", rx_speed);
-            _DEBUG_PRINTF("ABR: %s, cnt: %u", abrstatus[abr_stat], abr_cnt);
+                line++;
+                _DEBUG_PRINTF("line: %s", line_cfg);
+                _DEBUG_PRINTF("Tx: %s, speed: %d", tx_stat ? "On":"Off", tx_speed);
+                _DEBUG_PRINTF("Rx: %s, speed: %d", rx_stat ? "On":"Off", rx_speed);
+                _DEBUG_PRINTF("ABR: %s, cnt: %u", abrstatus[abr_stat], abr_cnt);
+            }
             line++;
             _DEBUG_PRINTF("n_tx_bytes: %u", ser_port.n_tx_bytes);
             _DEBUG_PRINTF("n_rx_bytes: %u", ser_port.n_rx_bytes);
@@ -149,7 +169,7 @@ bool dbg_hw_info(void)
             _DEBUG_PRINTF("n_frame_err: %u", ser_port.n_frame_err);
             _DEBUG_PRINTF("n_break_detect: %u", ser_port.n_break_detect);
             _DEBUG_PRINTF("ABR n_abnormal: %u %u",
-                        ser_port.n_abnormal0, ser_port.n_abnormal1);
+                            ser_port.n_abnormal0, ser_port.n_abnormal1);
         }
 #endif
         else

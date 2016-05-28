@@ -45,6 +45,10 @@
 #include "fmradio_i2c.h"
 #include "powermgmt-imx233.h"
 
+#include "regs/digctl.h"
+#include "regs/usbphy.h"
+#include "regs/timrot.h"
+
 #define WATCHDOG_HW_DELAY   (10 * HZ)
 #define WATCHDOG_SW_DELAY   (5 * HZ)
 
@@ -63,9 +67,8 @@ static void good_dog(void)
 {
     imx233_rtc_reset_watchdog(WATCHDOG_HW_DELAY * 1000 / HZ); /* ms */
     imx233_rtc_enable_watchdog(true);
-    imx233_timrot_setup(TIMER_WATCHDOG, false, WATCHDOG_SW_DELAY * 1000 / HZ,
-        BV_TIMROT_TIMCTRLn_SELECT__1KHZ_XTAL, BV_TIMROT_TIMCTRLn_PRESCALE__DIV_BY_1,
-        false, &woof_woof);
+    imx233_timrot_setup_simple(TIMER_WATCHDOG, false, WATCHDOG_SW_DELAY * 1000 / HZ,
+        TIMER_SRC_1KHZ, &woof_woof);
     imx233_timrot_set_priority(TIMER_WATCHDOG, ICOLL_PRIO_WATCHDOG);
 }
 
@@ -99,7 +102,7 @@ void imx233_chip_reset(void)
 #if IMX233_SUBTARGET >= 3700
     HW_CLKCTRL_RESET = BM_CLKCTRL_RESET_CHIP;
 #else
-    HW_POWER_RESET = BF_OR2(POWER_RESET, UNLOCK_V(KEY), RST_DIG(1));
+    BF_WR_ALL(POWER_RESET, UNLOCK_V(KEY), RST_DIG(1));
 #endif
 }
 
@@ -121,17 +124,15 @@ void system_exception_wait(void)
     lcd_update();
     backlight_hw_on();
     backlight_hw_brightness(DEFAULT_BRIGHTNESS_SETTING);
-    /* wait until button release (if a button is pressed) */
-#ifdef HAVE_BUTTON_DATA
-    int data;
-    while(button_read_device(&data));
-    /* then wait until next button press */
-    while(!button_read_device(&data));
-#else
-    while(button_read_device());
-    /* then wait until next button press */
-    while(!button_read_device());
-#endif
+    /* wait until button release (if a button is pressed)
+     * NOTE at this point, interrupts are off so that rules out touchpad and
+     * ADC, so we are pretty much left with PSWITCH only. If other buttons are
+     * wanted, it is possible to implement a busy polling version of button
+     * reading for GPIO and ADC in button-imx233 but this is not done at the
+     * moment. */
+    while(imx233_power_read_pswitch() != 0) {}
+    while(imx233_power_read_pswitch() == 0) {}
+    while(imx233_power_read_pswitch() != 0) {}
 }
 
 int system_memory_guard(int newmode)
@@ -192,7 +193,7 @@ void system_init(void)
     imx233_clkctrl_enable_auto_slow(false);
     imx233_clkctrl_set_auto_slow_div(BV_CLKCTRL_HBUS_SLOW_DIV__BY8);
 
-    cpu_frequency = imx233_clkctrl_get_freq(CLK_CPU);
+    cpu_frequency = imx233_clkctrl_get_freq(CLK_CPU) * 1000; /* variable in Hz */
 
 #if !defined(BOOTLOADER) && CONFIG_TUNER != 0
     fmradio_i2c_init();
@@ -243,10 +244,10 @@ void udelay(unsigned us)
 void imx233_digctl_set_arm_cache_timings(unsigned timings)
 {
 #if IMX233_SUBTARGET >= 3780
-    HW_DIGCTL_ARMCACHE = BF_OR5(DIGCTL_ARMCACHE, ITAG_SS(timings),
+    BF_WR_ALL(DIGCTL_ARMCACHE, ITAG_SS(timings),
         DTAG_SS(timings), CACHE_SS(timings), DRTY_SS(timings), VALID_SS(timings));
 #else
-    HW_DIGCTL_ARMCACHE = BF_OR3(DIGCTL_ARMCACHE, ITAG_SS(timings),
+    BF_WR_ALL(DIGCTL_ARMCACHE, ITAG_SS(timings),
         DTAG_SS(timings), CACHE_SS(timings));
 #endif
 }

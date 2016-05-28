@@ -26,6 +26,7 @@
 #include "lcd.h"
 #include "font.h"
 #include "adc.h"
+#include "usb.h"
 #include "power-imx233.h"
 #include "clkctrl-imx233.h"
 #include "powermgmt-imx233.h"
@@ -43,6 +44,10 @@
 #include "button.h"
 #include "button-imx233.h"
 
+#include "regs/usbphy.h"
+#include "regs/timrot.h"
+#include "regs/power.h"
+
 #define ACT_NONE    0
 #define ACT_CANCEL  1
 #define ACT_OK      2
@@ -52,13 +57,8 @@
 #define ACT_RIGHT   6
 #define ACT_REPEAT  0x1000
 
-int my_get_action(int tmo)
+int xlate_button(int btn)
 {
-    int btn = button_get_w_tmo(tmo);
-    while(btn & BUTTON_REL)
-        btn = button_get_w_tmo(tmo);
-    bool repeat = btn & BUTTON_REPEAT;
-    int act = ACT_NONE;
     switch(btn)
     {
         case BUTTON_POWER:
@@ -69,8 +69,7 @@ int my_get_action(int tmo)
 #else
 #error no key for ACT_CANCEL
 #endif
-            act = ACT_CANCEL;
-            break;
+            return ACT_CANCEL;
 #if defined(BUTTON_SELECT)
         case BUTTON_SELECT:
 #elif defined(BUTTON_PLAY)
@@ -80,17 +79,28 @@ int my_get_action(int tmo)
 #else
 #error no key for ACT_OK
 #endif
-            act = ACT_OK;
-            break;
+            return ACT_OK;
         case BUTTON_UP:
-            act = ACT_PREV;
-            break;
+            return ACT_PREV;
         case BUTTON_DOWN:
-            act = ACT_NEXT;
-            break;
+            return ACT_NEXT;
         default:
-            yield();
+            return ACT_NONE;
     }
+}
+
+int my_get_status(void)
+{
+    return xlate_button(button_status());
+}
+
+int my_get_action(int tmo)
+{
+    int btn = button_get_w_tmo(tmo);
+    while(btn & BUTTON_REL)
+        btn = button_get_w_tmo(tmo);
+    bool repeat = btn & BUTTON_REPEAT;
+    int act = xlate_button(btn & ~BUTTON_REPEAT);
     if(repeat)
         act |= ACT_REPEAT;
     return act;
@@ -214,7 +224,7 @@ bool dbg_hw_info_power(void)
         bool en;
         int linreg;
         char buf[16];
-        
+
         lcd_putsf(0, line++, "name  value bo linreg");
 #define DISP_REGULATOR(name) \
         imx233_power_get_regulator(REGULATOR_##name, &trg, &bo); \
@@ -231,16 +241,17 @@ bool dbg_hw_info_power(void)
 #if IMX233_SUBTARGET >= 3780
         DISP_REGULATOR(VDDMEM);
 #endif
-        lcd_putsf(0, line++, "DC-DC: pll: %d   freq: %d", info.dcdc_sel_pllclk, info.dcdc_freqsel);
-        lcd_putsf(0, line++, "charge: %d mA  stop: %d mA", info.charge_current, info.stop_current);
-        lcd_putsf(0, line++, "charging: %d  bat_adj: %d", info.charging, info.batt_adj);
+        lcd_putsf(0, line++, "dcdc: pll: %d freq: %d", info.dcdc_sel_pllclk, info.dcdc_freqsel);
+        lcd_putsf(0, line++, "chrg: %d mA / %d mA", info.charge_current, info.stop_current);
+        lcd_putsf(0, line++, "chrging: %d  batadj: %d", info.charging, info.batt_adj);
         lcd_putsf(0, line++, "4.2: en: %d  dcdc: %d", info._4p2_enable, info._4p2_dcdc);
-        lcd_putsf(0, line++, "4.2: cmptrip: %d dropout: %d", info._4p2_cmptrip, info._4p2_dropout);
-        lcd_putsf(0, line++, "5V: pwd_4.2_charge: %d", info._5v_pwd_charge_4p2);
-        lcd_putsf(0, line++, "5V: chargelim: %d mA", info._5v_charge_4p2_limit);
-        lcd_putsf(0, line++, "5V: dcdc: %d  xfer: %d", info._5v_enable_dcdc, info._5v_dcdc_xfer);
-        lcd_putsf(0, line++, "5V: thr: %d mV use: %d cmps: %d", info._5v_vbusvalid_thr,
-            info._5v_vbusvalid_detect, info._5v_vbus_cmps);
+        lcd_putsf(0, line++, "4.2: cmptrip: %d", info._4p2_cmptrip);
+        lcd_putsf(0, line++, "4.2: dropout: %d", info._4p2_dropout);
+        lcd_putsf(0, line++, "5v: pwd_4.2_charge: %d", info._5v_pwd_charge_4p2);
+        lcd_putsf(0, line++, "5v: chrglim: %d mA", info._5v_charge_4p2_limit);
+        lcd_putsf(0, line++, "5v: dcdc: %d  xfer: %d", info._5v_enable_dcdc, info._5v_dcdc_xfer);
+        lcd_putsf(0, line++, "5v: thr: %d mV", info._5v_vbusvalid_thr);
+        lcd_putsf(0, line++, "5v: use: %d cmps: %d", info._5v_vbusvalid_detect, info._5v_vbus_cmps);
 
         lcd_update();
         yield();
@@ -250,7 +261,7 @@ bool dbg_hw_info_power(void)
 bool dbg_hw_info_lradc(void)
 {
     lcd_setfont(FONT_SYSFIXED);
-    
+
     while(1)
     {
         int button = my_get_action(HZ / 25);
@@ -326,13 +337,18 @@ bool dbg_hw_info_clkctrl(void)
         lcd_clear_display();
 
         /*               012345678901234567890123456789 */
+#if LCD_WIDTH < 240
+        lcd_putsf(0, 0, "name en frequency");
+#else
         lcd_putsf(0, 0, "name en by idiv fdiv frequency");
+#endif
         for(unsigned i = 0; i < ARRAYLEN(dbg_clk); i++)
         {
             #define c dbg_clk[i]
             lcd_putsf(0, i + 1, "%4s", c.name);
             if(c.has_enable)
                 lcd_putsf(5, i + 1, "%2d", imx233_clkctrl_is_enabled(c.clk));
+#if LCD_WIDTH >= 240
 #if IMX233_SUBTARGET >= 3700
             if(c.has_bypass)
                 lcd_putsf(8, i + 1, "%2d", imx233_clkctrl_get_bypass(c.clk));
@@ -345,6 +361,10 @@ bool dbg_hw_info_clkctrl(void)
 #endif
             if(c.has_freq)
                 lcd_putsf(21, i + 1, "%9d", imx233_clkctrl_get_freq(c.clk));
+#else /* LCD_WIDTH < 240 */
+            if(c.has_freq)
+                lcd_putsf(8, i + 1, "%9d", imx233_clkctrl_get_freq(c.clk));
+#endif
             #undef c
         }
         int line = ARRAYLEN(dbg_clk) + 1;
@@ -394,12 +414,99 @@ bool dbg_hw_info_powermgmt(void)
             "<unknown>");
         lcd_putsf(0, 1, "charging tmo: %d", info.charging_timeout);
         lcd_putsf(0, 2, "topoff tmo: %d", info.topoff_timeout);
-        lcd_putsf(0, 3, "4p2ilimit tmo: %d", info.incr_4p2_ilimit_timeout);
 
         lcd_update();
         yield();
     }
 }
+
+#if IMX233_SUBTARGET >= 3780
+/* stmp < 3780 does not have a 4.2V rail and thus cannot do this magic trick */
+bool dbg_hw_info_power2(void)
+{
+    lcd_setfont(FONT_SYSFIXED);
+    bool holding_select = false;
+    int select_hold_time = 0;
+
+    while(1)
+    {
+        int button = my_get_action(HZ / 10);
+        if(button == ACT_NEXT || button == ACT_PREV)
+        {
+            lcd_setfont(FONT_UI);
+            return true;
+        }
+        else if(button == ACT_CANCEL)
+        {
+            lcd_setfont(FONT_UI);
+            return false;
+        }
+
+        button = my_get_status();
+        if(button == ACT_OK && !holding_select)
+        {
+            holding_select = true;
+            select_hold_time = current_tick;
+        }
+        else if(button != ACT_OK && holding_select)
+        {
+            holding_select = false;
+        }
+
+        /* disable feature if unsafe: we need 4.2 and dcdc fully operational */
+        bool feat_safe = usb_detect() == USB_INSERTED && BF_RD(POWER_DCDC4P2, ENABLE_DCDC)
+            && BF_RD(POWER_DCDC4P2, ENABLE_4P2) && BF_RD(POWER_5VCTRL, ENABLE_DCDC)
+            && !BF_RD(POWER_5VCTRL, PWD_CHARGE_4P2);
+        bool batt_disabled = (BF_RD(POWER_DCDC4P2, DROPOUT_CTRL) == 0xc);
+        if(holding_select && TIME_AFTER(current_tick, select_hold_time + HZ))
+        {
+            if(batt_disabled)
+            {
+                BF_CLR(POWER_CHARGE, PWD_BATTCHRG); /* enable charger again */
+                BF_WR(POWER_DCDC4P2, DROPOUT_CTRL(0xe)); /* select greater, 200 mV drop */
+            }
+            else if(feat_safe)
+            {
+                BF_WR(POWER_DCDC4P2, DROPOUT_CTRL(0xc)); /* always select 4.2, 200 mV drop */
+                BF_SET(POWER_CHARGE, PWD_BATTCHRG); /* disable charger */
+            }
+            holding_select = false;
+            /* return to the beginning of the loop to gather more information
+             * about HW state before displaying it */
+            continue;
+        }
+
+        lcd_clear_display();
+        if(!batt_disabled)
+        {
+            lcd_putsf(0, 0, "Hold select for 1 sec");
+            lcd_putsf(0, 1, "to disable battery");
+            lcd_putsf(0, 1, "and battery charger.");
+            lcd_putsf(0, 2, "The device will run");
+            lcd_putsf(0, 3, "entirely from USB.");
+            lcd_putsf(0, 5, "WARNING");
+            lcd_putsf(0, 6, "This is a debug");
+            lcd_putsf(0, 7, "feature !");
+            if(!feat_safe)
+            {
+                lcd_putsf(0, 9, "NOTE: unavailable");
+                lcd_putsf(0, 10, "Plug USB to enable.");
+            }
+        }
+        else
+        {
+            lcd_putsf(0, 0, "Battery is DISABLED.");
+            lcd_putsf(0, 1, "Hold select for 1 sec");
+            lcd_putsf(0, 2, "to renable battery.");
+            lcd_putsf(0, 4, "WARNING");
+            lcd_putsf(0, 5, "Do not unplug USB !");
+        }
+
+        lcd_update();
+        yield();
+    }
+}
+#endif /* IMX233_SUBTARGET >= 3780 */
 
 bool dbg_hw_info_rtc(void)
 {
@@ -425,7 +532,7 @@ bool dbg_hw_info_rtc(void)
 
         lcd_putsf(0, 0, "seconds: %lu", info.seconds);
         for(int i = 0; i < 6; i++)
-            lcd_putsf(0, i + 1, "persistent%d: 0x%lx", i, info.persistent[i]);
+            lcd_putsf(0, i + 1, "persist%d: 0x%lx", i, info.persistent[i]);
 
         lcd_update();
         yield();
@@ -667,7 +774,7 @@ bool dbg_hw_info_ocotp(void)
         }
         if(i < top_user)
             top_user = i - 1;
-        
+
         lcd_update();
         yield();
     }
@@ -1026,36 +1133,50 @@ bool dbg_hw_info_button(void)
         {
             bool val = imx233_button_read_btn(i);
             int raw = imx233_button_read_raw(i);
+            char type[20];
             char path[128];
             char flags[128];
             if(MAP[i].periph == IMX233_BUTTON_GPIO)
-                snprintf(path, sizeof(path), "gpio(%d,%d)", MAP[i].u.gpio.bank, MAP[i].u.gpio.pin);
+            {
+                snprintf(type, sizeof(type), "gpio");
+                snprintf(path, sizeof(path), "bank=%d pin=%d", MAP[i].u.gpio.bank, MAP[i].u.gpio.pin);
+            }
             else if(MAP[i].periph == IMX233_BUTTON_LRADC)
             {
-                if(MAP[i].u.lradc.relative == -1)
-                    snprintf(path, sizeof(path), "lradc(%d,%d)", MAP[i].u.lradc.src,
-                        MAP[i].u.lradc.value);
+                static const char *op_name[] =
+                {
+                    [IMX233_BUTTON_EQ] = "eq",
+                    [IMX233_BUTTON_GT] = "gt",
+                    [IMX233_BUTTON_LT] = "lt"
+                };
+                char rel_name[20];
+                snprintf(type, sizeof(type), "adc");
+                if(MAP[i].u.lradc.relative != -1)
+                    snprintf(rel_name, sizeof(rel_name), " %s", MAP[MAP[i].u.lradc.relative].name);
                 else
-                    snprintf(path, sizeof(path), "lradc(%d,%d,%s)", MAP[i].u.lradc.src,
-                        MAP[i].u.lradc.value, MAP[MAP[i].u.lradc.relative].name);
+                    rel_name[0] = 0;
+                snprintf(path, sizeof(path), "%d %s %d%s %d", MAP[i].u.lradc.src,
+                    op_name[MAP[i].u.lradc.op], MAP[i].u.lradc.value, rel_name,
+                    MAP[i].u.lradc.margin);
             }
             else if(MAP[i].periph == IMX233_BUTTON_PSWITCH)
-                snprintf(path, sizeof(path), "pswitch(%d)", MAP[i].u.pswitch.level);
+            {
+                snprintf(type, sizeof(type), "psw");
+                snprintf(path, sizeof(path), "level=%d", MAP[i].u.pswitch.level);
+            }
             else
+            {
+                snprintf(type, sizeof(type), "unk");
                 snprintf(path, sizeof(path), "unknown");
+            }
             flags[0] = 0;
             if(MAP[i].flags & IMX233_BUTTON_INVERTED)
                 strcat(flags, " inv");
             if(MAP[i].flags & IMX233_BUTTON_PULLUP)
                 strcat(flags, " pull");
-#if LCD_WIDTH < 240
-            lcd_putsf(0, line++, "%s: %d[%d/%d] (raw=%d)", MAP[i].name, val,
-                MAP[i].rounds, MAP[i].threshold, raw);
-            lcd_putsf(0, line++, "    %s%s", path, flags);
-#else
-            lcd_putsf(0, line++, "%s: %d[%d/%d] (raw=%d) %s%s", MAP[i].name, val,
-                MAP[i].rounds, MAP[i].threshold, raw, path, flags);
-#endif
+            lcd_putsf(0, line++, "%s %d %d/%d %d %s", MAP[i].name, val,
+                MAP[i].rounds, MAP[i].threshold, raw, type);
+            lcd_putsf(0, line++, "  %s%s", path, flags);
         }
 #undef MAP
 
@@ -1074,6 +1195,9 @@ static struct
     {"dma", dbg_hw_info_dma},
     {"lradc", dbg_hw_info_lradc},
     {"power", dbg_hw_info_power},
+#if IMX233_SUBTARGET >= 3780
+    {"power2", dbg_hw_info_power2},
+#endif
     {"powermgmt", dbg_hw_info_powermgmt},
     {"rtc", dbg_hw_info_rtc},
     {"dcp", dbg_hw_info_dcp},
