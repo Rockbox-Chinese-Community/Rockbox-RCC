@@ -55,15 +55,15 @@ $releasenotes="/wiki/ReleaseNotes313";
     },
     'gogearhdd1630' => {
         name => 'Philips GoGear HDD1630',
-        status => 2,
+        status => 3,
     },
     'gogearhdd6330' => {
         name => 'Philips GoGear HDD6330',
-        status => 2,
+        status => 3,
     },
     'gogearsa9200' => {
         name => 'Philips GoGear SA9200',
-        status => 2,
+        status => 3,
     },
     'hifietma9' => {
         name => 'HiFi E.T MA9',
@@ -236,15 +236,15 @@ $releasenotes="/wiki/ReleaseNotes313";
     },
     'samsungyh820' => {
         name => 'Samsung YH-820',
-        status => 2,
+        status => 3,
     },
     'samsungyh920' => {
         name => 'Samsung YH-920',
-        status => 2,
+        status => 3,
     },
     'samsungyh925' => {
         name => 'Samsung YH-925',
-        status => 2,
+        status => 3,
     },
     'samsungypr0' => {
         name => 'Samsung YP-R0',
@@ -304,7 +304,7 @@ $releasenotes="/wiki/ReleaseNotes313";
     },
     'sansafuzeplus' => {
         name => 'SanDisk Sansa Fuze+',
-        status => 2,
+        status => 3,
         icon => 'sansafuzeplus',
     },
     'sansam200' => {
@@ -349,31 +349,35 @@ $releasenotes="/wiki/ReleaseNotes313";
     },
     'creativezenxfi2' => {
         name => 'Creative Zen X-Fi2',
-        status => 1,
+        status => 2,
     },
     'creativezenxfi3' => {
         name => 'Creative Zen X-Fi3',
-        status => 1,
+        status => 3,
     },
     'sonynwze360' => {
         name => 'Sony NWZ-E360',
-        status => 1,
+        status => 3,
     },
     'sonynwze370' => {
-        name => 'Sony NWZ-E370',
-        status => 1,
+        name => 'Sony NWZ-E370/E380',
+        status => 3,
     },
     'creativezenxfi' => {
         name => 'Creative Zen X-Fi',
-        status => 1
+        status => 3
+    },
+    'creativezenxfistyle' => {
+        name => 'Creative Zen X-Fi Style',
+        status => 3
     },
     'creativezen' => {
         name => 'Creative Zen',
-        status => 1
+        status => 2
     },
     'creativezenmozaic' => {
         name => 'Creative Zen Mozaic',
-        status => 1
+        status => 3
     },
 );
 

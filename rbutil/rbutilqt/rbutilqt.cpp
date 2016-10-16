@@ -523,7 +523,6 @@ void RbUtilQt::uninstallBootloader(void)
            QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) return;
     // create logger
     ProgressLoggerGui* logger = new ProgressLoggerGui(this);
-    logger->setProgressVisible(false);
     logger->show();
 
     QString platform = RbSettings::value(RbSettings::Platform).toString();
@@ -569,10 +568,11 @@ void RbUtilQt::uninstallBootloader(void)
 
     connect(bl, SIGNAL(logItem(QString, int)), logger, SLOT(addItem(QString, int)));
     connect(bl, SIGNAL(logProgress(int, int)), logger, SLOT(setProgress(int, int)));
+    connect(bl, SIGNAL(done(bool)), logger, SLOT(setFinished()));
+    // pass Abort button click signal to current installer
+    connect(logger, SIGNAL(aborted()), bl, SLOT(progressAborted()));
 
     bl->uninstall();
-
-    logger->setFinished();
 
 }
 

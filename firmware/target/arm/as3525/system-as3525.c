@@ -50,7 +50,9 @@
 #define default_interrupt(name) \
   extern __attribute__((weak,alias("UIRQ"))) void name (void)
 
+#if CONFIG_USBOTG != USBOTG_DESIGNWARE
 static void UIRQ (void) __attribute__((interrupt ("IRQ")));
+#endif
 void irq_handler(void) __attribute__((naked, interrupt ("IRQ")));
 void fiq_handler(void) __attribute__((interrupt ("FIQ")));
 
@@ -105,6 +107,11 @@ static void UIRQ(void)
     if(status == 0)
     {
         status = VIC_RAW_INTR; /* masked interrupts */
+#if CONFIG_USBOTG == USBOTG_DESIGNWARE
+        /* spurious interrupts from USB are expected */
+        if (status & INTERRUPT_USB)
+            return;
+#endif
         masked = true;
     }
 
@@ -481,8 +488,13 @@ void set_cpu_frequency(long frequency)
 
         /* Set CVDD1 power supply */
 #ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
-#ifdef SANSA_CLIPZIP
+#if defined(SANSA_CLIPZIP)
         ascodec_write_pmu(0x17, 1, 0x80 | 19);
+#elif defined(SANSA_CLIPPLUS)
+        if (amsv2_variant)
+            ascodec_write_pmu(0x17, 1, 0x80 | 22);
+        else
+            ascodec_write_pmu(0x17, 1, 0x80 | 26);
 #else
         ascodec_write_pmu(0x17, 1, 0x80 | 22);
 #endif

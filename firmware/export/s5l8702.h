@@ -175,13 +175,40 @@
 /////USB/////
 #define OTGBASE 0x38400000
 #define PHYBASE 0x3C400000
-#define SYNOPSYSOTG_CLOCK 0
-#define SYNOPSYSOTG_AHBCFG (GAHBCFG_dma_enable | (GAHBCFG_INT_DMA_BURST_INCR8 << GAHBCFG_hburstlen_bitp) | GAHBCFG_glblintrmsk)
+
+/* OTG PHY control registers */
+#define OPHYPWR     (*((uint32_t volatile*)(PHYBASE + 0x000)))
+#define OPHYCLK     (*((uint32_t volatile*)(PHYBASE + 0x004)))
+#define ORSTCON     (*((uint32_t volatile*)(PHYBASE + 0x008)))
+#define OPHYUNK3    (*((uint32_t volatile*)(PHYBASE + 0x018)))
+#define OPHYUNK1    (*((uint32_t volatile*)(PHYBASE + 0x01c)))
+#define OPHYUNK2    (*((uint32_t volatile*)(PHYBASE + 0x044)))
+
+/* 9 available EPs (0b00000001111101010000000111101011), 6 used */
+#define USB_NUM_ENDPOINTS 6
+
+/* Define this if the DWC implemented on this SoC does not support
+   DMA or you want to disable it. */
+// #define USB_DW_ARCH_SLAVE
 
 
 /////I2C/////
 #define I2CCLKGATE(i)   ((i) == 1 ? CLOCKGATE_I2C1 : \
                                     CLOCKGATE_I2C0)
+
+/*  s5l8702 I2C controller is similar to s5l8700, known differences are:
+
+    * IICCON[5] is not used in s5l8702.
+    * IICCON[13:8] are used to enable interrupts.
+      IICSTA2[13:8] are used to read the status and write-clear interrupts.
+      Known interrupts:
+       [13] STOP on bus (TBC)
+       [12] START on bus (TBC)
+       [8] byte transmited or received in Master mode (not tested in Slave)
+    * IICCON[4] does not clear interrupts, it is enabled when a byte is
+      transmited or received, in Master mode the tx/rx of the next byte
+      starts when it is written as "1".
+*/
 
 #define IICCON(bus)     (*((uint32_t volatile*)(0x3C600000 + 0x300000 * (bus))))
 #define IICSTAT(bus)    (*((uint32_t volatile*)(0x3C600004 + 0x300000 * (bus))))
@@ -190,6 +217,7 @@
 #define IICUNK10(bus)   (*((uint32_t volatile*)(0x3C600010 + 0x300000 * (bus))))
 #define IICUNK14(bus)   (*((uint32_t volatile*)(0x3C600014 + 0x300000 * (bus))))
 #define IICUNK18(bus)   (*((uint32_t volatile*)(0x3C600018 + 0x300000 * (bus))))
+#define IICSTA2(bus)    (*((uint32_t volatile*)(0x3C600020 + 0x300000 * (bus))))
 
 
 /////INTERRUPT CONTROLLERS/////

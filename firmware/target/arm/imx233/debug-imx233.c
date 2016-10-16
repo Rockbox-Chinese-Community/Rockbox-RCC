@@ -254,6 +254,9 @@ bool dbg_hw_info_power(void)
         lcd_putsf(0, line++, "5v: dcdc: %d  xfer: %d", info._5v_enable_dcdc, info._5v_dcdc_xfer);
         lcd_putsf(0, line++, "5v: thr: %d mV", info._5v_vbusvalid_thr);
         lcd_putsf(0, line++, "5v: use: %d cmps: %d", info._5v_vbusvalid_detect, info._5v_vbus_cmps);
+#if IMX233_SUBTARGET >= 3780
+        lcd_putsf(0, line++, "pwrup: %x", BF_RD(POWER_STS, PWRUP_SOURCE));
+#endif
 
         lcd_update();
         yield();
@@ -533,8 +536,9 @@ bool dbg_hw_info_rtc(void)
         struct imx233_rtc_info_t info = imx233_rtc_get_info();
 
         lcd_putsf(0, 0, "seconds: %lu", info.seconds);
+        lcd_putsf(0, 1, "alarm: %lu", info.alarm);
         for(int i = 0; i < 6; i++)
-            lcd_putsf(0, i + 1, "persist%d: 0x%lx", i, info.persistent[i]);
+            lcd_putsf(0, i + 2, "persist%d: 0x%lx", i, info.persistent[i]);
 
         lcd_update();
         yield();
