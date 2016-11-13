@@ -47,6 +47,7 @@ static int g_model_index = -1;
 static char *g_kas = NULL;
 static char *g_key = NULL;
 static char *g_sig = NULL;
+static int g_nr_threads = 1;
 
 enum keysig_search_method_t g_keysig_search = KEYSIG_SEARCH_NONE;
 
@@ -74,6 +75,18 @@ struct nwz_model_t
     char *sig;
 };
 
+/** Firmware format
+ *
+ * The firmware starts with the MD5 hash of the entire file (except the MD5 hash
+ * itself of course). This is used to check that the file was not corrupted.
+ * The remaining of the file is encrypted (using DES) with the model key. The
+ * encrypted part starts with a header containing the model signature and the
+ * number of files. Since the header is encrypted, decrypting the header with
+ * the key and finding the right signature serves to authenticate the firmware.
+ * The header is followed by N entries (where N is the number of files) giving
+ * the offset, within the file, and size of each file. Note that the files in
+ * the firmware have no name. */
+
 struct upg_md5_t
 {
     uint8_t md5[16];
@@ -81,7 +94,7 @@ struct upg_md5_t
 
 struct upg_header_t
 {
-    char sig[NWZ_SIG_SIZE];
+    uint8_t sig[NWZ_SIG_SIZE];
     uint32_t nr_files;
     uint32_t pad; // make sure structure size is a multiple of 8
 } __attribute__((packed));
@@ -160,12 +173,17 @@ struct upg_entry_t
 
 struct nwz_model_t g_model_list[] =
 {
-    { "nwz-e45x", HAS_KAS | HAS_KEY | HAS_SIG | CONFIRMED, "8a01b624bfbfde4a1662a1772220e3c5", "6173819e", "30b82e5c"},
-    { "nwz-e46x", HAS_KAS | HAS_KEY | HAS_SIG | CONFIRMED, "89d813f8f966efdebd9c9e0ea98156d2", "eb4431eb", "4f1d9cac" },
-    { "nwz-a86x", HAS_KAS | HAS_KEY | HAS_SIG | CONFIRMED, "a7c4af6c28b8900a783f307c1ba538c5", "c824e4e2", "7c262bb0" },
+    { "nwz-e450", HAS_KAS | CONFIRMED, "8a01b624bfbfde4a1662a1772220e3c5", "", "" },
+    { "nwz-e460", HAS_KAS | CONFIRMED, "89d813f8f966efdebd9c9e0ea98156d2", "", "" },
+    { "nwz-a860", HAS_KAS | CONFIRMED, "a7c4af6c28b8900a783f307c1ba538c5", "", "" },
+    { "nwz-a850", HAS_KAS | CONFIRMED, "a2efb9168616c2e84d78291295c1aa5d", "", "" },
     /* The following keys were obtained by brute forcing firmware upgrades,
      * someone with a device needs to confirm that they work */
-    { "nw-a82x", HAS_KEY | HAS_SIG, "", "4df06482", "07fa0b6e" },
+    { "nw-a820", HAS_KEY | HAS_SIG, "", "4df06482", "07fa0b6e" },
+    { "nwz-a10", HAS_KEY | HAS_SIG, "", "ec2888e2", "f62ced8a" },
+    { "nwz-a20", HAS_KEY | HAS_SIG, "", "e8e204ee", "577614df" },
+    { "nwz-zx100", HAS_KEY | HAS_SIG, "", "22e44606", "a9f95e90" },
+    { "nwz-e580", HAS_KEY | HAS_SIG, "", "a60806ea", "97e8ce46" },
 };
 
 static int digit_value(char c)
@@ -286,7 +304,8 @@ static int get_key_and_sig(bool is_extract, void *encrypted_hdr)
     {
         cprintf(BLUE, "keysig Search\n");
         cprintf_field("  Method: ", "%s\n", keysig_search_desc[g_keysig_search].name);
-        bool ok = keysig_search_desc[g_keysig_search].fn(encrypted_hdr, &upg_notify_keysig, keysig);
+        bool ok = keysig_search(g_keysig_search, encrypted_hdr, 8,
+            &upg_notify_keysig, keysig, g_nr_threads);
         cprintf(GREEN, "  Result: ");
         cprintf(ok ? YELLOW : RED, "%s\n", ok ? "Key found" : "No key found");
         if(!ok)
@@ -576,6 +595,7 @@ static void usage(void)
     printf("  -c/--no-color\t\tDisable color output\n");
     printf("  -m/--model <model>\tSelect model (or ? to list them)\n");
     printf("  -l/--search <method>\tTry to find the keysig (implies -e)\n");
+    printf("  -t/--threads <nr>\tSpecify number of threads to find the keysig\n");
     printf("  -a/--kas <kas>\tForce KAS\n");
     printf("  -k/--key <key>\tForce key\n");
     printf("  -s/--sig <sig>\tForce sig\n");
@@ -594,7 +614,7 @@ int main(int argc, char **argv)
 
     if(argc <= 1)
         usage();
-    
+
     while(1)
     {
         static struct option long_options[] =
@@ -610,10 +630,11 @@ int main(int argc, char **argv)
             {"sig", required_argument, 0, 's'},
             {"extract", no_argument, 0, 'e'},
             {"create", no_argument, 0 ,'c'},
+            {"threads", required_argument, 0, 't'},
             {0, 0, 0, 0}
         };
 
-        int c = getopt_long(argc, argv, "?dnfo:m:l:a:k:s:ec", long_options, NULL);
+        int c = getopt_long(argc, argv, "?dnfo:m:l:a:k:s:ect:", long_options, NULL);
         if(c == -1)
             break;
         switch(c)
@@ -664,6 +685,14 @@ int main(int argc, char **argv)
                 break;
             case 'c':
                 create = true;
+                break;
+            case 't':
+                g_nr_threads = strtol(optarg, NULL, 0);
+                if(g_nr_threads < 1 || g_nr_threads > 128)
+                {
+                    cprintf(GREY, "Invalid number of threads\n");
+                    return 1;
+                }
                 break;
             default:
                 abort();

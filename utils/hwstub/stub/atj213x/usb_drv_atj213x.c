@@ -39,8 +39,8 @@ struct endpoint_t
     bool finished;
 };
 
-static volatile struct endpoint_t ep0in = {NULL,0,false,false};
-static volatile struct endpoint_t ep0out = {NULL,0,false,false};
+static volatile struct endpoint_t ep0in;
+static volatile struct endpoint_t ep0out;
 
 static void usb_copy_from(void *ptr, volatile void *reg, size_t sz)
 {
@@ -78,22 +78,57 @@ static void usb_copy_to(volatile void *reg, void *ptr, size_t sz)
         *rp++ = *p++;
 }
 
-void usb_drv_init(void)
+static void reset_all_fifos(void)
 {
-    OTG_USBCS |= 0x40;                    /* soft disconnect */
+    /* reset all ep fifos */
 
-    OTG_ENDPRST = 0x10;                   /* reset all ep fifos */
+    /* IN fifos */
+    OTG_ENDPRST = 0x10;
     OTG_ENDPRST = 0x70;
+
+    /* OUT fifos */
     OTG_ENDPRST = 0x00;
     OTG_ENDPRST = 0x60;
+}
 
-    OTG_USBIRQ = 0xff;                    /* clear all pending interrupts */
+static void cancel_all_transfers(void)
+{
+    ep0out.buf = NULL;
+    ep0out.length = 0;
+    ep0out.zlp = false;
+    ep0out.finished =  true;
+
+    ep0in.buf = NULL;
+    ep0in.length = 0;
+    ep0in.zlp = false;
+    ep0in.finished = true;
+}
+
+void usb_drv_init(void)
+{
+    /* soft disconnect */
+    OTG_USBCS |= 0x40;
+
+    cancel_all_transfers();
+    reset_all_fifos();
+
+    /* clear all pending interrupts */
+    OTG_USBIRQ = 0xff;
     OTG_OTGIRQ = 0xff;
     OTG_IN04IRQ = 0xff;
     OTG_OUT04IRQ = 0xff;
-    OTG_USBEIRQ = 0x50;                   /* UDC ? with 0x40 there is irq storm */
 
-    OTG_USBIEN = (1<<5) | (1<<4) | (1<<0); /* HS, Reset, Setup_data */
+    /* bit6 - USB wakeup
+     * bit4 - connect/disconnect
+     *
+     * with 0x40 here there is irq storm
+     */
+    OTG_USBEIRQ = 0x50;
+
+    /* HS, Reset, Setup_data */
+    OTG_USBIEN = (1<<5) | (1<<4) | (1<<0);
+
+    /* No OTG interrupts ? */
     OTG_OTGIEN = 0;
 
     /* enable interrupts from ep0 */
@@ -105,7 +140,8 @@ void usb_drv_init(void)
 
     target_mdelay(100);
 
-    OTG_USBCS &= ~0x40;                  /* soft connect */
+    /* soft connect */
+    OTG_USBCS &= ~0x40;
 }
 
 int usb_drv_recv_setup(struct usb_ctrlrequest *req)
@@ -115,6 +151,7 @@ int usb_drv_recv_setup(struct usb_ctrlrequest *req)
 
     usb_copy_from(req, &OTG_SETUPDAT, sizeof(struct usb_ctrlrequest));
     setup_data_valid = false;
+
     return 0;
 }
 
@@ -148,7 +185,6 @@ static void ep0_write(void)
     OTG_IN0BC = xfer_size;
 }
 
-/* TODO: Maybe adapt to irq scheme */
 int usb_drv_send(int endpoint, void *ptr, int length)
 {
     (void)endpoint;
@@ -167,6 +203,7 @@ int usb_drv_send(int endpoint, void *ptr, int length)
     }
     else
     {
+        /* clear NAK bit to ACK host */
         OTG_EP0CS = 2;
     }
 
@@ -183,25 +220,32 @@ static int ep0_read(void)
     return xfer_size;
 }
 
-/* TODO:  Maybe adapt to irq scheme */
 int usb_drv_recv(int endpoint, void* ptr, int length)
 {
    (void)endpoint;
 
    ep0out.length = length;
-   ep0out.buf = ptr;
-   ep0out.zlp = (length == 0) ? true : false;
-   ep0out.finished = false;
 
-   /* Arm receiving buffer by writing
-    * any value to OUT0BC. This sets
-    * OUT_BUSY bit in EP0CS until the data
-    * are correctly received and ACK'd
-    */
-   OTG_OUT0BC = 0;
+   if (length > 0)
+   {
+       ep0out.buf = ptr;
+       ep0out.finished = false;
 
-   while (!ep0out.finished)
-       ;
+       /* Arm receiving buffer by writing
+        * any value to OUT0BC. This sets
+        * OUT_BUSY bit in EP0CS until the data
+        * are correctly received and ACK'd
+        */
+       OTG_OUT0BC = 0;
+
+       while (!ep0out.finished)
+           ;
+   }
+   else
+   {
+       /* clear NAK bit to ACK host */
+       OTG_EP0CS = 2;
+   }
 
    return (length - ep0out.length);
 }
@@ -234,23 +278,24 @@ void INT_UDC(void)
     if (usbirq)
     {
 
-        if (usbirq & (1<<5))
+        if (usbirq & (1<<5)) /* HS irq */
         {
-            /* HS irq */
             udc_speed = USB_HIGH_SPEED;
         }
-        else if (usbirq & (1<<4))
+        else if (usbirq & (1<<4)) /* Reset irq */
         {
-            /* Reset */
-            udc_speed = USB_FULL_SPEED;
+            cancel_all_transfers();
+            reset_all_fifos();
 
-            /* clear all pending irqs */
+            /* clear all pending EP irqs */
             OTG_OUT04IRQ = 0xff;
             OTG_IN04IRQ = 0xff;
+
+            udc_speed = USB_FULL_SPEED;
+            setup_data_valid = false;
         }
-        else if (usbirq & (1<<0))
+        else if (usbirq & (1<<0)) /* Setup data valid */
         {
-            /* Setup data valid */
             setup_data_valid = true;
         }
 
@@ -267,12 +312,11 @@ void INT_UDC(void)
         }
         else
         {
-            if (ep0out.length == 0 && ep0out.zlp)
-            {
-                OTG_EP0CS = 2;
-            }
+            /* short packet means end of transfer */   
             ep0out.finished = true;
         }
+
+        /* ack interrupt */
         OTG_OUT04IRQ = epoutirq;
     }
 
@@ -286,6 +330,7 @@ void INT_UDC(void)
         {
             if (ep0in.zlp)
             {
+                /* clear NAK bit to ACK hosts ZLP */
                 OTG_EP0CS = 2;
             }
 
