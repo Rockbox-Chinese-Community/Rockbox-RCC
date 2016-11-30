@@ -57,4 +57,4 @@ ifneq ($(SVNVERSION),$(OLDSVNVERSION))
 endif
 
 $(BUILDDIR)/rbversion.h:
-	$(call PRINTS,GEN $(@F))$(TOOLSDIR)/genversion.sh $(BUILDDIR) $(SVNVERSION)
+	$(call PRINTS,GEN $(@F))$(TOOLSDIR)/genversion.sh $(BUILDDIR) "$(SVNVERSION)"
