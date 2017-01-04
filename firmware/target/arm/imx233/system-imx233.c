@@ -52,15 +52,16 @@
 #define WATCHDOG_HW_DELAY   (10 * HZ)
 #define WATCHDOG_SW_DELAY   (5 * HZ)
 
+void UIE(unsigned int pc, unsigned int num);
+
 static void woof_woof(void)
 {
-    /* stop hadrware watchdog, we catched the error */
+    /* stop hardware watchdog, we catched the error */
     imx233_rtc_enable_watchdog(false);
+    /* recover current PC and trigger abort, so in the hope to get a useful
+     * backtrace */
     uint32_t pc = HW_DIGCTL_SCRATCH0;
-    /* write a "SWI #0xdead" instruction at the faulty instruction so that it
-     * will trigger a proper backtrace */
-    *(uint32_t *)pc = 0xef00dead;
-    commit_discard_idcache();
+    UIE(pc, 4);
 }
 
 static void good_dog(void)
@@ -97,6 +98,24 @@ static void watchdog_init(void)
     good_dog();
 }
 
+void imx233_system_prepare_shutdown(void)
+{
+    /* wait a bit, useful for the user to stop touching anything */
+    sleep(HZ / 2);
+    /* disable watchdog just in case since we will disable interrupts */
+    imx233_rtc_enable_watchdog(false);
+    /* disable interrupts, it's probably better to avoid any action so close
+     * to shutdown */
+    disable_interrupt(IRQ_FIQ_STATUS);
+#ifdef SANSA_FUZEPLUS
+    /* This pin seems to be important to shutdown the hardware properly */
+    imx233_pinctrl_acquire(0, 9, "power off");
+    imx233_pinctrl_set_function(0, 9, PINCTRL_FUNCTION_GPIO);
+    imx233_pinctrl_enable_gpio(0, 9, true);
+    imx233_pinctrl_set_gpio(0, 9, true);
+#endif
+}
+
 void imx233_chip_reset(void)
 {
 #if IMX233_SUBTARGET >= 3700
@@ -108,10 +127,8 @@ void imx233_chip_reset(void)
 
 void system_reboot(void)
 {
-    backlight_hw_off();
-
-    disable_irq();
-
+    imx233_system_prepare_shutdown();
+    /* reset */
     imx233_chip_reset();
     while(1);
 }

@@ -26,6 +26,7 @@
 #include "timrot-imx233.h"
 
 #include "regs/icoll.h"
+#include "regs/digctl.h"
 
 /* helpers */
 #if IMX233_SUBTARGET >= 3600 && IMX233_SUBTARGET < 3780
@@ -140,6 +141,10 @@ static isr_t isr_table[INT_SRC_COUNT] =
 
 static uint32_t irq_count_old[INT_SRC_COUNT];
 static uint32_t irq_count[INT_SRC_COUNT];
+static uint32_t irq_max_time_old[INT_SRC_COUNT];
+static uint32_t irq_max_time[INT_SRC_COUNT];
+static uint32_t irq_tot_time_old[INT_SRC_COUNT];
+static uint32_t irq_tot_time[INT_SRC_COUNT];
 
 unsigned imx233_icoll_get_priority(int src)
 {
@@ -160,6 +165,8 @@ struct imx233_icoll_irq_info_t imx233_icoll_get_irq_info(int src)
 #endif
     info.priority = imx233_icoll_get_priority(src);
     info.freq = irq_count_old[src];
+    info.max_time = irq_max_time_old[src];
+    info.total_time = irq_tot_time_old[src];
     return info;
 }
 
@@ -172,6 +179,10 @@ static void do_irq_stat(void)
         counter = 0;
         memcpy(irq_count_old, irq_count, sizeof(irq_count));
         memset(irq_count, 0, sizeof(irq_count));
+        memcpy(irq_max_time_old, irq_max_time, sizeof(irq_max_time));
+        memset(irq_max_time, 0, sizeof(irq_max_time));
+        memcpy(irq_tot_time_old, irq_tot_time, sizeof(irq_tot_time));
+        memset(irq_tot_time, 0, sizeof(irq_tot_time));
     }
 }
 
@@ -195,8 +206,12 @@ void _irq_handler(void)
         do_irq_stat();
     /* enable interrupts again */
     //enable_irq();
+    uint32_t time = HW_DIGCTL_MICROSECONDS;
     /* process interrupt */
     (*(isr_t *)vec)();
+    time = HW_DIGCTL_MICROSECONDS - time;
+    irq_max_time[irq_nr] = MAX(irq_max_time[irq_nr], time);
+    irq_tot_time[irq_nr] += time;
     /* acknowledge completion of IRQ */
     HW_ICOLL_LEVELACK = 1 << imx233_icoll_get_priority(irq_nr);
 }
@@ -205,13 +220,17 @@ void irq_handler(void)
 {
     /* save stuff */
     asm volatile(
+        /* This part is in IRQ mode (with IRQ stack) */
         "sub    lr, lr, #4               \n" /* Create return address */
         "stmfd  sp!, { r0-r5, r12, lr }  \n" /* Save what gets clobbered */
-        "ldr    r1, =0x8001c290          \n" /* Save pointer to instruction */
-        "str    lr, [r1]                 \n" /* in HW_DIGCTL_SCRATCH0 */
-        "mrs    lr, spsr                 \n" /* Save SPSR_irq */
-        "stmfd  sp!, { r1, lr }          \n" /* Push it on the stack */
+        "ldr    r1, =0x8001c290          \n" /* Save HW_DIGCTL_SCRATCH0 */
+        "ldr    r0, [r1]                 \n" /* and store instruction pointer */
+        "str    lr, [r1]                 \n" /* in it (for debug) */
+        "mrs    r2, spsr                 \n" /* Save SPSR_irq */
+        "stmfd  sp!, { r0, r2 }          \n" /* Push it on the stack */
         "msr    cpsr_c, #0x93            \n" /* Switch to SVC mode, IRQ disabled */
+        /* This part is in SVC mode (with SVC stack) */
+        "msr    spsr_cxsf, r2            \n" /* Copy SPSR_irq to SPSR_svc (for __get_sp) */
         "mov    r4, lr                   \n" /* Save lr_SVC */
         "and    r5, sp, #4               \n" /* Align SVC stack */
         "sub    sp, sp, r5               \n" /* on 8-byte boundary */
@@ -219,7 +238,10 @@ void irq_handler(void)
         "add    sp, sp, r5               \n" /* Undo alignement */
         "mov    lr, r4                   \n" /* Restore lr_SVC */
         "msr    cpsr_c, #0x92            \n" /* Mask IRQ, return to IRQ mode */
-        "ldmfd  sp!, { r1, lr }          \n" /* Reload saved value */
+        /* This part is in IRQ mode (with IRQ stack) */
+        "ldmfd  sp!, { r0, lr }          \n" /* Reload saved value */
+        "ldr    r1, =0x8001c290          \n" /* Restore HW_DIGCTL_SCRATCH0 */
+        "str    r0, [r1]                 \n" /* using saved value */
         "msr    spsr_cxsf, lr            \n" /* Restore SPSR_irq */
         "ldmfd  sp!, { r0-r5, r12, pc }^ \n" /* Restore regs, and RFE */);
 }

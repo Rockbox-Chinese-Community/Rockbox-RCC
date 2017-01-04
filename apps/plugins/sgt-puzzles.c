@@ -7,8 +7,9 @@
  *                     \/            \/     \/    \/            \/
  * $Id$
  *
- * Copyright (C) 2014 Franklin Wei, Benjamin Brown
- * Copyright (C) 2004 Gregory Montoir
+ * Copyright (C) 2009 Franklin Wei
+ *
+ * Overlay loader stub plugin for puzzles
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,17 +19,15 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- ***************************************************************************/
+ ****************************************************************************/
+#include "plugin.h"
 
-#include "intern.h"
-#include "awendian.h"
+#include "lib/overlay.h"
 
-uint8_t ICODE_ATTR scriptPtr_fetchByte(struct Ptr* p) {
-    return *p->pc++;
-}
 
-uint16_t ICODE_ATTR scriptPtr_fetchWord(struct Ptr* p) {
-    uint16_t i = READ_BE_UINT16(p->pc);
-    p->pc += 2;
-    return i;
+
+/* this is the plugin entry point */
+enum plugin_status plugin_start(const void* parameter)
+{
+    return run_overlay(parameter, PLUGIN_GAMES_DIR "/puzzles.ovl", "Puzzles");
 }
