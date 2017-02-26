@@ -31,52 +31,15 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#ifndef _WIN32
-#include <scsi/scsi.h>
-#endif
-#include <scsi/sg_lib.h>
-#include <scsi/sg_pt.h>
+#include "rbscsi.h"
 #include "misc.h"
 #include "para_noise.h"
 #include "nwz_db.h"
 
-/* the windows port doesn't have scsi.h and GOOD */
-#ifndef GOOD
-#define GOOD                 0x00
-#endif
-
 bool g_debug = false;
-bool g_force = false;
+const char *g_force_series = NULL;
 char *g_out_prefix = NULL;
-int g_dev_fd = 0;
-
-#define let_the_force_flow(x) do { if(!g_force) return x; } while(0)
-#define continue_the_force(x) if(x) let_the_force_flow(x)
-
-#define check_field(v_exp, v_have, str_ok, str_bad) \
-    if((v_exp) != (v_have)) \
-    { cprintf(RED, str_bad); let_the_force_flow(__LINE__); } \
-    else { cprintf(RED, str_ok); }
-
-#define errorf(...) do { cprintf(GREY, __VA_ARGS__); return __LINE__; } while(0)
-
-#if 0
-void *buffer_alloc(int sz)
-{
-#ifdef SG_LIB_MINGW
-    unsigned psz = getpagesize();
-#else
-    unsigned psz = sysconf(_SC_PAGESIZE); /* was getpagesize() */
-#endif
-    void *buffer = malloc(sz + psz);
-    return (void *)(((ptrdiff_t)(buffer + psz - 1)) & ~(psz - 1));
-}
-#else
-void *buffer_alloc(int sz)
-{
-    return malloc(sz);
-}
-#endif
+rb_scsi_device_t g_dev;
 
 static void print_hex(void *_buffer, int buffer_size)
 {
@@ -110,65 +73,36 @@ static void print_hex(void *_buffer, int buffer_size)
 /* returns <0 on error and status otherwise */
 int do_scsi(uint8_t *cdb, int cdb_size, unsigned flags, void *sense, int *sense_size, void *buffer, int *buf_size)
 {
-    char error[256];
-    struct sg_pt_base *obj = construct_scsi_pt_obj();
-    if(obj == NULL)
-    {
-        cprintf(GREY, "construct_scsi_pt_obj failed\n");
-        return 1;
-    }
-    set_scsi_pt_cdb(obj, cdb, cdb_size);
-    if(sense)
-        set_scsi_pt_sense(obj, sense, *sense_size);
+    struct rb_scsi_raw_cmd_t raw;
+    raw.dir = RB_SCSI_NONE;
     if(flags & DO_READ)
-        set_scsi_pt_data_in(obj, buffer, *buf_size);
+        raw.dir = RB_SCSI_READ;
     if(flags & DO_WRITE)
-        set_scsi_pt_data_out(obj, buffer, *buf_size);
-    int ret = do_scsi_pt(obj, g_dev_fd, 1, 0);
-    switch(get_scsi_pt_result_category(obj))
-    {
-        case SCSI_PT_RESULT_SENSE:
-        case SCSI_PT_RESULT_GOOD:
-            ret = get_scsi_pt_status_response(obj);
-            break;
-        case SCSI_PT_RESULT_STATUS:
-            cprintf(GREY, "Status error: %d (", get_scsi_pt_status_response(obj));
-            sg_print_scsi_status(get_scsi_pt_status_response(obj));
-            printf(")\n");
-            break;
-        case SCSI_PT_RESULT_TRANSPORT_ERR:
-            cprintf(GREY, "Transport error: %s\n", get_scsi_pt_transport_err_str(obj, 256, error));
-            ret = -2;
-            break;
-        case SCSI_PT_RESULT_OS_ERR:
-            cprintf(GREY, "OS error: %s\n", get_scsi_pt_os_err_str(obj, 256, error));
-            ret = -3;
-            break;
-        default:
-            cprintf(GREY, "Unknown error\n");
-            break;
-    }
-
-    if(sense)
-        *sense_size = get_scsi_pt_sense_len(obj);
-    if(flags & (DO_WRITE | DO_READ))
-        *buf_size -= get_scsi_pt_resid(obj);
-
-    destruct_scsi_pt_obj(obj);
-    return ret;
+        raw.dir = RB_SCSI_WRITE;
+    raw.cdb_len = cdb_size;
+    raw.cdb = cdb;
+    raw.buf = buffer;
+    raw.buf_len = *buf_size;
+    raw.sense_len = *sense_size;
+    raw.sense = sense;
+    raw.tmo = 5;
+    int ret = rb_scsi_raw_xfer(g_dev, &raw);
+    *sense_size = raw.sense_len;
+    *buf_size = raw.buf_len;
+    return ret == RB_SCSI_OK || ret == RB_SCSI_SENSE ? raw.status : -ret;
 }
 
 int do_sense_analysis(int status, uint8_t *sense, int sense_size)
 {
-    if(status != GOOD || g_debug)
+    if(status != 0 && g_debug)
     {
-        cprintf_field("Status:", " "); fflush(stdout);
-        sg_print_scsi_status(status);
-        cprintf_field("\nSense:", " "); fflush(stdout);
-        sg_print_sense(NULL, sense, sense_size, 0);
+        cprintf(GREY, "Status: %d\n", status);
+        cprintf(GREY, "Sense:");
+        for(int i = 0; i < sense_size; i++)
+            cprintf(GREY, " %02x", sense[i]);
+        cprintf(GREY, "\n");
+        rb_scsi_decode_sense(g_dev, sense, sense_size);
     }
-    if(status == GOOD)
-        return 0;
     return status;
 }
 
@@ -325,7 +259,7 @@ int get_dnk_prop(int argc, char **argv)
         prop.flags = strtoul(argv[3], NULL, 0);
     }
 
-    char *buffer = buffer_alloc(prop.size + 1);
+    char *buffer = malloc(prop.size + 1);
     int buffer_size = prop.size;
     int ret = do_dnk_cmd(true, prop.cmd, prop.subcmd, 0, buffer, &buffer_size);
     if(ret)
@@ -362,64 +296,81 @@ int get_dnk_prop(int argc, char **argv)
 
 int get_model_and_series(int *model_index, int *series_index)
 {
-    /* we need to get the model ID: code stolen from get_dnk_prop */
-    uint8_t mid_buf[4];
-    int mid_buf_size = sizeof(mid_buf);
-    int ret = do_dnk_cmd(true, 0x23, 9, 0, mid_buf, &mid_buf_size);
-    if(ret)
+    /* if the user forced the series, simply match by name, special for '?' which
+     * prompts the list */
+    if(g_force_series)
     {
-        printf("Cannot get model ID from device: %d\n", ret);
-        return 2;
+        cprintf(RED, "User forced series, auto-detection disabled\n");
+        *series_index = -1;
+        *model_index = -1;
+        for(int i = 0; i < NWZ_SERIES_COUNT; i++)
+                if(strcmp(nwz_series[i].codename, g_force_series) == 0)
+                    *series_index = i;
+        /* display list on error */
+        if(*series_index == -1)
+        {
+            if(strcmp(g_force_series, "?") != 0)
+                cprintf(GREY, "Unrecognized series '%s'\n", g_force_series);
+            cprintf(OFF, "Series list:\n");
+            for(int i = 0; i < NWZ_SERIES_COUNT; i++)
+                printf("  %-10s %s\n", nwz_series[i].codename, nwz_series[i].name);
+            return -1;
+        }
     }
-    if(mid_buf_size != sizeof(mid_buf))
+    else
     {
-        printf("Cannot get model ID from device: device didn't send the expected amount of data\n");
-        return 3;
+        /* we need to get the model ID: code stolen from get_dnk_prop */
+        uint8_t mid_buf[4];
+        int mid_buf_size = sizeof(mid_buf);
+        int ret = do_dnk_cmd(true, 0x23, 9, 0, mid_buf, &mid_buf_size);
+        if(ret)
+        {
+            cprintf(RED, "Cannot get model ID from device: %d\n", ret);
+            return 2;
+        }
+        if(mid_buf_size != sizeof(mid_buf))
+        {
+            cprintf(RED, "Cannot get model ID from device: device didn't send the expected amount of data\n");
+            return 3;
+        }
+        unsigned long model_id = get_big_endian32(&mid_buf);
+        *model_index = -1;
+        for(int i = 0; i < NWZ_MODEL_COUNT; i++)
+            if(nwz_model[i].mid == model_id)
+                *model_index = i;
+        if(*model_index == -1)
+        {
+            cprintf(RED, "Your device is not supported. Please contact developers.\n");
+            return 3;
+        }
+        *series_index = -1;
+        for(int i = 0; i < NWZ_SERIES_COUNT; i++)
+            for(int j = 0; j < nwz_series[i].mid_count; j++)
+                if(nwz_series[i].mid[j] == model_id)
+                    *series_index = i;
+        if(*series_index == -1)
+        {
+            printf("Your device is not supported. Please contact developers.\n");
+            return 3;
+        }
     }
-    unsigned long model_id = get_big_endian32(&mid_buf);
-    *model_index = -1;
-    for(int i = 0; i < NWZ_MODEL_COUNT; i++)
-        if(nwz_model[i].mid == model_id)
-            *model_index = i;
     cprintf_field("Model: ", "%s\n", *model_index == -1 ? "Unknown" : nwz_model[*model_index].name);
-    if(*model_index == -1)
-    {
-        printf("Your device is not supported. Please contact developers.\n");
-        return 3;
-    }
-    *series_index = -1;
-    for(int i = 0; i < NWZ_SERIES_COUNT; i++)
-        for(int j = 0; j < nwz_series[i].mid_count; j++)
-            if(nwz_series[i].mid[j] == model_id)
-                *series_index = i;
     cprintf_field("Series: ", "%s\n", *series_index == -1 ? "Unknown" : nwz_series[*series_index].name);
-    if(*series_index == -1)
-    {
-        printf("Your device is not supported. Please contact developers.\n");
-        return 3;
-    }
     return 0;
 }
 
-/* read nvp node, retrun nonzero on error */
-int read_nvp_node(int series_index, enum nwz_nvp_node_t node, void *buffer, int size)
+/* Read nvp node, retrun nonzero on error, update size to actual length. The
+ * index is the raw node number sent to the device */
+int read_nvp_node(int node_index, void *buffer, size_t *size)
 {
-    int node_index = NWZ_NVP_INVALID;
-    if(nwz_series[series_index].nvp_index)
-        node_index = (*nwz_series[series_index].nvp_index)[node];
-    if(node_index == NWZ_NVP_INVALID)
-    {
-        printf("This device doesn't have node '%s'\n", nwz_nvp[node].name);
-        return 5;
-    }
     /* the returned data has a 4 byte header:
      * - byte 0/1 is the para_noise index, written as a 16bit big-endian number
      * - byte 2/3 is the node index, written as a 16-bit big-endian number
      *
      * NOTE: byte 0 is always 0 because the OF always picks small para_noise
      * indexes but I guess the actual encoding the one above */
-    int xfer_size = size + 4;
-    uint8_t *xfer_buf = buffer_alloc(xfer_size);
+    int xfer_size = *size + 4;
+    uint8_t *xfer_buf = malloc(xfer_size);
     int ret = do_dnk_cmd(true, 0x23, 10, node_index, xfer_buf, &xfer_size);
     if(ret)
         return ret;
@@ -435,36 +386,23 @@ int read_nvp_node(int series_index, enum nwz_nvp_node_t node, void *buffer, int 
         cprintf(GREY, "Device responded with invalid data\n");
         return 1;
     }
-    if(xfer_size - 4 != (int)size)
-    {
-        free(xfer_buf);
-        cprintf(GREY, "Device didn't send the expected amount of data\n");
-        return 7;
-    }
+    *size = xfer_size - 4;
     /* unscramble and copy */
     for(int i = 4, idx = get_big_endian16(xfer_buf); i < xfer_size; i++, idx++)
         xfer_buf[i] ^= para_noise[idx % sizeof(para_noise)];
-    memcpy(buffer, xfer_buf + 4, size);
+    memcpy(buffer, xfer_buf + 4, *size);
     free(xfer_buf);
     return 0;
 }
 
 /* read nvp node, retrun nonzero on error */
-int write_nvp_node(int series_index, enum nwz_nvp_node_t node, void *buffer, int size)
+int write_nvp_node(int node_index, void *buffer, int size)
 {
-    int node_index = NWZ_NVP_INVALID;
-    if(nwz_series[series_index].nvp_index)
-        node_index = (*nwz_series[series_index].nvp_index)[node];
-    if(node_index == NWZ_NVP_INVALID)
-    {
-        printf("This device doesn't have node '%s'\n", nwz_nvp[node].name);
-        return 5;
-    }
     /* the data buffer is prepended with a 4 byte header:
      * - byte 0/1 is the para_noise index, written as a 16bit big-endian number
      * - byte 2/3 is the node index, written as a 16-bit big-endian number */
     int xfer_size = size + 4;
-    uint8_t *xfer_buf = buffer_alloc(xfer_size);
+    uint8_t *xfer_buf = malloc(xfer_size);
     /* scramble, always use index 0 for para_noise */
     set_big_endian16(xfer_buf, 0); /* para_noise index */
     set_big_endian16(xfer_buf + 2, node_index); /* node index */
@@ -486,38 +424,85 @@ int write_nvp_node(int series_index, enum nwz_nvp_node_t node, void *buffer, int
 
 int get_dnk_nvp(int argc, char **argv)
 {
-    if(argc != 1)
+    if(argc != 1 && argc != 2)
     {
         printf("You must specify a known nvp node or a full node specification:\n");
         printf("Node usage: <node>\n");
+        printf("Node usage: <node> <size>\n");
         printf("Nodes:\n");
         for(unsigned i = 0; i < NWZ_NVP_COUNT; i++)
-            printf("  %s\t%s\n", nwz_nvp[i].name, nwz_nvp[i].desc);
+            printf("  %-6s%s\n", nwz_nvp[i].name, nwz_nvp[i].desc);
+        printf("You can also specify a decimal or hexadecimal value directly\n");
         return 1;
     }
     int series_index, model_index;
     int ret = get_model_and_series(&model_index, &series_index);
     if(ret)
         return ret;
-    /* find entry in NVP */
-    enum nwz_nvp_node_t node = NWZ_NVP_COUNT;
-    for(int i = 0; i < NWZ_NVP_COUNT; i++)
-        if(strcmp(nwz_nvp[i].name, argv[0]) == 0)
-            node = i;
-    if(node== NWZ_NVP_COUNT)
+    size_t size = 0;
+    /* maybe user specified an explicit size */
+    if(argc == 2)
     {
-        printf("I don't know about node '%s'\n", argv[0]);
+        char *end;
+        size = strtoul(argv[1], &end, 0);
+        if(*end)
+        {
+            printf("Invalid user-specified size '%s'\n", argv[1]);
+            return 5;
+        }
+    }
+    /* find entry in NVP */
+    const char *node_name = argv[0];
+    const char *node_desc = NULL;
+    int node_index = NWZ_NVP_INVALID;
+    for(int i = 0; i < NWZ_NVP_COUNT; i++)
+        if(strcmp(nwz_nvp[i].name, node_name) == 0)
+        {
+            if(nwz_series[series_index].nvp_index)
+                node_index = (*nwz_series[series_index].nvp_index)[i];
+            if(node_index == NWZ_NVP_INVALID)
+            {
+                printf("This device doesn't have node '%s'\n", node_name);
+                return 5;
+            }
+            node_desc = nwz_nvp[i].desc;
+            /* if not overriden, try to get size from database */
+            if(size == 0)
+                size = nwz_nvp[i].size;
+        }
+    /* if we can't find it, maybe check if it's a number */
+    if(node_index == NWZ_NVP_INVALID)
+    {
+        char *end;
+        node_index = strtol(node_name, &end, 0);
+        if(*end)
+            node_index = NWZ_NVP_INVALID; /* string is not a number */
+    }
+    if(node_index == NWZ_NVP_INVALID)
+    {
+        printf("I don't know about node '%s'\n", node_name);
         return 4;
     }
-    uint8_t *buffer = malloc(nwz_nvp[node].size);
-    ret = read_nvp_node(series_index, node, buffer, nwz_nvp[node].size);
+    /* if we don't have a size, take a big size to be sure */
+    if(size == 0)
+    {
+        size = 4096;
+        printf("Note: node size unknown, trying to read %u bytes\n", (unsigned)size);
+    }
+    if(g_debug)
+        printf("Asking device for %u bytes\n", (unsigned)size);
+    /* take the size in the database as a hint of the size, but the device could
+     * return less data */
+    uint8_t *buffer = malloc(size);
+    ret = read_nvp_node(node_index, buffer, &size);
     if(ret != 0)
     {
         free(buffer);
         return ret;
     }
-    cprintf(GREEN, "%s:\n", nwz_nvp[node].name);
-    print_hex(buffer, nwz_nvp[node].size);
+    cprintf(GREEN, "%s (node %d%s%s):\n", node_name, node_index,
+        node_desc ? "," : "", node_desc ? node_desc : "");
+    print_hex(buffer, size);
 
     free(buffer);
     return 0;
@@ -599,7 +584,7 @@ int get_dpcc_prop(int argc, char **argv)
         prop.size = strtoul(argv[2], NULL, 0);
     }
 
-    char *buffer = buffer_alloc(prop.size);
+    char *buffer = malloc(prop.size);
     int buffer_size = prop.size;
     int ret = do_dpcc_cmd(0, &prop, buffer, &buffer_size);
     if(ret)
@@ -628,7 +613,7 @@ int get_user_time(int argc, char **argv)
     (void) argc;
     (void )argv;
 
-    void *buffer = buffer_alloc(32);
+    void *buffer = malloc(32);
     int buffer_size = 32;
     int ret = do_dpcc_cmd(1, NULL, buffer, &buffer_size);
     if(ret)
@@ -646,7 +631,7 @@ int get_dev_info(int argc, char **argv)
     (void )argv;
     uint8_t cdb[12] = {0xfc, 0, 0x20, 'd', 'b', 'm', 'n', 0, 0x80, 0, 0, 0};
 
-    char *buffer = buffer_alloc(0x81);
+    char *buffer = malloc(0x81);
     int buffer_size = 0x80;
     uint8_t sense[32];
     int sense_size = 32;
@@ -671,7 +656,7 @@ int do_fw_upgrade(int argc, char **argv)
      * supported by any device I have seen */
     uint8_t cdb[12] = {0xfc, 0, 0x04, 'd', 'b', 'm', 'n', 0, 0x80, 0, 0, 0};
 
-    char *buffer = buffer_alloc(0x81);
+    char *buffer = malloc(0x81);
     int buffer_size = 0x80;
     uint8_t sense[32];
     int sense_size = 32;
@@ -732,9 +717,18 @@ int do_dest(int argc, char **argv)
     /* get model/series */
     int model_index, series_index;
     int ret = get_model_and_series(&model_index, &series_index);
+    int shp_index = NWZ_NVP_INVALID;
+    if(nwz_series[series_index].nvp_index)
+        shp_index = (*nwz_series[series_index].nvp_index)[NWZ_NVP_SHP];
+    if(shp_index == NWZ_NVP_INVALID)
+    {
+        printf("This device doesn't have node 'shp'\n");
+        return 5;
+    }
     /* in all cases, we need to read shp */
-    uint8_t *shp = malloc(nwz_nvp[NWZ_NVP_SHP].size);
-    ret = read_nvp_node(series_index, NWZ_NVP_SHP, shp, nwz_nvp[NWZ_NVP_SHP].size);
+    size_t size = nwz_nvp[NWZ_NVP_SHP].size;
+    uint8_t *shp = malloc(size);
+    ret = read_nvp_node(shp_index, shp, &size);
     if(ret != 0)
     {
         free(shp);
@@ -805,8 +799,12 @@ int do_dest(int argc, char **argv)
         }
         set_little_endian32(shp, dst);
         set_little_endian32(shp + 4, sps);
-        int ret = write_nvp_node(series_index, NWZ_NVP_SHP, shp, nwz_nvp[NWZ_NVP_SHP].size);
+        int ret = write_nvp_node(shp_index, shp, size);
         free(shp);
+        if(ret != 0)
+            printf("An error occured when writing node: %d\n", ret);
+        else
+            printf("Destination successfully changed.\nPlease RESET ALL SETTINGS on your device!\n");
         return ret;
     }
     return 0;
@@ -847,11 +845,11 @@ static void usage(void)
 {
     printf("Usage: scsitool [options] <dev> <command> [arguments]\n");
     printf("Options:\n");
-    printf("  -o <prefix>\tSet output prefix\n");
-    printf("  -f/--force\tForce to continue on errors\n");
-    printf("  -?/--help\tDisplay this message\n");
-    printf("  -d/--debug\tDisplay debug messages\n");
-    printf("  -c/--no-color\tDisable color output\n");
+    printf("  -o <prefix>          Set output prefix\n");
+    printf("  -?/--help            Display this message\n");
+    printf("  -d/--debug           Display debug messages\n");
+    printf("  -c/--no-color        Disable color output\n");
+    printf("  -s/--series <name>   Force series (disable auto-detection, use '?' for the list)\n");
     printf("Commands:\n");
     for(unsigned i = 0; i < NR_CMDS; i++)
         printf("  %s\t%s\n", cmd_list[i].name, cmd_list[i].desc);
@@ -867,11 +865,11 @@ int main(int argc, char **argv)
             {"help", no_argument, 0, '?'},
             {"debug", no_argument, 0, 'd'},
             {"no-color", no_argument, 0, 'c'},
-            {"force", no_argument, 0, 'f'},
+            {"series", required_argument, 0, 's'},
             {0, 0, 0, 0}
         };
 
-        int c = getopt_long(argc, argv, "?dcfo:", long_options, NULL);
+        int c = getopt_long(argc, argv, "?dcfo:s:", long_options, NULL);
         if(c == -1)
             break;
         switch(c)
@@ -884,14 +882,14 @@ int main(int argc, char **argv)
             case 'd':
                 g_debug = true;
                 break;
-            case 'f':
-                g_force = true;
-                break;
             case '?':
                 usage();
                 break;
             case 'o':
                 g_out_prefix = optarg;
+                break;
+            case 's':
+                g_force_series = optarg;
                 break;
             default:
                 abort();
@@ -905,17 +903,20 @@ int main(int argc, char **argv)
     }
 
     int ret = 0;
-    g_dev_fd = scsi_pt_open_device(argv[optind], false, true);
-    if(g_dev_fd < 0)
+    int flags = 0;
+    if(g_debug)
+        flags |= RB_SCSI_DEBUG;
+    g_dev = rb_scsi_open(argv[optind], flags, NULL, NULL);
+    if(g_dev == 0)
     {
-        cprintf(GREY, "Cannot open device: %m\n");
+        cprintf(GREY, "Cannot open device\n");
         ret = 1;
         goto Lend;
     }
 
     ret = process_cmd(argv[optind + 1], argc - optind - 2, argv + optind + 2);
 
-    scsi_pt_close_device(g_dev_fd);
+    rb_scsi_close(g_dev);
 Lend:
     color(OFF);
 

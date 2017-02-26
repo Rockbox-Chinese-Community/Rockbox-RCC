@@ -25,13 +25,11 @@ ubp,023
 syi,024
 exm,025
 pcd,026
-cgp,027
 rnd,028
 ufn,029
 sdp,030
 ncp,031
 kas,032
-sfi,033
 rtc,034
 bpr,035
 e00,036
@@ -69,10 +67,6 @@ e31,067
 clv,068
 slp,069
 ipt,070
-mtm,071
-mcr,072
-mdk,073
-muk,074
 pts,075
 skt,076
 mac,077
@@ -83,8 +77,3 @@ skd,081
 fmp,082
 sps,083
 msc,084
-vrt,085
-psk,086
-bml,087
-bfd,088
-bfp,089

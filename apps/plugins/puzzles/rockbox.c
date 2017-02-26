@@ -30,6 +30,7 @@
 #include "lib/playback_control.h"
 #endif
 #include "lib/xlcd.h"
+#include "fixedpoint.h"
 
 /* how many ticks between timer callbacks */
 #define TIMER_INTERVAL (HZ / 50)
@@ -60,14 +61,22 @@ static unsigned *colors = NULL;
 static int ncolors = 0;
 static long last_keystate = 0;
 
+#ifdef FOR_REAL
+/* the "debug menu" is hidden by default in order to avoid the
+ * naturally ensuing complaints from users */
+static bool debug_mode = false;
+static int help_times = 0;
+#endif
+
 static void fix_size(void);
 
 static struct viewport clip_rect;
 static bool clipped = false;
+extern bool audiobuf_available;
 
 static struct settings_t {
     int slowmo_factor;
-    bool bulk, timerflash, clipoff;
+    bool bulk, timerflash, clipoff, shortcuts, no_aa;
 } settings;
 
 /* clipping is implemented through viewports and offsetting
@@ -171,14 +180,139 @@ static void rb_draw_rect(void *handle, int x, int y, int w, int h, int color)
     rb->lcd_fillrect(x, y, w, h);
 }
 
+#define SWAP(a, b, t) do { t = a; a = b; b = t; } while(0);
+
+#define fp_fpart(f, bits) ((f) & ((1 << (bits)) - 1))
+#define fp_rfpart(f, bits) ((1 << (bits)) - fp_fpart(f, bits))
+
+#define FRACBITS 16
+
+/* most of our time drawing lines is spent in this function! */
+static inline void plot(unsigned x, unsigned y, unsigned long a,
+                        unsigned long r1, unsigned long g1, unsigned long b1,
+                        unsigned cl, unsigned cr, unsigned cu, unsigned cd)
+{
+    /* This is really quite possibly the least efficient way of doing
+       this. A better way would be in draw_antialiased_line(), but the
+       problem with that is that the algorithms I investigated at
+       least were incorrect at least part of the time and didn't make
+       drawing much faster overall. */
+    if(!(cl <= x && x < cr && cu <= y && y < cd))
+        return;
+
+    fb_data *ptr = rb->lcd_framebuffer + y * LCD_WIDTH + x;
+    fb_data orig = *ptr;
+    unsigned long r2, g2, b2;
+#if LCD_DEPTH != 24
+    r2 = RGB_UNPACK_RED(orig);
+    g2 = RGB_UNPACK_GREEN(orig);
+    b2 = RGB_UNPACK_BLUE(orig);
+#else
+    r2 = orig.r;
+    g2 = orig.g;
+    b2 = orig.b;
+#endif
+
+    unsigned long r, g, b;
+    r = ((r1 * a) + (r2 * (256 - a))) >> 8;
+    g = ((g1 * a) + (g2 * (256 - a))) >> 8;
+    b = ((b1 * a) + (b2 * (256 - a))) >> 8;
+
+#if LCD_DEPTH != 24
+    *ptr = LCD_RGBPACK(r, g, b);
+#else
+    *ptr = (fb_data) {b, g, r};
+#endif
+}
+
+#undef ABS
+#define ABS(a) ((a)<0?-(a):(a))
+
+/* speed benchmark: 34392 lines/sec vs 112687 non-antialiased
+ * lines/sec at full optimization on ipod6g */
+
+/* expects UN-OFFSET coordinates, directly access framebuffer */
+static void draw_antialiased_line(int x0, int y0, int x1, int y1)
+{
+    /* fixed-point Wu's algorithm, modified for integer-only endpoints */
+
+    /* passed to plot() to avoid re-calculation */
+    unsigned short l = 0, r = LCD_WIDTH, u = 0, d = LCD_HEIGHT;
+    if(clipped)
+    {
+        l = clip_rect.x;
+        r = clip_rect.x + clip_rect.width;
+        u = clip_rect.y;
+        d = clip_rect.y + clip_rect.height;
+    }
+
+    bool steep = ABS(y1 - y0) > ABS(x1 - x0);
+    int tmp;
+    if(steep)
+    {
+        SWAP(x0, y0, tmp);
+        SWAP(x1, y1, tmp);
+    }
+    if(x0 > x1)
+    {
+        SWAP(x0, x1, tmp);
+        SWAP(y0, y1, tmp);
+    }
+
+    int dx, dy;
+    dx = x1 - x0;
+    dy = y1 - y0;
+
+    if(!(dx << FRACBITS))
+        return; /* bail out */
+
+    long gradient = fp_div(dy << FRACBITS, dx << FRACBITS, FRACBITS);
+    long intery = (y0 << FRACBITS);
+
+    unsigned color = rb->lcd_get_foreground();
+    unsigned long r1, g1, b1;
+    r1 = RGB_UNPACK_RED(color);
+    g1 = RGB_UNPACK_GREEN(color);
+    b1 = RGB_UNPACK_BLUE(color);
+
+    /* main loop */
+    if(steep)
+    {
+        for(int x = x0; x <= x1; ++x, intery += gradient)
+        {
+            unsigned y = intery >> FRACBITS;
+            unsigned alpha = fp_fpart(intery, FRACBITS) >> (FRACBITS - 8);
+
+            plot(y, x, (1 << 8) - alpha, r1, g1, b1, l, r, u, d);
+            plot(y + 1, x, alpha, r1, g1, b1, l, r, u, d);
+        }
+    }
+    else
+    {
+        for(int x = x0; x <= x1; ++x, intery += gradient)
+        {
+            unsigned y = intery >> FRACBITS;
+            unsigned alpha = fp_fpart(intery, FRACBITS) >> (FRACBITS - 8);
+
+            plot(x, y, (1 << 8) - alpha, r1, g1, b1, l, r, u, d);
+            plot(x, y + 1, alpha, r1, g1, b1, l, r, u, d);
+        }
+    }
+}
+
 static void rb_draw_line(void *handle, int x1, int y1, int x2, int y2,
                          int color)
 {
     LOGF("rb_draw_line(%d, %d, %d, %d, %d)", x1, y1, x2, y2, color);
-    offset_coords(&x1, &y1);
-    offset_coords(&x2, &y2);
     rb_color(color);
-    rb->lcd_drawline(x1, y1, x2, y2);
+    if(settings.no_aa)
+    {
+        offset_coords(&x1, &y1);
+        offset_coords(&x2, &y2);
+        rb->lcd_drawline(x1, y1, x2, y2);
+    }
+    else
+        draw_antialiased_line(x1, y1, x2, y2);
 }
 
 /*
@@ -343,12 +477,15 @@ static void rb_draw_poly(void *handle, int *coords, int npoints,
         y1 = coords[2 * (i - 1) + 1];
         x2 = coords[2 * i];
         y2 = coords[2 * i + 1];
-        offset_coords(&x1, &y1);
-        offset_coords(&x2, &y2);
-        rb->lcd_drawline(x1, y1,
-                         x2, y2);
-        //rb->lcd_update();
-        //rb->sleep(HZ/2);
+        if(settings.no_aa)
+        {
+            offset_coords(&x1, &y1);
+            offset_coords(&x2, &y2);
+            rb->lcd_drawline(x1, y1,
+                             x2, y2);
+        }
+        else
+            draw_antialiased_line(x1, y1, x2, y2);
     }
 
     int x1, y1, x2, y2;
@@ -356,11 +493,16 @@ static void rb_draw_poly(void *handle, int *coords, int npoints,
     y1 = coords[1];
     x2 = coords[2 * (npoints - 1)];
     y2 = coords[2 * (npoints - 1) + 1];
-    offset_coords(&x1, &y1);
-    offset_coords(&x2, &y2);
+    if(settings.no_aa)
+    {
+        offset_coords(&x1, &y1);
+        offset_coords(&x2, &y2);
 
-    rb->lcd_drawline(x1, y1,
-                     x2, y2);
+        rb->lcd_drawline(x1, y1,
+                         x2, y2);
+    }
+    else
+        draw_antialiased_line(x1, y1, x2, y2);
 }
 
 static void rb_draw_circle(void *handle, int cx, int cy, int radius,
@@ -386,25 +528,6 @@ struct blitter {
     struct bitmap bmp;
 };
 
-static blitter *rb_blitter_new(void *handle, int w, int h)
-{
-    LOGF("rb_blitter_new");
-    blitter *b = snew(blitter);
-    b->bmp.width = w;
-    b->bmp.height = h;
-    b->bmp.data = smalloc(w * h * sizeof(fb_data));
-    b->have_data = false;
-    return b;
-}
-
-static void rb_blitter_free(void *handle, blitter *bl)
-{
-    LOGF("rb_blitter_free");
-    sfree(bl->bmp.data);
-    sfree(bl);
-    return;
-}
-
 /* originally from emcc.c */
 static void trim_rect(int *x, int *y, int *w, int *h)
 {
@@ -422,16 +545,35 @@ static void trim_rect(int *x, int *y, int *w, int *h)
     y1 = *y + *h;
 
     /* Clip each coordinate at both extremes of the canvas */
-    x0 = (x0 < 0 ? 0 : x0 > LCD_WIDTH ? LCD_WIDTH : x0);
-    x1 = (x1 < 0 ? 0 : x1 > LCD_WIDTH ? LCD_WIDTH : x1);
-    y0 = (y0 < 0 ? 0 : y0 > LCD_HEIGHT ? LCD_HEIGHT : y0);
-    y1 = (y1 < 0 ? 0 : y1 > LCD_HEIGHT ? LCD_HEIGHT : y1);
+    x0 = (x0 < 0 ? 0 : x0 > LCD_WIDTH - 1 ? LCD_WIDTH - 1: x0);
+    x1 = (x1 < 0 ? 0 : x1 > LCD_WIDTH - 1 ? LCD_WIDTH - 1: x1);
+    y0 = (y0 < 0 ? 0 : y0 > LCD_HEIGHT - 1 ? LCD_HEIGHT - 1: y0);
+    y1 = (y1 < 0 ? 0 : y1 > LCD_HEIGHT - 1 ? LCD_HEIGHT - 1: y1);
 
     /* Transform back into x,y,w,h to return */
     *x = x0;
     *y = y0;
     *w = x1 - x0;
     *h = y1 - y0;
+}
+
+static blitter *rb_blitter_new(void *handle, int w, int h)
+{
+    LOGF("rb_blitter_new");
+    blitter *b = snew(blitter);
+    b->bmp.width = w;
+    b->bmp.height = h;
+    b->bmp.data = smalloc(w * h * sizeof(fb_data));
+    b->have_data = false;
+    return b;
+}
+
+static void rb_blitter_free(void *handle, blitter *bl)
+{
+    LOGF("rb_blitter_free");
+    sfree(bl->bmp.data);
+    sfree(bl);
+    return;
 }
 
 /* copy a section of the framebuffer */
@@ -615,8 +757,6 @@ void get_random_seed(void **randseed, int *randseedsize)
     *randseed = snew(long);
     long seed = *rb->current_tick;
     rb->memcpy(*randseed, &seed, sizeof(seed));
-    //*(long*)*randseed = 42; // debug
-    //rb->splash(HZ, "DEBUG SEED ON");
     *randseedsize = sizeof(long);
 }
 
@@ -675,7 +815,8 @@ static int list_choose(const char *list_str, const char *title)
     }
 }
 
-static void do_configure_item(config_item *cfg)
+/* return value is only meaningful when type == C_STRING */
+static bool do_configure_item(config_item *cfg)
 {
     switch(cfg->type)
     {
@@ -689,16 +830,20 @@ static void do_configure_item(config_item *cfg)
         if(rb->kbd_input(newstr, MAX_STRLEN) < 0)
         {
             sfree(newstr);
-            break;
+            return false;
         }
         sfree(cfg->sval);
         cfg->sval = newstr;
-        break;
+        return true;
     }
     case C_BOOLEAN:
     {
         bool res = cfg->ival != 0;
         rb->set_bool(cfg->name, &res);
+
+        /* seems to reset backdrop */
+        rb->lcd_set_backdrop(NULL);
+
         cfg->ival = res;
         break;
     }
@@ -713,6 +858,7 @@ static void do_configure_item(config_item *cfg)
         fatal("bad type");
         break;
     }
+    return false;
 }
 
 const char *config_formatter(int sel, void *data, char *buf, size_t len)
@@ -723,10 +869,12 @@ const char *config_formatter(int sel, void *data, char *buf, size_t len)
     return buf;
 }
 
-static void config_menu(void)
+static bool config_menu(void)
 {
     char *title;
     config_item *config = midend_get_config(me, CFG_SETTINGS, &title);
+
+    bool success = false;
 
     if(!config)
     {
@@ -768,12 +916,26 @@ static void config_menu(void)
             config_item old;
             int pos = rb->gui_synclist_get_sel_pos(&list);
             memcpy(&old, config + pos, sizeof(old));
-            do_configure_item(config + pos);
+            char *old_str;
+            if(old.type == C_STRING)
+                old_str = dupstr(old.sval);
+            bool freed_str = do_configure_item(config + pos);
             char *err = midend_set_config(me, CFG_SETTINGS, config);
             if(err)
             {
                 rb->splash(HZ, err);
                 memcpy(config + pos, &old, sizeof(old));
+                if(freed_str)
+                    config[pos].sval = old_str;
+            }
+            else if(old.type == C_STRING)
+            {
+                /* success, and we duplicated the old string, so free it */
+                sfree(old_str);
+            }
+            else
+            {
+                success = true;
             }
             break;
         }
@@ -789,6 +951,7 @@ static void config_menu(void)
 done:
     sfree(title);
     free_cfg(config);
+    return success;
 }
 
 const char *preset_formatter(int sel, void *data, char *buf, size_t len)
@@ -800,12 +963,12 @@ const char *preset_formatter(int sel, void *data, char *buf, size_t len)
     return buf;
 }
 
-static void presets_menu(void)
+static bool presets_menu(void)
 {
     if(!midend_num_presets(me))
     {
         rb->splash(HZ, "No presets!");
-        return;
+        return false;
     }
 
     /* display a list */
@@ -819,9 +982,8 @@ static void presets_menu(void)
     int current = midend_which_preset(me);
     rb->gui_synclist_select_item(&list, current >= 0 ? current : 0);
 
-    bool done = false;
     rb->gui_synclist_set_title(&list, "Game Type", NOICON);
-    while (!done)
+    while(1)
     {
         rb->gui_synclist_draw(&list);
         int button = rb->get_action(CONTEXT_LIST, TIMEOUT_BLOCK);
@@ -836,13 +998,11 @@ static void presets_menu(void)
             game_params *params;
             midend_fetch_preset(me, sel, &junk, &params);
             midend_set_params(me, params);
-            done = true;
-            break;
+            return true;
         }
         case ACTION_STD_PREV:
         case ACTION_STD_CANCEL:
-            done = true;
-            break;
+            return false;
         default:
             break;
         }
@@ -895,6 +1055,14 @@ static const struct {
 
 static void quick_help(void)
 {
+#ifdef FOR_REAL
+    if(++help_times >= 5)
+    {
+        rb->splash(HZ, "You are now a developer!");
+        debug_mode = true;
+    }
+#endif
+
     for(int i = 0; i < ARRAYLEN(quick_help_text); ++i)
     {
         if(!strcmp(midend_which_game(me)->name, quick_help_text[i].game))
@@ -916,6 +1084,37 @@ static void init_default_settings(void)
     settings.slowmo_factor = 1;
     settings.bulk = false;
     settings.timerflash = false;
+    settings.clipoff = false;
+    settings.shortcuts = false;
+    settings.no_aa = false;
+}
+
+static void bench_aa(void)
+{
+    rb->sleep(0);
+#ifdef HAVE_ADJUSTABLE_CPU_FREQ
+    rb->cpu_boost(true);
+#endif
+    int next = *rb->current_tick + HZ;
+    int i = 0;
+    while(*rb->current_tick < next)
+    {
+        draw_antialiased_line(0, 0, 20, 31);
+        ++i;
+    }
+    rb->splashf(HZ, "%d AA lines/sec", i);
+    next = *rb->current_tick + HZ;
+    int j = 0;
+    while(*rb->current_tick < next)
+    {
+        rb->lcd_drawline(0, 0, 20, 31);
+        ++j;
+    }
+    rb->splashf(HZ, "%d normal lines/sec", j);
+    rb->splashf(HZ, "Efficiency: %d%%", 100 * i / j);
+#ifdef HAVE_ADJUSTABLE_CPU_FREQ
+    rb->cpu_boost(false);
+#endif
 }
 
 static void debug_menu(void)
@@ -926,6 +1125,9 @@ static void debug_menu(void)
                         "Toggle bulk update",
                         "Toggle flash pixel on timer",
                         "Toggle clip",
+                        "Toggle shortcuts",
+                        "Toggle antialias",
+                        "Benchmark antialias",
                         "Back");
     bool quit = false;
     int sel = 0;
@@ -934,7 +1136,7 @@ static void debug_menu(void)
         switch(rb->do_menu(&menu, &sel, NULL, false))
         {
         case 0:
-            rb->set_int("Slowmo factor", "", UNIT_INT, &settings.slowmo_factor, NULL, 1, 1, 10, NULL);
+            rb->set_int("Slowmo factor", "", UNIT_INT, &settings.slowmo_factor, NULL, 1, 1, 15, NULL);
             break;
         case 1:
         {
@@ -956,6 +1158,15 @@ static void debug_menu(void)
             settings.clipoff = !settings.clipoff;
             break;
         case 5:
+            settings.shortcuts = !settings.shortcuts;
+            break;
+        case 6:
+            settings.no_aa = !settings.no_aa;
+            break;
+        case 7:
+            bench_aa();
+            break;
+        case 8:
         default:
             quit = true;
             break;
@@ -989,16 +1200,30 @@ static int pausemenu_cb(int action, const struct menu_item_ex *this_item)
             break;
 #endif
         case 8:
+#ifdef COMBINED
+            /* audio buf is used, so no playback */
+            /* TODO: neglects app builds, but not many people will
+             * care, I bet */
+            return ACTION_EXIT_MENUITEM;
+#else
+            if(audiobuf_available)
+                break;
+            else
+                return ACTION_EXIT_MENUITEM;
+#endif
+        case 9:
             if(!midend_num_presets(me))
                 return ACTION_EXIT_MENUITEM;
             break;
-        case 9:
+        case 10:
 #ifdef FOR_REAL
+            if(debug_mode)
+                break;
             return ACTION_EXIT_MENUITEM;
 #else
             break;
 #endif
-        case 10:
+        case 11:
             if(!midend_which_game(me)->can_configure)
                 return ACTION_EXIT_MENUITEM;
             break;
@@ -1007,6 +1232,23 @@ static int pausemenu_cb(int action, const struct menu_item_ex *this_item)
         }
     }
     return action;
+}
+
+static void clear_and_draw(void)
+{
+    rb->lcd_clear_display();
+    rb->lcd_update();
+
+    midend_force_redraw(me);
+    draw_title();
+}
+
+static void reset_drawing(void)
+{
+    rb->lcd_set_viewport(NULL);
+    rb->lcd_set_backdrop(NULL);
+    rb->lcd_set_foreground(LCD_BLACK);
+    rb->lcd_set_background(BG_COLOR);
 }
 
 static int pause_menu(void)
@@ -1022,6 +1264,7 @@ static int pause_menu(void)
                         "Solve",
                         "Quick Help",
                         "Extensive Help",
+                        "Playback Control",
                         "Game Type",
                         "Debug Menu",
                         "Configure Game",
@@ -1036,6 +1279,10 @@ static int pause_menu(void)
     char title[32] = { 0 };
     rb->snprintf(title, sizeof(title), "%s Menu", midend_which_game(me)->name);
     menu__.desc = title;
+
+#ifdef FOR_REAL
+    help_times = 0;
+#endif
 
     bool quit = false;
     int sel = 0;
@@ -1085,31 +1332,42 @@ static int pause_menu(void)
             full_help();
             break;
         case 8:
-            presets_menu();
-            midend_new_game(me);
-            fix_size();
-            quit = true;
+            playback_control(NULL);
             break;
         case 9:
-            debug_menu();
+            if(presets_menu())
+            {
+                midend_new_game(me);
+                fix_size();
+                reset_drawing();
+                clear_and_draw();
+                quit = true;
+            }
             break;
         case 10:
-            config_menu();
-            midend_new_game(me);
-            fix_size();
-            quit = true;
+            debug_menu();
+            break;
+        case 11:
+            if(config_menu())
+            {
+                midend_new_game(me);
+                fix_size();
+                reset_drawing();
+                clear_and_draw();
+                quit = true;
+            }
             break;
 #ifdef COMBINED
-        case 11:
+        case 12:
             return -1;
+        case 13:
+            return -2;
+        case 14:
+            return -3;
+#else
         case 12:
             return -2;
         case 13:
-            return -3;
-#else
-        case 11:
-            return -2;
-        case 12:
             return -3;
 #endif
         default:
@@ -1203,8 +1461,8 @@ static int process_input(int tmo)
         }
         LOGF("accepting event 0x%08x", button);
     }
-    /* not inertia: events fire on presses */
-    else
+    /* default is to ignore repeats except for untangle */
+    else if(strcmp("Untangle", midend_which_game(me)->name))
     {
         /* start accepting input again after a release */
         if(!button)
@@ -1213,6 +1471,7 @@ static int process_input(int tmo)
             return 0;
         }
         /* ignore repeats */
+        /* Untangle gets special treatment */
         if(!accept_input)
             return 0;
         accept_input = false;
@@ -1262,7 +1521,34 @@ static int process_input(int tmo)
     case BTN_FIRE:
         state = CURSOR_SELECT;
         break;
+
+    default:
+        break;
     }
+
+    if(settings.shortcuts)
+    {
+        static bool shortcuts_ok = true;
+        switch(button)
+        {
+        case BTN_LEFT | BTN_FIRE:
+            if(shortcuts_ok)
+                midend_process_key(me, 0, 0, 'u');
+            shortcuts_ok = false;
+            break;
+        case BTN_RIGHT | BTN_FIRE:
+            if(shortcuts_ok)
+                midend_process_key(me, 0, 0, 'r');
+            shortcuts_ok = false;
+            break;
+        case 0:
+            shortcuts_ok = true;
+            break;
+        default:
+            break;
+        }
+    }
+
     LOGF("process_input done");
     LOGF("------------------");
     return state;
@@ -1305,10 +1591,10 @@ void deactivate_timer(frontend *fe)
 
 #ifdef COMBINED
 /* can't use audio buffer */
-static char giant_buffer[1024*1024*4];
+char giant_buffer[1024*1024*4];
 #else
-/* points to audiobuf */
-static char *giant_buffer = NULL;
+/* points to pluginbuf */
+char *giant_buffer = NULL;
 #endif
 static size_t giant_buffer_len = 0; /* set on start */
 
@@ -1349,13 +1635,23 @@ static void write_wrapper(void *ptr, void *buf, int len)
     rb->write(fd, buf, len);
 }
 
-static void clear_and_draw(void)
+static void init_colors(void)
 {
-    rb->lcd_clear_display();
-    rb->lcd_update();
+    float *floatcolors = midend_colors(me, &ncolors);
 
-    midend_force_redraw(me);
-    draw_title();
+    /* convert them to packed RGB */
+    colors = smalloc(ncolors * sizeof(unsigned));
+    unsigned *ptr = colors;
+    float *floatptr = floatcolors;
+    for(int i = 0; i < ncolors; ++i)
+    {
+        int r = 255 * *(floatptr++);
+        int g = 255 * *(floatptr++);
+        int b = 255 * *(floatptr++);
+        LOGF("color %d is %d %d %d", i, r, g, b);
+        *ptr++ = LCD_RGBPACK(r, g, b);
+    }
+    sfree(floatcolors);
 }
 
 static char *init_for_game(const game *gm, int load_fd, bool draw)
@@ -1377,26 +1673,9 @@ static char *init_for_game(const game *gm, int load_fd, bool draw)
 
     fix_size();
 
-    float *floatcolors = midend_colors(me, &ncolors);
+    init_colors();
 
-    /* convert them to packed RGB */
-    colors = smalloc(ncolors * sizeof(unsigned));
-    unsigned *ptr = colors;
-    float *floatptr = floatcolors;
-    for(int i = 0; i < ncolors; ++i)
-    {
-        int r = 255 * *(floatptr++);
-        int g = 255 * *(floatptr++);
-        int b = 255 * *(floatptr++);
-        LOGF("color %d is %d %d %d", i, r, g, b);
-        *ptr++ = LCD_RGBPACK(r, g, b);
-    }
-    sfree(floatcolors);
-
-    rb->lcd_set_viewport(NULL);
-    rb->lcd_set_backdrop(NULL);
-    rb->lcd_set_foreground(LCD_BLACK);
-    rb->lcd_set_background(BG_COLOR);
+    reset_drawing();
 
     if(draw)
     {
@@ -1516,6 +1795,18 @@ static int mainmenu_cb(int action, const struct menu_item_ex *this_item)
 #else
             break;
 #endif
+        case 4:
+#ifdef COMBINED
+            /* audio buf is used, so no playback */
+            /* TODO: neglects app builds, but not many people will
+             * care, I bet */
+            return ACTION_EXIT_MENUITEM;
+#else
+            if(audiobuf_available)
+                break;
+            else
+                return ACTION_EXIT_MENUITEM;
+#endif
         case 5:
             if(!midend_num_presets(me))
                 return ACTION_EXIT_MENUITEM;
@@ -1572,6 +1863,10 @@ enum plugin_status plugin_start(const void *param)
     rb->cpu_boost(false);
 #endif
 
+#ifdef FOR_REAL
+    help_times = 0;
+#endif
+
 #ifndef COMBINED
 #define static auto
 #define const
@@ -1620,10 +1915,26 @@ enum plugin_status plugin_start(const void *param)
             playback_control(NULL);
             break;
         case 5:
-            presets_menu();
+            if(presets_menu())
+            {
+                midend_new_game(me);
+                fix_size();
+                init_colors();
+                reset_drawing();
+                clear_and_draw();
+                goto game_loop;
+            }
             break;
         case 6:
-            config_menu();
+            if(config_menu())
+            {
+                midend_new_game(me);
+                fix_size();
+                init_colors();
+                reset_drawing();
+                clear_and_draw();
+                goto game_loop;
+            }
             break;
         case 8:
             if(load_success)

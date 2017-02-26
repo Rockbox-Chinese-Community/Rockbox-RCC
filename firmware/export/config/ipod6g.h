@@ -167,6 +167,7 @@
 /* Define Apple remote tuner */
 //#define CONFIG_TUNER IPOD_REMOTE_TUNER
 //#define HAVE_RDS_CAP
+//#define CONFIG_RDS RDS_CFG_PUSH
 
 /* The exact type of CPU */
 #define CONFIG_CPU S5L8702
@@ -248,13 +249,26 @@
 #define USB_VENDOR_ID 0x05AC
 #define USB_PRODUCT_ID 0x1261
 #define USB_DEVBSS_ATTR __attribute__((aligned(32)))
+#define HAVE_BOOTLOADER_USB_MODE
+#ifdef BOOTLOADER
+#define USBPOWER_BTN_IGNORE (~0)
+#endif
 
 #define USB_READ_BUFFER_SIZE (1024*24)
 
+/* Serial */
+#ifdef BOOTLOADER
+#if 0 /* Enable/disable LOGF_SERIAL for bootloader */
+#define HAVE_SERIAL
+#define ROCKBOX_HAS_LOGF
+#define LOGF_SERIAL
+#endif
+#else /* !BOOTLOADER */
 #define HAVE_SERIAL
 /* Disable iAP when LOGF_SERIAL is enabled to avoid conflicts */
 #ifndef LOGF_SERIAL
 #define IPOD_ACCESSORY_PROTOCOL
+#endif
 #endif
 
 /* Define this if you can switch on/off the accessory power supply */

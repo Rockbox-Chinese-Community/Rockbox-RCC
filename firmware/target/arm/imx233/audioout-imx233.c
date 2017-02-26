@@ -269,7 +269,7 @@ void imx233_audioout_enable_spkr(bool en)
     static bool spkr_en = false;
     if(en == spkr_en)
         return;
-    spkr_en = true;
+    spkr_en = en;
 #if IMX233_SUBTARGET >= 3780
     if(en)
     {
@@ -279,6 +279,8 @@ void imx233_audioout_enable_spkr(bool en)
     else
     {
         BF_SET(AUDIOOUT_SPEAKERCTRL, MUTE);
+        /* despite what the manual says, we can perfectly set and clear this bit
+         * at will, no need for a reset */
         BF_SET(AUDIOOUT_PWRDN, SPEAKER);
     }
 #elif IMX233_SUBTARGET >= 3700
@@ -311,6 +313,8 @@ void imx233_audioout_enable_spkr(bool en)
         /** Reverse procedure */
         BF_SET(AUDIOOUT_LINEOUTCTRL, MUTE);
         BF_WR(AUDIOOUT_LINEOUTCTRL, CHARGE_CAP(2));
+        /* despite what the manual says, we can perfectly set and clear this bit
+         * at will, no need for a reset */
         BF_SET(AUDIOOUT_PWRDN, LINEOUT);
     }
 #else
@@ -344,10 +348,10 @@ struct imx233_audioout_info_t imx233_audioout_get_info(void)
     info.spkrmute[0] = info.spkrmute[1] = BF_RD(AUDIOOUT_SPKRVOL, MUTE);
     info.spkr = !BF_RD(AUDIOOUT_PWRDN, SPEAKER);
 #else
-    /* STMP3700/3770 has not speaker amplifier */
+    /* STMP3700/3770 has not speaker amplifier, assume it is on lineout */
     info.spkrvol[0] = info.spkrvol[1] = 0;
-    info.spkrmute[0] = info.spkrmute[1] = true;
-    info.spkr = false;
+    info.spkrmute[0] = info.spkrmute[1] = BF_RD(AUDIOOUT_LINEOUTCTRL, MUTE);
+    info.spkr = !BF_RD(AUDIOOUT_PWRDN, LINEOUT);
 #endif
     info.ss3d = BF_RD(AUDIOOUT_CTRL, SS3D_EFFECT);
     info.ss3d = info.ss3d == 0 ? 0 : 15 * (1 + info.ss3d);

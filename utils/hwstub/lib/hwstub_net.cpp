@@ -135,6 +135,7 @@ namespace
         int err = getaddrinfo(domain.c_str(), port.c_str(), &hints, &result);
         if(err != 0)
         {
+            freeaddrinfo(result);
             if(error)
                 *error = std::string("getaddrinfo failed: ") + gai_strerror(err);
             return -1;
@@ -163,6 +164,7 @@ namespace
             else
                 break; /* success */
         }
+        freeaddrinfo(result);
         /* no address was tried */
         if(socket_fd < 0 && error)
             *error = "getaddrinfo() returned no usable result (socket()/connect()/bind() failed)";
@@ -714,9 +716,37 @@ error handle::get_dev_log(void *buf, size_t& buf_sz)
 
 error handle::exec_dev(uint32_t addr, uint16_t flags)
 {
-    (void) addr;
-    (void) flags;
-    return error::DUMMY;
+    std::shared_ptr<hwstub::context> hctx = get_device()->get_context();
+    if(!hctx)
+        return error::NO_CONTEXT;
+
+    context *ctx = dynamic_cast<context*>(hctx.get());
+    ctx->debug() << "[net::handle] --> EXEC(" << m_handle_id << ",0x" << std::hex
+        << addr << ", 0x" << std::hex << flags << ")\n";
+    uint32_t args[HWSTUB_NET_ARGS] = {0};
+    args[0] = m_handle_id;
+    args[1] = addr;
+    args[2] = flags;
+    error err = ctx->send_cmd(HWSERVER_EXEC, args, nullptr, 0, nullptr, nullptr);
+    if(err != error::SUCCESS)
+    {
+        ctx->debug() << "[net::handle] <-- EXEC failed: " << error_string(err) << "\n";
+        return err;
+    }
+    ctx->debug() << "[net::handle] <-- EXEC\n";
+    return error::SUCCESS;
+}
+
+error handle::cop_dev(uint8_t op, uint8_t args[HWSTUB_COP_ARGS],
+    const void *out_data, size_t out_size, void *in_data, size_t *in_size)
+{
+    (void) op;
+    (void) args;
+    (void) out_data;
+    (void) out_size;
+    (void) in_data;
+    (void) in_size;
+    return error::UNIMPLEMENTED;
 }
 
 error handle::status() const
@@ -1198,6 +1228,33 @@ error server::handle_cmd(client_state *state, uint32_t cmd, uint32_t args[HWSTUB
             return err;
         }
         debug() << "[net::srv::cmd] <-- WRITE\n";
+        return error::SUCCESS;
+    }
+    /* HWSERVER_EXEC */
+    else if(cmd == HWSERVER_EXEC)
+    {
+        uint32_t hid = args[0];
+        uint32_t addr = args[1];
+        uint32_t flags = args[2];
+        debug() << "[net::srv::cmd] --> EXEC(" << hid << ",0x" << std::hex << addr << ","
+            << "0x" << std::hex << flags << ")\n";
+        /* check ID is valid */
+        auto it = state->handle_map.find(hid);
+        if(it == state->handle_map.end())
+        {
+            debug() << "[net::srv::cmd] unknown handle ID\n";
+            debug() << "[net::srv::cmd] <-- EXEC (error)\n";
+            return error::ERROR;
+        }
+        /* exec */
+        error err = it->second->exec(addr, flags);
+        if(err != error::SUCCESS)
+        {
+            debug() << "[net::srv::cmd] cannot write: " << error_string(err) << "\n";
+            debug() << "[net::srv::cmd] <-- EXEC (error)\n";
+            return err;
+        }
+        debug() << "[net::srv::cmd] <-- EXEC\n";
         return error::SUCCESS;
     }
     else

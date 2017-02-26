@@ -54,7 +54,7 @@ static struct filestr_desc * get_filestr(int fildes)
         return file;
 
     DEBUGF("fildes %d: bad file number\n", fildes);
-    errno = (file && file->stream.flags == FV_NONEXIST) ? ENXIO : EBADF;
+    errno = (file && (file->stream.flags & FD_NONEXIST)) ? ENXIO : EBADF;
     return NULL;
 }
 
@@ -187,24 +187,28 @@ file_error:
     return rc;
 }
 
-/* callback for each file stream to make sure all data is in sync with new
-   size */
-void ftruncate_internal_callback(struct filestr_base *stream,
-                                 struct filestr_base *s)
+/* Handle syncing all file's streams to the truncation */ 
+static void handle_truncate(struct filestr_desc * const file, file_size_t size)
 {
-    struct filestr_desc *file = (struct filestr_desc *)s;
-    file_size_t size = *file->sizep;
+    unsigned long filesectors = filesize_sectors(size);
 
-    /* caches with data beyond new extents are invalid */
-    unsigned long sector = file->stream.cachep->sector;
-    if (sector != INVALID_SECNUM && sector >= filesize_sectors(size))
-        filestr_discard_cache(&file->stream);
+    struct filestr_base *s = NULL;
+    while ((s = fileobj_get_next_stream(&file->stream, s)))
+    {
+        /* caches with data beyond new extents are invalid */
+        unsigned long sector = s->cachep->sector;
+        if (sector != INVALID_SECNUM && sector >= filesectors)
+            filestr_discard_cache(s);
 
-    /* keep all positions within bounds */
-    if (file->offset > size)
-        file->offset = size;
+        /* files outside bounds must be rewound */
+        if (fat_query_sectornum(&s->fatstr) > filesectors)
+            fat_seek_to_stream(&s->fatstr, &file->stream.fatstr);
 
-    (void)stream;
+        /* clip file offset too if needed */
+        struct filestr_desc *f = (struct filestr_desc *)s;
+        if (f->offset > size)
+            f->offset = size;
+    }
 }
 
 /* truncate the file to the specified length */
@@ -246,13 +250,17 @@ static int ftruncate_internal(struct filestr_desc *file, file_size_t size,
         rc2 = fat_truncate(&file->stream.fatstr);
         if (rc2 < 0)
             FILE_ERROR(EIO, rc2 * 10 - 3);
+
+        /* never needs to be done this way again since any data beyond the
+           cached size is now gone */
+        fileobj_change_flags(&file->stream, 0, FO_TRUNC);
     }
     /* else just change the cached file size */
 
     if (truncsize < cursize)
     {
         *file->sizep = truncsize;
-        fileop_ontruncate_internal(&file->stream);
+        handle_truncate(file, truncsize);
     }
 
     /* if truncation was partially successful, it effectively destroyed
@@ -299,10 +307,6 @@ static int fsync_internal(struct filestr_desc *file)
         int rc2 = ftruncate_internal(file, size, rc == 0);
         if (rc2 < 0)
             FILE_ERROR(ERRNO, rc2 * 10 - 2);
-
-        /* never needs to be done this way again since any data beyond the
-           cached size is now gone */
-        fileobj_change_flags(&file->stream, 0, FO_TRUNC);
     }
 
 file_error:;
@@ -327,8 +331,7 @@ static int close_internal(struct filestr_desc *file)
     /* call only when holding WRITER lock (updates directory entries) */
     int rc;
 
-    if ((file->stream.flags & FD_WRITE) &&
-        !(fileobj_get_flags(&file->stream) & FO_REMOVED))
+    if ((file->stream.flags & (FD_WRITE|FD_NONEXIST)) == FD_WRITE)
     {
         rc = fsync_internal(file);
         if (rc < 0)
@@ -346,11 +349,16 @@ file_error:;
 /* actually do the open gruntwork */
 static int open_internal_inner2(const char *path,
                                 struct filestr_desc *file,
-                                unsigned int callflags)
+                                unsigned int callflags,
+                                int oflag)
 {
     int rc;
 
     struct path_component_info compinfo;
+
+    if (oflag & O_CREAT)
+        callflags |= FF_PARENTINFO;
+
     rc = open_stream_internal(path, callflags, &file->stream, &compinfo);
     if (rc < 0)
     {
@@ -362,7 +370,7 @@ static int open_internal_inner2(const char *path,
 
     if (rc > 0)
     {
-        if (callflags & FF_EXCL)
+        if (oflag & O_EXCL)
         {
             DEBUGF("File exists\n");
             FILE_ERROR(EEXIST, -2);
@@ -379,7 +387,7 @@ static int open_internal_inner2(const char *path,
             compinfo.filesize = MAX_DIRECTORY_SIZE; /* allow file ops */
         }
     }
-    else if (callflags & FF_CREAT)
+    else if (oflag & O_CREAT)
     {
         if (compinfo.attr & ATTR_DIRECTORY)
         {
@@ -476,15 +484,10 @@ static int open_internal_inner1(const char *path, int oflag,
     /* O_CREAT and O_APPEND are fine without write mode
      * for the former, an empty file is created but no data may be written
      * for the latter, no append will be allowed anyway */
-    if (oflag & O_CREAT)
-    {
-        callflags |= FF_CREAT;
+    if (!(oflag & O_CREAT))
+        oflag &= ~O_EXCL; /* result is undefined: we choose "ignore" */
 
-        if (oflag & O_EXCL)
-            callflags |= FF_EXCL;
-    }
-
-    rc = open_internal_inner2(path, file, callflags);
+    rc = open_internal_inner2(path, file, callflags, oflag);
     if (rc < 0)
         FILE_ERROR(ERRNO, rc * 10 - 3);
 
@@ -786,6 +789,12 @@ int open_noiso_internal(const char *path, int oflag)
     return open_internal_locked(path, oflag, FF_ANYTYPE | FF_NOISO);
 }
 
+void force_close_writer_internal(struct filestr_base *stream)
+{
+    /* only we do writers so we know this is our guy */
+    close_internal((struct filestr_desc *)stream);
+}
+
 
 /** POSIX **/
 
@@ -980,7 +989,8 @@ int rename(const char *old, const char *new)
     file_internal_lock_WRITER();
 
     /* open 'old'; it must exist */
-    open1rc = open_stream_internal(old, FF_ANYTYPE, &oldstr, &oldinfo);
+    open1rc = open_stream_internal(old, FF_ANYTYPE | FF_PARENTINFO, &oldstr,
+                                   &oldinfo);
     if (open1rc <= 0)
     {
         DEBUGF("Failed opening old: %d\n", open1rc);
@@ -1005,7 +1015,8 @@ int rename(const char *old, const char *new)
         newinfo.prefixp = oldstr.infop;
     }
 
-    open2rc = open_stream_internal(new, callflags, &newstr, &newinfo);
+    open2rc = open_stream_internal(new, callflags | FF_PARENTINFO, &newstr,
+                                   &newinfo);
     if (open2rc < 0)
     {
         DEBUGF("Failed opening new file: %d\n", open2rc);

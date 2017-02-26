@@ -28,282 +28,282 @@
 
 /* variable button definitions */
 #if (CONFIG_KEYPAD == IRIVER_H100_PAD) || (CONFIG_KEYPAD == IRIVER_H300_PAD)
-#define BTN_QUIT         BUTTON_OFF
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_RC_QUIT      BUTTON_RC_STOP
-#define BTN_PLAY         BUTTON_ON
+#define MIDI_QUIT       BUTTON_OFF
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_RC_QUIT    BUTTON_RC_STOP
+#define MIDI_PLAYPAUSE  BUTTON_ON
 
 #elif (CONFIG_KEYPAD == IPOD_4G_PAD) || (CONFIG_KEYPAD == IPOD_3G_PAD) || \
       (CONFIG_KEYPAD == IPOD_1G2G_PAD)
-#define BTN_QUIT         (BUTTON_SELECT | BUTTON_MENU)
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_SCROLL_FWD
-#define BTN_DOWN         BUTTON_SCROLL_BACK
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       (BUTTON_SELECT | BUTTON_MENU)
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_SCROLL_FWD
+#define MIDI_VOL_DOWN   BUTTON_SCROLL_BACK
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 
 #elif (CONFIG_KEYPAD == GIGABEAT_PAD)
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_A
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_A
 
 
 #elif (CONFIG_KEYPAD == GIGABEAT_S_PAD)
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 
 #elif (CONFIG_KEYPAD == SANSA_E200_PAD)
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_SCROLL_FWD
-#define BTN_DOWN         BUTTON_SCROLL_BACK
-#define BTN_PLAY         BUTTON_UP
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_SCROLL_FWD
+#define MIDI_VOL_DOWN   BUTTON_SCROLL_BACK
+#define MIDI_PLAYPAUSE  BUTTON_UP
 
 #elif (CONFIG_KEYPAD == SANSA_FUZE_PAD)
-#define BTN_QUIT         (BUTTON_HOME|BUTTON_REPEAT)
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_SCROLL_FWD
-#define BTN_DOWN         BUTTON_SCROLL_BACK
-#define BTN_PLAY         BUTTON_UP
+#define MIDI_QUIT       (BUTTON_HOME|BUTTON_REPEAT)
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_SCROLL_FWD
+#define MIDI_VOL_DOWN   BUTTON_SCROLL_BACK
+#define MIDI_PLAYPAUSE  BUTTON_UP
 
 
 #elif (CONFIG_KEYPAD == SANSA_C200_PAD) || \
 (CONFIG_KEYPAD == SANSA_CLIP_PAD) || \
 (CONFIG_KEYPAD == SANSA_M200_PAD)
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_VOL_UP
-#define BTN_DOWN         BUTTON_VOL_DOWN
-#define BTN_PLAY         BUTTON_UP
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_VOL_UP
+#define MIDI_VOL_DOWN   BUTTON_VOL_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_UP
 
 
 #elif CONFIG_KEYPAD == IAUDIO_X5M5_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 
 #elif CONFIG_KEYPAD == IRIVER_H10_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_SCROLL_UP
-#define BTN_DOWN         BUTTON_SCROLL_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_SCROLL_UP
+#define MIDI_VOL_DOWN   BUTTON_SCROLL_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 
 #elif CONFIG_KEYPAD == MROBE500_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_RC_PLAY
-#define BTN_DOWN         BUTTON_RC_DOWN
-#define BTN_PLAY         BUTTON_RC_HEART
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_RC_PLAY
+#define MIDI_VOL_DOWN   BUTTON_RC_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_RC_HEART
 
 
 #elif (CONFIG_KEYPAD == MROBE100_PAD)
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_DISPLAY
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_DISPLAY
 
 
 #elif CONFIG_KEYPAD == IAUDIO_M3_PAD
-#define BTN_QUIT         BUTTON_RC_REC
-#define BTN_RIGHT        BUTTON_RC_FF
-#define BTN_LEFT         BUTTON_RC_REW
-#define BTN_UP           BUTTON_RC_VOL_UP
-#define BTN_DOWN         BUTTON_RC_VOL_DOWN
-#define BTN_PLAY         BUTTON_RC_PLAY
+#define MIDI_QUIT       BUTTON_RC_REC
+#define MIDI_FFWD       BUTTON_RC_FF
+#define MIDI_REWIND     BUTTON_RC_REW
+#define MIDI_VOL_UP     BUTTON_RC_VOL_UP
+#define MIDI_VOL_DOWN   BUTTON_RC_VOL_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_RC_PLAY
 
 
 #elif CONFIG_KEYPAD == COWON_D2_PAD
-#define BTN_QUIT         BUTTON_POWER
+#define MIDI_QUIT       BUTTON_POWER
 
 #elif CONFIG_KEYPAD == IAUDIO67_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_STOP
-#define BTN_DOWN         BUTTON_PLAY
-#define BTN_PLAY         BUTTON_MENU
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_STOP
+#define MIDI_VOL_DOWN   BUTTON_PLAY
+#define MIDI_PLAYPAUSE  BUTTON_MENU
 
 #elif CONFIG_KEYPAD == CREATIVEZVM_PAD
-#define BTN_QUIT         BUTTON_BACK
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       BUTTON_BACK
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 #elif CONFIG_KEYPAD == CREATIVE_ZENXFI3_PAD
-#define BTN_QUIT        (BUTTON_PLAY|BUTTON_REPEAT)
-#define BTN_RIGHT        BUTTON_MENU
-#define BTN_LEFT         BUTTON_BACK
-#define BTN_UP           BUTTON_VOL_UP
-#define BTN_DOWN         BUTTON_VOL_DOWN
-#define BTN_PLAY        (BUTTON_PLAY|BUTTON_REL)
+#define MIDI_QUIT       (BUTTON_PLAY|BUTTON_REPEAT)
+#define MIDI_FFWD       BUTTON_MENU
+#define MIDI_REWIND     BUTTON_BACK
+#define MIDI_VOL_UP     BUTTON_VOL_UP
+#define MIDI_VOL_DOWN   BUTTON_VOL_DOWN
+#define MIDI_PLAYPAUSE  (BUTTON_PLAY|BUTTON_REL)
 
 #elif CONFIG_KEYPAD == PHILIPS_HDD1630_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_MENU
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_MENU
 
 #elif CONFIG_KEYPAD == PHILIPS_HDD6330_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_MENU
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_MENU
 
 #elif CONFIG_KEYPAD == PHILIPS_SA9200_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_NEXT
-#define BTN_LEFT         BUTTON_PREV
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_MENU
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_NEXT
+#define MIDI_REWIND     BUTTON_PREV
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_MENU
 
 #elif CONFIG_KEYPAD == ONDAVX747_PAD
-#define BTN_QUIT         BUTTON_POWER
+#define MIDI_QUIT       BUTTON_POWER
 #elif CONFIG_KEYPAD == ONDAVX777_PAD
-#define BTN_QUIT         BUTTON_POWER
+#define MIDI_QUIT       BUTTON_POWER
 
 #elif (CONFIG_KEYPAD == SAMSUNG_YH820_PAD) || \
       (CONFIG_KEYPAD == SAMSUNG_YH92X_PAD)
-#define BTN_QUIT         (BUTTON_PLAY|BUTTON_REPEAT)
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       (BUTTON_PLAY|BUTTON_REPEAT)
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 #elif CONFIG_KEYPAD == PBELL_VIBE500_PAD
-#define BTN_QUIT         BUTTON_REC
-#define BTN_RIGHT        BUTTON_NEXT
-#define BTN_LEFT         BUTTON_PREV
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       BUTTON_REC
+#define MIDI_FFWD       BUTTON_NEXT
+#define MIDI_REWIND     BUTTON_PREV
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 #elif CONFIG_KEYPAD == MPIO_HD200_PAD
-#define BTN_QUIT         (BUTTON_REC | BUTTON_PLAY)
-#define BTN_RIGHT        BUTTON_FF
-#define BTN_LEFT         BUTTON_REW
-#define BTN_UP           BUTTON_VOL_UP
-#define BTN_DOWN         BUTTON_VOL_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       (BUTTON_REC | BUTTON_PLAY)
+#define MIDI_FFWD       BUTTON_FF
+#define MIDI_REWIND     BUTTON_REW
+#define MIDI_VOL_UP     BUTTON_VOL_UP
+#define MIDI_VOL_DOWN   BUTTON_VOL_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 #elif CONFIG_KEYPAD == MPIO_HD300_PAD
-#define BTN_QUIT         (BUTTON_MENU | BUTTON_REPEAT)
-#define BTN_RIGHT        BUTTON_FF
-#define BTN_LEFT         BUTTON_REW
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       (BUTTON_MENU | BUTTON_REPEAT)
+#define MIDI_FFWD       BUTTON_FF
+#define MIDI_REWIND     BUTTON_REW
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 #elif CONFIG_KEYPAD == SANSA_FUZEPLUS_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAYPAUSE
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAYPAUSE
 
 #elif CONFIG_KEYPAD == SANSA_CONNECT_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_SELECT
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_SELECT
 
 #elif CONFIG_KEYPAD == SAMSUNG_YPR0_PAD
-#define BTN_QUIT         BUTTON_BACK
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_USER
+#define MIDI_QUIT       BUTTON_BACK
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_USER
 
 #elif (CONFIG_KEYPAD == HM60X_PAD) || \
     (CONFIG_KEYPAD == HM801_PAD)
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_SELECT
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_SELECT
 
 #elif (CONFIG_KEYPAD == SONY_NWZ_PAD)
-#define BTN_QUIT         BUTTON_BACK
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAY
+#define MIDI_QUIT       BUTTON_BACK
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAY
 
 #elif (CONFIG_KEYPAD == CREATIVE_ZEN_PAD)
-#define BTN_QUIT         BUTTON_BACK
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_UP
-#define BTN_DOWN         BUTTON_DOWN
-#define BTN_PLAY         BUTTON_PLAYPAUSE
+#define MIDI_QUIT       BUTTON_BACK
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_UP
+#define MIDI_VOL_DOWN   BUTTON_DOWN
+#define MIDI_PLAYPAUSE  BUTTON_PLAYPAUSE
 
 #elif CONFIG_KEYPAD == DX50_PAD
-#define BTN_QUIT         BUTTON_POWER
-#define BTN_RIGHT        BUTTON_RIGHT
-#define BTN_LEFT         BUTTON_LEFT
-#define BTN_UP           BUTTON_VOL_UP
-#define BTN_DOWN         BUTTON_VOL_DOWN
+#define MIDI_QUIT       BUTTON_POWER
+#define MIDI_FFWD       BUTTON_RIGHT
+#define MIDI_REWIND     BUTTON_LEFT
+#define MIDI_VOL_UP     BUTTON_VOL_UP
+#define MIDI_VOL_DOWN   BUTTON_VOL_DOWN
 
 #else
 #error No keymap defined!
 #endif
 
 #ifdef HAVE_TOUCHSCREEN
-#ifndef BTN_QUIT
-#define BTN_QUIT         BUTTON_TOPLEFT
+#ifndef MIDI_QUIT
+#define MIDI_QUIT       BUTTON_TOPLEFT
 #endif
-#ifndef BTN_RIGHT
-#define BTN_RIGHT        BUTTON_MIDRIGHT
+#ifndef MIDI_FFWD
+#define MIDI_FFWD       BUTTON_MIDRIGHT
 #endif
-#ifndef BTN_LEFT
-#define BTN_LEFT         BUTTON_MIDLEFT
+#ifndef MIDI_REWIND
+#define MIDI_REWIND     BUTTON_MIDLEFT
 #endif
-#ifndef BTN_UP
-#define BTN_UP           BUTTON_TOPMIDDLE
+#ifndef MIDI_VOL_UP
+#define MIDI_VOL_UP     BUTTON_TOPMIDDLE
 #endif
-#ifndef BTN_DOWN
-#define BTN_DOWN         BUTTON_BOTTOMMIDDLE
+#ifndef MIDI_VOL_DOWN
+#define MIDI_VOL_DOWN   BUTTON_BOTTOMMIDDLE
 #endif
-#ifndef BTN_PLAY
-#define BTN_PLAY         BUTTON_CENTER
+#ifndef MIDI_PLAYPAUSE
+#define MIDI_PLAYPAUSE  BUTTON_CENTER
 #endif
 #endif
 
@@ -323,6 +323,7 @@ long bpm IBSS_ATTR;
 int32_t gmbuf[BUF_SIZE*NBUF];
 static unsigned int samples_in_buf;
 
+bool midi_end = false;
 bool quit = false;
 bool swap = false;
 bool lastswap = true;
@@ -332,6 +333,9 @@ static inline void synthbuf(void)
     int32_t *outptr;
     int i = BUF_SIZE;
 
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+    rb->cpu_boost(true);
+#endif
 #ifndef SYNC
     if (lastswap == swap)
         return;
@@ -341,6 +345,10 @@ static inline void synthbuf(void)
 #else
     outptr = gmbuf;
 #endif
+    if (midi_end) {
+        samples_in_buf = 0;
+        return;
+    }
 
     /* synth samples for as many whole ticks as we can fit in the buffer */
     for (; i >= number_of_samples; i -= number_of_samples)
@@ -353,11 +361,14 @@ static inline void synthbuf(void)
         rb->yield();
 #endif
         if (tick() == 0)
-            quit = true;
+            midi_end = true;    /* no more midi data to play */
     }
 
     /* how many samples did we write to the buffer? */
     samples_in_buf = BUF_SIZE-i;
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+    rb->cpu_boost(false);
+#endif
 }
 
 static void get_more(const void** start, size_t* size)
@@ -379,6 +390,10 @@ static void get_more(const void** start, size_t* size)
 #else
     *start = gmbuf;
 #endif
+    if (samples_in_buf==0) {
+        *start = NULL;
+        quit = true;    /* this was the last buffer to play */
+    }
 }
 
 static int midimain(const void * filename)
@@ -386,18 +401,29 @@ static int midimain(const void * filename)
     int a, notes_used, vol;
     bool is_playing = true;  /* false = paused */
 
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+    rb->cpu_boost(true);
+#endif
     midi_debug("Loading file");
     mf = loadFile(filename);
 
     if (mf == NULL)
     {
         midi_debug("Error loading file.");
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+        rb->cpu_boost(false);
+#endif
         return -1;
     }
 
     if (initSynth(mf, ROCKBOX_DIR "/patchset/patchset.cfg",
         ROCKBOX_DIR "/patchset/drums.cfg") == -1)
+    {
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+        rb->cpu_boost(false);
+#endif
         return -1;
+    }
 
     rb->pcm_play_stop();
 #if INPUT_SRC_CAPS != 0
@@ -433,6 +459,10 @@ static int midimain(const void * filename)
         tick();
     } while (notes_used == 0);
 
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+    rb->cpu_boost(false);
+#endif
+
     playing_time = 0;
     samples_this_second = 0;
 
@@ -452,8 +482,8 @@ static int midimain(const void * filename)
         /* Code taken from Oscilloscope plugin */
         switch (rb->button_get(false))
         {
-            case BTN_UP:
-            case BTN_UP | BUTTON_REPEAT:
+            case MIDI_VOL_UP:
+            case MIDI_VOL_UP | BUTTON_REPEAT:
             {
                 vol = rb->global_settings->volume;
                 if (vol < rb->sound_max(SOUND_VOLUME))
@@ -465,8 +495,8 @@ static int midimain(const void * filename)
                 break;
             }
 
-            case BTN_DOWN:
-            case BTN_DOWN | BUTTON_REPEAT:
+            case MIDI_VOL_DOWN:
+            case MIDI_VOL_DOWN | BUTTON_REPEAT:
             {
                 vol = rb->global_settings->volume;
                 if (vol > rb->sound_min(SOUND_VOLUME))
@@ -478,29 +508,39 @@ static int midimain(const void * filename)
                 break;
             }
 
-            case BTN_LEFT:
+            case MIDI_REWIND:
             {
                 /* Rewinding is tricky. Basically start the file over */
                 /* but run through the tracks without the synth running */
                 rb->pcm_play_stop();
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+                rb->cpu_boost(true);
+#endif
                 seekBackward(5);
+#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
+                rb->cpu_boost(false);
+#endif
+                lastswap = !swap;
+                synthbuf();
                 midi_debug("Rewind to %d:%02d\n", playing_time/60, playing_time%60);
                 if (is_playing)
                     rb->pcm_play_data(&get_more, NULL, NULL, 0);
                 break;
             }
 
-            case BTN_RIGHT:
+            case MIDI_FFWD:
             {
                 rb->pcm_play_stop();
                 seekForward(5);
+                lastswap = !swap;
+                synthbuf();
                 midi_debug("Skip to %d:%02d\n", playing_time/60, playing_time%60);
                 if (is_playing)
                     rb->pcm_play_data(&get_more, NULL, NULL, 0);
                 break;
             }
 
-            case BTN_PLAY:
+            case MIDI_PLAYPAUSE:
             {
                 if (is_playing)
                 {
@@ -516,10 +556,10 @@ static int midimain(const void * filename)
                 break;
             }
 
-#ifdef BTN_RC_QUIT
-            case BTN_RC_QUIT:
+#ifdef MIDI_RC_QUIT
+            case MIDI_RC_QUIT:
 #endif
-            case BTN_QUIT:
+            case MIDI_QUIT:
                 quit = true;
         }
     }
@@ -537,10 +577,6 @@ enum plugin_status plugin_start(const void* parameter)
     }
     rb->lcd_setfont(FONT_SYSFIXED);
 
-#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
-    rb->cpu_boost(true);
-#endif
-
     midi_debug("%s", parameter);
     /*   rb->splash(HZ, true, parameter); */
 
@@ -557,9 +593,6 @@ enum plugin_status plugin_start(const void* parameter)
     rb->pcm_play_stop();
     rb->pcm_set_frequency(HW_SAMPR_DEFAULT);
 
-#if defined(HAVE_ADJUSTABLE_CPU_FREQ)
-    rb->cpu_boost(false);
-#endif
     rb->splash(HZ, "FINISHED PLAYING");
 
     if (retval == -1)

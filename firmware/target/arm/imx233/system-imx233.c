@@ -44,6 +44,7 @@
 #include "button.h"
 #include "fmradio_i2c.h"
 #include "powermgmt-imx233.h"
+#include "led-imx233.h"
 
 #include "regs/digctl.h"
 #include "regs/usbphy.h"
@@ -202,6 +203,7 @@ void system_init(void)
     imx233_power_init();
     imx233_i2c_init();
     imx233_powermgmt_init();
+    imx233_led_init();
     /* setup watchdog */
     watchdog_init();
 
@@ -284,8 +286,8 @@ struct cpufreq_profile_t
 /* Some devices don't handle very well memory frequency changes, so avoid them
  * by running at highest speed at all time */
 #if defined(CREATIVE_ZEN) || defined(CREATIVE_ZENXFI)
-#define EMIFREQ_NORMAL  IMX233_EMIFREQ_130_MHz
-#define EMIFREQ_MAX     IMX233_EMIFREQ_130_MHz
+#define EMIFREQ_NORMAL  IMX233_EMIFREQ_64_MHz
+#define EMIFREQ_MAX     IMX233_EMIFREQ_64_MHz
 #else /* weird targets */
 #define EMIFREQ_NORMAL  IMX233_EMIFREQ_64_MHz
 #define EMIFREQ_MAX     IMX233_EMIFREQ_130_MHz

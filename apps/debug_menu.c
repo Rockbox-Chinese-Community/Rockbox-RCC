@@ -127,10 +127,6 @@
 #include "iap.h"
 #endif
 
-#ifdef HAVE_RDS_CAP
-#include "rds.h"
-#endif
-
 #include "talk.h"
 
 static const char* threads_getname(int selected_item, void *data,
@@ -795,6 +791,12 @@ static bool dbg_cpufreq(void)
         int temp = FREQ/1000000;
         lcd_putsf(0, line++, "Frequency: %ld.%ld MHz", temp, (FREQ-temp*1000000)/100000);
         lcd_putsf(0, line++, "boost_counter: %d", get_cpu_boost_counter());
+
+#ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
+        extern int get_cpu_voltage_setting(void);
+        temp = get_cpu_voltage_setting();
+        lcd_putsf(0, line++, "CPU voltage: %d.%03dV", temp / 1000, temp % 1000);
+#endif
 
         lcd_update();
         button = get_action(CONTEXT_STD,HZ/10);
@@ -2160,17 +2162,25 @@ static int radio_callback(int btn, struct gui_synclist *lists)
 #endif /* TEA5760 */
 
 #ifdef HAVE_RDS_CAP
-        simplelist_addline("PI:%04X PS:'%8s'",
-                           rds_get_pi(), rds_get_ps());
-        simplelist_addline("RT:%s",
-                           rds_get_rt());
-        time_t seconds = rds_get_ct();
+    {
+        char buf[65*4];
+        uint16_t pi;
+        time_t seconds;
+
+        tuner_get_rds_info(RADIO_RDS_NAME, buf, sizeof (buf));
+        tuner_get_rds_info(RADIO_RDS_PROGRAM_INFO, &pi, sizeof (pi));
+        simplelist_addline("PI:%04X PS:'%8s'", pi, buf);
+        tuner_get_rds_info(RADIO_RDS_TEXT, buf, sizeof (buf));
+        simplelist_addline("RT:%s", buf);
+        tuner_get_rds_info(RADIO_RDS_CURRENT_TIME, &seconds, sizeof (seconds));
+
         struct tm* time = gmtime(&seconds);
         simplelist_addline(
             "CT:%4d-%02d-%02d %02d:%02d",
             time->tm_year + 1900, time->tm_mon + 1, time->tm_mday,
             time->tm_hour, time->tm_min, time->tm_sec);
-#endif
+    }
+#endif /* HAVE_RDS_CAP */
     return ACTION_REDRAW;
 }
 static bool dbg_fm_radio(void)

@@ -27,6 +27,9 @@
 #include "crypto.h"
 #include "sb.h"
 
+#define ALIGN_DOWN(n, a)    (((n)/(a))*(a))
+#define ALIGN_UP(n, a)      ALIGN_DOWN((n)+((a)-1),a)
+
 static void fill_gaps(struct sb_file_t *sb)
 {
     for(int i = 0; i < sb->nr_sections; i++)
@@ -58,27 +61,33 @@ static void compute_sb_offsets(struct sb_file_t *sb, void *u, generic_printf_t c
     /* sections */
     for(int i = 0; i < sb->nr_sections; i++)
     {
-        /* each section has a preliminary TAG command */
-        sb->image_size += sizeof(struct sb_instruction_tag_t) / BLOCK_SIZE;
-        /* we might need to pad the section so compute next alignment */
-        uint32_t alignment = BLOCK_SIZE;
-        if((i + 1) < sb->nr_sections)
-            alignment = sb->sections[i + 1].alignment;
-        alignment /= BLOCK_SIZE; /* alignment in block sizes */
-
         struct sb_section_t *sec = &sb->sections[i];
+        /* we need to make sure section starts on the right alignment,
+         * and since each section starts with a boot tag, we need to ensure
+         * that the boot tag is at address X such that X+BLOCK_SIZE is a
+         * multiple of the alignment */
+        uint32_t alignment = sb->sections[i].alignment / BLOCK_SIZE;
+        sb->image_size = ALIGN_UP(sb->image_size + 1, alignment) - 1;
+        /* update padding of previous section */
+        if(i > 0)
+            sb->sections[i - 1].pad_size = sb->image_size -
+                sb->sections[i - 1].file_offset - sb->sections[i - 1].sec_size;
+        /* each section has a preliminary TAG command */
+        sb->image_size += 1;
+        sec->file_offset = sb->image_size;
+        /* compute section size */
         sec->sec_size = 0;
+        sec->pad_size = 0;
 
         char name[5];
         sb_fill_section_name(name, sec->identifier);
         printf(BLUE, "%s", sec->is_data ? "Data" : "Boot");
-        printf(GREEN, " Section");
+        printf(GREEN, " Section ");
         printf(YELLOW, "'%s'", name);
         if(sec->is_cleartext)
             printf(RED, " (cleartext)");
         printf(OFF, "\n");
 
-        sec->file_offset = sb->image_size;
         for(int j = 0; j < sec->nr_insts; j++)
         {
             struct sb_inst_t *inst = &sec->insts[j];
@@ -87,7 +96,6 @@ static void compute_sb_offsets(struct sb_file_t *sb, void *u, generic_printf_t c
                 printf(RED, "  %s", inst->inst == SB_INST_CALL ? "CALL" : "JUMP");
                 printf(OFF, " | "); printf(BLUE, "addr=0x%08x", inst->addr);
                 printf(OFF, " | "); printf(GREEN, "arg=0x%08x\n", inst->argument);
-                sb->image_size += sizeof(struct sb_instruction_call_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_call_t) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_FILL)
@@ -96,7 +104,6 @@ static void compute_sb_offsets(struct sb_file_t *sb, void *u, generic_printf_t c
                 printf(OFF, " | "); printf(BLUE, "addr=0x%08x", inst->addr);
                 printf(OFF, " | "); printf(GREEN, "len=0x%08x", inst->size);
                 printf(OFF, " | "); printf(YELLOW, "pattern=0x%08x\n", inst->pattern);
-                sb->image_size += sizeof(struct sb_instruction_fill_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_fill_t) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_LOAD)
@@ -105,30 +112,25 @@ static void compute_sb_offsets(struct sb_file_t *sb, void *u, generic_printf_t c
                 printf(OFF, " | "); printf(BLUE, "addr=0x%08x", inst->addr);
                 printf(OFF, " | "); printf(GREEN, "len=0x%08x\n", inst->size);
                 /* load header */
-                sb->image_size += sizeof(struct sb_instruction_load_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_load_t) / BLOCK_SIZE;
                 /* data + alignment */
-                sb->image_size += (inst->size + inst->padding_size) / BLOCK_SIZE;
                 sec->sec_size += (inst->size + inst->padding_size) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_MODE)
             {
                 printf(RED, "  MODE");
                 printf(OFF, " | "); printf(BLUE, "mod=0x%08x\n", inst->addr);
-                sb->image_size += sizeof(struct sb_instruction_mode_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_mode_t) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_DATA)
             {
                 printf(RED, "  DATA");
                 printf(OFF, " | "); printf(BLUE, "size=0x%08x\n", inst->size);
-                sb->image_size += ROUND_UP(inst->size, BLOCK_SIZE) / BLOCK_SIZE;
                 sec->sec_size += ROUND_UP(inst->size, BLOCK_SIZE) / BLOCK_SIZE;
             }
             else if(inst->inst == SB_INST_NOP)
             {
                 printf(RED, "  NOOP\n");
-                sb->image_size += sizeof(struct sb_instruction_nop_t) / BLOCK_SIZE;
                 sec->sec_size += sizeof(struct sb_instruction_nop_t) / BLOCK_SIZE;
             }
             else
@@ -136,50 +138,7 @@ static void compute_sb_offsets(struct sb_file_t *sb, void *u, generic_printf_t c
                 cprintf(u, true, GREY, "die on inst %d\n", inst->inst);
             }
         }
-        /* we need to make sure next section starts on the right alignment.
-         * Since each section starts with a boot tag, we thus need to ensure
-         * that this sections ends at adress X such that X+BLOCK_SIZE is
-         * a multiple of the alignment.
-         * For data sections, we just add random data, otherwise we add nops */
-        uint32_t missing_sz = alignment - ((sb->image_size + 1) % alignment);
-        if(missing_sz != alignment)
-        {
-            struct sb_inst_t *aug_insts;
-            int nr_aug_insts = 0;
-
-            if(sb->sections[i].is_data)
-            {
-                nr_aug_insts = 1;
-                aug_insts = xmalloc(sizeof(struct sb_inst_t));
-                memset(aug_insts, 0, sizeof(struct sb_inst_t));
-                aug_insts[0].inst = SB_INST_DATA;
-                aug_insts[0].size = missing_sz * BLOCK_SIZE;
-                aug_insts[0].data = xmalloc(missing_sz * BLOCK_SIZE);
-                generate_random_data(aug_insts[0].data, missing_sz * BLOCK_SIZE);
-                printf(RED, "  DATA");
-                printf(OFF, " | "); printf(BLUE, "size=0x%08x\n", aug_insts[0].size);
-            }
-            else
-            {
-                nr_aug_insts = missing_sz;
-                aug_insts = xmalloc(sizeof(struct sb_inst_t) * nr_aug_insts);
-                memset(aug_insts, 0, sizeof(struct sb_inst_t) * nr_aug_insts);
-                for(int j = 0; j < nr_aug_insts; j++)
-                {
-                    aug_insts[j].inst = SB_INST_NOP;
-                    printf(RED, "  NOOP\n");
-                }
-            }
-
-            sb->sections[i].insts = augment_array(sb->sections[i].insts, sizeof(struct sb_inst_t),
-                sb->sections[i].nr_insts, aug_insts, nr_aug_insts);
-            sb->sections[i].nr_insts += nr_aug_insts;
-            free(aug_insts);
-
-            /* augment image and section size */
-            sb->image_size += missing_sz;
-            sec->sec_size += missing_sz;
-        }
+        sb->image_size += sec->sec_size;
     }
     /* final signature */
     sb->image_size += 2;
@@ -222,14 +181,13 @@ static void produce_sb_header(struct sb_file_t *sb, struct sb_header_t *sb_hdr)
     sb_hdr->flags = sb->flags;
     sb_hdr->image_size = sb->image_size;
     sb_hdr->header_size = sizeof(struct sb_header_t) / BLOCK_SIZE;
-    sb_hdr->first_boot_sec_id = sb->sections[0].identifier;
+    sb_hdr->first_boot_sec_id = sb->sections[sb->first_boot_sec].identifier;
     sb_hdr->nr_keys = g_nr_keys;
     sb_hdr->nr_sections = sb->nr_sections;
     sb_hdr->sec_hdr_size = sizeof(struct sb_section_header_t) / BLOCK_SIZE;
     sb_hdr->key_dict_off = sb_hdr->header_size +
         sb_hdr->sec_hdr_size * sb_hdr->nr_sections;
-    sb_hdr->first_boot_tag_off = sb_hdr->key_dict_off +
-        sizeof(struct sb_key_dictionary_entry_t) * sb_hdr->nr_keys / BLOCK_SIZE;
+    sb_hdr->first_boot_tag_off = sb->sections[sb->first_boot_sec].file_offset - 1;
     generate_random_data(sb_hdr->rand_pad0, sizeof(sb_hdr->rand_pad0));
     generate_random_data(sb_hdr->rand_pad1, sizeof(sb_hdr->rand_pad1));
     /* Version 1.0 has 6 bytes of random padding,
@@ -277,7 +235,11 @@ static void produce_section_tag_cmd(struct sb_section_t *sec,
     tag->hdr.opcode = SB_INST_TAG;
     tag->hdr.flags = is_last ? SB_INST_LAST_TAG : 0;
     tag->identifier = sec->identifier;
-    tag->len = sec->sec_size;
+    /* there is a catch here: in the section header at the beginning of the SB
+     * file, we put the *useful* length of the section (without padding) but
+     * the bootloader will not use those and only use the TAG commande which
+     * need to give the *actual* length (with padding) */
+    tag->len = sec->sec_size + sec->pad_size;
     tag->flags = (sec->is_data ? 0 : SECTION_BOOTABLE)
         | (sec->is_cleartext ? SECTION_CLEARTEXT : 0)
         | sec->other_flags;
@@ -330,15 +292,24 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
     /* init CBC-MACs */
     for(int i = 0; i < g_nr_keys; i++)
         memset(cbc_macs[i], 0, 16);
-
+    /* fill gaps */
     fill_gaps(sb);
-    if(sb->nr_sections == 0 || sb->sections[0].is_data)
+    /* find first bootable section */
+    sb->first_boot_sec = -1;
+    for(int i = 0; i < sb->nr_sections; i++)
+        if(!sb->sections[i].is_data)
+        {
+            sb->first_boot_sec = i;
+            break;
+        }
+    if(sb->first_boot_sec == -1)
     {
-        cprintf(u, true, GREY, "First section of the image is not bootable, I cannot handle that.\n");
+        cprintf(u, true, GREY, "Image contains no bootable section, I cannot handle that.\n");
         return SB_ERROR;
     }
+    /* compute section offsets */
     compute_sb_offsets(sb, u, cprintf);
-
+    /* generate random real key */
     generate_random_data(real_key.u.key, 16);
 
     /* global SHA-1 */
@@ -351,6 +322,12 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
     byte *buf = xmalloc(sb_hdr.image_size * BLOCK_SIZE);
     byte *buf_p = buf;
     #define write(p, sz) do { memcpy(buf_p, p, sz); buf_p += sz; } while(0)
+    #define check_crypto(expr) \
+        do { int err = expr; \
+            if(err != CRYPTO_ERROR_SUCCESS) { \
+                free(cbc_macs); \
+                cprintf(u, true, GREY, "Crypto error: %d\n", err); \
+                return SB_CRYPTO_ERROR; } } while(0)
 
     sha_1_update(&file_sha1, (byte *)&sb_hdr, sizeof(sb_hdr));
     write(&sb_hdr, sizeof(sb_hdr));
@@ -359,8 +336,11 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
 
     /* update CBC-MACs */
     for(int i = 0; i < g_nr_keys; i++)
-        crypto_cbc((byte *)&sb_hdr, NULL, sizeof(sb_hdr) / BLOCK_SIZE, &g_key_array[i],
-            cbc_macs[i], &cbc_macs[i], 1);
+    {
+        check_crypto(crypto_setup(&g_key_array[i]));
+        check_crypto(crypto_apply((byte *)&sb_hdr, NULL, sizeof(sb_hdr) / BLOCK_SIZE,
+            cbc_macs[i], &cbc_macs[i], true));
+    }
 
     /* produce and write section headers */
     for(int i = 0; i < sb_hdr.nr_sections; i++)
@@ -371,22 +351,22 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
         write(&sb_sec_hdr, sizeof(sb_sec_hdr));
         /* update CBC-MACs */
         for(int j = 0; j < g_nr_keys; j++)
-            crypto_cbc((byte *)&sb_sec_hdr, NULL, sizeof(sb_sec_hdr) / BLOCK_SIZE,
-                &g_key_array[j], cbc_macs[j], &cbc_macs[j], 1);
+        {
+            check_crypto(crypto_setup(&g_key_array[j]));
+            check_crypto(crypto_apply((byte *)&sb_sec_hdr, NULL,
+                sizeof(sb_sec_hdr) / BLOCK_SIZE, cbc_macs[j], &cbc_macs[j], true));
+        }
     }
     /* produce key dictionary */
     for(int i = 0; i < g_nr_keys; i++)
     {
         struct sb_key_dictionary_entry_t entry;
         memcpy(entry.hdr_cbc_mac, cbc_macs[i], 16);
-        crypto_cbc(real_key.u.key, entry.key, 1, &g_key_array[i],
-            crypto_iv, NULL, 1);
-
+        check_crypto(crypto_setup(&g_key_array[i]));
+        check_crypto(crypto_apply(real_key.u.key, entry.key, 1, crypto_iv, NULL, true));
         write(&entry, sizeof(entry));
         sha_1_update(&file_sha1, (byte *)&entry, sizeof(entry));
     }
-
-    free(cbc_macs);
 
     /* HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK */
     /* Image crafting, don't use it unless you understand what you do */
@@ -406,6 +386,19 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
             printf(YELLOW, "%02x", crypto_iv[j]);
         printf(OFF, "\n");
     }
+    /* the first section might not start right after the header, pad with
+     * random data */
+    unsigned init_gap = (sb->sections[0].file_offset - 1) * BLOCK_SIZE - (buf_p - buf);
+    if(init_gap > 0)
+    {
+        byte *data = xmalloc(init_gap);
+        generate_random_data(data, init_gap);
+        sha_1_update(&file_sha1, data, init_gap);
+        write(data, init_gap);
+        free(data);
+    }
+    /* setup real key */
+    check_crypto(crypto_setup(&real_key));
     /* produce sections data */
     for(int i = 0; i< sb_hdr.nr_sections; i++)
     {
@@ -413,8 +406,10 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
         struct sb_instruction_tag_t tag_cmd;
         produce_section_tag_cmd(&sb->sections[i], &tag_cmd, (i + 1) == sb_hdr.nr_sections);
         if(g_nr_keys > 0)
-            crypto_cbc((byte *)&tag_cmd, (byte *)&tag_cmd, sizeof(tag_cmd) / BLOCK_SIZE,
-                &real_key, crypto_iv, NULL, 1);
+        {
+            check_crypto(crypto_apply((byte *)&tag_cmd, (byte *)&tag_cmd,
+                sizeof(tag_cmd) / BLOCK_SIZE, crypto_iv, NULL, true));
+        }
         sha_1_update(&file_sha1, (byte *)&tag_cmd, sizeof(tag_cmd));
         write(&tag_cmd, sizeof(tag_cmd));
         /* produce other commands */
@@ -429,8 +424,10 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
                 struct sb_instruction_common_t cmd;
                 produce_sb_instruction(inst, &cmd, u, cprintf);
                 if(g_nr_keys > 0 && !sb->sections[i].is_cleartext)
-                    crypto_cbc((byte *)&cmd, (byte *)&cmd, sizeof(cmd) / BLOCK_SIZE,
-                        &real_key, cur_cbc_mac, &cur_cbc_mac, 1);
+                {
+                    check_crypto(crypto_apply((byte *)&cmd, (byte *)&cmd,
+                        sizeof(cmd) / BLOCK_SIZE, cur_cbc_mac, &cur_cbc_mac, true));
+                }
                 sha_1_update(&file_sha1, (byte *)&cmd, sizeof(cmd));
                 write(&cmd, sizeof(cmd));
             }
@@ -442,11 +439,40 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
                 memcpy(data, inst->data, inst->size);
                 memcpy(data + inst->size, inst->padding, inst->padding_size);
                 if(g_nr_keys > 0 && !sb->sections[i].is_cleartext)
-                    crypto_cbc(data, data, sz / BLOCK_SIZE,
-                        &real_key, cur_cbc_mac, &cur_cbc_mac, 1);
+                {
+                    check_crypto(crypto_apply(data, data, sz / BLOCK_SIZE,
+                        cur_cbc_mac, &cur_cbc_mac, true));
+                }
                 sha_1_update(&file_sha1, data, sz);
                 write(data, sz);
                 free(data);
+            }
+        }
+        /* pad section with random data or NOP */
+        uint32_t pad_size = sb->sections[i].pad_size;
+        if(sb->sections[i].is_data)
+        {
+            byte *data = xmalloc(pad_size * BLOCK_SIZE);
+            generate_random_data(data, pad_size * BLOCK_SIZE);
+            sha_1_update(&file_sha1, data, pad_size * BLOCK_SIZE);
+            write(data, pad_size * BLOCK_SIZE);
+            free(data);
+        }
+        else
+        {
+            for(unsigned j = 0; j < pad_size; j++)
+            {
+                struct sb_instruction_nop_t cmd;
+                memset(&cmd, 0, sizeof(cmd));
+                cmd.hdr.opcode = SB_INST_NOP;
+                cmd.hdr.checksum = instruction_checksum(&cmd.hdr);
+                if(g_nr_keys > 0 && !sb->sections[i].is_cleartext)
+                {
+                    check_crypto(crypto_apply((byte *)&cmd, (byte *)&cmd,
+                        sizeof(cmd) / BLOCK_SIZE, cur_cbc_mac, &cur_cbc_mac, true));
+                }
+                sha_1_update(&file_sha1, (byte *)&cmd, sizeof(cmd));
+                write(&cmd, sizeof(cmd));
             }
         }
     }
@@ -456,28 +482,34 @@ enum sb_error_t sb_write_file(struct sb_file_t *sb, const char *filename, void *
     sha_1_output(&file_sha1, final_sig);
     generate_random_data(final_sig + 20, 12);
     if(g_nr_keys > 0)
-        crypto_cbc(final_sig, final_sig, 2, &real_key, crypto_iv, NULL, 1);
+        check_crypto(crypto_apply(final_sig, final_sig, 2, crypto_iv, NULL, true));
     write(final_sig, 32);
+
+    free(cbc_macs);
 
     if(buf_p - buf != sb_hdr.image_size * BLOCK_SIZE)
     {
-        if(g_debug)
-            printf(GREY, u, true, "SB image buffer was not entirely filled !\n");
+        free(buf);
+        printf(GREY, "Internal error: SB image buffer was not entirely filled !\n");
+        printf(GREY, "Internal error: expected %u blocks, got %u\n",
+            (buf_p - buf) / BLOCK_SIZE, sb_hdr.image_size);
+        cprintf(u, true, GREY, "Internal error\n");
         return SB_ERROR;
     }
 
     FILE *fd = fopen(filename, "wb");
     if(fd == NULL)
         return SB_OPEN_ERROR;
-    if(fwrite(buf, sb_hdr.image_size * BLOCK_SIZE, 1, fd) != 1)
-    {
-        free(buf);
-        return SB_WRITE_ERROR;
-    }
-    fclose(fd);
+    int cnt = fwrite(buf, sb_hdr.image_size * BLOCK_SIZE, 1, fd);
+    if(cnt != 1)
+        printf(GREY, "Write error: %m\n");
     free(buf);
+    fclose(fd);
+    if(cnt != 1)
+        return SB_WRITE_ERROR;
 
     return SB_SUCCESS;
+    #undef check_crypto
     #undef printf
 }
 
@@ -705,22 +737,28 @@ static void sb_printer(void *user, const char *fmt, ...)
 }
 
 struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, void *u,
-    generic_printf_t cprintf, enum sb_error_t *err)
+    generic_printf_t cprintf, enum sb_error_t *out_err)
 {
     struct sb_file_t *sb_file = NULL;
     uint8_t *buf = _buf;
 
     #define printf(c, ...) cprintf(u, false, c, __VA_ARGS__)
     #define fatal(e, ...) \
-        do { if(err) *err = e; \
+        do { if(out_err) *out_err = e; \
             cprintf(u, true, GREY, __VA_ARGS__); \
+            free(cbcmacs); \
             sb_free(sb_file); \
             return NULL; } while(0)
     struct printer_t printer = {.user = u, .cprintf = cprintf, .color = OFF, .error = false };
     #define print_hex(c, p, len, nl) \
         do { printer.color = c; print_hex(&printer, sb_printer, p, len, nl); } while(0)
+    #define check_crypto(expr) \
+        do { int err = expr; \
+            if(err != CRYPTO_ERROR_SUCCESS) \
+                fatal(SB_CRYPTO_ERROR, "Crypto error: %d\n", err); } while(0)
 
     struct sha_1_params_t sha_1_params;
+    byte (*cbcmacs)[16] = xmalloc(16 * g_nr_keys);
     sb_file = xmalloc(sizeof(struct sb_file_t));
     memset(sb_file, 0, sizeof(struct sb_file_t));
     struct sb_header_t *sb_header = (struct sb_header_t *)buf;
@@ -764,7 +802,11 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
     if(memcmp(hdr_sha1, computed_sha1, 20) == 0)
         printf(RED, " Ok\n");
     else
+    {
         printf(RED, " Failed\n");
+        if(!(flags & SB_IGNORE_SHA1))
+            fatal(SB_FORMAT_ERROR, "Bad header checksum\n");
+    }
     printf(GREEN, "  Flags: ");
     printf(YELLOW, "%x\n", sb_header->flags);
     printf(GREEN, "  Total file size : ");
@@ -819,12 +861,12 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
     printf(YELLOW, "0x%08x\n", sb_header->first_boot_sec_id);
 
     /* encryption cbc-mac */
-    byte real_key[16];
+    struct crypto_key_t real_key;
+    real_key.method = CRYPTO_KEY;
     bool valid_key = false; /* false until a matching key was found */
 
     if(sb_header->nr_keys > 0)
     {
-        byte (*cbcmacs)[16] = xmalloc(16 * g_nr_keys);
         printf(BLUE, "Encryption keys\n");
         for(int i = 0; i < g_nr_keys; i++)
         {
@@ -836,13 +878,9 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
             /* check it */
             byte zero[16];
             memset(zero, 0, 16);
-            int ret = crypto_cbc(buf, NULL, sb_header->header_size + sb_header->nr_sections,
-                &g_key_array[i], zero, &cbcmacs[i], 1);
-            if(ret != CRYPTO_ERROR_SUCCESS)
-            {
-                free(cbcmacs);
-                fatal(SB_FIRST_CRYPTO_ERROR + ret, "Crypto error: %d", ret);
-            }
+            check_crypto(crypto_setup(&g_key_array[i]));
+            check_crypto(crypto_apply(buf, NULL, sb_header->header_size +
+                sb_header->nr_sections, zero, &cbcmacs[i], true));
             print_hex(YELLOW, cbcmacs[i], 16, true);
         }
 
@@ -871,24 +909,20 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
                 byte decrypted_key[16];
                 byte iv[16];
                 memcpy(iv, buf, 16); /* uses the first 16-bytes of SHA-1 sig as IV */
-                int ret = crypto_cbc(dict_entry->key, decrypted_key, 1, &g_key_array[idx], iv, NULL, 0);
-                if(ret != CRYPTO_ERROR_SUCCESS)
-                {
-                    free(cbcmacs);
-                    fatal(SB_FIRST_CRYPTO_ERROR + ret, "Crypto error: %d\n", ret);
-                }
+                check_crypto(crypto_setup(&g_key_array[idx]));
+                check_crypto(crypto_apply(dict_entry->key, decrypted_key, 1, iv, NULL, false));
                 printf(GREEN, "    Decrypted key: ");
                 print_hex(YELLOW, decrypted_key, 16, false);
                 if(valid_key)
                 {
-                    if(memcmp(real_key, decrypted_key, 16) == 0)
+                    if(memcmp(real_key.u.key, decrypted_key, 16) == 0)
                         printf(RED, " Cross-Check Ok");
                     else
                         printf(RED, " Cross-Check Failed");
                 }
                 else
                 {
-                    memcpy(real_key, decrypted_key, 16);
+                    memcpy(real_key.u.key, decrypted_key, 16);
                     valid_key = true;
                 }
                 printf(OFF, "\n");
@@ -896,8 +930,6 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
             else
                 printf(RED, " Don't Match\n");
         }
-
-        free(cbcmacs);
 
         if(!valid_key)
         {
@@ -909,11 +941,9 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
 
         if(getenv("SB_REAL_KEY") != 0)
         {
-            struct crypto_key_t k;
             char *env = getenv("SB_REAL_KEY");
-            if(!parse_key(&env, &k) || *env)
+            if(!parse_key(&env, &real_key) || *env)
                 fatal(SB_ERROR, "Invalid SB_REAL_KEY\n");
-            memcpy(real_key, k.u.key, 16);
             /* assume the key is valid */
             if(valid_key)
                 printf(GREY, "  Overriding real key\n");
@@ -924,16 +954,17 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
 
         printf(RED, "  Summary:\n");
         printf(GREEN, "    Real key: ");
-        print_hex(YELLOW, real_key, 16, true);
+        print_hex(YELLOW, real_key.u.key, 16, true);
         printf(GREEN, "    IV      : ");
         print_hex(YELLOW, buf, 16, true);
 
-        sb_file->override_real_key = true;
-        memcpy(sb_file->real_key, real_key, 16);
-        sb_file->override_crypto_iv = true;
+        memcpy(sb_file->real_key, real_key.u.key, 16);
         memcpy(sb_file->crypto_iv, buf, 16);
+        /* setup real key if needed */
+        check_crypto(crypto_setup(&real_key));
     }
-
+    else
+        valid_key = true;
     /* sections */
     if(!(flags & SB_RAW_MODE))
     {
@@ -979,12 +1010,13 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
             /* save it */
             byte *sec = xmalloc(size);
             if(encrypted)
-                cbc_mac(buf + pos, sec, size / BLOCK_SIZE, real_key, buf, NULL, 0);
+                check_crypto(crypto_apply(buf + pos, sec, size / BLOCK_SIZE, buf, NULL, false));
             else
                 memcpy(sec, buf + pos, size);
 
             struct sb_section_t *s = read_section(data_sec, sec_hdr->identifier,
-                sec, size, "      ", u, cprintf, err);
+                sec, size, "      ", u, cprintf, out_err);
+            free(sec);
             if(s)
             {
                 s->other_flags = sec_hdr->flags & ~SECTION_STD_MASK;
@@ -994,9 +1026,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
                 free(s);
             }
             else
-                fatal(*err, "Error reading section\n");
-
-            free(sec);
+                fatal(*out_err, "Error reading section\n");
         }
     }
     else if(valid_key)
@@ -1012,14 +1042,14 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
             memcpy(iv, buf, 16);
             byte cmd[BLOCK_SIZE];
             if(sb_header->nr_keys > 0)
-                cbc_mac(buf + offset, cmd, 1, real_key, iv, &iv, 0);
+                check_crypto(crypto_apply(buf + offset, cmd, 1, iv, &iv, false));
             else
                 memcpy(cmd, buf + offset, BLOCK_SIZE);
             struct sb_instruction_header_t *hdr = (struct sb_instruction_header_t *)cmd;
             printf(OFF, "%s", indent);
             uint8_t checksum = instruction_checksum(hdr);
             if(checksum != hdr->checksum)
-                printf(GREY, "[Bad checksum']");
+                printf(GREY, "[Bad checksum]");
 
             if(hdr->opcode == SB_INST_NOP)
             {
@@ -1067,15 +1097,24 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
                     printf(RED, " (Encrypted)");
                 printf(OFF, "\n");
 
+                /* skip it if we cannot decrypt it */
+                if(encrypted && !valid_key)
+                {
+                    printf(GREY, "  Skipping section content (no valid key)\n");
+                    offset += size;
+                    continue;
+                }
+
                 /* save it */
                 byte *sec = xmalloc(size);
                 if(encrypted)
-                    cbc_mac(buf + pos, sec, size / BLOCK_SIZE, real_key, buf, NULL, 0);
+                    check_crypto(crypto_apply(buf + pos, sec, size / BLOCK_SIZE, buf, NULL, false));
                 else
                     memcpy(sec, buf + pos, size);
 
                 struct sb_section_t *s = read_section(data_sec, tag->identifier,
-                    sec, size, "      ", u, cprintf, err);
+                    sec, size, "      ", u, cprintf, out_err);
+                free(sec);
                 if(s)
                 {
                     s->other_flags = tag->flags & ~SECTION_STD_MASK;
@@ -1087,8 +1126,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
                     free(s);
                 }
                 else
-                    fatal(*err, "Error reading section\n");
-                free(sec);
+                    fatal(*out_err, "Error reading section\n");
 
                 /* last one ? */
                 if(tag->hdr.flags & SB_INST_LAST_TAG)
@@ -1119,7 +1157,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
         printf(OFF, "    ");
         print_hex(YELLOW, encrypted_block + 16, 16, true);
         /* decrypt it */
-        cbc_mac(encrypted_block, decrypted_block, 2, real_key, buf, NULL, 0);
+        check_crypto(crypto_apply(encrypted_block, decrypted_block, 2, buf, NULL, false));
     }
     else
         memcpy(decrypted_block, &buf[filesize - 32], 32);
@@ -1135,7 +1173,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
     else if(flags & SB_IGNORE_SHA1)
     {
         /* some weird images produced by some buggy tools have wrong SHA-1,
-         * this probably gone unnoticed because the bootloader ignores the SH1-1
+         * this probably gone unnoticed because the bootloader ignores the SHA-1
          * anyway */
         printf(RED, " Failed\n");
         cprintf(u, true, GREY, "Warning: SHA-1 mismatch ignored per flags\n");
@@ -1146,6 +1184,7 @@ struct sb_file_t *sb_read_memory(void *_buf, size_t filesize, unsigned flags, vo
         fatal(SB_CHECKSUM_ERROR, "File SHA-1 error\n");
     }
 
+    free(cbcmacs);
     return sb_file;
     #undef printf
     #undef fatal

@@ -215,7 +215,7 @@ int fast_readline(int fd, char *buf, int buf_size, void *parameters,
         count++;
         if (next)
         {
-            pos = buf_size - ((long)next - (long)buf) - 1;
+            pos = buf_size - ((intptr_t)next - (intptr_t)buf) - 1;
             memmove(buf, next, pos);
         }
         else
@@ -522,6 +522,11 @@ static void unplug_change(bool inserted)
             }
         }
     }
+
+#ifdef HAVE_SPEAKER
+    /* update speaker status */
+    audio_enable_speaker(global_settings.speaker_mode);
+#endif
 }
 #endif
 

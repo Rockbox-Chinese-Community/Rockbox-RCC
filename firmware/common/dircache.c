@@ -41,9 +41,7 @@
 #include "audio.h"
 #include "rbpaths.h"
 #include "linked_list.h"
-#ifdef HAVE_EEPROM_SETTINGS
 #include "crc32.h"
-#endif
 
 /**
  * Cache memory layout:
@@ -612,6 +610,19 @@ static int get_index(const struct dircache_entry *ce)
 }
 
 /**
+ * return the frontier flags for the index
+ */
+static uint32_t get_frontier(int idx)
+{
+    if (idx == 0)
+        return UINT32_MAX;
+    else if (idx > 0)
+        return get_entry(idx)->frontier;
+    else /* idx < 0 */
+        return get_idx_dcvolp(idx)->frontier;
+}
+
+/**
  *  return the sublist down pointer for the sublist that contains entry 'idx'
  */
 static int * get_downidxp(int idx)
@@ -849,7 +860,7 @@ static void free_name(int nameidx, size_t size)
     while (beg[-1] == 0xfe)
         --beg;
 
-    while (end[1] == 0xfe)
+    while (end[0] == 0xfe)
         ++end;
 
     size = end - beg;
@@ -1424,6 +1435,7 @@ static void sab_process_volume(struct dircache_volume *dcvolp)
 
     info.dcfile.idx       = idx;
     info.dcfile.serialnum = dcvolp->serialnum;
+    binding_resolve(&info);
     sab_process_dir(&info, true);
 }
 
@@ -1457,7 +1469,7 @@ int dircache_readdir_dirent(struct filestr_base *stream,
     unsigned int direntry = scanp->fatscan.entry;
     while (1)
     {
-        if (idx == 0 || direntry == FAT_RW_VAL) /* rewound? */
+        if (idx == 0 || direntry == FAT_DIRSCAN_RW_VAL) /* rewound? */
         {
             idx = diridx <= 0 ? dcvolp->root_down : get_entry(diridx)->down;
             break;
@@ -1487,7 +1499,7 @@ int dircache_readdir_dirent(struct filestr_base *stream,
             return 0; /* end of dir */
         }
 
-        if (ce->direntry > direntry || direntry == FAT_RW_VAL)
+        if (ce->direntry > direntry || direntry == FAT_DIRSCAN_RW_VAL)
             break; /* cache reader is caught up to FS scan */
 
         idx = ce->next;
@@ -1549,7 +1561,12 @@ int dircache_readdir_internal(struct filestr_base *stream,
 
     /* is parent cached? if not, readthrough because nothing is here yet */
     if (!dirinfop->dcfile.serialnum)
+    {
+        if (stream->flags & FF_CACHEONLY)
+            goto read_eod;
+
         return uncached_readdir_internal(stream, infop, fatent);
+    }
 
     int diridx = dirinfop->dcfile.idx;
     unsigned int frontier = diridx < 0 ?
@@ -1562,7 +1579,8 @@ int dircache_readdir_internal(struct filestr_base *stream,
         idx = get_entry(idx)->next;
 
     struct dircache_entry *ce = get_entry(idx);
-    if (frontier != FRONTIER_SETTLED)
+
+    if (frontier != FRONTIER_SETTLED && !(stream->flags & FF_CACHEONLY))
     {
         /* the directory being read is reported to be incompletely cached;
            readthrough and if the entry exists, return it with its binding
@@ -1577,9 +1595,7 @@ int dircache_readdir_internal(struct filestr_base *stream,
     else if (!ce)
     {
         /* end of dir */
-        fat_empty_fat_direntry(fatent);
-        infop->fatfile.e.entries = 0;
-        return 0;
+        goto read_eod;
     }
 
     /* FS entry information that we maintain */
@@ -1612,6 +1628,11 @@ int dircache_readdir_internal(struct filestr_base *stream,
     }
 
     return rc;
+
+read_eod:
+    fat_empty_fat_direntry(fatent);
+    infop->fatfile.e.entries = 0;
+    return 0;    
 }
 
 /**
@@ -2451,30 +2472,41 @@ void dircache_fileop_sync(struct file_base_binding *bindp,
 
 /** Dircache paths and files **/
 
-#ifdef DIRCACHE_DUMPSTER
-/* helper for dircache_get_path() */
-static ssize_t get_path_sub(int idx, char *buf, size_t size)
+/**
+ * helper for returning a path and serial hash represented by an index
+ */
+struct get_path_sub_data
+{
+    char        *buf;
+    size_t      size;
+    dc_serial_t serialhash;
+};
+
+static ssize_t get_path_sub(int idx, struct get_path_sub_data *data)
 {
     if (idx == 0)
-        return -2; /* entry is an orphan split from any root */
+        return -1; /* entry is an orphan split from any root */
 
-    ssize_t offset;
+    ssize_t len;
     char *cename;
 
     if (idx > 0)
     {
-        /* go all the way up then move back down from the root */
         struct dircache_entry *ce = get_entry(idx);
-        offset = get_path_sub(ce->up, buf, size) - 1;
-        if (offset < 0)
-            return -3;
+
+        data->serialhash = dc_hash_serialnum(ce->serialnum, data->serialhash);
+
+        /* go all the way up then move back down from the root */
+        len = get_path_sub(ce->up, data) - 1;
+        if (len < 0)
+            return -2;
 
         cename = alloca(MAX_NAME + 1);
         entry_name_copy(cename, ce);
     }
     else /* idx < 0 */
     {
-        offset = 0;
+        len = 0;
         cename = "";
 
     #ifdef HAVE_MULTIVOLUME
@@ -2486,40 +2518,81 @@ static ssize_t get_path_sub(int idx, char *buf, size_t size)
             get_volume_name(volume, cename);
         }
     #endif /* HAVE_MULTIVOLUME */
+
+        data->serialhash = dc_hash_serialnum(get_idx_dcvolp(idx)->serialnum,
+                                             data->serialhash);
     }
 
-    return offset + path_append(buf + offset, PA_SEP_HARD, cename,
-                                size > (size_t)offset ? size - offset : 0);
+    return len + path_append(data->buf + len, PA_SEP_HARD, cename,
+                             data->size > (size_t)len ? data->size - len : 0);
 }
-#endif /* DIRCACHE_DUMPSTER */
-
-#if 0
 
 /**
- * retrieve and validate the file's entry/binding serial number
+ * validate the file's entry/binding serial number
  * the dircache file's serial number must match the indexed entry's or the
  * file reference is stale
  */
-static dc_serial_t get_file_serialnum(const struct dircache_file *dcfilep)
+static int check_file_serialnum(const struct dircache_file *dcfilep)
 {
     int idx = dcfilep->idx;
 
     if (idx == 0 || idx < -NUM_VOLUMES)
-        return 0;
+        return -EBADF;
 
-    dc_serial_t serialnum;
+    dc_serial_t serialnum = dcfilep->serialnum;
+
+    if (serialnum == 0)
+        return -EBADF;
+
+    dc_serial_t s;
 
     if (idx > 0)
     {
         struct dircache_entry *ce = get_entry(idx);
-        serialnum = ce ? ce->serialnum : 0;
+        if (!ce || !(s = ce->serialnum))
+            return -EBADF;
     }
-    else
+    else /* idx < 0 */
     {
-        serialnum = get_idx_dcvolp(idx)->serialnum;
+        struct dircache_volume *dcvolp = get_idx_dcvolp(idx);
+        if (!(s = dcvolp->serialnum))
+            return -EBADF;
     }
 
-    return serialnum == dcfilep->serialnum ? serialnum : 0;
+    if (serialnum != s)
+        return -EBADF;
+
+    return 0;
+}
+
+/**
+ * Obtain the hash of the serial numbers of the canonical path, index to root
+ */
+static dc_serial_t get_file_serialhash(const struct dircache_file *dcfilep)
+{
+    int idx = dcfilep->idx;
+
+    dc_serial_t h = DC_SERHASH_START;
+
+    while (idx > 0)
+    {
+        struct dircache_entry *ce = get_entry(idx);
+        h = dc_hash_serialnum(ce->serialnum, h);
+        idx = ce->up;
+    }
+
+    h = dc_hash_serialnum(get_idx_dcvolp(idx)->serialnum, h);
+
+    return h;
+}
+
+/**
+ * Initialize the fileref
+ */
+void dircache_fileref_init(struct dircache_fileref *dcfrefp)
+{
+    dircache_dcfile_init(&dcfrefp->dcfile);
+    dcfrefp->serialhash = DC_SERHASH_START;
 }
 
 /**
@@ -2527,198 +2600,197 @@ static dc_serial_t get_file_serialnum(const struct dircache_file *dcfilep)
  * given buffer given the dircache file info
  *
  * returns:
- *   success - the length of the string, not including the trailing null
+ *   success - the length of the string, not including the trailing null or the
+ *             buffer length required if the buffer is too small (return is >=
+ *             size)
  *   failure - a negative value
  *
- * successful return value is as strlcpy()
- *
  * errors:
- *   ENOENT - the file or directory does not exist
+ *   EBADF  - Bad file number
+ *   EFAULT - Bad address
+ *   ENOENT - No such file or directory
  */
-ssize_t dircache_get_path(const struct dircache_file *dcfilep, char *buf,
-                          size_t size)
+ssize_t dircache_get_fileref_path(const struct dircache_fileref *dcfrefp, char *buf,
+                                  size_t size)
 {
+    ssize_t rc;
+
+    if (!dcfrefp)
+        FILE_ERROR_RETURN(EFAULT, -1);
+
     /* if missing buffer space, still return what's needed a la strlcpy */
     if (!buf)
         size = 0;
     else if (size)
         *buf = '\0';
 
-    ssize_t len = -1;
-
     dircache_lock();
 
     /* first and foremost, there must be a cache and the serial number must
        check out */
-    if (dircache_runinfo.handle && get_file_serialnum(dcfilep))
-        len = get_path_sub(dcfilep->idx, buf, size);
-
-    if (len < 0)
-        errno = ENOENT;
-
-    dircache_unlock();
-    return len;
-}
-
-/**
- * searches the sublist starting at 'idx' for the named component
- */
-
-/* helper for get_file_sub() */
-static struct dircache_entry *
-get_file_sub_scan(int idx, const char *name, size_t length, int *idxp)
-{
-    struct dircache_entry *ce = get_entry(idx);
-    if (ce)
-    {
-        char entname[MAX_NAME+1];
-        name = strmemdupa(name, length);
-
-        do
-        {
-            entry_name_copy(entname, ce);
-            if (!strcasecmp(entname, name))
-            {
-                *idxp = idx;
-                break;
-            }
-
-            idx = ce->next;
-        }
-        while ((ce = get_entry(idx)));
-    }
-
-    return ce;
-}
-
-/**
- * searches for the subcomponent of *pathp
- */
-
-/* helper for dircache_get_file() */
-static int get_file_sub(const char **pathp, int *downp, int *idxp)
-{
-    int rc;
-    const char *name;
-    rc = parse_path_component(pathp, &name, false);
-    if (rc <= 0)
-        return rc;
-    else if (rc >= MAX_PATH)
-        return ENAMETOOLONG; /* that's just unpossible, man */
-
-    struct dircache_entry *ce = get_file_sub_scan(*downp, name, rc, idxp);
-
-    if (!ce)
-        rc = RC_NOT_FOUND;   /* not there; tellibry solly */
-    else if (!*pathp)
-        rc = RC_PATH_ENDED;  /* done */
-    else if (!(ce->attr & ATTR_DIRECTORY))
-        rc = ENOTDIR;        /* a parent component must be a directory */
-    else
-        while ((rc = get_file_sub(pathp, &ce->down, idxp)) == RC_CONTINUE);
-
-    switch (rc)
-    {
-    case RC_GO_UP:           /* hit ".."; drop to previous level */
-        return RC_CONTINUE;
-    case RC_PATH_ENDED:      /* success! */
-        return RC_FOUND;
-    default:                 /* component not found or error */
-        return rc;
-    }
-}
-
-/**
- * usermode function to return dircache file info for the given path
- *
- * returns:
- *   success: the volume number that is specified for the file
- *   failure: a negative value
- *
- * errors:
- *   ENOENT       - the file or directory does not exist or path is empty
- *   ENAMETOOLONG - a component of the path is too long
- *   ENOTDIR      - a component of the path is not a directory
- */
-int dircache_get_file(const char *path, struct dircache_file *dcfilep)
-{
-    if (!path_is_absolute(path) || !dcfilep)
-    {
-        errno = ENOENT;
-        return -1;
-    }
-
-    dircache_lock();
-
     if (!dircache_runinfo.handle)
+        FILE_ERROR(EBADF, -2);
+
+    rc = check_file_serialnum(&dcfrefp->dcfile);
+    if (rc < 0)
+        FILE_ERROR(-rc, -3);
+
+    struct get_path_sub_data data =
     {
-        dircache_unlock();
-        errno = ENOENT;
-        return -2;
-    }
+        .buf        = buf,
+        .size       = size,
+        .serialhash = DC_SERHASH_START,
+    };
 
-    int volume = 0;
-    int idx = 0;
-    dc_serial_t serialnum = 0;
-    struct dircache_volume *dcvolp = NULL;
-    struct dircache_entry *ce = NULL;
+    rc = get_path_sub(dcfrefp->dcfile.idx, &data);
+    if (rc < 0)
+        FILE_ERROR(ENOENT, rc * 10 - 4);
 
-    int rc = RC_GO_UP;
+    if (data.serialhash != dcfrefp->serialhash)
+        FILE_ERROR(ENOENT, -5);
 
-    while (rc == RC_CONTINUE || rc == RC_GO_UP)
-    {
-    #ifdef HAVE_MULTIVOLUME
-        if (rc == RC_GO_UP)
-        {
-            volume = path_strip_volume(path, &path, false);
-            if (!CHECK_VOL(volume))
-            {
-                rc = ENXIO;
-                break;
-            }
-        }
-    #endif /* HAVE_MULTIVOLUME */
-
-        dcvolp = DCVOL(volume);
-
-        int *downp = &dcvolp->root_down;
-        if (*downp <= 0)
-        {
-            rc = ENXIO;
-            break;
-        }
-
-        rc = get_file_sub(&path, downp, &idx);
-    }
-
-    switch (rc)
-    {
-    case RC_FOUND:      /* hit: component found */
-        serialnum = ce->serialnum;
-        rc = volume;
-        break;
-    case RC_PATH_ENDED: /* hit: it's a root (volume or system) */
-        idx = -volume - 1;
-        serialnum = dcvolp->serialnum;
-        rc = volume;
-        break;
-    case RC_NOT_FOUND:  /* miss */
-        rc = ENOENT;
-    default:
-        idx = 0;
-        errno = rc;
-        rc = -3;
-        break;
-    }
-
-    dcfilep->idx       = idx;
-    dcfilep->serialnum = serialnum;
-
+file_error:
     dircache_unlock();
     return rc;
 }
-#endif /* 0 */
 
+/**
+ * Test a path to various levels of rigor and optionally return dircache file
+ * info for the given path.
+ *
+ * If the file reference is used, it is checked first and the path is checked
+ * only if all specified file reference checks fail.
+ *
+ * returns:
+ *   success: 0 = not cached (very weak)
+ *            1 = serial number checks out for the reference (weak)
+ *            2 = serial number and hash check out for the reference (medium)
+ *            3 = path is valid; reference updated if specified (strong)
+ *   failure: a negative value
+ *            if file definitely doesn't exist (errno = ENOENT)
+ *            other error
+ *
+ * errors (including but not limited to):
+ *   EFAULT       - Bad address
+ *   EINVAL       - Invalid argument
+ *   ENAMETOOLONG - File or path name too long
+ *   ENOENT       - No such file or directory
+ *   ENOTDIR      - Not a directory
+ */
+int dircache_search(unsigned int flags, struct dircache_fileref *dcfrefp,
+                    const char *path)
+{
+    if (!(flags & (DCS_FILEREF | DCS_CACHED_PATH)))
+        FILE_ERROR_RETURN(EINVAL, -1); /* search nothing? */
+
+    if (!dcfrefp && (flags & (DCS_FILEREF | DCS_UPDATE_FILEREF)))
+        FILE_ERROR_RETURN(EFAULT, -2); /* bad! */
+
+    int rc = 0;
+
+    dircache_lock();
+
+    /* -- File reference search -- */
+    if (!dircache_runinfo.handle)
+        ;                       /* cache not enabled; not cached */
+    else if (!(flags & DCS_FILEREF))
+        ;                       /* don't use fileref */
+    else if (check_file_serialnum(&dcfrefp->dcfile) < 0)
+        ;                       /* serial number bad */
+    else if (!(flags & _DCS_VERIFY_FLAG))
+        rc = 1;                 /* only check idx and serialnum */
+    else if (get_file_serialhash(&dcfrefp->dcfile) == dcfrefp->serialhash)
+        rc = 2;                 /* reference is most likely still valid */
+
+    /* -- Path cache and storage search -- */
+    if (rc > 0)
+        ; /* rc > 0 */          /* found by file reference */
+    else if (!(flags & DCS_CACHED_PATH))
+        ; /* rc = 0 */          /* reference bad/unused and no path */
+    else
+    {     /* rc = 0 */          /* check path with cache and/or storage */
+        struct path_component_info compinfo;
+        struct filestr_base stream;
+        unsigned int ffcache = (flags & _DCS_STORAGE_FLAG) ? 0 : FF_CACHEONLY;
+        int err = errno;
+        int rc2 = open_stream_internal(path, ffcache | FF_ANYTYPE | FF_PROBE |
+                                       FF_INFO | FF_PARENTINFO, &stream,
+                                       &compinfo);
+        if (rc2 <= 0)
+        {
+            if (ffcache == 0)
+            {
+                /* checked storage too: absent for sure */
+                FILE_ERROR(rc2 ? ERRNO : ENOENT, rc2 * 10 - 5);
+            }
+
+            if (rc2 < 0)
+            {
+                /* no base info available */
+                if (errno != ENOENT)
+                    FILE_ERROR(ERRNO, rc2 * 10 - 6);
+
+                /* only cache; something didn't exist: indecisive */
+                errno = err;
+                FILE_ERROR(ERRNO, RC); /* rc = 0 */
+            }
+
+            struct dircache_file *dcfp = &compinfo.parentinfo.dcfile;
+            if (get_frontier(dcfp->idx) == FRONTIER_SETTLED)
+                FILE_ERROR(ENOENT, -7); /* parent not a frontier; absent */
+            /* else checked only cache; parent is incomplete: indecisive */
+        }
+        else
+        {
+            struct dircache_file *dcfp = &compinfo.info.dcfile;
+            if (dcfp->serialnum != 0)
+            {
+                /* found by path in the cache afterall */
+                if (flags & DCS_UPDATE_FILEREF)
+                {
+                    dcfrefp->dcfile     = *dcfp;
+                    dcfrefp->serialhash = get_file_serialhash(dcfp);
+                }
+
+                rc = 3;
+            }
+        }
+    }
+
+file_error:
+    if (rc <= 0 && (flags & DCS_UPDATE_FILEREF))
+        dircache_fileref_init(dcfrefp);
+
+    dircache_unlock();
+    return rc;    
+}
+
+/**
+ * Compare dircache file references (no validity check is made)
+ *
+ * returns: 0 - no match
+ *          1 - indexes match
+ *          2 - serial numbers match
+ *          3 - serial and hashes match
+ */
+int dircache_fileref_cmp(const struct dircache_fileref *dcfrefp1,
+                         const struct dircache_fileref *dcfrefp2)
+{
+    int cmp = 0;
+
+    if (dcfrefp1->dcfile.idx == dcfrefp2->dcfile.idx)
+    {
+        cmp++;
+        if (dcfrefp1->dcfile.serialnum == dcfrefp2->dcfile.serialnum)
+        {
+            cmp++;
+            if (dcfrefp1->serialhash == dcfrefp2->serialhash)
+                cmp++;
+        }
+    }
+
+    return cmp;
+}
 
 /** Debug screen/info stuff **/
 
@@ -2737,13 +2809,12 @@ void dircache_get_info(struct dircache_info *info)
     if (!info)
         return;
 
-    memset(info, 0, sizeof (*info));
-
     dircache_lock();
 
     enum dircache_status status = DIRCACHE_IDLE;
+    info->build_ticks = 0;
 
-    for (unsigned int volume = 0; volume < NUM_VOLUMES; volume++)
+    FOR_EACH_VOLUME(-1, volume)
     {
         struct dircache_volume *dcvolp = DCVOL(volume);
         enum dircache_status volstatus = dcvolp->status;
@@ -2781,10 +2852,17 @@ void dircache_get_info(struct dircache_info *info)
     /* report usage only if there is something ready or being built */
     if (status != DIRCACHE_IDLE)
     {
-        info->reserve_used = reserve_buf_used();
         info->size         = dircache.size;
         info->sizeused     = dircache.sizeused;
+        info->reserve_used = reserve_buf_used();
         info->entry_count  = dircache.numentries;
+    }
+    else
+    {
+        info->size         = 0;
+        info->sizeused     = 0;
+        info->reserve_used = 0;
+        info->entry_count  = 0;
     }
 
     dircache_unlock();
@@ -2817,7 +2895,7 @@ void dircache_dump(void)
               dircache_runinfo.bufsize + 1);
 
         /* CSV */
-        fdprintf(fdcsv, "\"Index\",\"Serialnum\","
+        fdprintf(fdcsv, "\"Index\",\"Serialnum\",\"Serialhash\","
                         "\"Path\",\"Frontier\","
                         "\"Attribute\",\"File Size\","
                         "\"Mod Date\",\"Mod Time\"\n");
@@ -2833,11 +2911,12 @@ void dircache_dump(void)
             get_volume_name(volume, name);
         #endif
             fdprintf(fdcsv,
-                     "%d,%lu,"
+                     "%d," DC_SERIAL_FMT "," DC_SERIAL_FMT ","
                      "\"%c" IF_MV("%s") "\",%u,"
                      "0x%08X,0,"
                      "\"\",\"\"\n",
                      -volume-1, dcvolp->serialnum,
+                         dc_hash_serialnum(dcvolp->serialnum, DC_SERHASH_START), 
                      PATH_SEPCH, IF_MV(name,) dcvolp->frontier,
                      ATTR_DIRECTORY | ATTR_VOLUME);
         }
@@ -2855,15 +2934,23 @@ void dircache_dump(void)
             char buf[DC_MAX_NAME + 2];
             *buf = '\0';
             int idx = get_index(ce);
-            get_path_sub(idx, buf, sizeof (buf));
+
+            struct get_path_sub_data data =
+            {
+                .buf        = buf,
+                .size       = sizeof (buf),
+                .serialhash = DC_SERHASH_START,
+            };
+
+            get_path_sub(idx, &data);
 
             fdprintf(fdcsv,
-                     "%d,%lu,"
+                     "%d," DC_SERIAL_FMT "," DC_SERIAL_FMT ","
                      "\"%s\",%u,"
                      "0x%08X,%lu,"
                      "%04d/%02d/%02d,"
                      "%02d:%02d:%02d\n",
-                     idx, ce->serialnum,
+                     idx, ce->serialnum, data.serialhash,
                      buf, ce->frontier,
                      ce->attr, (ce->attr & ATTR_DIRECTORY) ?
                                 0ul : (unsigned long)ce->filesize,

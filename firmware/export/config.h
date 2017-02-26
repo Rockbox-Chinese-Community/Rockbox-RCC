@@ -712,6 +712,16 @@ Lyre prototype 1 */
 #define BATTERY_CAPACITY_INC 0
 #endif
 
+#ifdef HAVE_RDS_CAP
+/* combinable bitflags */
+#define RDS_CFG_ISR     0x1 /* uses ISR to process packets */
+#define RDS_CFG_PROCESS 0x2 /* uses raw packet processing */
+#define RDS_CFG_PUSH    0x4 /* pushes processed information */
+#ifndef CONFIG_RDS
+#define CONFIG_RDS  RDS_CFG_PROCESS /* thread processing+raw processing */
+#endif /* CONFIG_RDS */
+#endif /* HAVE_RDS_CAP */
+
 #ifndef CONFIG_ORIENTATION
 #if LCD_HEIGHT > LCD_WIDTH
 #define CONFIG_ORIENTATION SCREEN_PORTRAIT
@@ -853,7 +863,7 @@ Lyre prototype 1 */
 #define HAVE_DIRCACHE
 #endif
 #ifdef HAVE_TAGCACHE
-//#define HAVE_TC_RAMCACHE
+#define HAVE_TC_RAMCACHE
 #endif
 #endif
 
@@ -872,8 +882,12 @@ Lyre prototype 1 */
 #ifdef HAVE_BOOTLOADER_USB_MODE
 /* Priority in bootloader is wanted */
 #define HAVE_PRIORITY_SCHEDULING
+#if (CONFIG_CPU == S5L8702)
+#define USB_DRIVER_CLOSE
+#else
 #define USB_STATUS_BY_EVENT
 #define USB_DETECT_BY_REQUEST
+#endif
 #if defined(HAVE_USBSTACK) && CONFIG_USBOTG == USBOTG_ARC
 #define INCLUDE_TIMEOUT_API
 #define USB_DRIVER_CLOSE
@@ -1128,11 +1142,6 @@ Lyre prototype 1 */
 /* USB charging support in the USB stack requires timeout objects */
 #define INCLUDE_TIMEOUT_API
 #endif /* HAVE_USB_CHARGING_ENABLE && HAVE_USBSTACK */
-
-#if defined(HAVE_GUI_BOOST) && defined(HAVE_ADJUSTABLE_CPU_FREQ)
-/* Timeout objects required if GUI boost is enabled */
-#define INCLUDE_TIMEOUT_API
-#endif /* HAVE_GUI_BOOST && HAVE_ADJUSTABLE_CPU_FREQ */
 
 #ifndef SIMULATOR
 #if defined(HAVE_USBSTACK) || (CONFIG_STORAGE & STORAGE_NAND)
