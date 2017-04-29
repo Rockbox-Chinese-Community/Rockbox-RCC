@@ -24,8 +24,6 @@
 #include "config.h"
 #include "system.h"
 
-#include "regs/regs-icoll.h"
-
 #define INT_SRC_VDD5V       3
 #define INT_SRC_DAC_DMA     5
 #define INT_SRC_DAC_ERROR   6
@@ -68,16 +66,6 @@
 #define INT_SRC_COUNT       64
 #endif
 
-/* helpers */
-#if IMX233_SUBTARGET >= 3600 && IMX233_SUBTARGET < 3780
-#define BP_ICOLL_PRIORITYn_ENABLEx(x)   (2 + 8 * (x))
-#define BM_ICOLL_PRIORITYn_ENABLEx(x)   (1 << (2 + 8 * (x)))
-#define BP_ICOLL_PRIORITYn_PRIORITYx(x) (0 + 8 * (x))
-#define BM_ICOLL_PRIORITYn_PRIORITYx(x) (3 << (0 + 8 * (x)))
-#define BP_ICOLL_PRIORITYn_SOFTIRQx(x)  (3 + 8 * (x))
-#define BM_ICOLL_PRIORITYn_SOFTIRQx(x)  (1 << (3 + 8 * (x)))
-#endif
-
 /* Interrupt priorities for typical tasks */
 #define ICOLL_PRIO_NORMAL   0
 #define ICOLL_PRIO_AUDIO    1
@@ -86,9 +74,11 @@
 
 struct imx233_icoll_irq_info_t
 {
-    bool enabled;
-    unsigned freq;
-    unsigned priority;
+    bool enabled; /* is IRQ currently enabled ? */
+    unsigned freq; /* how many times was IRQ fired in the past second */
+    unsigned priority; /* IRQ priority (0-3) */
+    unsigned max_time; /* maximum time spent in one IRQ during the past second (in us) */
+    unsigned total_time; /* total time spent in IRQ during the past second (in us) */
 };
 
 void imx233_icoll_init(void);

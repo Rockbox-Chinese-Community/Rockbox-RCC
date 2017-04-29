@@ -25,8 +25,6 @@
 #include "cpu.h"
 #include "system.h"
 
-#include "regs/regs-audioout.h"
-
 /* target-defined output stage coupling method
  * its setting is IMX233_AUDIO_COUPLING_MODE and must be set for every target
  * Use ACM_CAP if output stage (i.e. headphones) have output capacitors,
@@ -62,7 +60,7 @@ void imx233_audioout_set_hp_vol(int vol_l, int vol_r);
 void imx233_audioout_set_freq(int fsel);
 /* select between DAC and Line1 */
 void imx233_audioout_select_hp_input(bool line1);
-/* value in 1.5dB steps, from 0dB to 6dB */
+/* value is uses register encoding: 0=Off, 1=3dB, 2=4.5dB, 3=6dB */
 void imx233_audioout_set_3d_effect(int val);
 /* enable/disable speaker amplifier */
 void imx233_audioout_enable_spkr(bool en);

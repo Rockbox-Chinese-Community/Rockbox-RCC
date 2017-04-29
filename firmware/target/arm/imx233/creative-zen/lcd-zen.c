@@ -38,6 +38,8 @@
 #include "action.h"
 #endif
 
+#include "regs/lcdif.h"
+
 /**
  * DMA
  */
@@ -147,13 +149,14 @@ static void spi_write_reg(uint8_t reg, uint16_t value)
  * LCD control
  */
 
-static void lcd_power(bool en)
+static void lcd_something(bool en)
 {
+    /* I don't know what this pin does */
     imx233_pinctrl_set_gpio(1, 8, en);
     mdelay(10);
 }
 
-static void lcd_power_seq(void)
+static void lcd_something_seq(void)
 {
     spi_write_reg(0x7, 0);
     mdelay(10);
@@ -167,8 +170,7 @@ static void lcd_power_seq(void)
 
 static void lcd_init_seq(void)
 {
-    /* NOTE I don't understand why I have to use BGR, logic would say I should not */
-    spi_write_reg(0x1, 0x231d);// no inversion
+    spi_write_reg(0x1, 0x231d);// no BGR inversion (OF uses BGR)
     spi_write_reg(0x2, 0x300);
     /* NOTE by default stmp3700 has vsync/hsync active low and data launch
      * at negative edge of dotclk, reflect this in the polarity settings */
@@ -240,9 +242,9 @@ void lcd_enable(bool enable)
         imx233_lcdif_reset_lcd(true);
         mdelay(1);
         // "power" on
-        lcd_power(true);
+        lcd_something(true);
         // setup registers
-        lcd_power_seq();
+        lcd_something_seq();
         lcd_init_seq();
         lcd_display_on_seq();
 
@@ -253,7 +255,7 @@ void lcd_enable(bool enable)
     {
         // power down
         lcd_display_off_seq();
-        lcd_power(false);
+        lcd_something(false);
         // stop lcdif
         BF_CLR(LCDIF_CTRL, DOTCLK_MODE);
         /* stmp37xx errata: clearing DOTCLK_MODE won't clear RUN: wait until
@@ -278,7 +280,7 @@ void lcd_init_device(void)
 {
     semaphore_init(&g_wait_sema, 1, 0);
     /* I'm not really sure this pin is related to power, it does not seem to do anything */
-    imx233_pinctrl_acquire(1, 8, "lcd_power");
+    imx233_pinctrl_acquire(1, 8, "lcd_something");
     imx233_pinctrl_acquire(1, 9, "lcd_spi_sdo");
     imx233_pinctrl_acquire(1, 10, "lcd_spi_scl");
     imx233_pinctrl_acquire(1, 11, "lcd_spi_cs");
@@ -321,15 +323,15 @@ void lcd_init_device(void)
     {
         unsigned xfer = MIN(IMX233_MAX_SINGLE_DMA_XFER_SIZE, size);
         lcdif_dma[i].dma.next = &lcdif_dma[(i + 1) % NR_CMDS].dma;
-        lcdif_dma[i].dma.cmd = BF_OR3(APB_CHx_CMD, CHAIN(1),
+        lcdif_dma[i].dma.cmd = BF_OR(APB_CHx_CMD, CHAIN(1),
             COMMAND(BV_APB_CHx_CMD_COMMAND__READ), XFER_COUNT(xfer));
         lcdif_dma[i].dma.buffer =  frame_p;
         size -= xfer;
         frame_p += xfer;
     }
     // first transfer: enable run, dotclk and so on
-    lcdif_dma[0].dma.cmd |= BF_OR1(APB_CHx_CMD, CMDWORDS(1));
-    lcdif_dma[0].ctrl = BF_OR4(LCDIF_CTRL, BYPASS_COUNT(1), DOTCLK_MODE(1),
+    lcdif_dma[0].dma.cmd |= BF_OR(APB_CHx_CMD, CMDWORDS(1));
+    lcdif_dma[0].ctrl = BF_OR(LCDIF_CTRL, BYPASS_COUNT(1), DOTCLK_MODE(1),
         RUN(1), WORD_LENGTH(1));
     // enable
     lcd_enable(true);

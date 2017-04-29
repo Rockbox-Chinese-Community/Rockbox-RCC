@@ -86,7 +86,7 @@ RbUtilQt::RbUtilQt(QWidget *parent) : QMainWindow(parent)
 
     QString c = RbSettings::value(RbSettings::CachePath).toString();
     HttpGet::setGlobalCache(c.isEmpty() ? QDir::tempPath() : c);
-    HttpGet::setGlobalUserAgent("rbutil/"VERSION);
+    HttpGet::setGlobalUserAgent("rbutil/" VERSION);
     HttpGet::setGlobalProxy(proxy());
     // init startup & autodetection
     ui.setupUi(this);
@@ -523,7 +523,6 @@ void RbUtilQt::uninstallBootloader(void)
            QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) return;
     // create logger
     ProgressLoggerGui* logger = new ProgressLoggerGui(this);
-    logger->setProgressVisible(false);
     logger->show();
 
     QString platform = RbSettings::value(RbSettings::Platform).toString();
@@ -569,10 +568,11 @@ void RbUtilQt::uninstallBootloader(void)
 
     connect(bl, SIGNAL(logItem(QString, int)), logger, SLOT(addItem(QString, int)));
     connect(bl, SIGNAL(logProgress(int, int)), logger, SLOT(setProgress(int, int)));
+    connect(bl, SIGNAL(done(bool)), logger, SLOT(setFinished()));
+    // pass Abort button click signal to current installer
+    connect(logger, SIGNAL(aborted()), bl, SLOT(progressAborted()));
 
     bl->uninstall();
-
-    logger->setFinished();
 
 }
 

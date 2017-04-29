@@ -57,8 +57,20 @@
    figure pessimistic */
 typedef uint32_t dc_serial_t;
 
+/* these should agree with size of dc_serial_t */
+#define DC_SERHASH_START        0xffffffff
+
+/* I was originally using FNV hash but decided this is probably okay
+   (for now) */
+#define dc_hash_serialnum(s, h) \
+    ({ dc_serial_t __x = (s); crc_32(&(__x), sizeof(dc_serial_t), (h)); })
+#define DC_SERIAL_FMT           "0x%08lX"
+
 /**
  ****************************************************************************/
+
+#define IF_DIRCACHE(...) __VA_ARGS__
+#define IFN_DIRCACHE(...)
 
 #if CONFIG_PLATFORM & PLATFORM_NATIVE
 /* native dircache is lower-level than on a hosted target */
@@ -132,10 +144,36 @@ void dircache_fileop_sync(struct file_base_binding *infop,
                           const struct dirinfo_native *dinp);
 
 
-/** Dircache paths and files **/
-ssize_t dircache_get_path(const struct dircache_file *dcfilep, char *buf,
-                          size_t size);
-int dircache_get_file(const char *path, struct dircache_file *dcfilep);
+/** Dircache paths, files and shortcuts **/
+struct dircache_fileref
+{
+    struct dircache_file dcfile;
+    dc_serial_t          serialhash; /* Hash of serialnumbers to root */
+};
+
+void dircache_fileref_init(struct dircache_fileref *dcfrefp);
+ssize_t dircache_get_fileref_path(const struct dircache_fileref *dcfrefp,
+                                  char *buf, size_t size);
+
+/* Bitflags for dircache_search() */
+enum dircache_search_flags
+{
+    DCS_FILEREF        = 0x01, /* Check fileref existence and serial number */
+    _DCS_VERIFY_FLAG   = 0x02, /* Internal: Only valid with DCS_FILEREF */
+    DCS_FILEREF_VERIFY = 0x03, /* Do DCS_FILEREF check + verify serial hash */
+    DCS_CACHED_PATH    = 0x04, /* Check only cache for provided path */
+    _DCS_STORAGE_FLAG  = 0x08, /* Internal: Only valid with DCS_CACHED_PATH */
+    DCS_STORAGE_PATH   = 0x0c, /* Read-through if needed for provided path */
+    DCS_UPDATE_FILEREF = 0x10, /* If fileref is not valid but path is found or
+                                  searching a path, update the reference
+                                  information */
+};
+
+int dircache_search(unsigned int flags, struct dircache_fileref *dcfrefp,
+                    const char *path);
+
+int dircache_fileref_cmp(const struct dircache_fileref *dcfrefp1,
+                         const struct dircache_fileref *dcfrefp2);
 
 
 /** Debug screen/info stuff **/
@@ -169,6 +207,11 @@ int dircache_save(void);
 #endif /* HAVE_EEPROM_SETTINGS */
 
 void dircache_init(size_t last_size) INIT_ATTR;
+
+#else /* !HAVE_DIRCACHE */
+
+#define IF_DIRCACHE(...)
+#define IFN_DIRCACHE(...) __VA_ARGS__
 
 #endif /* HAVE_DIRCACHE */
 

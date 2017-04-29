@@ -162,11 +162,10 @@
 #define CONFIG_I2C I2C_AS3525
 
 /* define this if the hardware can be powered off while charging */
-/* Sansa can't be powered off while charging */
-/* #define HAVE_POWEROFF_WHILE_CHARGING */
+#define HAVE_POWEROFF_WHILE_CHARGING
 
 /* define current usage levels (based on battery bench) */
-#define CURRENT_NORMAL     24
+#define CURRENT_NORMAL     11
 #define CURRENT_BACKLIGHT  15
 #define CURRENT_RECORD     11
 
@@ -180,7 +179,9 @@
 #define CONFIG_LCD LCD_SSD1303
 
 /* USB On-the-go */
-#define CONFIG_USBOTG USBOTG_S3C6400X
+#define CONFIG_USBOTG USBOTG_DESIGNWARE
+/* logf() over USB serial (http://www.rockbox.org/wiki/PortalPlayerUsb) */
+//#define USB_ENABLE_SERIAL
 
 /* enable these for the experimental usb stack */
 #define HAVE_USBSTACK
@@ -193,6 +194,9 @@
 
 /* Define this if you have adjustable CPU frequency */
 #define HAVE_ADJUSTABLE_CPU_FREQ
+
+/*define this to enable CPU voltage scaling on AMS devices*/
+#define HAVE_ADJUSTABLE_CPU_VOLTAGE
 
 #define BOOTFILE_EXT    "sansa"
 #define BOOTFILE        "rockbox." BOOTFILE_EXT

@@ -1,9 +1,9 @@
 CC=gcc
 LD=ld
 OC=objcopy
-CROSS_PREFIX=arm-elf-eabi-
-REGS_PATH=../../../firmware/target/arm/imx233/regs
-CFLAGS=-mcpu=arm926ej-s -std=gnu99 -I. -I$(REGS_PATH) -nostdlib -ffreestanding -fomit-frame-pointer -O
+PREFIX?=arm-elf-eabi-
+IMX233_PATH=../../../firmware/target/arm/imx233
+CFLAGS=-mcpu=arm926ej-s -std=gnu99 -I. -I$(IMX233_PATH) -nostdlib -ffreestanding -fomit-frame-pointer -O
 # Edit the following variables when adding a new target.
 # mkimxboot.c also needs to be edited to refer to these
 # To add a new target x you need to:
@@ -27,16 +27,16 @@ all: ../dualboot.h ../dualboot.c $(BOOTELFS)
 # Dualboot bootloaders
 
 dualboot_%.o: dualboot.c
-	$(CROSS_PREFIX)$(CC) $(CFLAGS) $(OPT_$(@:dualboot_%.o=%)) -c -o $@ $^
+	$(PREFIX)$(CC) $(CFLAGS) $(OPT_$(@:dualboot_%.o=%)) -c -o $@ $^
 
 dualboot_%.arm-elf: dualboot_%.o
-	$(CROSS_PREFIX)$(LD) $(LDFLAGS) -Tdualboot.lds -o $@ $<
+	$(PREFIX)$(LD) $(LDFLAGS) -Tdualboot.lds -o $@ $<
 
 # Rules for the ARM code embedded in mkamsboot - assemble, link, then extract
 # the binary code and finally convert to .h for building in mkamsboot
 
 %.arm-bin: %.arm-elf
-	$(CROSS_PREFIX)$(OC) -O binary $< $@
+	$(PREFIX)$(OC) -O binary $< $@
 
 ../dualboot.c ../dualboot.h: $(BOOTBINS) bin2c
 	./bin2c ../dualboot $(BOOTBINS)

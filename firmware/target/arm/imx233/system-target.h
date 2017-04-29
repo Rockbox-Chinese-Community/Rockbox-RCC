@@ -28,18 +28,15 @@
 #include "icoll-imx233.h"
 #include "clock-target.h" /* CPUFREQ_* are defined here */
 
-#include "regs/regs-digctl.h"
-#include "regs/regs-usbphy.h"
-
 /**
  * Absolute maximum CPU speed: 454.74 MHz (STMP3780), 320.00 MHz (STMP3700)
  * Intermediate CPU speeds: 261.82 MHz, 64 MHz
  * Absolute minimum CPU speed: 24 MHz */
-#define IMX233_CPUFREQ_454_MHz  454740
-#define IMX233_CPUFREQ_320_MHz  320000
-#define IMX233_CPUFREQ_261_MHz  261820
-#define IMX233_CPUFREQ_64_MHz    64000
-#define IMX233_CPUFREQ_24_MHz    24000
+#define IMX233_CPUFREQ_454_MHz  454740000
+#define IMX233_CPUFREQ_320_MHz  320000000
+#define IMX233_CPUFREQ_261_MHz  261820000
+#define IMX233_CPUFREQ_64_MHz    64000000
+#define IMX233_CPUFREQ_24_MHz    24000000
 
 #define CPUFREQ_DEFAULT     IMX233_CPUFREQ_64_MHz
 #define CPUFREQ_NORMAL      IMX233_CPUFREQ_64_MHz
@@ -51,10 +48,10 @@
 #define CPUFREQ_SLEEP       IMX233_CPUFREQ_64_MHz
 
 void system_prepare_fw_start(void);
+void imx233_system_prepare_shutdown(void);
 void udelay(unsigned us);
 bool imx233_us_elapsed(uint32_t ref, unsigned us_delay);
 void imx233_reset_block(volatile uint32_t *block_reg);
-void power_off(void);
 void imx233_enable_usb_controller(bool enable);
 void imx233_enable_usb_phy(bool enable);
 // NOTE: this is available even if HAVE_ADJUSTABLE_CPU_FREQ is undef

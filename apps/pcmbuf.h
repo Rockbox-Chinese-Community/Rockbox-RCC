@@ -43,6 +43,7 @@ enum pcm_track_change_type
     TRACK_CHANGE_NONE = 0,     /* No track change pending */
     TRACK_CHANGE_MANUAL,       /* Manual change (from user) */
     TRACK_CHANGE_AUTO,         /* Automatic change (from codec) */
+    TRACK_CHANGE_AUTO_PILEUP,  /* Auto change during pending change */
     TRACK_CHANGE_END_OF_DATA,  /* Expect no more data (from codec) */
 };
 void pcmbuf_monitor_track_change(bool monitor);
@@ -50,13 +51,10 @@ void pcmbuf_start_track_change(enum pcm_track_change_type type);
 
 /* Crossfade */
 #ifdef HAVE_CROSSFADE
-bool pcmbuf_is_crossfade_active(void);
 void pcmbuf_request_crossfade_enable(int setting);
 bool pcmbuf_is_same_size(void);
 #else
 /* Dummy functions with sensible returns */
-static FORCE_INLINE bool pcmbuf_is_crossfade_active(void)
-    { return false; }
 static FORCE_INLINE void pcmbuf_request_crossfade_enable(bool on_off)
     { return; (void)on_off; }
 static FORCE_INLINE bool pcmbuf_is_same_size(void)

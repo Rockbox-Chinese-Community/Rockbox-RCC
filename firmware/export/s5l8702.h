@@ -175,13 +175,40 @@
 /////USB/////
 #define OTGBASE 0x38400000
 #define PHYBASE 0x3C400000
-#define SYNOPSYSOTG_CLOCK 0
-#define SYNOPSYSOTG_AHBCFG (GAHBCFG_dma_enable | (GAHBCFG_INT_DMA_BURST_INCR8 << GAHBCFG_hburstlen_bitp) | GAHBCFG_glblintrmsk)
+
+/* OTG PHY control registers */
+#define OPHYPWR     (*((uint32_t volatile*)(PHYBASE + 0x000)))
+#define OPHYCLK     (*((uint32_t volatile*)(PHYBASE + 0x004)))
+#define ORSTCON     (*((uint32_t volatile*)(PHYBASE + 0x008)))
+#define OPHYUNK3    (*((uint32_t volatile*)(PHYBASE + 0x018)))
+#define OPHYUNK1    (*((uint32_t volatile*)(PHYBASE + 0x01c)))
+#define OPHYUNK2    (*((uint32_t volatile*)(PHYBASE + 0x044)))
+
+/* 9 available EPs (0b00000001111101010000000111101011), 6 used */
+#define USB_NUM_ENDPOINTS 6
+
+/* Define this if the DWC implemented on this SoC does not support
+   DMA or you want to disable it. */
+// #define USB_DW_ARCH_SLAVE
 
 
 /////I2C/////
 #define I2CCLKGATE(i)   ((i) == 1 ? CLOCKGATE_I2C1 : \
                                     CLOCKGATE_I2C0)
+
+/*  s5l8702 I2C controller is similar to s5l8700, known differences are:
+
+    * IICCON[5] is not used in s5l8702.
+    * IICCON[13:8] are used to enable interrupts.
+      IICSTA2[13:8] are used to read the status and write-clear interrupts.
+      Known interrupts:
+       [13] STOP on bus (TBC)
+       [12] START on bus (TBC)
+       [8] byte transmited or received in Master mode (not tested in Slave)
+    * IICCON[4] does not clear interrupts, it is enabled when a byte is
+      transmited or received, in Master mode the tx/rx of the next byte
+      starts when it is written as "1".
+*/
 
 #define IICCON(bus)     (*((uint32_t volatile*)(0x3C600000 + 0x300000 * (bus))))
 #define IICSTAT(bus)    (*((uint32_t volatile*)(0x3C600004 + 0x300000 * (bus))))
@@ -190,6 +217,7 @@
 #define IICUNK10(bus)   (*((uint32_t volatile*)(0x3C600010 + 0x300000 * (bus))))
 #define IICUNK14(bus)   (*((uint32_t volatile*)(0x3C600014 + 0x300000 * (bus))))
 #define IICUNK18(bus)   (*((uint32_t volatile*)(0x3C600018 + 0x300000 * (bus))))
+#define IICSTA2(bus)    (*((uint32_t volatile*)(0x3C600020 + 0x300000 * (bus))))
 
 
 /////INTERRUPT CONTROLLERS/////
@@ -711,9 +739,10 @@
 
 
 /////UART/////
-/* UC8702 uart controller */
-#define S5L8702_UART_BASE       0x3cc00000
-#define S5L8702_UART_PORT_MAX   4
+/* s5l8702 UC870X HW: 1 UARTC, 4 ports */
+#define UARTC_BASE_ADDR     0x3CC00000
+#define UARTC_N_PORTS       4
+#define UARTC_PORT_OFFSET   0x4000
 
 
 /////CLOCK GATES/////
@@ -737,7 +766,7 @@
 #define CLOCKGATE_TIMER     37
 #define CLOCKGATE_I2C1      38
 #define CLOCKGATE_I2S0      39
-#define CLOCKGATE_UART      41
+#define CLOCKGATE_UARTC     41
 #define CLOCKGATE_I2S1      42
 #define CLOCKGATE_SPI1      43
 #define CLOCKGATE_GPIO      44
@@ -749,18 +778,20 @@
 /////INTERRUPTS/////
 #define IRQ_TIMER32     7
 #define IRQ_TIMER       8
-#define IRQ_SPI(i)      (9+i) /* TBC */
+#define IRQ_SPI(i)      (9+(i)) /* TBC */
 #define IRQ_SPI0        9
 #define IRQ_SPI1        10
 #define IRQ_SPI2        11
 #define IRQ_LCD         14
-#define IRQ_DMAC(d)     (16+d)
+#define IRQ_DMAC(d)     (16+(d))
 #define IRQ_DMAC0       16
 #define IRQ_DMAC1       17
 #define IRQ_USB_FUNC    19
-#define IRQ_I2C         21    /* TBC */
+#define IRQ_I2C(i)      (21+(i))
+#define IRQ_I2C0        21
+#define IRQ_I2C1        22
 #define IRQ_WHEEL       23
-#define IRQ_UART(i)     (24+i)
+#define IRQ_UART(i)     (24+(i))
 #define IRQ_UART0       24
 #define IRQ_UART1       25
 #define IRQ_UART2       26

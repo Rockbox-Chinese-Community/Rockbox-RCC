@@ -36,6 +36,7 @@ disktidy.c
 flipit.c
 shopper.c
 resistor.c
+otp.c
 
 #ifdef USB_ENABLE_HID
 remote_control.c
@@ -75,6 +76,11 @@ iriverify.c
 #if (CONFIG_PLATFORM & PLATFORM_NATIVE) /* those plugins only run on hardware */
 
 /* Overlays loaders */
+
+/* use this if you want a monolithic 'puzzles' */
+/* remember to set PUZZLES_COMBINED in puzzles.make! */
+/*sgt-puzzles.c*/
+
 #if PLUGIN_BUFFER_SIZE <= 0x20000 && defined(HAVE_LCD_BITMAP)
 
 #if CONFIG_KEYPAD != ONDIO_PAD && CONFIG_KEYPAD != SANSA_M200_PAD \
@@ -142,6 +148,7 @@ metronome.c
 #ifdef HAVE_LCD_BITMAP             /* Not for the Archos Player */
 
 2048.c
+
 /* Lua needs at least 160 KB to work in */
 #if PLUGIN_BUFFER_SIZE >= 0x80000
 boomshine.lua
@@ -211,6 +218,7 @@ nim.c
 #if LCD_DEPTH > 1                  /* non-mono bitmap targets */
 
 matrix.c
+speedread.c
 
 #if (LCD_WIDTH > 138)
 invadrox.c

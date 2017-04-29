@@ -47,4 +47,11 @@ static inline void udelay(unsigned usecs)
     while (TIME_BEFORE(USEC_TIMER, stop));
 }
 
+void usb_insert_int(void);
+void usb_remove_int(void);
+
+#ifdef BOOTLOADER
+void system_preinit(void);
+#endif
+
 #endif /* SYSTEM_TARGET_H */

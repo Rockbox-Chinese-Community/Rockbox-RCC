@@ -118,6 +118,13 @@
 #define PLLLOCK                 (*(REG32_PTR_T)(0x3C500020))     /* PLL lock status register */
 #define PLLCON                  (*(REG32_PTR_T)(0x3C500024))     /* PLL control register */
 #define PWRCON                  (*(REG32_PTR_T)(0x3C500028))     /* Clock power control register */
+#if CONFIG_CPU==S5L8701
+#define    CLOCKGATE_UARTC0     8
+#define    CLOCKGATE_UARTC1     9
+#define    CLOCKGATE_UARTC2     13
+#else /* S5L8700 */
+#define    CLOCKGATE_UARTC      8
+#endif
 #define PWRMODE                 (*(REG32_PTR_T)(0x3C50002C))     /* Power mode control register */
 #define SWRCON                  (*(REG32_PTR_T)(0x3C500030))     /* Software reset control register */
 #define RSTSR                   (*(REG32_PTR_T)(0x3C500034))     /* Reset status register */
@@ -126,28 +133,61 @@
 #define PWRCONEXT               (*(REG32_PTR_T)(0x3C500040))     /* Clock power control register 2 */
 
 /* 06. INTERRUPT CONTROLLER UNIT */
+#if CONFIG_CPU==S5L8700
 #define SRCPND                  (*(REG32_PTR_T)(0x39C00000))     /* Indicates the interrupt request status. */
 #define INTMOD                  (*(REG32_PTR_T)(0x39C00004))     /* Interrupt mode register. */
 #define INTMSK                  (*(REG32_PTR_T)(0x39C00008))     /* Determines which interrupt source is masked. The */
-#if CONFIG_CPU==S5L8701
-#define    INTMSK_TIMERA        (1<<5)
-#define    INTMSK_TIMERB        (1<<5)
-#define    INTMSK_TIMERC        (1<<5)
-#define    INTMSK_TIMERD        (1<<5)
-#define    INTMSK_ECC           (1<<19)
-#define    INTMSK_USB_OTG       (1<<16)
-#else
 #define    INTMSK_TIMERA        (1<<5)
 #define    INTMSK_TIMERB        (1<<7)
 #define    INTMSK_TIMERC        (1<<8)
 #define    INTMSK_TIMERD        (1<<9)
-#endif
+#define    INTMSK_UART0         (1<<22)
+#define    INTMSK_UART1         (1<<14)
 #define PRIORITY                (*(REG32_PTR_T)(0x39C0000C))     /* IRQ priority control register */
 #define INTPND                  (*(REG32_PTR_T)(0x39C00010))     /* Indicates the interrupt request status. */
 #define INTOFFSET               (*(REG32_PTR_T)(0x39C00014))     /* Indicates the IRQ interrupt request source */
 #define EINTPOL                 (*(REG32_PTR_T)(0x39C00018))     /* Indicates external interrupt polarity */
 #define EINTPEND                (*(REG32_PTR_T)(0x39C0001C))     /* Indicates whether external interrupts are pending. */
 #define EINTMSK                 (*(REG32_PTR_T)(0x39C00020))     /* Indicates whether external interrupts are masked */
+#else /* S5L8701 */
+#define SRCPND                  (*(REG32_PTR_T)(0x39C00000))     /* Indicates the interrupt request status. */
+#define INTMOD                  (*(REG32_PTR_T)(0x39C00004))     /* Interrupt mode register. */
+#define INTMSK                  (*(REG32_PTR_T)(0x39C00008))     /* Determines which interrupt source is masked. The */
+#define    INTMSK_EINTG0        (1<<1)
+#define    INTMSK_EINTG1        (1<<2)
+#define    INTMSK_EINTG2        (1<<3)
+#define    INTMSK_EINTG3        (1<<4)
+#define    INTMSK_TIMERA        (1<<5)
+#define    INTMSK_TIMERB        (1<<5)
+#define    INTMSK_TIMERC        (1<<5)
+#define    INTMSK_TIMERD        (1<<5)
+#define    INTMSK_ECC           (1<<19)
+#define    INTMSK_USB_OTG       (1<<16)
+#define    INTMSK_UART0         (0)     /* (AFAIK) no IRQ to ICU, uses EINTG0 */
+#define    INTMSK_UART1         (1<<12)
+#define    INTMSK_UART2         (1<<7)
+#define PRIORITY                (*(REG32_PTR_T)(0x39C0000C))     /* IRQ priority control register */
+#define INTPND                  (*(REG32_PTR_T)(0x39C00010))     /* Indicates the interrupt request status. */
+#define INTOFFSET               (*(REG32_PTR_T)(0x39C00014))     /* Indicates the IRQ interrupt request source */
+/*
+ * s5l8701 GPIO (External) Interrupt Controller.
+ *
+ * At first glance it looks very similar to gpio-s5l8702, but
+ * not fully tested, so this information could be wrong.
+ *
+ *  Group0[31:10] Not used
+ *        [9]     UART0 IRQ
+ *        [8]     VBUS
+ *        [7:0]   PDAT1
+ *  Group1[31:0]  PDAT5:PDAT4:PDAT3:PDAT2
+ *  Group2[31:0]  PDAT11:PDAT10:PDAT7:PDAT6
+ *  Group3[31:0]  PDAT15:PDAT14:PDAT13:PDAT12
+ */
+#define GPIOIC_INTLEVEL(g)      (*(REG32_PTR_T)(0x39C00018 + 4*(g)))
+#define GPIOIC_INTSTAT(g)       (*(REG32_PTR_T)(0x39C00028 + 4*(g)))
+#define GPIOIC_INTEN(g)         (*(REG32_PTR_T)(0x39C00038 + 4*(g)))
+#define GPIOIC_INTTYPE(g)       (*(REG32_PTR_T)(0x39C00048 + 4*(g)))
+#endif
 
 /* 07. MEMORY INTERFACE UNIT (MIU) */
 
@@ -577,6 +617,29 @@
 #define PCON_SDRAM              (*(REG32_PTR_T)(0x3CF000F4))     /* Configures the pins of port sdram */
 
 /* 25. UART */
+#if CONFIG_CPU==S5L8701
+/* s5l8701 UC870X HW: 3 UARTC, 1 port per UARTC */
+#define S5L8701_N_UARTC         3
+#define S5L8701_N_PORTS         3
+
+#define UARTC0_BASE_ADDR        0x3CC00000
+#define UARTC0_N_PORTS          1
+#define UARTC0_PORT_OFFSET      0x0
+#define UARTC1_BASE_ADDR        0x3CC08000
+#define UARTC1_N_PORTS          1
+#define UARTC1_PORT_OFFSET      0x0
+#define UARTC2_BASE_ADDR        0x3CC0C000
+#define UARTC2_N_PORTS          1
+#define UARTC2_PORT_OFFSET      0x0
+
+#else
+/* s5l8700 UC870X HW: 1 UARTC, 2 ports */
+#define S5L8700_N_UARTC         1
+#define S5L8700_N_PORTS         2
+
+#define UARTC_BASE_ADDR         0x3CC00000
+#define UARTC_N_PORTS           2
+#define UARTC_PORT_OFFSET       0x8000
 
 /* UART 0 */
 #define ULCON0                  (*(REG32_PTR_T)(0x3CC00000))     /* Line Control Register */
@@ -603,6 +666,7 @@
 #define UTXH1                   (*(REG32_PTR_T)(0x3CC08020))     /* Transmit Buffer Register */
 #define URXH1                   (*(REG32_PTR_T)(0x3CC08024))     /* Receive Buffer Register */
 #define UBRDIV1                 (*(REG32_PTR_T)(0x3CC08028))     /* Baud Rate Divisor Register */
+#endif
 
 /* 26. LCD INTERFACE CONTROLLER */
 #if CONFIG_CPU==S5L8700
@@ -724,7 +788,24 @@
 /* Synopsys OTG - S5L8701 only */
 #define OTGBASE 0x38800000
 #define PHYBASE 0x3C400000
-#define SYNOPSYSOTG_CLOCK 0
-#define SYNOPSYSOTG_AHBCFG (GAHBCFG_dma_enable | (GAHBCFG_INT_DMA_BURST_INCR4 << GAHBCFG_hburstlen_bitp) | GAHBCFG_glblintrmsk)
+
+/* OTG PHY control registers */
+#define OPHYPWR     (*((uint32_t volatile*)(PHYBASE + 0x000)))
+#define OPHYCLK     (*((uint32_t volatile*)(PHYBASE + 0x004)))
+#define ORSTCON     (*((uint32_t volatile*)(PHYBASE + 0x008)))
+#define OPHYUNK3    (*((uint32_t volatile*)(PHYBASE + 0x018)))
+#define OPHYUNK1    (*((uint32_t volatile*)(PHYBASE + 0x01c)))
+#define OPHYUNK2    (*((uint32_t volatile*)(PHYBASE + 0x044)))
+
+/* 7 available EPs (0b00000000011101010000000001101011), 6 used */
+#define USB_NUM_ENDPOINTS 6
+
+/* Define this if the DWC implemented on this SoC does not support
+   dedicated FIFOs. */
+#define USB_DW_SHARED_FIFO
+
+/* Define this if the DWC implemented on this SoC does not support
+   DMA or you want to disable it. */
+// #define USB_DW_ARCH_SLAVE
 
 #endif /* CONFIG_CPU==S5L8701 */

@@ -18,11 +18,11 @@
  * KIND, either express or implied.
  *
  ****************************************************************************/
-#include "regs-pinctrl.h"
-#include "regs-power.h"
-#include "regs-lradc.h"
-#include "regs-digctl.h"
-#include "regs-clkctrl.h"
+#include "regs/pinctrl.h"
+#include "regs/power.h"
+#include "regs/lradc.h"
+#include "regs/digctl.h"
+#include "regs/clkctrl.h"
 
 #define BOOT_ROM_CONTINUE   0 /* continue boot */
 #define BOOT_ROM_SECTION    1 /* switch to new section *result_id */
@@ -33,6 +33,10 @@
 #define BM_LRADC_CTRL4_LRADCxSELECT(x)  (0xf << (4 * (x)))
 
 typedef unsigned long uint32_t;
+
+/* we include the dualboot rtc code directly */
+#include "dualboot-imx233.h"
+#include "dualboot-imx233.c"
 
 // target specific boot context
 enum context_t
@@ -76,8 +80,8 @@ static inline void __attribute__((always_inline)) setup_lradc(int src)
     HW_LRADC_CTRL4_CLR = BM_LRADC_CTRL4_LRADCxSELECT(src);
     HW_LRADC_CTRL4_SET = src << BP_LRADC_CTRL4_LRADCxSELECT(src);
 #endif
-    HW_LRADC_CHn_CLR(src) = BM_OR2(LRADC_CHn, NUM_SAMPLES, ACCUMULATE);
-    BF_SETV(LRADC_CTRL2, DIVIDE_BY_TWO, 1 << src);
+    HW_LRADC_CHn_CLR(src) = BM_OR(LRADC_CHn, NUM_SAMPLES, ACCUMULATE);
+    BF_WR(LRADC_CTRL2_SET, DIVIDE_BY_TWO(1 << src));
 }
 
 #define BP_LRADC_CTRL1_LRADCx_IRQ(x)    (x)
@@ -86,9 +90,9 @@ static inline void __attribute__((always_inline)) setup_lradc(int src)
 static inline int __attribute__((always_inline)) read_lradc(int src)
 {
     BF_CLR(LRADC_CTRL1, LRADCx_IRQ(src));
-    BF_SETV(LRADC_CTRL0, SCHEDULE, 1 << src);
+    BF_WR(LRADC_CTRL0_SET, SCHEDULE(1 << src));
     while(!BF_RD(LRADC_CTRL1, LRADCx_IRQ(src)));
-    return BF_RDn(LRADC_CHn, src, VALUE);
+    return BF_RD(LRADC_CHn(src), VALUE);
 }
 
 static inline void __attribute__((noreturn)) power_down()
@@ -100,7 +104,7 @@ static inline void __attribute__((noreturn)) power_down()
     HW_PINCTRL_DOUTn(0) = 1 << 9;
 #endif
     /* power down */
-    HW_POWER_RESET = BM_OR2(POWER_RESET, UNLOCK, PWD);
+    HW_POWER_RESET = BM_OR(POWER_RESET, UNLOCK, PWD);
     while(1);
 }
 
@@ -160,8 +164,10 @@ static int local_decision(void)
      * if back is pressed, boot to OF
      * if play is pressed, boot RB
      * otherwise power off */
+#ifdef SONY_NWZE360
     if(read_gpio(0, 9) == 0)
         return BOOT_STOP;
+#endif
     if(val >= 1050 && val < 1150)
         return BOOT_OF;
     if(val >= 1420 && val < 1520)
@@ -172,7 +178,9 @@ static int local_decision(void)
 static int boot_decision(int context)
 {
     setup_lradc(0); // setup LRADC channel 0 to read keys
+#ifdef SONY_NWZE360
     HW_PINCTRL_PULLn_SET(0) = 1 << 9; // enable pullup on hold key (B0P09)
+#endif
     /* make a decision */
     int decision = local_decision();
     /* in USB or alarm context, stick to it */
@@ -240,23 +248,23 @@ static inline void do_charge(void)
 {
     BF_CLR(LRADC_CTRL0, SFTRST);
     BF_CLR(LRADC_CTRL0, CLKGATE);
-    BF_WRn(LRADC_DELAYn, 0, TRIGGER_LRADCS, 0x80);
-    BF_WRn(LRADC_DELAYn, 0, TRIGGER_DELAYS, 0x1);
-    BF_WRn(LRADC_DELAYn, 0, DELAY, 200);
-    BF_SETn(LRADC_DELAYn, 0, KICK);
+    BF_WR(LRADC_DELAYn(0), TRIGGER_LRADCS(0x80));
+    BF_WR(LRADC_DELAYn(0), TRIGGER_DELAYS(0x1));
+    BF_WR(LRADC_DELAYn(0), DELAY(200));
+    BF_SET(LRADC_DELAYn(0), KICK);
     BF_SET(LRADC_CONVERSION, AUTOMATIC);
-    BF_WR_V(LRADC_CONVERSION, SCALE_FACTOR, LI_ION);
-    BF_WR(POWER_CHARGE, STOP_ILIMIT, 1);
-    BF_WR(POWER_CHARGE, BATTCHRG_I, 0x10);
+    BF_WR(LRADC_CONVERSION, SCALE_FACTOR_V(LI_ION));
+    BF_WR(POWER_CHARGE, STOP_ILIMIT(1));
+    BF_WR(POWER_CHARGE, BATTCHRG_I(0x10));
     BF_CLR(POWER_CHARGE, PWD_BATTCHRG);
 #if IMX233_SUBTARGET >= 3780
-    BF_WR(POWER_DCDC4P2, ENABLE_4P2, 1);
+    BF_WR(POWER_DCDC4P2, ENABLE_4P2(1));
     BF_CLR(POWER_5VCTRL, PWD_CHARGE_4P2);
-    BF_WR(POWER_5VCTRL, CHARGE_4P2_ILIMIT, 0x10);
+    BF_WR(POWER_5VCTRL, CHARGE_4P2_ILIMIT(0x10));
 #endif
     while(1)
     {
-        BF_WR(CLKCTRL_CPU, INTERRUPT_WAIT, 1);
+        BF_WR(CLKCTRL_CPU, INTERRUPT_WAIT(1));
         asm volatile (
             "mcr p15, 0, %0, c7, c0, 4 \n" /* Wait for interrupt */
             "nop\n" /* Datasheet unclear: "The lr sent to handler points here after RTI"*/
@@ -266,10 +274,36 @@ static inline void do_charge(void)
     }
 }
 
+static void set_updater_bits(void)
+{
+    /* The OF will continue to updater if we clear 18 of PERSISTENT1.
+     * See dualboot-imx233.c in firmware/ for more explanation */
+    HW_RTC_PERSISTENT1_CLR = 1 << 18;
+}
+
 int main(uint32_t arg, uint32_t *result_id)
 {
     if(arg == BOOT_ARG_CHARGE)
         do_charge();
+    /* tell rockbox that we can handle boot mode */
+    imx233_dualboot_set_field(DUALBOOT_CAP_BOOT, 1);
+    /* if we were asked to boot in a special mode, do so */
+    unsigned boot_mode = imx233_dualboot_get_field(DUALBOOT_BOOT);
+    /* clear boot mode to avoid any loop */
+    imx233_dualboot_set_field(DUALBOOT_BOOT, IMX233_BOOT_NORMAL);
+    switch(boot_mode)
+    {
+        case IMX233_BOOT_UPDATER:
+            set_updater_bits();
+            /* fallthrough */
+        case IMX233_BOOT_OF:
+            /* continue booting */
+            return BOOT_ROM_CONTINUE;
+        case IMX233_BOOT_NORMAL:
+        default:
+            break;
+    }
+    /* normal boot */
     switch(boot_decision(get_context()))
     {
         case BOOT_ROCK:

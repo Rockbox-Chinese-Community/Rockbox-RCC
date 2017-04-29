@@ -44,28 +44,33 @@
 #include "button.h"
 #include "fmradio_i2c.h"
 #include "powermgmt-imx233.h"
+#include "led-imx233.h"
+
+#include "regs/digctl.h"
+#include "regs/usbphy.h"
+#include "regs/timrot.h"
 
 #define WATCHDOG_HW_DELAY   (10 * HZ)
 #define WATCHDOG_SW_DELAY   (5 * HZ)
 
+void UIE(unsigned int pc, unsigned int num);
+
 static void woof_woof(void)
 {
-    /* stop hadrware watchdog, we catched the error */
+    /* stop hardware watchdog, we catched the error */
     imx233_rtc_enable_watchdog(false);
+    /* recover current PC and trigger abort, so in the hope to get a useful
+     * backtrace */
     uint32_t pc = HW_DIGCTL_SCRATCH0;
-    /* write a "SWI #0xdead" instruction at the faulty instruction so that it
-     * will trigger a proper backtrace */
-    *(uint32_t *)pc = 0xef00dead;
-    commit_discard_idcache();
+    UIE(pc, 4);
 }
 
 static void good_dog(void)
 {
     imx233_rtc_reset_watchdog(WATCHDOG_HW_DELAY * 1000 / HZ); /* ms */
     imx233_rtc_enable_watchdog(true);
-    imx233_timrot_setup(TIMER_WATCHDOG, false, WATCHDOG_SW_DELAY * 1000 / HZ,
-        BV_TIMROT_TIMCTRLn_SELECT__1KHZ_XTAL, BV_TIMROT_TIMCTRLn_PRESCALE__DIV_BY_1,
-        false, &woof_woof);
+    imx233_timrot_setup_simple(TIMER_WATCHDOG, false, WATCHDOG_SW_DELAY * 1000 / HZ,
+        TIMER_SRC_1KHZ, &woof_woof);
     imx233_timrot_set_priority(TIMER_WATCHDOG, ICOLL_PRIO_WATCHDOG);
 }
 
@@ -94,21 +99,37 @@ static void watchdog_init(void)
     good_dog();
 }
 
+void imx233_system_prepare_shutdown(void)
+{
+    /* wait a bit, useful for the user to stop touching anything */
+    sleep(HZ / 2);
+    /* disable watchdog just in case since we will disable interrupts */
+    imx233_rtc_enable_watchdog(false);
+    /* disable interrupts, it's probably better to avoid any action so close
+     * to shutdown */
+    disable_interrupt(IRQ_FIQ_STATUS);
+#ifdef SANSA_FUZEPLUS
+    /* This pin seems to be important to shutdown the hardware properly */
+    imx233_pinctrl_acquire(0, 9, "power off");
+    imx233_pinctrl_set_function(0, 9, PINCTRL_FUNCTION_GPIO);
+    imx233_pinctrl_enable_gpio(0, 9, true);
+    imx233_pinctrl_set_gpio(0, 9, true);
+#endif
+}
+
 void imx233_chip_reset(void)
 {
 #if IMX233_SUBTARGET >= 3700
     HW_CLKCTRL_RESET = BM_CLKCTRL_RESET_CHIP;
 #else
-    HW_POWER_RESET = BF_OR2(POWER_RESET, UNLOCK_V(KEY), RST_DIG(1));
+    BF_WR_ALL(POWER_RESET, UNLOCK_V(KEY), RST_DIG(1));
 #endif
 }
 
 void system_reboot(void)
 {
-    backlight_hw_off();
-
-    disable_irq();
-
+    imx233_system_prepare_shutdown();
+    /* reset */
     imx233_chip_reset();
     while(1);
 }
@@ -121,17 +142,15 @@ void system_exception_wait(void)
     lcd_update();
     backlight_hw_on();
     backlight_hw_brightness(DEFAULT_BRIGHTNESS_SETTING);
-    /* wait until button release (if a button is pressed) */
-#ifdef HAVE_BUTTON_DATA
-    int data;
-    while(button_read_device(&data));
-    /* then wait until next button press */
-    while(!button_read_device(&data));
-#else
-    while(button_read_device());
-    /* then wait until next button press */
-    while(!button_read_device());
-#endif
+    /* wait until button release (if a button is pressed)
+     * NOTE at this point, interrupts are off so that rules out touchpad and
+     * ADC, so we are pretty much left with PSWITCH only. If other buttons are
+     * wanted, it is possible to implement a busy polling version of button
+     * reading for GPIO and ADC in button-imx233 but this is not done at the
+     * moment. */
+    while(imx233_power_read_pswitch() != 0) {}
+    while(imx233_power_read_pswitch() == 0) {}
+    while(imx233_power_read_pswitch() != 0) {}
 }
 
 int system_memory_guard(int newmode)
@@ -184,6 +203,7 @@ void system_init(void)
     imx233_power_init();
     imx233_i2c_init();
     imx233_powermgmt_init();
+    imx233_led_init();
     /* setup watchdog */
     watchdog_init();
 
@@ -192,7 +212,7 @@ void system_init(void)
     imx233_clkctrl_enable_auto_slow(false);
     imx233_clkctrl_set_auto_slow_div(BV_CLKCTRL_HBUS_SLOW_DIV__BY8);
 
-    cpu_frequency = imx233_clkctrl_get_freq(CLK_CPU);
+    cpu_frequency = imx233_clkctrl_get_freq(CLK_CPU) * 1000; /* variable in Hz */
 
 #if !defined(BOOTLOADER) && CONFIG_TUNER != 0
     fmradio_i2c_init();
@@ -243,10 +263,10 @@ void udelay(unsigned us)
 void imx233_digctl_set_arm_cache_timings(unsigned timings)
 {
 #if IMX233_SUBTARGET >= 3780
-    HW_DIGCTL_ARMCACHE = BF_OR5(DIGCTL_ARMCACHE, ITAG_SS(timings),
+    BF_WR_ALL(DIGCTL_ARMCACHE, ITAG_SS(timings),
         DTAG_SS(timings), CACHE_SS(timings), DRTY_SS(timings), VALID_SS(timings));
 #else
-    HW_DIGCTL_ARMCACHE = BF_OR3(DIGCTL_ARMCACHE, ITAG_SS(timings),
+    BF_WR_ALL(DIGCTL_ARMCACHE, ITAG_SS(timings),
         DTAG_SS(timings), CACHE_SS(timings));
 #endif
 }
@@ -266,8 +286,8 @@ struct cpufreq_profile_t
 /* Some devices don't handle very well memory frequency changes, so avoid them
  * by running at highest speed at all time */
 #if defined(CREATIVE_ZEN) || defined(CREATIVE_ZENXFI)
-#define EMIFREQ_NORMAL  IMX233_EMIFREQ_130_MHz
-#define EMIFREQ_MAX     IMX233_EMIFREQ_130_MHz
+#define EMIFREQ_NORMAL  IMX233_EMIFREQ_64_MHz
+#define EMIFREQ_MAX     IMX233_EMIFREQ_64_MHz
 #else /* weird targets */
 #define EMIFREQ_NORMAL  IMX233_EMIFREQ_64_MHz
 #define EMIFREQ_MAX     IMX233_EMIFREQ_130_MHz

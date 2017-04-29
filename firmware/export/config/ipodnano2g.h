@@ -164,6 +164,7 @@
 /* Define Apple remote tuner */
 //#define CONFIG_TUNER IPOD_REMOTE_TUNER
 //#define HAVE_RDS_CAP
+//#define CONFIG_RDS RDS_CFG_PUSH
 
 /* The exact type of CPU */
 #define CONFIG_CPU S5L8701
@@ -221,18 +222,28 @@
 #define DEFAULT_BRIGHTNESS_SETTING  0x20
 
 /* USB defines */
+#define CONFIG_USBOTG USBOTG_DESIGNWARE
+#define USB_DW_CLOCK 0
+#define USB_DW_TURNAROUND 5
+/* logf() over USB serial (http://www.rockbox.org/wiki/PortalPlayerUsb) */
+//#define USB_ENABLE_SERIAL
 #define HAVE_USBSTACK
 #define HAVE_USB_HID_MOUSE
-#define CONFIG_USBOTG USBOTG_S3C6400X
 #define USB_VENDOR_ID 0x05AC
 #define USB_PRODUCT_ID 0x1260
-#define USB_NUM_ENDPOINTS 6
 #define USB_DEVBSS_ATTR __attribute__((aligned(16)))
 
 /* Define this if you can switch on/off the accessory power supply */
 #define HAVE_ACCESSORY_SUPPLY
-//#define IPOD_ACCESSORY_PROTOCOL
-//#define HAVE_SERIAL
+
+/* Serial */
+#ifndef BOOTLOADER
+#define HAVE_SERIAL
+/* Disable iAP when LOGF_SERIAL is enabled to avoid conflicts */
+#ifndef LOGF_SERIAL
+#define IPOD_ACCESSORY_PROTOCOL
+#endif
+#endif
 
 /* Define this, if you can switch on/off the lineout */
 #define HAVE_LINEOUT_POWEROFF

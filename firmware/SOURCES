@@ -572,6 +572,7 @@ target/arm/imx233/adc-imx233.c
 target/arm/imx233/lradc-imx233.c
 target/arm/imx233/pwm-imx233.c
 target/arm/imx233/rtc-imx233.c
+target/arm/imx233/dualboot-imx233.c
 target/arm/imx233/button-imx233.c
 #if IMX233_SUBTARGET >= 3700
 target/arm/imx233/dcp-imx233.c
@@ -586,6 +587,7 @@ target/arm/imx233/debug-imx233.c
 #endif
 #if !defined(BOOTLOADER) || defined(HAVE_BOOTLOADER_USB_MODE)
 target/arm/imx233/usb-imx233.c
+target/arm/imx233/led-imx233.c
 #endif
 #ifndef BOOTLOADER
 #ifdef HAVE_IMX233_CODEC
@@ -766,6 +768,8 @@ target/arm/usb-drv-arc.c
 target/arm/as3525/usb-drv-as3525.c
 #elif CONFIG_USBOTG == USBOTG_S3C6400X
 target/arm/usb-s3c6400x.c
+#elif CONFIG_USBOTG == USBOTG_DESIGNWARE
+target/arm/usb-designware.c
 #elif CONFIG_USBOTG == USBOTG_ISP1583
 drivers/isp1583.c
 #elif CONFIG_USBOTG == USBOTG_RK27XX
@@ -1135,10 +1139,8 @@ target/arm/imx31/uart-imx31.c
 target/arm/imx31/gigabeat-s/adc-gigabeat-s.c
 target/arm/imx31/gigabeat-s/backlight-gigabeat-s.c
 target/arm/imx31/gigabeat-s/button-gigabeat-s.c
-target/arm/imx31/gigabeat-s/gpio-gigabeat-s.c
 target/arm/imx31/gigabeat-s/kernel-gigabeat-s.c
 target/arm/imx31/gigabeat-s/i2s-gigabeat-s.c
-target/arm/imx31/gigabeat-s/mc13783-gigabeat-s.c
 target/arm/imx31/gigabeat-s/power-gigabeat-s.c
 target/arm/imx31/gigabeat-s/powermgmt-gigabeat-s.c
 target/arm/imx31/gigabeat-s/system-gigabeat-s.c
@@ -1231,10 +1233,10 @@ target/arm/imx233/creative-zenxfi2/powermgmt-zenxfi2.c
 #endif
 
 #ifdef CREATIVE_ZENXFI3
-drivers/mpr121.c
 #ifndef BOOTLOADER
 target/arm/imx233/fmradio-imx233.c
 #endif
+target/arm/imx233/creative-zenxfi3/mpr121-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/backlight-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/lcd-zenxfi3.c
 target/arm/imx233/creative-zenxfi3/button-zenxfi3.c
@@ -1465,7 +1467,6 @@ target/arm/as3525/lcd-as-e200v2-fuze-fuzev2.S
 #endif /* SANSA_FUZEV2 */
 
 #ifdef SANSA_FUZEPLUS
-drivers/synaptics-rmi.c
 #ifndef BOOTLOADER
 drivers/generic_i2c.c
 target/arm/imx233/fmradio-imx233.c
@@ -1581,7 +1582,12 @@ target/arm/s5l8700/ipodnano2g/ftl-nano2g.c
 target/arm/s5l8700/ipodnano2g/nand-nano2g.c
 target/arm/s5l8700/ipodnano2g/pmu-nano2g.c
 target/arm/s5l8700/ipodnano2g/rtc-nano2g.c
-target/arm/s5l8700/usb-nano2g-6g.c
+target/arm/s5l8700/usb-s5l8701.c
+#ifdef HAVE_SERIAL
+target/arm/uc870x.c
+target/arm/s5l8700/uart-s5l8701.c
+target/arm/s5l8700/ipodnano2g/serial-nano2g.c
+#endif
 #ifndef BOOTLOADER
 target/arm/s5l8700/ipodnano2g/audio-nano2g.c
 target/arm/s5l8700/ipodnano2g/piezo-nano2g.c
@@ -1590,39 +1596,45 @@ target/arm/s5l8700/ipodnano2g/piezo-nano2g.c
 
 #ifdef IPOD_6G
 target/arm/ipod/button-clickwheel.c
-target/arm/s5l8702/ipod6g/storage_ata-ipod6g.c
-target/arm/s5l8702/ipod6g/cscodec-ipod6g.c
-target/arm/s5l8702/ipod6g/backlight-ipod6g.c
-target/arm/s5l8702/ipod6g/powermgmt-ipod6g.c
-target/arm/s5l8702/ipod6g/power-ipod6g.c
+target/arm/s5l8702/ipod6g/storage_ata-6g.c
+target/arm/s5l8702/ipod6g/backlight-6g.c
+target/arm/s5l8702/ipod6g/powermgmt-6g.c
+target/arm/s5l8702/ipod6g/power-6g.c
 target/arm/s5l8702/kernel-s5l8702.c
 target/arm/s5l8702/system-s5l8702.c
+target/arm/s5l8702/timer-s5l8702.c
 target/arm/s5l8702/gpio-s5l8702.c
 target/arm/s5l8702/pl080.c
 target/arm/s5l8702/dma-s5l8702.c
 target/arm/s5l8702/clocking-s5l8702.c
-target/arm/s5l8702/ipod6g/lcd-ipod6g.c
-target/arm/s5l8702/ipod6g/lcd-asm-ipod6g.S
+target/arm/s5l8702/ipod6g/lcd-6g.c
+target/arm/s5l8702/ipod6g/lcd-asm-6g.S
+target/arm/s5l8702/ipod6g/piezo-6g.c
 #if 0 //TODO
 target/arm/s5l8702/postmortemstub.S
 #endif
-target/arm/s5l8702/ipod6g/pmu-ipod6g.c
-target/arm/s5l8702/ipod6g/rtc-ipod6g.c
-target/arm/s5l8700/usb-nano2g-6g.c
+target/arm/s5l8702/ipod6g/pmu-6g.c
+target/arm/s5l8702/ipod6g/rtc-6g.c
+target/arm/s5l8702/ipod6g/adc-6g.c
+#if !defined(BOOTLOADER) || defined(HAVE_BOOTLOADER_USB_MODE)
+target/arm/s5l8702/usb-s5l8702.c
+#endif
 #ifdef HAVE_SERIAL
-target/arm/s5l8702/uc8702.c
+target/arm/uc870x.c
 target/arm/s5l8702/uart-s5l8702.c
-target/arm/s5l8702/ipod6g/serial-ipod6g.c
+target/arm/s5l8702/ipod6g/serial-6g.c
 #endif
 #ifndef BOOTLOADER
-target/arm/s5l8702/timer-s5l8702.c
 target/arm/s5l8702/debug-s5l8702.c
 target/arm/s5l8702/pcm-s5l8702.c
-target/arm/s5l8702/ipod6g/audio-ipod6g.c
-target/arm/s5l8702/ipod6g/adc-ipod6g.c
-target/arm/s5l8702/ipod6g/piezo-ipod6g.c
-#endif
-#endif
+target/arm/s5l8702/ipod6g/audio-6g.c
+target/arm/s5l8702/ipod6g/cscodec-6g.c
+#else
+target/arm/s5l8702/spi-s5l8702.c
+target/arm/s5l8702/crypto-s5l8702.c
+target/arm/s5l8702/nor-s5l8702.c
+#endif /* BOOTLOADER */
+#endif /* IPOD_6G */
 
 #if CONFIG_CPU == RK27XX
 target/arm/rk27xx/audio-rk27xx.c

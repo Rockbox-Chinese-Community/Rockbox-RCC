@@ -363,6 +363,7 @@ Lyre prototype 1 */
 #define USBOTG_JZ4740   4740 /* Ingenic Jz4740/Jz4732 */
 #define USBOTG_AS3525   3525 /* AMS AS3525 */
 #define USBOTG_S3C6400X 6400 /* Samsung S3C6400X, also used in the S5L8701/S5L8702/S5L8720 */
+#define USBOTG_DESIGNWARE 6401 /* Synopsys DesignWare OTG, used in S5L8701/S5L8702/S5L8720/AS3252v2 */
 #define USBOTG_RK27XX   2700 /* Rockchip rk27xx */
 #define USBOTG_TNETV105 105  /* TI TNETV105 */
 
@@ -711,6 +712,16 @@ Lyre prototype 1 */
 #define BATTERY_CAPACITY_INC 0
 #endif
 
+#ifdef HAVE_RDS_CAP
+/* combinable bitflags */
+#define RDS_CFG_ISR     0x1 /* uses ISR to process packets */
+#define RDS_CFG_PROCESS 0x2 /* uses raw packet processing */
+#define RDS_CFG_PUSH    0x4 /* pushes processed information */
+#ifndef CONFIG_RDS
+#define CONFIG_RDS  RDS_CFG_PROCESS /* thread processing+raw processing */
+#endif /* CONFIG_RDS */
+#endif /* HAVE_RDS_CAP */
+
 #ifndef CONFIG_ORIENTATION
 #if LCD_HEIGHT > LCD_WIDTH
 #define CONFIG_ORIENTATION SCREEN_PORTRAIT
@@ -852,7 +863,7 @@ Lyre prototype 1 */
 #define HAVE_DIRCACHE
 #endif
 #ifdef HAVE_TAGCACHE
-//#define HAVE_TC_RAMCACHE
+#define HAVE_TC_RAMCACHE
 #endif
 #endif
 
@@ -871,8 +882,12 @@ Lyre prototype 1 */
 #ifdef HAVE_BOOTLOADER_USB_MODE
 /* Priority in bootloader is wanted */
 #define HAVE_PRIORITY_SCHEDULING
+#if (CONFIG_CPU == S5L8702)
+#define USB_DRIVER_CLOSE
+#else
 #define USB_STATUS_BY_EVENT
 #define USB_DETECT_BY_REQUEST
+#endif
 #if defined(HAVE_USBSTACK) && CONFIG_USBOTG == USBOTG_ARC
 #define INCLUDE_TIMEOUT_API
 #define USB_DRIVER_CLOSE
@@ -905,7 +920,10 @@ Lyre prototype 1 */
 #elif CONFIG_USBOTG == USBOTG_AS3525
 #define USB_STATUS_BY_EVENT
 #define USB_DETECT_BY_REQUEST
-#elif CONFIG_USBOTG == USBOTG_S3C6400X /* FIXME */ && CONFIG_CPU == AS3525v2
+#elif CONFIG_USBOTG == USBOTG_S3C6400X /* FIXME */ && CONFIG_CPU != S5L8701
+#define USB_STATUS_BY_EVENT
+#define USB_DETECT_BY_REQUEST
+#elif CONFIG_USBOTG == USBOTG_DESIGNWARE /* FIXME */ && CONFIG_CPU != S5L8701
 #define USB_STATUS_BY_EVENT
 #define USB_DETECT_BY_REQUEST
 #elif CONFIG_USBOTG == USBOTG_RK27XX
@@ -1125,11 +1143,6 @@ Lyre prototype 1 */
 #define INCLUDE_TIMEOUT_API
 #endif /* HAVE_USB_CHARGING_ENABLE && HAVE_USBSTACK */
 
-#if defined(HAVE_GUI_BOOST) && defined(HAVE_ADJUSTABLE_CPU_FREQ)
-/* Timeout objects required if GUI boost is enabled */
-#define INCLUDE_TIMEOUT_API
-#endif /* HAVE_GUI_BOOST && HAVE_ADJUSTABLE_CPU_FREQ */
-
 #ifndef SIMULATOR
 #if defined(HAVE_USBSTACK) || (CONFIG_STORAGE & STORAGE_NAND)
 #define STORAGE_GET_INFO
@@ -1147,6 +1160,7 @@ Lyre prototype 1 */
 #elif (CONFIG_USBOTG == USBOTG_ARC) || \
     (CONFIG_USBOTG == USBOTG_JZ4740) || \
     (CONFIG_USBOTG == USBOTG_M66591) || \
+    (CONFIG_USBOTG == USBOTG_DESIGNWARE) || \
     (CONFIG_USBOTG == USBOTG_AS3525)
 #define USB_HAS_BULK
 #define USB_HAS_INTERRUPT
@@ -1169,7 +1183,7 @@ Lyre prototype 1 */
 #if defined(HAVE_BOOTLOADER_USB_MODE) || \
      defined(CREATIVE_ZVx) || defined(CPU_TCC77X) || defined(CPU_TCC780X) || \
      CONFIG_USBOTG == USBOTG_JZ4740 || CONFIG_USBOTG == USBOTG_AS3525 || \
-     CONFIG_USBOTG == USBOTG_S3C6400X
+     CONFIG_USBOTG == USBOTG_S3C6400X || CONFIG_USBOTG == USBOTG_DESIGNWARE
 #define USB_ENABLE_STORAGE
 #endif
 

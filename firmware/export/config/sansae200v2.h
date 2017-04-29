@@ -167,6 +167,9 @@
 /* Define this if you want to use the AS2525 i2c interface */
 #define CONFIG_I2C I2C_AS3525
 
+/* define this if the hardware can be powered off while charging */
+#define HAVE_POWEROFF_WHILE_CHARGING
+
 /* define current usage levels (based on battery bench) */
 #define CURRENT_NORMAL     44
 #define CURRENT_BACKLIGHT  30
@@ -189,9 +192,10 @@
 #define FIRMWARE_OFFSET_FILE_CRC    0x0
 #define FIRMWARE_OFFSET_FILE_DATA   0x8
 
-#ifndef BOOTLOADER
 #define HAVE_MULTIDRIVE
 #define NUM_DRIVES 2
+
+#ifndef BOOTLOADER
 #define HAVE_HOTSWAP
 #endif
 

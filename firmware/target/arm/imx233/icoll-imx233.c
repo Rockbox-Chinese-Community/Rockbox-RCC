@@ -25,6 +25,21 @@
 #include "string.h"
 #include "timrot-imx233.h"
 
+#include "regs/icoll.h"
+#include "regs/digctl.h"
+
+/* helpers */
+#if IMX233_SUBTARGET >= 3600 && IMX233_SUBTARGET < 3780
+#define BP_ICOLL_PRIORITYn_ENABLEx(x)   (2 + 8 * (x))
+#define BM_ICOLL_PRIORITYn_ENABLEx(x)   (1 << (2 + 8 * (x)))
+#define BP_ICOLL_PRIORITYn_PRIORITYx(x) (0 + 8 * (x))
+#define BM_ICOLL_PRIORITYn_PRIORITYx(x) (3 << (0 + 8 * (x)))
+#define BF_ICOLL_PRIORITYn_PRIORITYx(x, v)  (((v) << BP_ICOLL_PRIORITYn_PRIORITYx(x)) & BM_ICOLL_PRIORITYn_PRIORITYx(x))
+#define BFM_ICOLL_PRIORITYn_PRIORITYx(x, v) BM_ICOLL_PRIORITYn_PRIORITYx(x)
+#define BP_ICOLL_PRIORITYn_SOFTIRQx(x)  (3 + 8 * (x))
+#define BM_ICOLL_PRIORITYn_SOFTIRQx(x)  (1 << (3 + 8 * (x)))
+#endif
+
 #define default_interrupt(name) \
     extern __attribute__((weak, alias("UIRQ"))) void name(void)
 
@@ -126,13 +141,17 @@ static isr_t isr_table[INT_SRC_COUNT] =
 
 static uint32_t irq_count_old[INT_SRC_COUNT];
 static uint32_t irq_count[INT_SRC_COUNT];
+static uint32_t irq_max_time_old[INT_SRC_COUNT];
+static uint32_t irq_max_time[INT_SRC_COUNT];
+static uint32_t irq_tot_time_old[INT_SRC_COUNT];
+static uint32_t irq_tot_time[INT_SRC_COUNT];
 
 unsigned imx233_icoll_get_priority(int src)
 {
 #if IMX233_SUBTARGET < 3780
-    return BF_RDn(ICOLL_PRIORITYn, src / 4, PRIORITYx(src % 4));
+    return BF_RD(ICOLL_PRIORITYn(src / 4), PRIORITYx(src % 4));
 #else
-    return BF_RDn(ICOLL_INTERRUPTn, src, PRIORITY);
+    return BF_RD(ICOLL_INTERRUPTn(src), PRIORITY);
 #endif
 }
 
@@ -140,12 +159,14 @@ struct imx233_icoll_irq_info_t imx233_icoll_get_irq_info(int src)
 {
     struct imx233_icoll_irq_info_t info;
 #if IMX233_SUBTARGET < 3780
-    info.enabled = BF_RDn(ICOLL_PRIORITYn, src / 4, ENABLEx(src % 4));
+    info.enabled = BF_RD(ICOLL_PRIORITYn(src / 4), ENABLEx(src % 4));
 #else
-    info.enabled = BF_RDn(ICOLL_INTERRUPTn, src, ENABLE);
+    info.enabled = BF_RD(ICOLL_INTERRUPTn(src), ENABLE);
 #endif
     info.priority = imx233_icoll_get_priority(src);
     info.freq = irq_count_old[src];
+    info.max_time = irq_max_time_old[src];
+    info.total_time = irq_tot_time_old[src];
     return info;
 }
 
@@ -158,6 +179,10 @@ static void do_irq_stat(void)
         counter = 0;
         memcpy(irq_count_old, irq_count, sizeof(irq_count));
         memset(irq_count, 0, sizeof(irq_count));
+        memcpy(irq_max_time_old, irq_max_time, sizeof(irq_max_time));
+        memset(irq_max_time, 0, sizeof(irq_max_time));
+        memcpy(irq_tot_time_old, irq_tot_time, sizeof(irq_tot_time));
+        memset(irq_tot_time, 0, sizeof(irq_tot_time));
     }
 }
 
@@ -181,8 +206,12 @@ void _irq_handler(void)
         do_irq_stat();
     /* enable interrupts again */
     //enable_irq();
+    uint32_t time = HW_DIGCTL_MICROSECONDS;
     /* process interrupt */
     (*(isr_t *)vec)();
+    time = HW_DIGCTL_MICROSECONDS - time;
+    irq_max_time[irq_nr] = MAX(irq_max_time[irq_nr], time);
+    irq_tot_time[irq_nr] += time;
     /* acknowledge completion of IRQ */
     HW_ICOLL_LEVELACK = 1 << imx233_icoll_get_priority(irq_nr);
 }
@@ -191,13 +220,17 @@ void irq_handler(void)
 {
     /* save stuff */
     asm volatile(
+        /* This part is in IRQ mode (with IRQ stack) */
         "sub    lr, lr, #4               \n" /* Create return address */
         "stmfd  sp!, { r0-r5, r12, lr }  \n" /* Save what gets clobbered */
-        "ldr    r1, =0x8001c290          \n" /* Save pointer to instruction */
-        "str    lr, [r1]                 \n" /* in HW_DIGCTL_SCRATCH0 */
-        "mrs    lr, spsr                 \n" /* Save SPSR_irq */
-        "stmfd  sp!, { r1, lr }          \n" /* Push it on the stack */
+        "ldr    r1, =0x8001c290          \n" /* Save HW_DIGCTL_SCRATCH0 */
+        "ldr    r0, [r1]                 \n" /* and store instruction pointer */
+        "str    lr, [r1]                 \n" /* in it (for debug) */
+        "mrs    r2, spsr                 \n" /* Save SPSR_irq */
+        "stmfd  sp!, { r0, r2 }          \n" /* Push it on the stack */
         "msr    cpsr_c, #0x93            \n" /* Switch to SVC mode, IRQ disabled */
+        /* This part is in SVC mode (with SVC stack) */
+        "msr    spsr_cxsf, r2            \n" /* Copy SPSR_irq to SPSR_svc (for __get_sp) */
         "mov    r4, lr                   \n" /* Save lr_SVC */
         "and    r5, sp, #4               \n" /* Align SVC stack */
         "sub    sp, sp, r5               \n" /* on 8-byte boundary */
@@ -205,7 +238,10 @@ void irq_handler(void)
         "add    sp, sp, r5               \n" /* Undo alignement */
         "mov    lr, r4                   \n" /* Restore lr_SVC */
         "msr    cpsr_c, #0x92            \n" /* Mask IRQ, return to IRQ mode */
-        "ldmfd  sp!, { r1, lr }          \n" /* Reload saved value */
+        /* This part is in IRQ mode (with IRQ stack) */
+        "ldmfd  sp!, { r0, lr }          \n" /* Reload saved value */
+        "ldr    r1, =0x8001c290          \n" /* Restore HW_DIGCTL_SCRATCH0 */
+        "str    r0, [r1]                 \n" /* using saved value */
         "msr    spsr_cxsf, lr            \n" /* Restore SPSR_irq */
         "ldmfd  sp!, { r0-r5, r12, pc }^ \n" /* Restore regs, and RFE */);
 }
@@ -218,14 +254,14 @@ void imx233_icoll_force_irq(unsigned src, bool enable)
 {
 #if IMX233_SUBTARGET < 3780
     if(enable)
-        BF_SETn(ICOLL_PRIORITYn, src / 4, SOFTIRQx(src % 4));
+        BF_SET(ICOLL_PRIORITYn(src / 4), SOFTIRQx(src % 4));
     else
-        BF_CLRn(ICOLL_PRIORITYn, src / 4, SOFTIRQx(src % 4));
+        BF_CLR(ICOLL_PRIORITYn(src / 4), SOFTIRQx(src % 4));
 #else
     if(enable)
-        BF_SETn(ICOLL_INTERRUPTn, src, SOFTIRQ);
+        BF_SET(ICOLL_INTERRUPTn(src), SOFTIRQ);
     else
-        BF_CLRn(ICOLL_INTERRUPTn, src, SOFTIRQ);
+        BF_CLR(ICOLL_INTERRUPTn(src), SOFTIRQ);
 #endif
 }
 
@@ -233,23 +269,23 @@ void imx233_icoll_enable_interrupt(int src, bool enable)
 {
 #if IMX233_SUBTARGET < 3780
     if(enable)
-        BF_SETn(ICOLL_PRIORITYn, src / 4, ENABLEx(src % 4));
+        BF_SET(ICOLL_PRIORITYn(src / 4), ENABLEx(src % 4));
     else
-        BF_CLRn(ICOLL_PRIORITYn, src / 4, ENABLEx(src % 4));
+        BF_CLR(ICOLL_PRIORITYn(src / 4), ENABLEx(src % 4));
 #else
     if(enable)
-        BF_SETn(ICOLL_INTERRUPTn, src, ENABLE);
+        BF_SET(ICOLL_INTERRUPTn(src), ENABLE);
     else
-        BF_CLRn(ICOLL_INTERRUPTn, src, ENABLE);
+        BF_CLR(ICOLL_INTERRUPTn(src), ENABLE);
 #endif
 }
 
 void imx233_icoll_set_priority(int src, unsigned prio)
 {
 #if IMX233_SUBTARGET < 3780
-    BF_WRn(ICOLL_PRIORITYn, src / 4, PRIORITYx(src % 4), prio);
+    BF_WR(ICOLL_PRIORITYn(src / 4), PRIORITYx(src % 4, prio));
 #else
-    BF_WRn(ICOLL_INTERRUPTn, src, PRIORITY, prio);
+    BF_WR(ICOLL_INTERRUPTn(src), PRIORITY(prio));
 #endif
 }
 

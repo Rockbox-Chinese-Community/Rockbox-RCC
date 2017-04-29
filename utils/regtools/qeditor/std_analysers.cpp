@@ -84,7 +84,11 @@ QWidget *ClockAnalyser::GetWidget()
 
 bool ClockAnalyser::SupportSoc(const QString& soc_name)
 {
-    return (soc_name == "imx233" || soc_name == "rk27xx" || soc_name == "atj213x");
+    return soc_name == "imx233"
+        || soc_name == "rk27xx"
+        || soc_name == "atj213x"
+        || soc_name == "jz4760b"
+        || soc_name == "stmp3700";
 }
 
 QString ClockAnalyser::GetFreq(unsigned freq)
@@ -135,10 +139,88 @@ void ClockAnalyser::FillTree()
 {
     m_tree_widget->clear();
     if(m_soc.get()->name == "imx233") FillTreeIMX233();
+    if(m_soc.get()->name == "stmp3700") FillTreeIMX233();
     else if(m_soc.get()->name == "rk27xx") FillTreeRK27XX();
     else if(m_soc.get()->name == "atj213x") FillTreeATJ213X();
+    else if(m_soc.get()->name == "jz4760b") FillTreeJZ4760B();
     m_tree_widget->expandAll();
     m_tree_widget->resizeColumnToContents(0);
+}
+
+void ClockAnalyser::FillTreeJZ4760B()
+{
+    AddClock(0, "RTCLK", 32768);
+    // assume EXCLK is 12MHz, we have no way to knowing for sure but this is the
+    // recommended value anyway
+    QTreeWidgetItem *exclk = AddClock(0, "EXCLK", 12000000);
+    // PLL0
+    soc_word_t pllm, plln, pllod, pllbypass;
+    QTreeWidgetItem *pll0 = 0;
+    if(ReadFieldOld("CPM", "PLLCTRL0", "FEED_DIV", pllm) &&
+            ReadFieldOld("CPM", "PLLCTRL0", "IN_DIV", plln) &&
+            ReadFieldOld("CPM", "PLLCTRL0", "OUT_DIV", pllod) &&
+            ReadFieldOld("CPM", "PLLCTRL0", "BYPASS", pllbypass))
+    {
+        pll0 = AddClock(exclk, "PLL0", FROM_PARENT, pllbypass ? 1 : 2 * pllm,
+            pllbypass ? 1 : plln * (1 << pllod));
+    }
+    else
+        pll0 = AddClock(exclk, "PLL0", INVALID);
+    // PLL1
+    soc_word_t plldiv, src_sel;
+    QTreeWidgetItem *pll1 = 0;
+    if(ReadFieldOld("CPM", "PLLCTRL1", "FEED_DIV", pllm) &&
+            ReadFieldOld("CPM", "PLLCTRL1", "IN_DIV", plln) &&
+            ReadFieldOld("CPM", "PLLCTRL1", "OUT_DIV", pllod) &&
+            ReadFieldOld("CPM", "PLLCTRL1", "SRC_SEL", src_sel) &&
+            ReadFieldOld("CPM", "PLLCTRL1", "PLL0_DIV", plldiv))
+    {
+        pll1 = AddClock(src_sel ? pll0 : exclk, "PLL1", FROM_PARENT, 2 * pllm,
+            plln * (1 << pllod) * (src_sel ? plldiv : 1));
+    }
+    else
+        pll1 = AddClock(exclk, "PLL1", INVALID);
+    // system clocks
+    const int NR_SYSCLK = 6;
+    const char *sysclk[NR_SYSCLK] = { "CCLK", "SCLK", "PCLK", "HCLK", "H2CLK", "MCLK"};
+    for(int i = 0; i < NR_SYSCLK; i++)
+    {
+        soc_word_t div = 0;
+        std::string field = std::string(sysclk[i]) + "_DIV";
+        if(ReadFieldOld("CPM", "SYSCLK", field.c_str(), div))
+        {
+            switch(div)
+            {
+                case 0: div = 1; break;
+                case 1: div = 2; break;
+                case 2: div = 3; break;
+                case 3: div = 4; break;
+                case 4: div = 6; break;
+                case 5: div = 8; break;
+                default: div = 0; break;
+            }
+        }
+        if(div != 0)
+            AddClock(pll0, sysclk[i], FROM_PARENT, 1, div);
+        else
+            AddClock(pll0, sysclk[i], INVALID);
+    }
+    // common to msc, i2s, lcd, uhc, otg, ssi, pcm, gpu, gps
+    soc_word_t pll_div;
+    if(ReadFieldOld("CPM", "SYSCLK", "PLL_DIV", pll_div))
+        pll_div = pll_div ? 1 : 2;
+    else
+        pll_div = 1; // error
+    // lcd
+    soc_word_t pll_sel, div;
+    if(ReadFieldOld("CPM", "LCDCLK", "DIV", div) &&
+            ReadFieldOld("CPM", "LCDCLK", "PLL_SEL", pll_sel))
+    {
+        AddClock(pll_sel ? pll1 : pll0, "LCDCLK",
+            FROM_PARENT, 1, pll_div * (div + 1));
+    }
+    else
+        AddClock(exclk, "LCDCLK", INVALID);
 }
 
 void ClockAnalyser::FillTreeATJ213X()
@@ -554,6 +636,7 @@ void ClockAnalyser::FillTreeRK27XX()
 
 void ClockAnalyser::FillTreeIMX233()
 {
+    /* work for stmp3700 and imx233 */
     soc_word_t value, value2, value3;
 
     QTreeWidgetItem *ring_osc = 0;
@@ -686,18 +769,18 @@ void ClockAnalyser::FillTreeIMX233()
             ReadFieldOld("CLKCTRL", "SSP", "CLKGATE", value3))
         clk_ssp = AddClock(value ? ref_xtal : ref_io, "clk_ssp", value3 ? DISABLED : FROM_PARENT, 1, value2);
     else
-        clk_ssp = AddClock(ref_xtal, "clk_p", INVALID);
+        clk_ssp = AddClock(ref_xtal, "clk_ssp", INVALID);
 
-    if(ReadFieldOld("SSP1", "TIMING", "CLOCK_DIVIDE", value) &&
-            ReadFieldOld("SSP1", "TIMING", "CLOCK_RATE", value2) &&
-            ReadFieldOld("SSP1", "CTRL0", "CLKGATE", value3))
+    if(ReadFieldOld("SSP[1]", "TIMING", "CLOCK_DIVIDE", value) &&
+            ReadFieldOld("SSP[1]", "TIMING", "CLOCK_RATE", value2) &&
+            ReadFieldOld("SSP[1]", "CTRL0", "CLKGATE", value3))
         AddClock(clk_ssp, "clk_ssp1", value3 ? DISABLED : FROM_PARENT, 1, value * (1 + value2));
     else
         AddClock(clk_ssp, "clk_ssp1", INVALID);
 
-    if(ReadFieldOld("SSP2", "TIMING", "CLOCK_DIVIDE", value) &&
-            ReadFieldOld("SSP2", "TIMING", "CLOCK_RATE", value2) &&
-            ReadFieldOld("SSP2", "CTRL0", "CLKGATE", value3))
+    if(ReadFieldOld("SSP[2]", "TIMING", "CLOCK_DIVIDE", value) &&
+            ReadFieldOld("SSP[2]", "TIMING", "CLOCK_RATE", value2) &&
+            ReadFieldOld("SSP[2]", "CTRL0", "CLKGATE", value3))
         AddClock(clk_ssp, "clk_ssp2", value3 ? DISABLED : FROM_PARENT, 1, value * (1 + value2));
     else
         AddClock(clk_ssp, "clk_ssp2", INVALID);
@@ -787,6 +870,13 @@ EmiAnalyser::EmiAnalyser(const soc_desc::soc_ref_t& soc, IoBackend *backend)
     m_emi_freq_label = new QLineEdit;
     m_emi_freq_label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     m_emi_freq_label->setReadOnly(true);
+    m_emi_size_label = new QLineEdit;
+    m_emi_size_label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    m_emi_size_label->setReadOnly(true);
+    line_layout->addStretch();
+    line_layout->addWidget(new QLabel("Size:"));
+    line_layout->addWidget(m_emi_size_label);
+    line_layout->addWidget(new QLabel("MiB"));
     line_layout->addStretch();
     line_layout->addWidget(new QLabel("Frequency:"));
     line_layout->addWidget(m_emi_freq_label);
@@ -813,7 +903,7 @@ QWidget *EmiAnalyser::GetWidget()
 
 bool EmiAnalyser::SupportSoc(const QString& soc_name)
 {
-    return soc_name == "imx233";
+    return soc_name == "imx233" || soc_name == "stmp3700";
 }
 
 void EmiAnalyser::OnChangeDisplayMode(int index)
@@ -924,6 +1014,21 @@ void EmiAnalyser::FillTable()
     }
 
     m_emi_freq_label->setText(QString().sprintf("%.3f", m_emi_freq / 1000000.0));
+
+    soc_word_t rows, columns, cs_map;
+    if(ReadFieldOld("DRAM", "CTL14", "CS_MAP", cs_map) &&
+            ReadFieldOld("DRAM", "CTL10", "ADDR_PINS", rows) &&
+            ReadFieldOld("DRAM", "CTL11", "COLUMN_SIZE", columns))
+    {
+        rows = 13 - rows;
+        columns = 12 - columns;
+        soc_word_t banks = 4;
+        soc_word_t chips = __builtin_popcount(cs_map);
+        unsigned long size = 2 * (1 << (rows + columns)) * chips * banks;
+        m_emi_size_label->setText(QString().sprintf("%lu", (unsigned long)size / 1024 / 1024));
+    }
+    else
+        m_emi_size_label->setText("<invalid>");
 
     NewGroup("Control Parameters");
     if(ReadFieldOld("EMI", "CTRL", "PORT_PRIORITY_ORDER", value))

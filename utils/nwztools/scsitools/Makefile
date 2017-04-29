@@ -1,20 +1,19 @@
+SCSI_DIR=../../scsi
 DEFINES=
-CC=gcc
-LD=gcc
-CFLAGS=-g -std=c99 -W -Wall $(DEFINES)
-LDFLAGS=-lsgutils2
+PREFIX?=
+CC=$(PREFIX)gcc
+LD=$(PREFIX)gcc
+NWZ_DB_DIR=../database
+INCLUDES=-I$(NWZ_DB_DIR) -I$(SCSI_DIR)
+CFLAGS=-std=c99 -Wall $(DEFINES) $(INCLUDES)
+LDFLAGS=-L$(SCSI_DIR) -lrbscsi
 BINS=scsitool
 
 all: $(BINS)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-scsitool: scsitool.o misc.o para_noise.o
-	$(LD) -o $@ $^ $(LDFLAGS)
+scsitool: scsitool.c misc.c para_noise.c $(NWZ_DB_DIR)/nwz_db.c
+	$(MAKE) -C $(SCSI_DIR)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 clean:
-	rm -fr *.o
-
-veryclean:
 	rm -rf $(BINS)

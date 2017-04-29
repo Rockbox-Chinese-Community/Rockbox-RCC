@@ -185,16 +185,41 @@ findtool(){
 # scan the $PATH for sdl-config - check whether for a (cross-)win32
 # sdl as requested
 findsdl(){
-  # sdl-config might (not) be prefixed for cross compiles so try both.
-  files="${CROSS_COMPILE}sdl-config:sdl-config"
+  files=sdl-config
+  if [ -n "$CROSS_COMPILE" ]; then
+    # sdl-config might (not) be prefixed for cross compiles so try both.
+    files="${CROSS_COMPILE}sdl-config:${files}"
+  fi
   winbuild="$1"
 
+  paths2check="$PATH"
+
+  if [ -n "$CROSS_COMPILE" ]; then
+    # add cross compile sys-root-directories to search in:
+    sysroot=$($CPP --print-sysroot 2>&1)
+    if [ $? -eq 0 ];
+    then
+      subdirs="bin:mingw/bin:sbin:mingw/sbin"
+      IFS=":"
+      for subdir in $subdirs
+      do
+        if [ -e "${sysroot}/${subdir}" ]; then
+          paths2check="${sysroot}/${subdir}:${paths2check}"
+        fi
+      done
+    else
+      echo "WARNING: unable to get sys-root directory from your cross-compiler" >&2
+      echo "WARNING: $CPP --print-sysroot returns" >&2
+      echo "WARNING: ${sysroot}" >&2
+    fi
+  fi
+
+  # search for the correct sdl-config
   IFS=":"
-  for file in $files
+  for path in $paths2check
   do
-    for path in $PATH
+    for file in $files
     do
-      #echo "checks for $file in $path" >&2
       if test -f "$path/$file"; then
         if [ "0" != `$path/$file --libs |grep -c mwindows` ]; then
           if [ "yes" = "${winbuild}" ]; then
@@ -262,6 +287,9 @@ simcc () {
  GCCOPTS=`echo $CCOPTS | sed -e s/-ffreestanding// -e s/-nostdlib// -e s/-Wundef//`
 
  GCCOPTS="$GCCOPTS -fno-builtin -g"
+ # Some linux setups like to warn about unused results. They are correct,
+ # but cleaning this up is a lot of work.
+ GCCOPTS="$GCCOPTS -Wno-unused-result"
  GCCOPTIMIZE=''
  LDOPTS="$LDOPTS -lm" # button-sdl.c uses sqrt()
  sigaltstack=""
@@ -280,10 +308,35 @@ simcc () {
  if [ "$win32crosscompile" = "yes" ]; then
    # We are crosscompiling
    # add cross-compiler option(s)
-   LDOPTS="$LDOPTS -mconsole"
+   GCCOPTS="$GCCOPTS -Wno-format"
+   LDOPTS="$LDOPTS -mconsole -static"
    output="$output.exe"
    winbuild="yes"
-   CROSS_COMPILE=${CROSS_COMPILE:-"i586-mingw32msvc-"}
+
+   if [ -z "$CROSS_COMPILE" ]; then
+     if [ "$win64" = "yes" ]; then
+       CROSS_COMPILE=${CROSS_COMPILE:-"x86_64-w64-mingw32-"}
+     else
+       # different possible names; try to find the correct one:
+       names="i686-w64-mingw32 i686-pc-mingw32 i586-mingw32msvc"
+
+       for name in $names
+       do
+         if which "${name}-gcc" >/dev/null 2>&1 ; then
+           CROSS_COMPILE="${name}-"
+           break
+         fi
+       done
+
+       if [ -z "$CROSS_COMPILE" ]; then
+         echo "WARNING: unable to find cross-compiler for 32-bit Windows environment!"
+         echo "WARNING: it's none of \"$names\"."
+         echo "WARNING: set your compiler prefix with CROSS_COMPILE=\"your-prefix-\" and"
+         echo "WARNING: re-run configure again!"
+         exit 2
+       fi
+     fi
+   fi
    SHARED_CFLAGS=''
    prefixtools "$CROSS_COMPILE"
    fibers=`check_fiber`
@@ -365,9 +418,18 @@ simcc () {
         echo "re-run configure!"
         exit 2
     else
+        echo Using $sdl
+
         # generic sdl-config checker
-        GCCOPTS="$GCCOPTS `$sdl --cflags`"
-        LDOPTS="$LDOPTS `$sdl --libs`"
+        sdlccopts=$($sdl --cflags)
+        if $sdl --static-libs > /dev/null 2>&1 ; then
+          sdlldopts=$($sdl --static-libs)
+        else
+          echo "Your sdl-config does not know about static libs, falling back to shared library"
+          sdlldopts=$($sdl --libs)
+        fi
+        GCCOPTS="$GCCOPTS ${sdlccopts}"
+        LDOPTS="$LDOPTS ${sdlldopts}"
     fi
  fi
 
@@ -774,7 +836,15 @@ androidndkcc()
     fi
 
     buildhost=$(uname -s | tr "[:upper:]" "[:lower:]")
-    buildhost="${buildhost}-$(uname -m)"
+    # the prebuild android NDK only supports intel architecture anyway, so we can take shortcuts
+    case $(getconf LONG_BIT) in
+        32)
+            buildhost="${buildhost}-x86"
+            ;;
+        64)
+            buildhost="${buildhost}-x86_64"
+            ;;
+    esac
 
     GCCOPTS=`echo $CCOPTS | sed -e s/-ffreestanding// -e s/-nostdlib// -e s/-Wundef//`
     LDOPTS="$LDOPTS -ldl -llog"
@@ -822,7 +892,7 @@ whichadvanced () {
     echo ""
     printf "Enter your developer options (press only enter when done)\n\
 (D)EBUG, (L)ogf, Boot(c)hart, (S)imulator, (P)rofiling, (V)oice, (W)in32 crosscompile,\n\
-(T)est plugins, S(m)all C lib, Logf to Ser(i)al port:"
+Win(6)4 crosscompile, (T)est plugins, S(m)all C lib, Logf to Ser(i)al port:"
     if [ "$modelname" = "archosplayer" ]; then
       printf ", Use (A)TA poweroff"
     fi
@@ -920,8 +990,14 @@ whichadvanced () {
         fi
         ;;
       [Ww])
-        echo "Enabling Windows 32 cross-compiling"
+        echo "Enabling Windows cross-compiling (32-bit)"
         win32crosscompile="yes"
+        win64=""
+        ;;
+      [6])
+        echo "Enabling Windows cross-compiling (64-bit)"
+        win32crosscompile="yes"
+        win64="yes"
         ;;
       "") # Match enter press when finished with advanced options
         cont=0
@@ -1423,7 +1499,7 @@ cat <<EOF
  93) Zen X-Fi2                                   58) Sansa Fuze
  94) Zen X-Fi3            ==Meizu==              59) Sansa c200v2
  96) Zen X-Fi             110) M6SL              60) Sansa Clipv2
- 97) Zen X-Mozaic         111) M6SP              61) Sansa View
+ 97) Zen Mozaic           111) M6SP              61) Sansa View
  98) Zen                  112) M3                62) Sansa Clip+
                                                  63) Sansa Fuze v2
  ==Onda==                 ==Tatung==             64) Sansa Fuze+
@@ -4206,6 +4282,12 @@ else
    GCCOPTS="$GCCOPTS -Wno-override-init"
  fi
 
+ if test "$gccnum" -ge "601"; then
+   # gcc 6 adds a lot of warnings that while useful are too time-consuming
+   # to clean up right away
+   GCCOPTS="$GCCOPTS -Wno-shift-negative-value -Wno-unused-const-variable -Wno-nonnull-compare -Wno-tautological-compare"
+ fi
+
  case $prefix in
    ""|"$CROSS_COMPILE")
      # simulator
@@ -4227,6 +4309,9 @@ fi
 
 
 echo "Using $LD $ldver"
+
+makever=`make --version | head -1`
+echo "Detected make $makever"
 
 # check the compiler for SH platforms
 if test "$CC" = "sh-elf-gcc"; then
@@ -4277,6 +4362,9 @@ DLLTOOL=`findtool ${DLLTOOL} --lit`
 DLLWRAP=`findtool ${DLLWRAP} --lit`
 RANLIB=`findtool ${RANLIB} --lit`
 
+# in pure cross-compiler environments without own native compiler this helps:
+HOSTCC=${HOSTCC:-${CC}}
+HOSTAR=${HOSTAR:-${AR}}
 
 if [ -z "$arch" ]; then
     cpp_defines=$(echo "" | $CPP $GCCOPTS -dD)

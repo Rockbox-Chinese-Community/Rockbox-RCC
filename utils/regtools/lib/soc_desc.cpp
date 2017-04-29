@@ -149,23 +149,23 @@ std::string xml_loc(xmlAttr *attr)
 }
 
 template<typename T>
-bool add_error(error_context_t& ctx, error_t::level_t lvl, T *node,
+bool add_error(error_context_t& ctx, err_t::level_t lvl, T *node,
     const std::string& msg)
 {
-    ctx.add(error_t(lvl, xml_loc(node), msg));
+    ctx.add(err_t(lvl, xml_loc(node), msg));
     return false;
 }
 
 template<typename T>
 bool add_fatal(error_context_t& ctx, T *node, const std::string& msg)
 {
-    return add_error(ctx, error_t::FATAL, node, msg);
+    return add_error(ctx, err_t::FATAL, node, msg);
 }
 
 template<typename T>
 bool add_warning(error_context_t& ctx, T *node, const std::string& msg)
 {
-    return add_error(ctx, error_t::WARNING, node, msg);
+    return add_error(ctx, err_t::WARNING, node, msg);
 }
 
 bool parse_wrong_version_error(xmlNode *node, error_context_t& ctx)
@@ -262,6 +262,20 @@ bool parse_unknown_elem(xmlNode *node, error_context_t& ctx)
     return add_fatal(ctx, node, oss.str());
 }
 
+bool parse_access_elem(xmlNode *node, access_t& acc, xmlChar *content, error_context_t& ctx)
+{
+    const char *text = XML_CHAR_TO_CHAR(content);
+    if(strcmp(text, "read-only") == 0)
+        acc = READ_ONLY;
+    else if(strcmp(text, "read-write") == 0)
+        acc = READ_WRITE;
+    else if(strcmp(text, "write-only") == 0)
+        acc = WRITE_ONLY;
+    else
+        return add_fatal(ctx, node, "unknown access type " + std::string(text));
+    return true;
+}
+
 template<typename T, typename U>
 bool parse_unsigned_text(U *node, T& res, xmlChar *content, error_context_t& ctx)
 {
@@ -348,30 +362,36 @@ bool parse_field_elem(xmlNode *node, field_t& field, error_context_t& ctx)
 bool parse_variant_elem(xmlNode *node, variant_t& variant, error_context_t& ctx)
 {
     bool ret = true;
-    bool has_type = false, has_offset = false;
+    bool has_type = false, has_offset = false, has_access = false;
     BEGIN_NODE_MATCH(node->children)
         MATCH_UNIQUE_TEXT_NODE("type", variant.type, has_type, parse_name_elem, ctx)
         MATCH_UNIQUE_TEXT_NODE("offset", variant.offset, has_offset, parse_unsigned_elem, ctx)
+        MATCH_UNIQUE_TEXT_NODE("access", variant.access, has_access, parse_access_elem, ctx)
         MATCH_UNUSED_NODE(parse_unknown_elem, ctx)
     END_NODE_MATCH()
     CHECK_HAS(node, "type", has_type, ctx)
     CHECK_HAS(node, "offset", has_offset, ctx)
+    if(!has_access)
+        variant.access = UNSPECIFIED;
     return ret;
 }
 
 bool parse_register_elem(xmlNode *node, register_t& reg, error_context_t& ctx)
 {
     bool ret = true;
-    bool has_width = false, has_desc = false;
+    bool has_width = false, has_desc = false, has_access = false;
     BEGIN_NODE_MATCH(node->children)
         MATCH_UNIQUE_TEXT_NODE("desc", reg.desc, has_desc, parse_text_elem, ctx)
         MATCH_UNIQUE_TEXT_NODE("width", reg.width, has_width, parse_unsigned_elem, ctx)
+        MATCH_UNIQUE_TEXT_NODE("access", reg.access, has_access, parse_access_elem, ctx)
         MATCH_ELEM_NODE("field", reg.field, parse_field_elem, ctx)
         MATCH_ELEM_NODE("variant", reg.variant, parse_variant_elem, ctx)
         MATCH_UNUSED_NODE(parse_unknown_elem, ctx)
     END_NODE_MATCH()
     if(!has_width)
         reg.width = 32;
+    if(!has_access)
+        reg.access = UNSPECIFIED;
     return ret;
 }
 
@@ -509,7 +529,7 @@ bool parse_root_elem(xmlNode *node, soc_t& soc, error_context_t& ctx)
     END_ATTR_MATCH()
     if(!has_version)
     {
-        ctx.add(error_t(error_t::FATAL, xml_loc(node), "no version attribute, is this a v1 file ?"));
+        ctx.add(err_t(err_t::FATAL, xml_loc(node), "no version attribute, is this a v1 file ?"));
         return false;
     }
     if(ver != MAJOR_VERSION)
@@ -550,20 +570,54 @@ namespace
 
 struct soc_sorter
 {
-    /* returns the first (lowest) address of an instance */
+    /* returns the lowest address of an instance, or 0 if none
+     * and 0xffffffff if cannot evaluate */
     soc_addr_t first_addr(const instance_t& inst) const
     {
         if(inst.type == instance_t::SINGLE)
             return inst.addr;
+        /* sanity check */
+        if(inst.type != instance_t::RANGE)
+        {
+            printf("Warning: unknown instance type %d\n", inst.type);
+            return 0;
+        }
         if(inst.range.type == range_t::STRIDE)
-            return inst.range.base;
-        soc_word_t res;
+            return inst.range.base; /* assume positive stride */
+        if(inst.range.type == range_t::LIST)
+        {
+            soc_addr_t min = 0xffffffff;
+            for(size_t i = 0; i < inst.range.list.size(); i++)
+                if(inst.range.list[i] < min)
+                    min = inst.range.list[i];
+            return min;
+        }
+        /* sanity check */
+        if(inst.range.type != range_t::FORMULA)
+        {
+            printf("Warning: unknown range type %d\n", inst.range.type);
+            return 0;
+        }
+        soc_addr_t min = 0xffffffff;
         std::map< std::string, soc_word_t > vars;
-        vars[inst.range.variable] = inst.range.first;
-        error_context_t ctx;
-        if(!evaluate_formula(inst.range.formula, vars, res, "", ctx))
-            return 0xffffffff;
-        return res;
+        for(size_t i = 0; i < inst.range.count; i++)
+        {
+            soc_word_t res;
+            vars[inst.range.variable] = inst.range.first;
+            error_context_t ctx;
+            if(evaluate_formula(inst.range.formula, vars, res, "", ctx) && res < min)
+                min = res;
+        }
+        return min;
+    }
+
+    /* return smallest address among all instances */
+    soc_addr_t first_addr(const node_t& node) const
+    {
+        soc_addr_t min = 0xffffffff;
+        for(size_t i = 0; i < node.instance.size(); i++)
+            min = std::min(min, first_addr(node.instance[i]));
+        return min;
     }
 
     /* sort instances by first address */
@@ -576,23 +630,30 @@ struct soc_sorter
      * any instance if instances are sorted) */
     bool operator()(const node_t& a, const node_t& b) const
     {
-        /* borderline cases: no instances is lower than with instances */
-        if(a.instance.size() == 0)
-            return b.instance.size() > 0;
-        if(b.instance.size() == 0)
-            return false;
-        return first_addr(a.instance[0]) < first_addr(b.instance[0]);
+        soc_addr_t addr_a = first_addr(a);
+        soc_addr_t addr_b = first_addr(b);
+        /* It may happen that two nodes have the same first instance address,
+         * for example if one logically splits a block into two blocks with
+         * the same base. In this case, sort by name */
+        if(addr_a == addr_b)
+            return a.name < b.name;
+        return addr_a < addr_b;
     }
 
     /* sort fields by decreasing position */
     bool operator()(const field_t& a, const field_t& b) const
     {
+        /* in the unlikely case where two fields have the same position, use name */
+        if(a.pos == b.pos)
+            return a.name < b.name;
         return a.pos > b.pos;
     }
 
-    /* sort enum values by value */
+    /* sort enum values by value, then by name */
     bool operator()(const enum_t& a, const enum_t& b) const
     {
+        if(a.value == b.value)
+            return a.name < b.name;
         return a.value < b.value;
     }
 };
@@ -619,7 +680,7 @@ void normalize(node_t& node)
     std::sort(node.instance.begin(), node.instance.end(), soc_sorter());
 }
 
-}
+} /* namespace */
 
 void normalize(soc_t& soc)
 {
@@ -640,7 +701,7 @@ namespace
         if((x) < 0) { \
             std::ostringstream oss; \
             oss << __FILE__ << ":" << __LINE__; \
-            ctx.add(error_t(error_t::FATAL, oss.str(), "write error")); \
+            ctx.add(err_t(err_t::FATAL, oss.str(), "write error")); \
             return -1; \
         } \
     }while(0)
@@ -746,6 +807,17 @@ int produce_field(xmlTextWriterPtr writer, const field_t& field, error_context_t
     return 0;
 }
 
+const char *access_string(access_t acc)
+{
+    switch(acc)
+    {
+        case READ_ONLY: return "read-only";
+        case READ_WRITE: return "read-write";
+        case WRITE_ONLY: return "write-only";
+        default: return "bug-invalid-access";
+    }
+}
+
 int produce_variant(xmlTextWriterPtr writer, const variant_t& variant, error_context_t& ctx)
 {
     /* <variant> */
@@ -754,6 +826,9 @@ int produce_variant(xmlTextWriterPtr writer, const variant_t& variant, error_con
     SAFE(xmlTextWriterWriteElement(writer, BAD_CAST "type", BAD_CAST variant.type.c_str()));
     /* <position/> */
     SAFE(xmlTextWriterWriteFormatElement(writer, BAD_CAST "offset", "%lu", (unsigned long)variant.offset));
+    /* <access/> */
+    if(variant.access != UNSPECIFIED)
+        SAFE(xmlTextWriterWriteElement(writer, BAD_CAST "access", BAD_CAST access_string(variant.access)));
     /* </variant> */
     SAFE(xmlTextWriterEndElement(writer));
     return 0;
@@ -769,6 +844,9 @@ int produce_register(xmlTextWriterPtr writer, const register_t& reg, error_conte
     /* <desc/> */
     if(!reg.desc.empty())
         SAFE(xmlTextWriterWriteElement(writer, BAD_CAST "desc", BAD_CAST reg.desc.c_str()));
+    /* <access/> */
+    if(reg.access != UNSPECIFIED)
+        SAFE(xmlTextWriterWriteElement(writer, BAD_CAST "access", BAD_CAST access_string(reg.access)));
     /* fields */
     for(size_t i = 0; i < reg.field.size(); i++)
         SAFE(produce_field(writer, reg.field[i], ctx));
@@ -957,7 +1035,7 @@ namespace
 std::vector< node_t > *get_children(node_ref_t node)
 {
     if(node.is_root())
-        return &node.soc().get()->node;
+        return node.soc().valid() ? &node.soc().get()->node : 0;
     node_t *n = node.get();
     return n == 0 ? 0 : &n->node;
 }
@@ -1474,7 +1552,7 @@ node_inst_t::node_inst_t()
 
 bool node_inst_t::valid() const
 {
-    return is_root() || get() != 0;
+    return (is_root() && node().valid()) || get() != 0;
 }
 
 void node_inst_t::reset()
@@ -1538,7 +1616,6 @@ node_inst_t node_inst_t::child(const std::string& name) const
 {
     return child(name, INST_NO_INDEX);
 }
-
 
 node_inst_t node_inst_t::child(const std::string& name, size_t index) const
 {

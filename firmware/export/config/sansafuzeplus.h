@@ -160,6 +160,9 @@
 /* Define this if you want to use the IMX233 i2c interface */
 #define CONFIG_I2C I2C_IMX233
 
+/* define this if the hardware can be powered off while charging */
+#define HAVE_POWEROFF_WHILE_CHARGING
+
 /* define current usage levels (based on battery bench) */
 #define CURRENT_NORMAL     35
 #define CURRENT_BACKLIGHT  30
@@ -199,6 +202,9 @@
 
 /* Virtual LED (icon) */
 #define CONFIG_LED LED_VIRTUAL
+
+/* Define this on iMX233 if the boot process uses a dualboot stub */
+#define HAVE_DUALBOOT_STUB
 
 #define BOOTFILE_EXT    "sansa"
 #define BOOTFILE        "rockbox." BOOTFILE_EXT

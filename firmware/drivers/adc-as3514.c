@@ -34,31 +34,26 @@ unsigned short adc_read(int channel)
     ascodec_lock();
 
     /* Select channel */
-    if (ascodec_write(AS3514_ADC_0, (channel << 4)) >= 0)
-    {
-        unsigned char buf[2];
-
-        /*
-         * The AS3514 ADC will trigger an interrupt when the conversion
-         * is finished, if the corresponding enable bit in IRQ_ENRD2
-         * is set.
-         * Previously the code did not wait and this apparently did
-         * not pose any problems, but this should be more correct.
-         * Without the wait the data read back may be completely or
-         * partially (first one of the two bytes) stale.
-         */
-        ascodec_wait_adc_finished();
+    ascodec_write(AS3514_ADC_0, (channel << 4));
+    /*
+     * The AS3514 ADC will trigger an interrupt when the conversion
+     * is finished, if the corresponding enable bit in IRQ_ENRD2
+     * is set.
+     * Previously the code did not wait and this apparently did
+     * not pose any problems, but this should be more correct.
+     * Without the wait the data read back may be completely or
+     * partially (first one of the two bytes) stale.
+     */
+    ascodec_wait_adc_finished();
 
 
-        /* Read data */
-        if (ascodec_readbytes(AS3514_ADC_0, 2, buf) >= 0)
-        {
-            data = (((buf[0] & 0x3) << 8) | buf[1]);
-        }
-    }
+    /* Read data */
+    unsigned char buf[2] = { 0, 0 };
+    ascodec_readbytes(AS3514_ADC_0, 2, buf);
+    data = (((buf[0] & 0x3) << 8) | buf[1]);
 
     ascodec_unlock();
-    
+
     return data;
 }
 

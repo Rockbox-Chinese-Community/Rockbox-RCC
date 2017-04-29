@@ -29,7 +29,6 @@
 #include "kernel.h"
 
 #include "radio-ypr.h"
-#include "rds.h"
 #include "si4700.h"
 #include "power.h"
 
@@ -79,7 +78,6 @@ int fmradio_i2c_read(unsigned char address, unsigned char* buf, int count)
 /* Low-level RDS Support */
 static struct event_queue rds_queue;
 static uint32_t rds_stack[DEFAULT_STACK_SIZE / sizeof(uint32_t)];
-static uint16_t rds_data[4];
 
 enum {
     Q_POWERUP,
@@ -90,6 +88,7 @@ static void NORETURN_ATTR rds_thread(void)
     /* start up frozen */
     int timeout = TIMEOUT_BLOCK;
     struct queue_event ev;
+    bool rds_rdy = false;
 
     while (true) {
         queue_wait_w_tmo(&rds_queue, &ev, timeout);
@@ -98,11 +97,14 @@ static void NORETURN_ATTR rds_thread(void)
                 /* power up: timeout after 1 tick, else block indefinitely */
                 timeout = ev.data ? 1 : TIMEOUT_BLOCK;
                 break;
-            case SYS_TIMEOUT:
+            case SYS_TIMEOUT:;
                 /* Captures RDS data and processes it */
-                if ((si4709_read_reg(STATUSRSSI) & STATUSRSSI_RDSR) >> 8) {
-                    if (si4700_rds_read_raw(rds_data) && rds_process(rds_data))
-                        si4700_rds_set_event();
+                bool rdsr = si4709_read_reg(STATUSRSSI) & STATUSRSSI_RDSR;
+                if (rdsr != rds_rdy) {
+                    rds_rdy = rdsr;
+                    if (rdsr) {
+                        si4700_rds_process();
+                    }
                 }
                 break;
         }
@@ -121,6 +123,5 @@ void si4700_rds_init(void)
     queue_init(&rds_queue, false);
     create_thread(rds_thread, rds_stack, sizeof(rds_stack), 0, "rds"
         IF_PRIO(, PRIORITY_PLAYBACK) IF_COP(, CPU));
-    rds_init();
 }
 #endif /* HAVE_RDS_CAP */

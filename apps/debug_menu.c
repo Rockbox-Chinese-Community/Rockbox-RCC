@@ -63,7 +63,7 @@
 #include "usb.h"
 #include "rtc.h"
 #include "storage.h"
-#include "fat.h"
+#include "fs_defines.h"
 #include "eeprom_24cxx.h"
 #if (CONFIG_STORAGE & STORAGE_MMC) || (CONFIG_STORAGE & STORAGE_SD)
 #include "sdmmc.h"
@@ -111,7 +111,7 @@
 #endif
 #include "appevents.h"
 
-#if defined(HAVE_AS3514) && defined(CONFIG_CHARGING)
+#if defined(HAVE_AS3514) && CONFIG_CHARGING
 #include "ascodec.h"
 #endif
 
@@ -119,16 +119,12 @@
 #include "pmu-target.h"
 #endif
 
-#ifdef HAVE_USBSTACK     
-#include "usb_core.h"    
+#ifdef HAVE_USBSTACK
+#include "usb_core.h"
 #endif
 
 #if defined(IPOD_ACCESSORY_PROTOCOL)
 #include "iap.h"
-#endif
-
-#ifdef HAVE_RDS_CAP
-#include "rds.h"
 #endif
 
 #include "talk.h"
@@ -374,7 +370,7 @@ static void dbg_audio_task(void)
 static bool dbg_buffering_thread(void)
 {
     int button;
-    int line;    
+    int line;
     bool done = false;
     size_t bufused;
     size_t bufsize = pcmbuf_get_bufsize();
@@ -389,10 +385,10 @@ static bool dbg_buffering_thread(void)
     ticks = freq_sum = 0;
 
     tick_add_task(dbg_audio_task);
-    
+
     FOR_NB_SCREENS(i)
         screens[i].setfont(FONT_SYSFIXED);
-        
+
     while(!done)
     {
         button = get_action(CONTEXT_STD,HZ/5);
@@ -412,7 +408,7 @@ static bool dbg_buffering_thread(void)
         buffering_get_debugdata(&d);
         bufused = bufsize - pcmbuf_free();
 
-        FOR_NB_SCREENS(i) 
+        FOR_NB_SCREENS(i)
         {
             line = 0;
             screens[i].clear_display();
@@ -489,7 +485,7 @@ static bool dbg_buffering_thread(void)
     }
 
     tick_remove_task(dbg_audio_task);
-    
+
     FOR_NB_SCREENS(i)
         screens[i].setfont(FONT_UI);
 
@@ -796,6 +792,12 @@ static bool dbg_cpufreq(void)
         lcd_putsf(0, line++, "Frequency: %ld.%ld MHz", temp, (FREQ-temp*1000000)/100000);
         lcd_putsf(0, line++, "boost_counter: %d", get_cpu_boost_counter());
 
+#ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
+        extern int get_cpu_voltage_setting(void);
+        temp = get_cpu_voltage_setting();
+        lcd_putsf(0, line++, "CPU voltage: %d.%03dV", temp / 1000, temp % 1000);
+#endif
+
         lcd_update();
         button = get_action(CONTEXT_STD,HZ/10);
 
@@ -917,7 +919,7 @@ static bool view_battery(void)
                 }
                 /* print header */
 #if (CONFIG_BATTERY_MEASURE & VOLTAGE_MEASURE)
-                /* adjust grid scale */ 
+                /* adjust grid scale */
                 if ((maxv - minv) > 50)
                     grid = 50;
                 else
@@ -929,7 +931,7 @@ static bool view_battery(void)
                           minv / 1000, minv % 1000, maxv / 1000, maxv % 1000,
                           grid);
 #elif (CONFIG_BATTERY_MEASURE & PERCENTAGE_MEASURE)
-                /* adjust grid scale */ 
+                /* adjust grid scale */
                 if ((maxv - minv) > 10)
                     grid = 10;
                 else
@@ -937,31 +939,31 @@ static bool view_battery(void)
                 lcd_putsf(0, 0, "battery %d%%", power_history[0]);
                 lcd_putsf(0, 1, "%d%%-%d%% (%d %%)", minv, maxv, grid);
 #endif
-                
+
                 i = 1;
                 while ((y = (minv - (minv % grid)+i*grid)) < maxv)
                 {
                     graph = ((y-minv)*BAT_YSPACE)/(maxv-minv);
                     graph = LCD_HEIGHT-1 - graph;
-             
-                    /* draw dotted horizontal grid line */      
+
+                    /* draw dotted horizontal grid line */
                     for (x=0; x<LCD_WIDTH;x=x+2)
                         lcd_drawpixel(x,graph);
 
                     i++;
                 }
-                
+
                 x = 0;
                 /* draw plot of power history
                  * skip empty entries
                  */
-                for (i = BAT_LAST_VAL - 1; i > 0; i--) 
+                for (i = BAT_LAST_VAL - 1; i > 0; i--)
                 {
                     if (power_history[i] && power_history[i-1])
                     {
-                        y1 = (power_history[i] - minv) * BAT_YSPACE / 
+                        y1 = (power_history[i] - minv) * BAT_YSPACE /
                             (maxv - minv);
-                        y1 = MIN(MAX(LCD_HEIGHT-1 - y1, BAT_TSPACE), 
+                        y1 = MIN(MAX(LCD_HEIGHT-1 - y1, BAT_TSPACE),
                                  LCD_HEIGHT-1);
                         y2 = (power_history[i-1] - minv) * BAT_YSPACE /
                             (maxv - minv);
@@ -971,13 +973,13 @@ static bool view_battery(void)
                         lcd_set_drawmode(DRMODE_SOLID);
 
                         /* make line thicker */
-                        lcd_drawline(((x*LCD_WIDTH)/(BAT_LAST_VAL)), 
-                                     y1, 
-                                     (((x+1)*LCD_WIDTH)/(BAT_LAST_VAL)), 
+                        lcd_drawline(((x*LCD_WIDTH)/(BAT_LAST_VAL)),
+                                     y1,
+                                     (((x+1)*LCD_WIDTH)/(BAT_LAST_VAL)),
                                      y2);
-                        lcd_drawline(((x*LCD_WIDTH)/(BAT_LAST_VAL))+1, 
-                                     y1+1, 
-                                     (((x+1)*LCD_WIDTH)/(BAT_LAST_VAL))+1, 
+                        lcd_drawline(((x*LCD_WIDTH)/(BAT_LAST_VAL))+1,
+                                     y1+1,
+                                     (((x+1)*LCD_WIDTH)/(BAT_LAST_VAL))+1,
                                      y2+1);
                         x++;
                     }
@@ -988,7 +990,7 @@ static bool view_battery(void)
 #if CONFIG_CHARGING >= CHARGING_MONITOR
                 lcd_putsf(0, 0, "Pwr status: %s",
                          charging_state() ? "charging" : "discharging");
-#else 
+#else
                 lcd_puts(0, 0, "Power status: unknown");
 #endif
                 battery_read_info(&y, &z);
@@ -1107,8 +1109,7 @@ static bool view_battery(void)
                     /* Conversion disabled */
                     lcd_puts(0, line++, "T Battery: ?");
                 }
-                    
-#elif defined(HAVE_AS3514) && defined(CONFIG_CHARGING)
+#elif defined(HAVE_AS3514) && CONFIG_CHARGING
                 static const char * const chrgstate_strings[] =
                 {
                     [CHARGE_STATE_DISABLED - CHARGE_STATE_DISABLED]= "Disabled",
@@ -1371,7 +1372,7 @@ static int disk_callback(int btn, struct gui_synclist *lists)
     }
     return btn;
 }
-#elif  (CONFIG_STORAGE & STORAGE_ATA) 
+#elif  (CONFIG_STORAGE & STORAGE_ATA)
 static int disk_callback(int btn, struct gui_synclist *lists)
 {
     (void)lists;
@@ -1740,7 +1741,7 @@ static int disk_callback(int btn, struct gui_synclist *lists)
 }
 #endif
 
-#if  (CONFIG_STORAGE & STORAGE_ATA) 
+#if  (CONFIG_STORAGE & STORAGE_ATA)
 static bool dbg_identify_info(void)
 {
     int fd = creat("/identify_info.bin", 0666);
@@ -1869,9 +1870,9 @@ static int database_callback(int btn, struct gui_synclist *lists)
     simplelist_addline("Commit delayed: %s",
              stat->commit_delayed ? "Yes" : "No");
 
-    simplelist_addline("Queue length: %d", 
+    simplelist_addline("Queue length: %d",
              stat->queue_length);
-    
+
     if (synced)
     {
         synced = false;
@@ -1896,7 +1897,7 @@ static bool dbg_tagcache_info(void)
     info.action_callback = database_callback;
     info.hide_selection = true;
     info.scroll_all = true;
-    
+
     /* Don't do nonblock here, must give enough processing time
        for tagcache thread. */
     /* info.timeout = TIMEOUT_NOBLOCK; */
@@ -2161,17 +2162,25 @@ static int radio_callback(int btn, struct gui_synclist *lists)
 #endif /* TEA5760 */
 
 #ifdef HAVE_RDS_CAP
-        simplelist_addline("PI:%04X PS:'%8s'",
-                           rds_get_pi(), rds_get_ps());
-        simplelist_addline("RT:%s",
-                           rds_get_rt());
-        time_t seconds = rds_get_ct();
+    {
+        char buf[65*4];
+        uint16_t pi;
+        time_t seconds;
+
+        tuner_get_rds_info(RADIO_RDS_NAME, buf, sizeof (buf));
+        tuner_get_rds_info(RADIO_RDS_PROGRAM_INFO, &pi, sizeof (pi));
+        simplelist_addline("PI:%04X PS:'%8s'", pi, buf);
+        tuner_get_rds_info(RADIO_RDS_TEXT, buf, sizeof (buf));
+        simplelist_addline("RT:%s", buf);
+        tuner_get_rds_info(RADIO_RDS_CURRENT_TIME, &seconds, sizeof (seconds));
+
         struct tm* time = gmtime(&seconds);
         simplelist_addline(
             "CT:%4d-%02d-%02d %02d:%02d",
             time->tm_year + 1900, time->tm_mon + 1, time->tm_mday,
             time->tm_hour, time->tm_min, time->tm_sec);
-#endif
+    }
+#endif /* HAVE_RDS_CAP */
     return ACTION_REDRAW;
 }
 static bool dbg_fm_radio(void)
@@ -2179,7 +2188,7 @@ static bool dbg_fm_radio(void)
     struct simplelist_info info;
 #ifdef CONFIG_TUNER_MULTI
     tuner_type = tuner_detect_type();
-#endif    
+#endif
     info.scroll_all = true;
     simplelist_info_init(&info, "FM Radio", 1, NULL);
     simplelist_set_line_count(0);
@@ -2446,7 +2455,7 @@ static bool dbg_isp1583(void)
     struct simplelist_info isp1583;
     isp1583.scroll_all = true;
     simplelist_info_init(&isp1583, "ISP1583", dbg_usb_num_items(), NULL);
-    isp1583.timeout = HZ/100; 
+    isp1583.timeout = HZ/100;
     isp1583.hide_selection = true;
     isp1583.get_name = dbg_usb_item;
     isp1583.action_callback = isp1583_action_callback;
@@ -2472,7 +2481,7 @@ static bool dbg_pic(void)
     struct simplelist_info pic;
     pic.scroll_all = true;
     simplelist_info_init(&pic, "PIC", pic_dbg_num_items(), NULL);
-    pic.timeout = HZ/100; 
+    pic.timeout = HZ/100;
     pic.hide_selection = true;
     pic.get_name = pic_dbg_item;
     pic.action_callback = pic_action_callback;

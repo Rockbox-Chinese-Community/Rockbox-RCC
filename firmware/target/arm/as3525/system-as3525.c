@@ -33,6 +33,8 @@
 #include "backlight-target.h"
 #include "lcd.h"
 
+struct mutex cpufreq_mtx;
+
 /*  Charge Pump and Power management Settings  */
 #define AS314_CP_DCDC3_SETTING    \
                ((0<<7) |  /* CP_SW  Auto-Switch Margin 0=200/300 1=150/255 */  \
@@ -50,7 +52,9 @@
 #define default_interrupt(name) \
   extern __attribute__((weak,alias("UIRQ"))) void name (void)
 
+#if CONFIG_USBOTG != USBOTG_DESIGNWARE
 static void UIRQ (void) __attribute__((interrupt ("IRQ")));
+#endif
 void irq_handler(void) __attribute__((naked, interrupt ("IRQ")));
 void fiq_handler(void) __attribute__((interrupt ("FIQ")));
 
@@ -105,6 +109,11 @@ static void UIRQ(void)
     if(status == 0)
     {
         status = VIC_RAW_INTR; /* masked interrupts */
+#if CONFIG_USBOTG == USBOTG_DESIGNWARE
+        /* spurious interrupts from USB are expected */
+        if (status & INTERRUPT_USB)
+            return;
+#endif
         masked = true;
     }
 
@@ -316,6 +325,12 @@ void system_init(void)
     setup_vic();
 
     dma_init();
+}
+
+/* this is called after kernel and threading are initialized */
+void kernel_device_init(void)
+{
+    mutex_init(&cpufreq_mtx);
 
     ascodec_init();
 
@@ -323,7 +338,8 @@ void system_init(void)
 #ifdef HAVE_AS3543
     /* PLL:       disable audio PLL, we use MCLK already */
     ascodec_write_pmu(0x1A, 7, 0x02);
-    /* DCDC_Cntr: set switching speed of CVDD1/2 power supplies to 1 MHz */
+    /* DCDC_Cntr: set switching speed of CVDD1/2 power supplies to 1 MHz,
+       immediate change */
     ascodec_write_pmu(0x17, 7, 0x30);
     /* Out_Cntr2: set drive strength of 24 MHz and 32 kHz clocks to 1 mA */
     ascodec_write_pmu(0x1A, 2, 0xCC);
@@ -333,8 +349,8 @@ void system_init(void)
     ascodec_write_pmu(0x18, 1, 0x35);
     /* AVDD17:    set AVDD17 power supply to 2.5V */
     ascodec_write_pmu(0x18, 7, 0x31);
-    /* CVDD2:     set CVDD2 power supply (digital for DAC/SD/etc) to 2.65V */
-    ascodec_write_pmu(0x17, 2, 0x80 | 113);
+    /* CVDD2:     set CVDD2 power supply (digital for DAC/SD/etc) to 2.70V */
+    ascodec_write_pmu(0x17, 2, 0x80 | 114);
 #else /* HAVE_AS3543 */
     ascodec_write(AS3514_CVDD_DCDC3, AS314_CP_DCDC3_SETTING);
 #endif /* HAVE_AS3543 */
@@ -408,11 +424,28 @@ void udelay(unsigned usecs)
 
 #ifndef BOOTLOADER
 #ifdef HAVE_ADJUSTABLE_CPU_FREQ
+bool set_cpu_frequency__lock(void)
+{
+    if (get_processor_mode() != CPU_MODE_THREAD_CONTEXT)
+        return false;
+
+    mutex_lock(&cpufreq_mtx);
+    return true;
+}
+
+void set_cpu_frequency__unlock(void)
+{
+    mutex_unlock(&cpufreq_mtx);
+}
 
 #if CONFIG_CPU == AS3525
 void set_cpu_frequency(long frequency)
 {
-    if(frequency == CPUFREQ_MAX)
+    if (frequency == cpu_frequency)
+    {
+        /* avoid redundant activity */
+    }
+    else if(frequency == CPUFREQ_MAX)
     {
 #ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
         /* Increasing frequency so boost voltage before change */
@@ -458,11 +491,18 @@ void set_cpu_frequency(long frequency)
 #else   /* as3525v2  */
 void set_cpu_frequency(long frequency)
 {
-    if(frequency == CPUFREQ_MAX)
+    if (frequency == cpu_frequency)
     {
+        /* avoid redundant activity */
+    }
+    else if(frequency == CPUFREQ_MAX)
+    {
+#ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
         /* Set CVDD1 power supply */
-        /*ascodec_write_pmu(0x17, 1, 0x80 | 47);*/
-
+        ascodec_write_pmu(0x17, 1, 0x80 | 47);
+        /* dely for voltage rising */
+        udelay(50);
+#endif
         CGU_PROC = ((AS3525_FCLK_POSTDIV << 4) |
                     (AS3525_FCLK_PREDIV  << 2) |
                     AS3525_FCLK_SEL);
@@ -478,13 +518,18 @@ void set_cpu_frequency(long frequency)
         cpu_frequency = CPUFREQ_NORMAL;
 
         /* Set CVDD1 power supply */
-        /*
-#ifdef SANSA_CLIPZIP
-        ascodec_write_pmu(0x17, 1, 0x80 | 19);
+#ifdef HAVE_ADJUSTABLE_CPU_VOLTAGE
+#if defined(SANSA_CLIPZIP)
+        ascodec_write_pmu(0x17, 1, 0x80 | 20);
+#elif defined(SANSA_CLIPPLUS)
+        if (amsv2_variant)
+            ascodec_write_pmu(0x17, 1, 0x80 | 22);
+        else
+            ascodec_write_pmu(0x17, 1, 0x80 | 26);
 #else
         ascodec_write_pmu(0x17, 1, 0x80 | 22);
 #endif
-        */
+#endif
     }
 }
 #endif

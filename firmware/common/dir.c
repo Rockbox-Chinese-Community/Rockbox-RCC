@@ -56,7 +56,7 @@ static struct dirstr_desc * get_dirstr(DIR *dirp)
     {
         errnum = EFAULT;
     }
-    else if (dir->stream.flags == FV_NONEXIST)
+    else if (dir->stream.flags & FD_NONEXIST)
     {
         DEBUGF("dir #%d: nonexistant device\n", (int)(dir - open_streams));
         errnum = ENXIO;
@@ -311,7 +311,8 @@ int mkdir(const char *path)
 
     struct filestr_base stream;
     struct path_component_info compinfo;
-    rc = open_stream_internal(path, FF_DIR, &stream, &compinfo);
+    rc = open_stream_internal(path, FF_DIR | FF_PARENTINFO, &stream,
+                              &compinfo);
     if (rc < 0)
     {
         DEBUGF("Can't open parent dir or path is not a directory\n");

@@ -77,6 +77,7 @@ private:
     void FillTreeIMX233();
     void FillTreeRK27XX();
     void FillTreeATJ213X();
+    void FillTreeJZ4760B();
 
 private:
     QGroupBox *m_group;
@@ -125,6 +126,7 @@ private:
     DisplayMode m_display_mode;
     unsigned m_emi_freq;
     QLineEdit *m_emi_freq_label;
+    QLineEdit *m_emi_size_label;
 };
 
 /**

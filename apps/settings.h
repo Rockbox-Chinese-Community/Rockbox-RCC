@@ -196,6 +196,7 @@ bool settings_load_config(const char* file, bool apply);
 
 void status_save(void);
 int settings_save(void);
+void reset_runtime(void);
 /* defines for the options paramater */
 enum {
     SETTINGS_SAVE_CHANGED = 0,
@@ -678,7 +679,13 @@ struct user_settings
 #if CONFIG_CHARGING
     int backlight_timeout_plugged;
 #endif
+#ifndef HAS_BUTTON_HOLD
+    bool bt_selective_softlock_actions;
+    int bt_selective_softlock_actions_mask;
+#endif
 #ifdef HAVE_BACKLIGHT
+    bool bl_selective_actions; /* backlight disable on some actions */
+    int  bl_selective_actions_mask;/* mask of actions that will not enable backlight */
 #ifdef HAS_BUTTON_HOLD
     int backlight_on_button_hold; /* what to do with backlight when hold
                                      switch is on */
@@ -687,7 +694,8 @@ struct user_settings
     int lcd_sleep_after_backlight_off; /* when to put lcd to sleep after backlight
                                           has turned off */
 #endif
-#endif
+#endif /* HAVE_BACKLIGHT */
+
 #if defined(HAVE_BACKLIGHT_FADING_INT_SETTING)
     int backlight_fade_in;  /* backlight fade in timing: 0..3 */
     int backlight_fade_out; /* backlight fade in timing: 0..7 */
@@ -747,8 +755,8 @@ struct user_settings
 #endif
 
 #ifdef HAVE_SPEAKER
-    bool speaker_enabled;
-#endif
+    int speaker_mode; /* 0: off, 1: on, 2: auto (only if headphone detection) */
+#endif /* HAVE_SPEAKER */
     bool prevent_skip;
 
 #ifdef HAVE_TOUCHSCREEN

@@ -540,9 +540,11 @@ const char *get_radio_token(struct wps_token *token, int preset_offset,
 #ifdef HAVE_RDS_CAP
             return "rds";
         case SKIN_TOKEN_RDS_NAME:
-            return tuner_get_rds_info(RADIO_RDS_NAME);
+            tuner_get_rds_info(RADIO_RDS_NAME, buf, buf_size);
+            return buf;
         case SKIN_TOKEN_RDS_TEXT:
-            return tuner_get_rds_info(RADIO_RDS_TEXT);
+            tuner_get_rds_info(RADIO_RDS_TEXT, buf, buf_size);
+            return buf;
 #else
             return NULL; /* end of the SKIN_TOKEN_HAVE_RDS case */
 #endif /* HAVE_RDS_CAP */
@@ -1469,8 +1471,8 @@ const char *get_token_value(struct gui_wps *gwps,
                      pitch / PITCH_SPEED_PRECISION,
              (pitch  % PITCH_SPEED_PRECISION) / (PITCH_SPEED_PRECISION / 10));
 
-        if (intval)
-            *intval = pitch_speed_enum(limit, pitch,
+            if (intval)
+                *intval = pitch_speed_enum(limit, pitch,
                            PITCH_SPEED_PRECISION * 100);
             return buf;
         }
@@ -1491,7 +1493,7 @@ const char *get_token_value(struct gui_wps *gwps,
         if (intval)
             *intval = pitch_speed_enum(limit, speed,
                            PITCH_SPEED_PRECISION * 100);
-            return buf;
+        return buf;
     }
 #endif
 

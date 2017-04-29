@@ -85,6 +85,9 @@ int handle_button_event(__u16 code, __s32 value, int last_btns)
     // Left button wrong behavior fix
     if((button == BUTTON_RIGHT) && (last_btns == BUTTON_LEFT) && value == EVENT_VALUE_BUTTON_PRESS) {
         button = BUTTON_NONE;
+        /* Workaround for a wrong feedback, only present with DX90: the kernel
+         * sometimes report right press in the middle of a [left press, left release]
+         * interval, which is clearly wrong. */
     }
 
     int buttons = last_btns;
